@@ -335,8 +335,8 @@ void EyeForAnEye(uint32 i, Spell* pSpell, uint32 effect)
 	{
 		if( pSpell->p_caster != NULL)
 		{
-			if(pSpell->damage > (pSpell->p_caster->GetUInt32Value(UNIT_FIELD_MAXHEALTH)/2))
-				pSpell->damage = (pSpell->p_caster->GetUInt32Value(UNIT_FIELD_MAXHEALTH)/2);
+			if((uint32)pSpell->damage > (pSpell->p_caster->GetUInt32Value(UNIT_FIELD_MAXHEALTH)/2))
+				pSpell->damage = int32(pSpell->p_caster->GetUInt32Value(UNIT_FIELD_MAXHEALTH)/2);
 		}
 	}
 }

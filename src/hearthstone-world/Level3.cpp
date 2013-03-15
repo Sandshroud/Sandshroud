@@ -3182,14 +3182,10 @@ bool ChatHandler::HandleForceStartWintergrasp(const char *args, WorldSession *m_
 	if(sWorld.wg_enabled == false)
 		return false;
 
-	if(sWintergraspI.GetWintergrasp() == NULL)
-	{
-		BlueSystemMessage(m_session, "Wintergrasp Forced to start, staff has been alerted.");
-		sWorld.SendMessageToGMs(m_session, "%s has force started Wintergrasp", (m_session->GetPlayer() ? m_session->GetPlayer()->GetName() : m_session->GetAccountNameS()));
-		sWintergraspI.forcestart_WG = true;
-		return true;
-	}
-	return false;
+	BlueSystemMessage(m_session, "Wintergrasp Forced to start, staff has been alerted.");
+	sWorld.SendMessageToGMs(m_session, "%s has force started Wintergrasp", (m_session->GetPlayer() ? m_session->GetPlayer()->GetName() : m_session->GetAccountNameS()));
+	sWorld.ForceStart = true;
+	return true;
 }
 
 bool ChatHandler::HandleForceEndWintergrasp(const char *args, WorldSession *m_session)
@@ -3197,14 +3193,10 @@ bool ChatHandler::HandleForceEndWintergrasp(const char *args, WorldSession *m_se
 	if(sWorld.wg_enabled == false)
 		return false;
 
-	if(sWintergraspI.GetWintergrasp() != NULL)
-	{
-		BlueSystemMessage(m_session, "Wintergrasp ended, staff has been alerted.");
-		sWorld.SendMessageToGMs(m_session, "%s has forced wintergrasp to end.", (m_session->GetPlayer() ? m_session->GetPlayer()->GetName() : m_session->GetAccountNameS()));
-		sWintergraspI.EndWintergrasp();
-		return true;
-	}
-	return false;
+	BlueSystemMessage(m_session, "Wintergrasp ended, staff has been alerted.");
+	sWorld.SendMessageToGMs(m_session, "%s has forced wintergrasp to end.", (m_session->GetPlayer() ? m_session->GetPlayer()->GetName() : m_session->GetAccountNameS()));
+	sWorld.ForceEnd = true;
+	return true;
 }
 
 bool ChatHandler::HandleFactionSetStanding(const char *args, WorldSession *m_session)

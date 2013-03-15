@@ -1549,7 +1549,6 @@ public:
 	// Battlegrounds xD
 	CBattleground* m_bg;
 	CBattleground* m_pendingBattleground[2];
-	Wintergrasp* WinterGrasp;
 	uint32 m_bgSlot;
 	bool m_bgRatedQueue;
 	uint32 m_bgEntryPointMap;

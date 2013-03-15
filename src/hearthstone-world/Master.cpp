@@ -425,12 +425,6 @@ bool Master::Run(int argc, char ** argv)
 	Log.Notice("InsertQueueLoader", "~InsertQueueLoader()");
 	delete InsertQueueLoader::getSingletonPtr();
 
-	if(wintergrasp)
-	{
-		Log.Notice("WintergraspInternal", "~WintergraspInternal()");
-		delete WintergraspInternal::getSingletonPtr();
-	}
-
 	Log.Notice("LogonComm", "~LogonCommHandler()");
 	delete LogonCommHandler::getSingletonPtr();
 

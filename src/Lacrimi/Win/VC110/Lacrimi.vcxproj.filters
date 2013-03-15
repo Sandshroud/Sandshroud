@@ -73,6 +73,9 @@
     <Filter Include="Scripts\SpellScripts">
       <UniqueIdentifier>{f38d591a-9e9d-41be-b937-c5b0bd830274}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripts\Level 0\Northrend\PvP">
+      <UniqueIdentifier>{467f50fe-fb89-4a78-a70f-51ca8eb7bb24}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source\PrecompiledHeaders\LacrimiStdAfx.cpp">
@@ -373,6 +376,9 @@
     <ClCompile Include="..\..\Source\Scripts\Spellscripts\Warrior.cpp">
       <Filter>Scripts\SpellScripts</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\Scripts\Level 0\Northrend\PvP\Wintergrasp.cpp">
+      <Filter>Scripts\Level 0\Northrend\PvP</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\PrecompiledHeaders\LacrimiStdAfx.h">
@@ -450,6 +456,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source\Scripts\Level 2\Blackfathom Deeps\Blackfathom_Deeps.h">
       <Filter>Scripts\Level 2\Blackfathom Deeps</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Scripts\Level 0\Northrend\PvP\Wintergrasp.h">
+      <Filter>Scripts\Level 0\Northrend\PvP</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

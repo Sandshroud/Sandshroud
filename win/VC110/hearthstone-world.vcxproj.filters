@@ -53,12 +53,6 @@
     <ClCompile Include="..\..\src\hearthstone-world\Vehicle.cpp">
       <Filter>Objects\Units</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\hearthstone-world\Wintergrasp.cpp">
-      <Filter>Battlegrounds\Wintergrasp</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\hearthstone-world\WintergraspInternal.cpp">
-      <Filter>Battlegrounds\Wintergrasp</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\hearthstone-world\AlteracValley.cpp">
       <Filter>Battlegrounds\1</Filter>
     </ClCompile>
@@ -440,12 +434,6 @@
     <ClInclude Include="..\..\src\hearthstone-world\Vehicle.h">
       <Filter>Objects\Units</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\hearthstone-world\WintergraspInternal.h">
-      <Filter>Battlegrounds\Wintergrasp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\hearthstone-world\Wintergrasp.h">
-      <Filter>Battlegrounds\Wintergrasp</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\hearthstone-world\ArathiBasin.h">
       <Filter>Battlegrounds\1</Filter>
     </ClInclude>
@@ -726,9 +714,6 @@
     </Filter>
     <Filter Include="Battlegrounds\3">
       <UniqueIdentifier>{3d3451d5-0a0a-4901-ab57-d3f088b03d02}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Battlegrounds\Wintergrasp">
-      <UniqueIdentifier>{5b34489a-f511-49bd-b347-61005c7f37e5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Interserver\Logon">
       <UniqueIdentifier>{4d806c80-5634-4f9f-808e-9d13aa92fe5b}</UniqueIdentifier>

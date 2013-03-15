@@ -180,6 +180,7 @@ public:
 
 	// Northrend
 	void SetupNorthrendScripts();
+	void SetupWintergrasp();
 	void SetupBoreanTundra();
 	void SetupDragonblight();
 	void SetupGrizzlyHills();

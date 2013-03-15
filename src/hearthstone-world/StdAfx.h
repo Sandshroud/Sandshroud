@@ -135,8 +135,6 @@
 #include "MapManagerScript.h"
 #include "MapMgr.h"
 #include "DayWatcherThread.h"
-#include "WintergraspInternal.h"
-#include "Wintergrasp.h"
 #include "Player.h"
 #include "faction.h"
 #include "SpellNameHashes.h"

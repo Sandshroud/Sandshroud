@@ -394,7 +394,6 @@ void Player::Init()
 	for(uint32 i = 0; i < 21; i++)
 		m_WeaponSubClassDamagePct[i] = 1.0f;
 
-	WinterGrasp				= NULL;
 	watchedchannel			= NULL;
 	RequireAmmo				= true;
 	PreventRes				= false;
@@ -3867,9 +3866,6 @@ bool Player::CanFlyInCurrentZoneOrMap()
 
 	if(GetMapId() == 571)
 	{
-		if(WinterGrasp != NULL) // Since WG is set on entering zone, and only when active, this is all we need.
-			return false;
-
 		if(HasDummyAura(SPELL_HASH_COLD_WEATHER_FLYING) || HasSpell(54197))
 			return true;
 	}
@@ -4208,6 +4204,9 @@ void Player::RemoveFromWorld()
 
 	load_health = m_uint32Values[UNIT_FIELD_HEALTH];
 	load_mana = m_uint32Values[UNIT_FIELD_POWER1];
+
+	sHookInterface.OnPlayerChangeArea(this, 0, 0, m_AreaID);
+	CALL_INSTANCE_SCRIPT_EVENT( m_mapMgr, OnChangeArea )( this, 0, 0, m_AreaID );
 
 	m_mapMgr->GetStateManager().ClearWorldStates(this);
 
@@ -8986,35 +8985,7 @@ void Player::ForceAreaUpdate()
 	}
 
 	sHookInterface.OnPlayerChangeArea(this, m_zoneId, m_AreaID, oldareaid);
-
-	if(!sWorld.wg_enabled)
-		return;
-
-	// Todo: Move to Lacrimi
-	if(m_AreaID == WINTERGRASP || (m_areaDBC != NULL && m_areaDBC->ZoneId == WINTERGRASP))
-	{
-		if(WinterGrasp == NULL)
-		{
-			WinterGrasp = sWintergraspI.GetWintergrasp();
-			if(WinterGrasp != NULL)
-				WinterGrasp->OnAddPlayer(this);
-			else // Send clock for till battle.
-				sWintergraspI.SendInitWorldStates(this);
-		}
-	}
-	else
-	{
-		if(WinterGrasp != NULL)
-			WinterGrasp->OnRemovePlayer(this);
-
-		AreaTable *oldarea = dbcArea.LookupEntryForced(oldareaid);
-		if(oldareaid == WINTERGRASP || (oldarea && oldarea->ZoneId == WINTERGRASP))
-		{
-			WorldPacket data(SMSG_INIT_WORLD_STATES, 10); // Clear our Wintergrasp states.
-			data << uint32(571) << uint16(WINTERGRASP) << uint16(WINTERGRASP) << uint16(0);
-			GetSession()->SendPacket(&data);
-		}
-	}
+	CALL_INSTANCE_SCRIPT_EVENT( m_mapMgr, OnChangeArea )( this, m_zoneId, m_AreaID, oldareaid );
 }
 
 void Player::ZoneUpdate(uint32 ZoneId)

@@ -541,12 +541,6 @@ bool World::SetInitialWorldSettings()
 
 	ThreadPool.ExecuteTask("DayWatcherThread", new DayWatcherThread());
 
-	if(wg_enabled && sInstanceMgr.GetMapMgr(571))
-	{
-		sMaster.wintergrasp = true;
-		ThreadPool.ExecuteTask("WintergraspInternal", new WintergraspInternal());
-	}
-
 	if(Config.MainConfig.GetBoolDefault("Startup", "BackgroundLootLoading", true))
 	{
 		Log.Notice("World", "Background loot loading...");
@@ -1301,6 +1295,7 @@ void World::Rehash(bool load)
 	// Battlegrounds
 	// Wintergrasp
 	wg_enabled = Config.MainConfig.GetBoolDefault("Battlegrounds", "EnableWG", false);
+	ForceStart = ForceEnd = false;
 
 	// Alterac Valley
 	av_enabled = Config.MainConfig.GetBoolDefault("Battlegrounds", "EnableAV", true);

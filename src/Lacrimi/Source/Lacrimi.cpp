@@ -34,44 +34,14 @@ Lacrimi::~Lacrimi()
 
 bool Lacrimi::run()
 {
-	Log.Success("Lacrimi", "Lacrimi Engine Started");
-	Log.Success("","############################################################");
-	Log.Success("","# ##            #       ####### ####### ##    #    #    ## #");
-	Log.Success("","# ##           ###      ##      ##   ## ##   ###  ###   ## #");
-	Log.Success("","# ##          ## ##     ##      ##   ## ##   ###  ###   ## #");
-	Log.Success("","# ##         #######    ##      ####### ##  ## #### ##  ## #");
-	Log.Success("","# ##        ##     ##   ##      #####   ##  ## #### ##  ## #");
-	Log.Success("","# ##       ##       ##  ##      ##  ##  ## ##   ##   ## ## #");
-	Log.Success("","# ####### ##         ## ####### ##   ## ## ##   ##   ## ## #");
-	Log.Success("","# :::::::.::.........::.:::::::.::...::.::.::...::...::.:: #");
-	Log.Success("","############################################################");
-
-	// Load our configs
-#ifdef WIN32
-	if(LacrimiConfig.SetSource("configs/Lacrimi.conf", true))
-#else
-	if(LacrimiConfig.SetSource((char*)CONFDIR "/Lacrimi.conf", true))
-#endif
-		config = true;
-
-	// Load our DBs
-	if(_StartDB())
-		database = true;
-
-	dumpstats = GetConfigBool("StatDumper", "DumpStats", false);
-	if(dumpstats)
-	{
-		Log.Success("Lacrimi", "Stat Dumper Initialized");
-		strcpy(Filename, GetConfigString("StatDumper", "Filename", "stats.xml"));
-	}
-
+	Delay(400);
 	if(GetConfigBool("Features", "LuaEngine", true))
 	{
 		L_LuaEngineMgr = new LuaEngineMgr();
 		L_LuaEngineMgr->Startup();
-		Sleep(100);
+		Delay(100);
 		while(LuaEngineIsStarting)
-			Sleep(100);
+			Delay(100);
 	}
 
 	uint32 curTime = getMSTime();
@@ -220,6 +190,38 @@ int Lacrimi::GetConfigInt(char* configfamily, char* configoption, int intdefault
 // Use sMgr for Script Mgr.
 void Lacrimi::SetupScripts()
 {
+	Log.Success("Lacrimi", "Lacrimi Engine Started");
+	Log.Success("","############################################################");
+	Log.Success("","# ##            #       ####### ####### ##    #    #    ## #");
+	Log.Success("","# ##           ###      ##      ##   ## ##   ###  ###   ## #");
+	Log.Success("","# ##          ## ##     ##      ##   ## ##   ###  ###   ## #");
+	Log.Success("","# ##         #######    ##      ####### ##  ## #### ##  ## #");
+	Log.Success("","# ##        ##     ##   ##      #####   ##  ## #### ##  ## #");
+	Log.Success("","# ##       ##       ##  ##      ##  ##  ## ##   ##   ## ## #");
+	Log.Success("","# ####### ##         ## ####### ##   ## ## ##   ##   ## ## #");
+	Log.Success("","# :::::::.::.........::.:::::::.::...::.::.::...::...::.:: #");
+	Log.Success("","############################################################");
+
+	// Load our configs
+#ifdef WIN32
+	if(LacrimiConfig.SetSource("configs/Lacrimi.conf", true))
+#else
+	if(LacrimiConfig.SetSource((char*)CONFDIR "/Lacrimi.conf", true))
+#endif
+		config = true;
+
+	// Load our DBs
+	if(_StartDB())
+		database = true;
+
+	dumpstats = GetConfigBool("StatDumper", "DumpStats", false);
+	if(dumpstats)
+	{
+		Log.Success("Lacrimi", "Stat Dumper Initialized");
+		strcpy(Filename, GetConfigString("StatDumper", "Filename", "stats.xml"));
+	}
+
+	Log.Notice("Lacrimi", "C++ Loading scripts...");
 	SetupCityScripts();
 	SetupSpellScripts();
 	SetupCustomScripts();
@@ -302,6 +304,7 @@ void Lacrimi::SetupOutlandScripts()
 
 void Lacrimi::SetupNorthrendScripts()
 {
+	SetupWintergrasp();
 	SetupBoreanTundra();
 	SetupDragonblight();
 	SetupGrizzlyHills();

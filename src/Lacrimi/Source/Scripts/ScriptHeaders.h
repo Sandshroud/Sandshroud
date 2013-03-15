@@ -15,4 +15,7 @@
  */
 
 #include "Defines.h"
-#include "Level 0/Ebon Hold/Ebon_Hold.h"
+
+#include "Level 0\Ebon Hold\Ebon_Hold.h"
+
+#include "Level 0\Northrend\PvP\Wintergrasp.h"

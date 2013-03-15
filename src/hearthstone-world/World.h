@@ -660,6 +660,7 @@ public:
 
 	//Enable/Disable specific battlegrounds/arenas
 	bool wg_enabled;
+	bool ForceStart, ForceEnd;
 
 	bool av_enabled;
 	uint32 av_minplrs;

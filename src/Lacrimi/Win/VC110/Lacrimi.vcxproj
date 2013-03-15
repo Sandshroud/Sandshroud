@@ -309,6 +309,7 @@
     <ClCompile Include="..\..\Source\Scripts\Level 0\Northrend\Grizzly_Hills.cpp" />
     <ClCompile Include="..\..\Source\Scripts\Level 0\Northrend\Howling_Fjord.cpp" />
     <ClCompile Include="..\..\Source\Scripts\Level 0\Northrend\Icecrown.cpp" />
+    <ClCompile Include="..\..\Source\Scripts\Level 0\Northrend\PvP\Wintergrasp.cpp" />
     <ClCompile Include="..\..\Source\Scripts\Level 0\Northrend\Sholazar_Basin.cpp" />
     <ClCompile Include="..\..\Source\Scripts\Level 0\Northrend\Storm_Peaks.cpp" />
     <ClCompile Include="..\..\Source\Scripts\Level 0\Northrend\Zul_Drak.cpp" />
@@ -358,6 +359,7 @@
     <ClInclude Include="..\..\Source\Dependencies\Functions.h" />
     <ClInclude Include="..\..\Source\Scripts\Defines.h" />
     <ClInclude Include="..\..\Source\Scripts\Level 0\Ebon Hold\Ebon_Hold.h" />
+    <ClInclude Include="..\..\Source\Scripts\Level 0\Northrend\PvP\Wintergrasp.h" />
     <ClInclude Include="..\..\Source\Scripts\Level 2\Blackfathom Deeps\Blackfathom_Deeps.h" />
     <ClInclude Include="..\..\Source\Scripts\ScriptHeaders.h" />
     <ClInclude Include="..\..\Source\Setup\Setup.h" />

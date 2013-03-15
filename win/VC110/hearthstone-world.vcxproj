@@ -348,8 +348,6 @@
     <ClCompile Include="..\..\src\hearthstone-world\Level3.cpp" />
     <ClCompile Include="..\..\src\hearthstone-world\QuestCommands.cpp" />
     <ClCompile Include="..\..\src\hearthstone-world\RecallCommands.cpp" />
-    <ClCompile Include="..\..\src\hearthstone-world\Wintergrasp.cpp" />
-    <ClCompile Include="..\..\src\hearthstone-world\WintergraspInternal.cpp" />
     <ClCompile Include="..\..\src\hearthstone-world\WordFilter.cpp" />
     <ClCompile Include="..\..\src\hearthstone-world\LogonCommClient.cpp" />
     <ClCompile Include="..\..\src\hearthstone-world\LogonCommHandler.cpp" />
@@ -465,8 +463,6 @@
     <ClInclude Include="..\..\src\hearthstone-world\Channel.h" />
     <ClInclude Include="..\..\src\hearthstone-world\ChannelMgr.h" />
     <ClInclude Include="..\..\src\hearthstone-world\Chat.h" />
-    <ClInclude Include="..\..\src\hearthstone-world\Wintergrasp.h" />
-    <ClInclude Include="..\..\src\hearthstone-world\WintergraspInternal.h" />
     <ClInclude Include="..\..\src\hearthstone-world\WordFilter.h" />
     <ClInclude Include="..\..\src\hearthstone-world\LogonCommClient.h" />
     <ClInclude Include="..\..\src\hearthstone-world\LogonCommHandler.h" />

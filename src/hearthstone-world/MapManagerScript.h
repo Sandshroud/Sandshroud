@@ -57,6 +57,7 @@ public:
 	virtual void OnPlayerEnter( Player* pPlayer ) {};
 	virtual void OnAreaTrigger( Player* pPlayer, uint32 pAreaId ) {};
 	virtual void OnZoneChange( Player* pPlayer, uint32 pNewZone, uint32 pOldZone ) {};
+	virtual void OnChangeArea( Player* pPlayer, uint32 ZoneID, uint32 NewAreaID, uint32 OldAreaID ) {};
 
 	// Data get / set - idea taken from ScriptDev2
 	virtual void SetInstanceData( uint32 pType, uint32 pIndex, uint32 pData ) {};
