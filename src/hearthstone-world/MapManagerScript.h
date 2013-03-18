@@ -52,6 +52,13 @@ public:
 
 	// Player
 	virtual void OnPlayerDeath( Player* pVictim, Unit* pKiller ) {};
+	virtual bool OnPlayerRepopRequest(Player* plr) { return false; };
+	virtual void OnPlayerMount(Player* plr) {};
+	virtual void OnPlayerFlagDrop(Player* plr, GameObject* obj) {};
+	virtual void OnPlayerFlagStand(Player* plr, GameObject* obj) {};
+	virtual void OnPlayerKillPlayer(Player* plr, Unit* pVictim) {};
+	virtual void OnPlayerHonorKill(Player* plr) {};
+	virtual void OnPlayerLootGen(Player* plr, Corpse* pCorpse) {};
 
 	// Area and AreaTrigger
 	virtual void OnPlayerEnter( Player* pPlayer ) {};
@@ -72,6 +79,9 @@ public:
 
 	virtual void OnGameObjectPushToWorld( GameObject* pGameObject ) { AddGameObjectAI(pGameObject); };
 	virtual void OnGameObjectRemoveFromWorld( GameObject* pGameObject ) { RemoveGameObjectAI(pGameObject); };
+
+	// Specialties
+	virtual bool MapSupportsPlayerLoot() { return false; };
 
 public: // Functions for easy scripting
 

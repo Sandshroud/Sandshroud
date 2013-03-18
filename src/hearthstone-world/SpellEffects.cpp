@@ -3841,9 +3841,9 @@ void Spell::SpellEffectSkinPlayerCorpse(uint32 i)
 	if(m_caster == NULL || !m_caster->IsPlayer())
 		return;
 
-	if(playerTarget  != NULL && corpse == NULL )
+	if(playerTarget != NULL && corpse == NULL )
 	{
-		if(!playerTarget->m_bg || !playerTarget->isDead() || playerTarget->m_insigniaTaken)
+		if(!playerTarget->isDead() || playerTarget->m_insigniaTaken)
 			return;
 
 		// Set all the lootable stuff on the player. If he repops before we've looted, we'll set the flags
@@ -3855,8 +3855,7 @@ void Spell::SpellEffectSkinPlayerCorpse(uint32 i)
 
 		// and.. force him to the graveyard and repop him.
 		// this will also convert the corpse to bones.
-		Corpse* pCorpse = NULL;
-		pCorpse = playerTarget->RepopRequestedPlayer();
+		Corpse* pCorpse = playerTarget->RepopRequestedPlayer();
 
 		// sanity checks
 		if( pCorpse == NULL )
@@ -3880,7 +3879,8 @@ void Spell::SpellEffectSkinPlayerCorpse(uint32 i)
 		if( pCorpse != NULL )		// should never be null but /shrug
 			p_caster->SendLoot(pCorpse->GetGUID(), pCorpse->GetMapId(), LOOT_CORPSE);
 
-	}else if(corpse!= NULL)
+	}
+	else if(corpse!= NULL)
 	{
 		if(corpse->GetUInt32Value(CORPSE_FIELD_FLAGS) != 60)
 		{

@@ -3841,6 +3841,7 @@ void Aura::SpellAuraModInvisibility(bool apply)
 
 		if(TO_PLAYER(m_target)->m_bg != NULL && TO_PLAYER(m_target)->m_bgHasFlag)
 			TO_PLAYER(m_target)->m_bg->HookOnMount(TO_PLAYER(m_target));
+		CALL_INSTANCE_SCRIPT_EVENT( m_target->GetMapMgr(), OnPlayerMount )( TO_PLAYER(m_target) );
 	}
 
 	SetPositive();
@@ -6365,6 +6366,7 @@ void Aura::SpellAuraMounted(bool apply)
 
 		if(pPlayer->m_bg)
 			pPlayer->m_bg->HookOnMount(pPlayer);
+		CALL_INSTANCE_SCRIPT_EVENT( pPlayer->GetMapMgr(), OnPlayerMount )( pPlayer );
 
 		m_target->m_AuraInterface.RemoveAllAurasByInterruptFlagButSkip(AURA_INTERRUPT_ON_MOUNT, GetSpellId());
 

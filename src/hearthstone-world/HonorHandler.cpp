@@ -109,6 +109,7 @@ void HonorHandler::OnPlayerKilled( Player* pPlayer, Player* pVictim )
 					(*vtr)->m_killsToday++;
 					(*vtr)->m_killsLifetime++;
 					pPlayer->m_bg->HookOnHK(*vtr);
+					CALL_INSTANCE_SCRIPT_EVENT( pPlayer->GetMapMgr(), OnPlayerHonorKill )( pPlayer );
 					if(pVictim)
 					{
 						// Send PVP credit
@@ -145,6 +146,7 @@ void HonorHandler::OnPlayerKilled( Player* pPlayer, Player* pVictim )
 						if(gPlayer->m_bg)
 							gPlayer->m_bg->HookOnHK(gPlayer);
 
+						CALL_INSTANCE_SCRIPT_EVENT( pPlayer->GetMapMgr(), OnPlayerHonorKill )( pPlayer );
 						sHookInterface.OnHonorableKill(gPlayer, TO_PLAYER(pVictim));
 						AddHonorPointsToPlayer(gPlayer, GroupPoints);
 						if(pVictim)
@@ -186,7 +188,7 @@ void HonorHandler::OnPlayerKilled( Player* pPlayer, Player* pVictim )
 
 			if(pPlayer->m_bg)
 				pPlayer->m_bg->HookOnHK(pPlayer);
-
+			CALL_INSTANCE_SCRIPT_EVENT( pPlayer->GetMapMgr(), OnPlayerHonorKill )( pPlayer );
 			sHookInterface.OnHonorableKill(pPlayer, TO_PLAYER(pVictim));
 			if(pVictim)
 			{

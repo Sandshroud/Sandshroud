@@ -987,6 +987,7 @@ void GameObject::Use(Player *p)
 
 				if(!p->m_bgFlagIneligible)
 					p->m_bg->HookFlagStand(p, this);
+				CALL_INSTANCE_SCRIPT_EVENT( p->GetMapMgr(), OnPlayerFlagStand )( p, this );
 			}
 			else
 				sLog.outError("Gameobject Type FlagStand activated while the player is not in a battleground, entry %u", goinfo->ID);
@@ -1006,6 +1007,7 @@ void GameObject::Use(Player *p)
 					p->GetVehicle()->RemovePassenger( p );
 
 				p->m_bg->HookFlagDrop(p, this);
+				CALL_INSTANCE_SCRIPT_EVENT( p->GetMapMgr(), OnPlayerFlagDrop )( p, this );
 			}
 			else
 				sLog.outError("Gameobject Type Flag Drop activated while the player is not in a battleground, entry %u", goinfo->ID);

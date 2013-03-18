@@ -372,7 +372,7 @@ void Player::Init()
 	mAvengingWrath				= true;
 	m_bgFlagIneligible			= 0;
 	m_moltenFuryDamageIncreasePct = 0;
-	m_insigniaTaken				= false;
+	m_insigniaTaken				= true;
 	m_BeastMaster				= false;
 
 	m_wratings.clear();
@@ -5059,6 +5059,7 @@ void Player::ResurrectPlayer(Unit* pResurrector /* = NULLPLR */)
 void Player::KillPlayer()
 {
 	setDeathState(JUST_DIED);
+
 	// Battleground stuff
 	if(m_bg)
 		m_bg->HookOnPlayerDeath(TO_PLAYER(this));
@@ -5140,7 +5141,11 @@ Corpse* Player::CreateCorpse()
 	// are we going to bones straight away?
 	if(m_insigniaTaken)
 	{
-		m_insigniaTaken = false;   // for next time
+		if(ManagerCheck(m_mapMgr))
+			if(FunctionCall(m_mapMgr, MapSupportsPlayerLoot)())
+				m_insigniaTaken = false;   // for next time
+		if( m_bg != NULL && m_bg->SupportsPlayerLoot() )
+			m_insigniaTaken = false;   // for next time
 		pCorpse->SetUInt32Value(CORPSE_FIELD_FLAGS, 5);
 		pCorpse->SetUInt64Value(CORPSE_FIELD_OWNER, 0); // remove corpse owner association
 		//remove item association
@@ -5160,6 +5165,14 @@ Corpse* Player::CreateCorpse()
 		myCorpse = pCorpse;
 
 		// insignia stuff
+		if(ManagerCheck(m_mapMgr))
+		{
+			if(FunctionCall(m_mapMgr, MapSupportsPlayerLoot)())
+			{
+				if( !m_insigniaTaken )
+					pCorpse->SetFlag(CORPSE_FIELD_FLAGS, 60);
+			}
+		}
 		if( m_bg != NULL && m_bg->SupportsPlayerLoot() )
 		{
 			if( !m_insigniaTaken )
@@ -5248,6 +5261,11 @@ void Player::RepopAtGraveyard(float ox, float oy, float oz, uint32 mapid)
 	float closest_dist = 999999.0f;
 	float dist;
 
+	if ( ManagerCheck(m_mapMgr) )
+	{
+		if( FunctionCall(m_mapMgr, OnPlayerRepopRequest)(this) )
+			return;
+	}
 	if(m_bg && m_bg->HookHandleRepop(TO_PLAYER(this)))
 		return;
 
@@ -12391,15 +12409,13 @@ void Player::VampiricSpell(uint32 dmg, Unit* pTarget, SpellEntry *spellinfo)
 
 void Player::GenerateLoot(Corpse* pCorpse)
 {
-	if( m_bg == NULL )
-		return;
-
 	// default gold
 	pCorpse->ClearLoot();
 	pCorpse->m_loot.gold = 500;
 
 	if( m_bg != NULL )
 		m_bg->HookGenerateLoot(TO_PLAYER(this), pCorpse);
+	CALL_INSTANCE_SCRIPT_EVENT( m_mapMgr, OnPlayerLootGen )( this, pCorpse );
 }
 
 uint32 Player::GetMaxPersonalRating(bool Ignore2v2)

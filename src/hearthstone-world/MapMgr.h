@@ -56,7 +56,10 @@ typedef HM_NAMESPACE::hash_map<uint32, GameObject* > GameObjectSqlIdMap;
 #define MAX_VIEW_DISTANCE 38000
 #define MAX_TRANSPORTERS_PER_MAP 25
 #define RESERVE_EXPAND_SIZE 1024
-#define CALL_INSTANCE_SCRIPT_EVENT( Mgr, Func ) if ( Mgr != NULL && Mgr->GetMapScript() != NULL ) Mgr->GetMapScript()->Func
+
+#define FunctionCall(Mgr, Func) Mgr->GetMapScript()->Func
+#define ManagerCheck(Mgr) Mgr != NULL && Mgr->GetMapScript() != NULL
+#define CALL_INSTANCE_SCRIPT_EVENT( Mgr, Func ) if ( ManagerCheck(Mgr) ) FunctionCall(Mgr, Func)
 
 class SERVER_DECL MapMgr : public CellHandler <MapCell>, public EventableObject, public ThreadContext
 {

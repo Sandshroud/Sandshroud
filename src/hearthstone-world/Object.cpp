@@ -2653,6 +2653,7 @@ int32 Object::DealDamage(Unit* pVictim, uint32 damage, uint32 targetEvent, uint3
 		{
 			if( plr->m_bg != NULL )
 				plr->m_bg->HookOnPlayerKill( plr, pVictim );
+			CALL_INSTANCE_SCRIPT_EVENT( plr->GetMapMgr(), OnPlayerKillPlayer )( plr, pVictim );
 
 			if( pVictim->IsPlayer() )
 			{
@@ -2696,6 +2697,14 @@ int32 Object::DealDamage(Unit* pVictim, uint32 damage, uint32 targetEvent, uint3
 		if( pVictim->IsPlayer() )
 		{
 			// set skinning flag, this is the "remove insignia"
+			if(ManagerCheck(m_mapMgr))
+			{
+				if(FunctionCall(m_mapMgr, MapSupportsPlayerLoot)())
+				{
+					pVictim->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
+					TO_PLAYER(pVictim)->m_insigniaTaken = false;
+				}
+			}
 			if( TO_PLAYER(pVictim)->m_bg != NULL && TO_PLAYER(pVictim)->m_bg->SupportsPlayerLoot() )
 			{
 				pVictim->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);

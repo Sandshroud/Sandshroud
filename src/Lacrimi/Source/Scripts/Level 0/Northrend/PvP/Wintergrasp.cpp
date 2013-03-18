@@ -81,7 +81,7 @@ void WintergraspScript::OnUpdate(uint32 p_time)
 	}
 	else
 	{
-		float timeInHours = float(UNIXTIME-m_NextTime/60);
+		float timeInHours = float((m_NextTime-UNIXTIME)/60);
 		if(timeInHours < 0.7)
 		{
 			float timeInMinutes = floor((timeInHours*60));
@@ -125,7 +125,7 @@ void WintergraspScript::StartBattle()
 
 void WintergraspScript::DelayBattle()
 {
-	m_NextTime = UNIXTIME+3600;
+	m_NextTime = UNIXTIME+10800;
 }
 
 void WintergraspScript::UpdateWarZones()

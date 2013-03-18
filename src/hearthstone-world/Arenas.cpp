@@ -375,9 +375,6 @@ void Arena::OnStart()
 
 	// soundz!
 	PlaySoundToAll(SOUND_BATTLEGROUND_BEGIN);
-
-	sEventMgr.RemoveEvents(this, EVENT_ARENA_SHADOW_SIGHT);
-	sEventMgr.AddEvent(TO_CBATTLEGROUND(this), &CBattleground::HookOnShadowSight, EVENT_ARENA_SHADOW_SIGHT, 90000, 1,0);
 }
 
 void Arena::UpdatePlayerCounts()
