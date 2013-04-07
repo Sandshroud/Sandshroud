@@ -67,7 +67,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\VC\libVC90\zlib.lib"
+				OutputFile="..\..\VC\libVC90\zlib.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -135,7 +135,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\VC\libVC90\amd64\zlib.lib"
+				OutputFile="..\..\VC\libVC90\amd64\zlib.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -211,7 +211,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\VC\libVC90\zlib.lib"
+				OutputFile="..\..\VC\libVC90\zlib.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -283,7 +283,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\VC\libVC90\amd64\zlib.lib"
+				OutputFile="..\..\VC\libVC90\amd64\zlib.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -312,55 +312,55 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\zlib\adler32.c"
+				RelativePath=".\..\zlib\adler32.c"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\compress.c"
+				RelativePath=".\..\zlib\compress.c"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\crc32.c"
+				RelativePath=".\..\zlib\crc32.c"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\deflate.c"
+				RelativePath=".\..\zlib\deflate.c"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\example.c"
+				RelativePath=".\..\zlib\example.c"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\gzio.c"
+				RelativePath=".\..\zlib\gzio.c"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\infback.c"
+				RelativePath=".\..\zlib\infback.c"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\inffast.c"
+				RelativePath=".\..\zlib\inffast.c"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\inflate.c"
+				RelativePath=".\..\zlib\inflate.c"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\inftrees.c"
+				RelativePath=".\..\zlib\inftrees.c"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\trees.c"
+				RelativePath=".\..\zlib\trees.c"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\uncompr.c"
+				RelativePath=".\..\zlib\uncompr.c"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\zutil.c"
+				RelativePath=".\..\zlib\zutil.c"
 				>
 			</File>
 		</Filter>
@@ -370,43 +370,43 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\zlib\crc32.h"
+				RelativePath=".\..\zlib\crc32.h"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\deflate.h"
+				RelativePath=".\..\zlib\deflate.h"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\inffast.h"
+				RelativePath=".\..\zlib\inffast.h"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\inffixed.h"
+				RelativePath=".\..\zlib\inffixed.h"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\inflate.h"
+				RelativePath=".\..\zlib\inflate.h"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\inftrees.h"
+				RelativePath=".\..\zlib\inftrees.h"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\trees.h"
+				RelativePath=".\..\zlib\trees.h"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\zconf.h"
+				RelativePath=".\..\zlib\zconf.h"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\zlib.h"
+				RelativePath=".\..\zlib\zlib.h"
 				>
 			</File>
 			<File
-				RelativePath=".\zlib\zutil.h"
+				RelativePath=".\..\zlib\zutil.h"
 				>
 			</File>
 		</Filter>
