@@ -35,8 +35,9 @@
 #include <signal.h>
 #include <bitset>
 
+#include "zlib/zlib.h"
+
 #include "../hearthstone-shared/svn_revision.h"
-#include "../../dependencies/VC/include/zlib.h"
 #include "../hearthstone-shared/Common.h"
 #include "../hearthstone-shared/MersenneTwister.h"
 #include "../hearthstone-shared/WorldPacket.h"
@@ -45,15 +46,17 @@
 #include "../hearthstone-shared/ByteBuffer.h"
 #include "../hearthstone-shared/Config/ConfigEnv.h"
 #include "../hearthstone-shared/crc32.h"
-#include "../hearthstone-shared/Collision/LocationVector.h"
+#include "../hearthstone-shared/LocationVector.h"
 #include "../hearthstone-shared/hashmap.h"
 #include "../hearthstone-shared/hearthstoneConfig.h"
 #include "../hearthstone-shared/Collision/vmap/VMapManager2.h"
 #include "../hearthstone-shared/Collision/vmap/MapTree.h"
-#include "../hearthstone-shared/Pathfinding/Recast/Recast.h"
-#include "../hearthstone-shared/Pathfinding/Detour/DetourNavMesh.h"
-#include "../hearthstone-shared/Pathfinding/Detour/DetourNavMeshQuery.h"
-#include "../hearthstone-shared/Pathfinding/Detour/DetourNavMeshBuilder.h"
+
+#include "recast/Recast.h"
+#include "detour/DetourNavMesh.h"
+#include "detour/DetourNavMeshQuery.h"
+#include "detour/DetourNavMeshBuilder.h"
+
 #include "../hearthstone-shared/RC4Engine.h"
 #include "../hearthstone-shared/DataStorage/DatabaseEnv.h"
 #include "../hearthstone-shared/DataStorage/DBC/DBCStores.h"
@@ -198,5 +201,5 @@
 #endif
 
 extern "C" {
-#include "../../dependencies/VC/include/pcre.h"
+#include "../../dependencies/SRC/pcre/pcre.h"
 };

@@ -5,7 +5,7 @@
 #include "platform.h"
 #include "Crypto.h"
 #include "g3dmath.h"
-#include "../../../../dependencies/VC/include/zlib.h"
+#include "zlib/zlib.h"
 
 namespace G3D {
 	
