@@ -35,7 +35,7 @@
 #include <signal.h>
 #include <bitset>
 
-#include "zlib/zlib.h"
+#include <zlib/zlib.h>
 
 #include "../hearthstone-shared/svn_revision.h"
 #include "../hearthstone-shared/Common.h"
