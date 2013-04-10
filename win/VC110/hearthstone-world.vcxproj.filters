@@ -383,6 +383,27 @@
     <ClCompile Include="..\..\src\hearthstone-world\AI\AIWaypoints.cpp">
       <Filter>AI\Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\hearthstone-world\Vmap\BIH.cpp">
+      <Filter>Interserver\Vmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\hearthstone-world\Vmap\MapTree.cpp">
+      <Filter>Interserver\Vmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\hearthstone-world\Vmap\ModelInstance.cpp">
+      <Filter>Interserver\Vmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\hearthstone-world\Vmap\TileAssembler.cpp">
+      <Filter>Interserver\Vmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\hearthstone-world\Vmap\VMapFactory.cpp">
+      <Filter>Interserver\Vmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\hearthstone-world\Vmap\VMapManager2.cpp">
+      <Filter>Interserver\Vmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\hearthstone-world\Vmap\WorldModel.cpp">
+      <Filter>Interserver\Vmap</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\hearthstone-world\Const.h" />
@@ -671,6 +692,33 @@
     <ClInclude Include="..\..\src\hearthstone-world\AI\AI_Defines.h">
       <Filter>AI</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\BIH.h">
+      <Filter>Interserver\Vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\MapTree.h">
+      <Filter>Interserver\Vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\ModelInstance.h">
+      <Filter>Interserver\Vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\TileAssembler.h">
+      <Filter>Interserver\Vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\VMapDefinitions.h">
+      <Filter>Interserver\Vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\VMapFactory.h">
+      <Filter>Interserver\Vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\VMapManager2.h">
+      <Filter>Interserver\Vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\VMapTools.h">
+      <Filter>Interserver\Vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\WorldModel.h">
+      <Filter>Interserver\Vmap</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Brains">
@@ -762,6 +810,9 @@
     </Filter>
     <Filter Include="AI\Source">
       <UniqueIdentifier>{1ecd5364-9495-4f9c-9dc2-4adb00d934c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Interserver\Vmap">
+      <UniqueIdentifier>{b84f234a-fa03-4fdb-bfd1-c6efaf481ef8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

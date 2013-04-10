@@ -134,7 +134,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/NODEFAULTLIB:MSVCRT /LTCG %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>ws2_32.lib;libmysql.lib;libeay32.lib;dbghelp.lib;zlib.lib;pcre.lib;Mswsock.lib;recast.lib;detour.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;libmysql.lib;libeay32.lib;dbghelp.lib;zlib.lib;pcre.lib;Mswsock.lib;recast.lib;detour.lib;g3dlite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\..\dependencies\VC\libVC110;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -181,7 +181,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;libmysql.lib;libeay32.lib;dbghelp.lib;zlib.lib;pcre.lib;Mswsock.lib;recast.lib;detour.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;libmysql.lib;libeay32.lib;dbghelp.lib;zlib.lib;pcre.lib;Mswsock.lib;recast.lib;detour.lib;g3dlite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\..\dependencies\VC\libVC110;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -227,7 +227,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;libmysql.lib;libeay32.lib;dbghelp.lib;zlib.lib;pcre.lib;Mswsock.lib;recast.lib;detour.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;libmysql.lib;libeay32.lib;dbghelp.lib;zlib.lib;pcre.lib;Mswsock.lib;recast.lib;detour.lib;g3dlite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\..\dependencies\VC\libVC110\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -267,7 +267,7 @@
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <ProgramDataBaseFileName>$(IntDir)</ProgramDataBaseFileName>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level2</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
@@ -277,7 +277,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;libmysql.lib;libeay32.lib;dbghelp.lib;zlib.lib;pcre.lib;Mswsock.lib;recast.lib;detour.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;libmysql.lib;libeay32.lib;dbghelp.lib;zlib.lib;pcre.lib;Mswsock.lib;recast.lib;detour.lib;g3dlite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\..\dependencies\VC\libVC110\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -333,6 +333,13 @@
     <ClCompile Include="..\..\src\hearthstone-world\StrandOfTheAncients.cpp" />
     <ClCompile Include="..\..\src\hearthstone-world\Summons.cpp" />
     <ClCompile Include="..\..\src\hearthstone-world\Tracker.cpp" />
+    <ClCompile Include="..\..\src\hearthstone-world\Vmap\BIH.cpp" />
+    <ClCompile Include="..\..\src\hearthstone-world\Vmap\MapTree.cpp" />
+    <ClCompile Include="..\..\src\hearthstone-world\Vmap\ModelInstance.cpp" />
+    <ClCompile Include="..\..\src\hearthstone-world\Vmap\TileAssembler.cpp" />
+    <ClCompile Include="..\..\src\hearthstone-world\Vmap\VMapFactory.cpp" />
+    <ClCompile Include="..\..\src\hearthstone-world\Vmap\VMapManager2.cpp" />
+    <ClCompile Include="..\..\src\hearthstone-world\Vmap\WorldModel.cpp" />
     <ClCompile Include="..\..\src\hearthstone-world\WarnSystem.cpp" />
     <ClCompile Include="..\..\src\hearthstone-world\WarnSystem_Punishments.cpp" />
     <ClCompile Include="..\..\src\hearthstone-world\WarsongGulch.cpp" />
@@ -458,6 +465,15 @@
     <ClInclude Include="..\..\src\hearthstone-world\StrandOfTheAncients.h" />
     <ClInclude Include="..\..\src\hearthstone-world\Summons.h" />
     <ClInclude Include="..\..\src\hearthstone-world\Tracker.h" />
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\BIH.h" />
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\MapTree.h" />
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\ModelInstance.h" />
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\TileAssembler.h" />
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\VMapDefinitions.h" />
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\VMapFactory.h" />
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\VMapManager2.h" />
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\VMapTools.h" />
+    <ClInclude Include="..\..\src\hearthstone-world\Vmap\WorldModel.h" />
     <ClInclude Include="..\..\src\hearthstone-world\WarnSystem.h" />
     <ClInclude Include="..\..\src\hearthstone-world\WarsongGulch.h" />
     <ClInclude Include="..\..\src\hearthstone-world\Container.h" />
