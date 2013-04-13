@@ -880,7 +880,7 @@ void Any::serialize(TextOutput& to) const {
         debugAssert(m_data != NULL);
         if (! m_data->name.empty()) {
             // For arrays, leave no trailing space between the name and the paren
-            to.writeSymbol(format("%s(", m_data->name.c_str()));
+            to.writeSymbol(G3D_format("%s(", m_data->name.c_str()));
         } else {
             to.writeSymbol("(");
         }
@@ -1039,7 +1039,7 @@ void Any::deserialize(TextInput& ti, Token& token) {
             // Update the source information
             ensureData();
             m_data->source.filename += 
-                format(" [included from %s:%d(%d)]", ti.filename().c_str(), token.line(), token.character());
+                G3D_format(" [included from %s:%d(%d)]", ti.filename().c_str(), token.line(), token.character());
             
             ti.readSymbol(")");
 
@@ -1318,7 +1318,7 @@ void Any::verifySize(int low, int high) const {
     beforeRead();
     verifyType(ARRAY, TABLE);
     if (size() < low || size() > high) {
-        verify(false, format("Size must be between %d and %d", low, high));
+        verify(false, G3D_format("Size must be between %d and %d", low, high));
     }
 }
 
@@ -1327,7 +1327,7 @@ void Any::verifySize(int s) const {
     beforeRead();
     verifyType(ARRAY, TABLE);
     if (size() != s) {
-        verify(false, format("Size must be %d", s));
+        verify(false, G3D_format("Size must be %d", s));
     }
 }
 

@@ -88,7 +88,7 @@ std::string resolveFilename(const std::string& filename) {
     // Prepend the working directory.
     _getcwd(buffer, 1024);
 
-    return format("%s/%s", buffer, filename.c_str());
+    return G3D_format("%s/%s", buffer, filename.c_str());
 }
 
 bool zipfileExists(const std::string& filename) {
@@ -429,7 +429,7 @@ std::string generateFilenameBase(const std::string& prefix, const std::string& s
     std::string result;
     templat += "%03d" + suffix;
     do {
-        result = format(templat.c_str(), num);
+        result = G3D_format(templat.c_str(), num);
         ++num;
     } while (exist.contains(result));
 

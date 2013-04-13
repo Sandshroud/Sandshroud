@@ -191,13 +191,13 @@ inline double distance(double x, double y, double z) {
 
 //----------------------------------------------------------------------------
 
-/** @deprecated use G3D::min */
+/** @deprecated use G3D::G3D_min */
 inline int iMin(int x, int y) {
     return (x >= y) ? y : x;
 }
 
 //----------------------------------------------------------------------------
-/** @deprecated use G3D::min */
+/** @deprecated use G3D::G3D_min */
 inline int iMax(int x, int y) {
     return (x >= y) ? x : y;
 }

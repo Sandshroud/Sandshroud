@@ -58,9 +58,9 @@ void AABox::deserialize(class BinaryInput& b) {
 
 void AABox::split(const Vector3::Axis& axis, float location, AABox& low, AABox& high) const {
     // Low, medium, and high along the chosen axis
-    float L = G3D::min(location, lo[axis]);
-    float M = G3D::min(G3D::max(location, lo[axis]), hi[axis]);
-    float H = G3D::max(location, hi[axis]);
+    float L = G3D::G3D_min(location, lo[axis]);
+    float M = G3D::G3D_min(G3D::G3D_max(location, lo[axis]), hi[axis]);
+    float H = G3D::G3D_max(location, hi[axis]);
 
     // Copy over this box.
     high = low = *this;

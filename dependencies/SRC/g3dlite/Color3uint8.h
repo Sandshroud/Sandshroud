@@ -73,11 +73,11 @@ public:
     }
 
     Color3uint8 max(const Color3uint8 x) const {
-        return Color3uint8(G3D::max(r, x.r), G3D::max(g, x.g), G3D::max(b, x.b));
+        return Color3uint8(G3D::G3D_max(r, x.r), G3D::G3D_max(g, x.g), G3D::G3D_max(b, x.b));
     }
 
     Color3uint8 min(const Color3uint8 x) const {
-        return Color3uint8(G3D::min(r, x.r), G3D::min(g, x.g), G3D::min(b, x.b));
+        return Color3uint8(G3D::G3D_min(r, x.r), G3D::G3D_min(g, x.g), G3D::G3D_min(b, x.b));
     }
 
     /**

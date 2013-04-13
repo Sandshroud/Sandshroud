@@ -449,13 +449,13 @@ private:
         b.writeg3d_uint32(1);
     
         debugAssertM(b.size() < MTU, 
-                    format("This LightweightConduit is limited to messages of "
+                    G3D_format("This LightweightConduit is limited to messages of "
                            "%d bytes (Ethernet hardware limit; this is the "
                            "'UDP MTU')", maxMessageSize()));
 
         if (b.size() >= MTU) {
             throw LightweightConduit::PacketSizeException(
-                    format("This LightweightConduit is limited to messages of "
+                    G3D_format("This LightweightConduit is limited to messages of "
                            "%d bytes (Ethernet hardware limit; this is the "
                            "'UDP MTU')", maxMessageSize()),
                            b.size() - 4, // Don't count the type header

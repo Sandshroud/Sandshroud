@@ -51,11 +51,11 @@ public:
     Color4uint8(const class Color4& c);
 
     Color4uint8 max(const Color4uint8 x) const {
-        return Color4uint8(G3D::max(r, x.r), G3D::max(g, x.g), G3D::max(b, x.b), G3D::max(a, x.a));
+        return Color4uint8(G3D::G3D_max(r, x.r), G3D::G3D_max(g, x.g), G3D::G3D_max(b, x.b), G3D::G3D_max(a, x.a));
     }
 
     Color4uint8 min(const Color4uint8 x) const {
-        return Color4uint8(G3D::min(r, x.r), G3D::min(g, x.g), G3D::min(b, x.b), G3D::min(a, x.a));
+        return Color4uint8(G3D::G3D_min(r, x.r), G3D::G3D_min(g, x.g), G3D::G3D_min(b, x.b), G3D::G3D_min(a, x.a));
     }
 
     Color4uint8(const g3d_uint8 _r, const g3d_uint8 _g, const g3d_uint8 _b, const g3d_uint8 _a) : r(_r), g(_g), b(_b), a(_a) {}

@@ -22,10 +22,10 @@
 
 namespace G3D {
 
-std::string __cdecl format(const char* fmt,...) {
+std::string __cdecl G3D_format(const char* fmt,...) {
     va_list argList;
     va_start(argList,fmt);
-    std::string result = vformat(fmt, argList);
+    std::string result = G3D_vformat(fmt, argList);
     va_end(argList);
 
     return result;
@@ -35,7 +35,7 @@ std::string __cdecl format(const char* fmt,...) {
 // Both MSVC seems to use the non-standard vsnprintf
 // so we are using vscprintf to determine buffer size, however
 // only MSVC7 and up headers include vscprintf for some reason.
-std::string vformat(const char *fmt, va_list argPtr) {
+std::string G3D_vformat(const char *fmt, va_list argPtr) {
     // We draw the line at a 1MB string.
     const int maxSize = 1000000;
 
@@ -75,7 +75,7 @@ std::string vformat(const char *fmt, va_list argPtr) {
 
 #elif defined(_MSC_VER) && (_MSC_VER < 1300)
 
-std::string vformat(const char *fmt, va_list argPtr) {
+std::string G3D_vformat(const char *fmt, va_list argPtr) {
     // We draw the line at a 1MB string.
     const int maxSize = 1000000;
 
@@ -119,7 +119,7 @@ std::string vformat(const char *fmt, va_list argPtr) {
 #else
 
 // glibc 2.1 has been updated to the C99 standard
-std::string vformat(const char* fmt, va_list argPtr) {
+std::string G3D_vformat(const char* fmt, va_list argPtr) {
     // If the string is less than 161 characters,
     // allocate it on the stack because this saves
     // the malloc/free time.  The number 161 is chosen

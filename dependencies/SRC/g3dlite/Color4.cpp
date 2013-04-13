@@ -183,7 +183,7 @@ Color4& Color4::operator/= (float fScalar) {
 //----------------------------------------------------------------------------
 
 std::string Color4::toString() const {
-    return G3D::format("(%g, %g, %g, %g)", r, g, b, a);
+    return G3D::G3D_format("(%g, %g, %g, %g)", r, g, b, a);
 }
 
 //----------------------------------------------------------------------------

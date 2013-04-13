@@ -348,7 +348,7 @@ void Vector3::generateOrthonormalBasis (Vector3& rkU, Vector3& rkV,
 //----------------------------------------------------------------------------
 
 std::string Vector3::toString() const {
-    return G3D::format("(%g, %g, %g)", x, y, z);
+    return G3D::G3D_format("(%g, %g, %g)", x, y, z);
 }
 
 

@@ -46,7 +46,7 @@ std::string Matrix::toString(const std::string& name) const {
 	std::string s;
 
     if (name != "") {
-        s += format("%s = \n", name.c_str());
+        s += G3D_format("%s = \n", name.c_str());
     }
 
 	s += "[";
@@ -56,12 +56,12 @@ std::string Matrix::toString(const std::string& name) const {
 
 			if (::fabs(v) < 0.00001) {
 				// Don't print "negative zero"
-                s += format("% 10.04g", 0.0);
+                s += G3D_format("% 10.04g", 0.0);
 			} else if (v == iRound(v)) {
                 // Print integers nicely
-                s += format("% 10.04g", v);
+                s += G3D_format("% 10.04g", v);
             } else {
-                s += format("% 10.04f", v);
+                s += G3D_format("% 10.04f", v);
             }
 
             if (c < cols() - 1) {
@@ -915,7 +915,7 @@ Matrix Matrix::svdPseudoInverse(float tolerance) const {
 
 	if (tolerance < 0) {
 		// TODO: Should be eps(d[0]), which is the largest diagonal
-		tolerance = G3D::max(rows(), cols()) * 0.0001f;
+		tolerance = G3D::G3D_max(rows(), cols()) * 0.0001f;
 	}
 
 	Matrix X;
@@ -1350,7 +1350,7 @@ Matrix Matrix::partitionPseudoInverse() const {
 
 void Matrix::Impl::inverseInPlaceGaussJordan() {
     debugAssertM(R == C, 
-        format(
+        G3D_format(
         "Cannot perform Gauss-Jordan inverse on a non-square matrix."
         " (Argument was %dx%d)",
         R, C));
@@ -1603,7 +1603,7 @@ const char* Matrix::svdCore(float** U, int rows, int cols, float* D, float** V) 
             }
         }
 
-        anorm = max(anorm, fabs((double)D[i]) + fabs(rv1[i]));
+        anorm = G3D_max(anorm, fabs((double)D[i]) + fabs(rv1[i]));
     }
   
     // accumulate the right-hand transformation
