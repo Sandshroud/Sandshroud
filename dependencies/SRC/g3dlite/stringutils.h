@@ -52,7 +52,7 @@ inline int findLastSlash(const std::string& f, int start = -1) {
 
     int i = f.rfind('/', start);
     int j = f.rfind('\\', start);
-    return max(i, j);
+    return G3D_max(i, j);
 }
 
 /**

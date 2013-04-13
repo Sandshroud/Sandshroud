@@ -455,7 +455,7 @@ static const bool UNCOMP_FORMAT = false;
 
 #define DEFINE_TEXTUREFORMAT_METHOD(enumname, cmpnts, cmprssd, glf, glbf, lb, ab, rb, gb, bb, db, sb, hbpt, pbpt, gldf, opq, fp, code, cs) \
     const ImageFormat* ImageFormat::enumname() {                                                                                           \
-        static const ImageFormat format(cmpnts, cmprssd, glf, glbf, lb, ab, rb, gb, bb, db, sb, hbpt, pbpt, gldf, opq, fp, code, cs);      \
+        static const ImageFormat G3D_format(cmpnts, cmprssd, glf, glbf, lb, ab, rb, gb, bb, db, sb, hbpt, pbpt, gldf, opq, fp, code, cs);      \
     return &format; }
 
 DEFINE_TEXTUREFORMAT_METHOD(L8,         1, UNCOMP_FORMAT,   GL_LUMINANCE8,      GL_LUMINANCE,   8, 0, 0, 0, 0, 0, 0, 8, 8,  GL_UNSIGNED_BYTE, OPAQUE_FORMAT, INT_FORMAT, CODE_L8, COLOR_SPACE_NONE);

@@ -233,13 +233,13 @@ void NetworkDevice::addAdapter(const EthernetAdapter& a) {
 
 
 std::string NetworkDevice::formatIP(g3d_uint32 addr) {
-    return format("%3d.%3d.%3d.%3d", (addr >> 24) & 0xFF, (addr >> 16) & 0xFF,
+    return G3D_format("%3d.%3d.%3d.%3d", (addr >> 24) & 0xFF, (addr >> 16) & 0xFF,
            (addr >> 8) & 0xFF, addr & 0xFF);
 }
 
 
 std::string NetworkDevice::formatMAC(const g3d_uint8 MAC[6]) {
-    return format("%02x:%02x:%02x:%02x:%02x:%02x", MAC[0], MAC[1], MAC[2], MAC[3], MAC[4], MAC[5]);
+    return G3D_format("%02x:%02x:%02x:%02x:%02x:%02x", MAC[0], MAC[1], MAC[2], MAC[3], MAC[4], MAC[5]);
 }
 
 

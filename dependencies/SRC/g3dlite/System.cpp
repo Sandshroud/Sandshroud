@@ -772,7 +772,7 @@ void System::sleep(RealTime t) {
 
         if (remainingTime > minRealSleepTime * 2.5) {
             // Safe to use Sleep with a time... sleep for half the remaining time
-            sleepTime = max(remainingTime * 0.5, 0.0005);
+            sleepTime = G3D_max(remainingTime * 0.5, 0.0005);
         } else if (remainingTime > minRealSleepTime) {
             // Safe to use Sleep with a zero time;
             // causes the program to yield only
@@ -1342,7 +1342,7 @@ public:
 
             int total = totalMallocs;
 
-            return format("malloc performance: %5.1f%% <= %db, %5.1f%% <= %db, "
+            return G3D_format("malloc performance: %5.1f%% <= %db, %5.1f%% <= %db, "
                           "%5.1f%% <= %db, %5.1f%% > %db",
                           100.0 * mallocsFromTinyPool  / total,
                           BufferPool::tinyBufferSize,
@@ -1358,7 +1358,7 @@ public:
     }
 
     std::string status() const {
-        return format("preallocated shared buffers: %5d/%d x %db",
+        return G3D_format("preallocated shared buffers: %5d/%d x %db",
             maxTinyBuffers - tinyPoolSize, maxTinyBuffers, tinyBufferSize);
     }
 };
@@ -1674,7 +1674,7 @@ std::string System::currentDateString() {
     time_t t1;
     ::time(&t1);
     tm* t = localtime(&t1);
-    return format("%d-%02d-%02d", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday); 
+    return G3D_format("%d-%02d-%02d", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday); 
 }
 
 #ifdef _MSC_VER

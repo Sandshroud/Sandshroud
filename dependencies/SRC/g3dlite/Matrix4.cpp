@@ -516,7 +516,7 @@ void Matrix4::deserialize(class BinaryInput& b) {
 }
 
 std::string Matrix4::toString() const {
-    return G3D::format("[%g, %g, %g, %g; %g, %g, %g, %g; %g, %g, %g, %g; %g, %g, %g, %g]", 
+    return G3D::G3D_format("[%g, %g, %g, %g; %g, %g, %g, %g; %g, %g, %g, %g; %g, %g, %g, %g]", 
 			elt[0][0], elt[0][1], elt[0][2], elt[0][3],
 			elt[1][0], elt[1][1], elt[1][2], elt[1][3],
 			elt[2][0], elt[2][1], elt[2][2], elt[2][3],

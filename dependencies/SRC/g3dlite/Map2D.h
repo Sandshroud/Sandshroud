@@ -215,7 +215,7 @@ protected:
 
         case WrapMode::ERROR:
             alwaysAssertM(((g3d_uint32)x < w) && ((g3d_uint32)y < h), 
-                format("Index out of bounds: (%d, %d), w = %d, h = %d",
+                G3D_format("Index out of bounds: (%d, %d), w = %d, h = %d",
                 x, y, w, h));
 
             // intentionally fall through

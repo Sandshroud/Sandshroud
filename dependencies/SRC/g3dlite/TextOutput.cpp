@@ -383,7 +383,7 @@ void TextOutput::indentAppend(char c) {
 
 
 void TextOutput::vprintf(const char* formatString, va_list argPtr) {
-    std::string str = vformat(formatString, argPtr);
+    std::string str = G3D_vformat(formatString, argPtr);
 
     std::string clean;
     convertNewlines(str, clean);

@@ -1,0 +1,259 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\g3dlite\AABox.cpp" />
+    <ClCompile Include="..\g3dlite\Any.cpp" />
+    <ClCompile Include="..\g3dlite\AnyVal.cpp" />
+    <ClCompile Include="..\g3dlite\AreaMemoryManager.cpp" />
+    <ClCompile Include="..\g3dlite\BinaryFormat.cpp" />
+    <ClCompile Include="..\g3dlite\BinaryInput.cpp" />
+    <ClCompile Include="..\g3dlite\BinaryOutput.cpp" />
+    <ClCompile Include="..\g3dlite\Box.cpp" />
+    <ClCompile Include="..\g3dlite\Box2D.cpp" />
+    <ClCompile Include="..\g3dlite\BumpMapPreprocess.cpp" />
+    <ClCompile Include="..\g3dlite\Capsule.cpp" />
+    <ClCompile Include="..\g3dlite\CollisionDetection.cpp" />
+    <ClCompile Include="..\g3dlite\Color1.cpp" />
+    <ClCompile Include="..\g3dlite\Color1uint8.cpp" />
+    <ClCompile Include="..\g3dlite\Color3.cpp" />
+    <ClCompile Include="..\g3dlite\Color3uint8.cpp" />
+    <ClCompile Include="..\g3dlite\Color4.cpp" />
+    <ClCompile Include="..\g3dlite\Color4uint8.cpp" />
+    <ClCompile Include="..\g3dlite\Cone.cpp" />
+    <ClCompile Include="..\g3dlite\constants.cpp" />
+    <ClCompile Include="..\g3dlite\ConvexPolyhedron.cpp" />
+    <ClCompile Include="..\g3dlite\CoordinateFrame.cpp" />
+    <ClCompile Include="..\g3dlite\Crypto.cpp" />
+    <ClCompile Include="..\g3dlite\Crypto_md5.cpp" />
+    <ClCompile Include="..\g3dlite\Cylinder.cpp" />
+    <ClCompile Include="..\g3dlite\debugAssert.cpp" />
+    <ClCompile Include="..\g3dlite\FileSystem.cpp" />
+    <ClCompile Include="..\g3dlite\fileutils.cpp" />
+    <ClCompile Include="..\g3dlite\filter.cpp" />
+    <ClCompile Include="..\g3dlite\format.cpp" />
+    <ClCompile Include="..\g3dlite\g3dfnmatch.cpp" />
+    <ClCompile Include="..\g3dlite\g3dmath.cpp" />
+    <ClCompile Include="..\g3dlite\GCamera.cpp" />
+    <ClCompile Include="..\g3dlite\GLight.cpp" />
+    <ClCompile Include="..\g3dlite\GThread.cpp" />
+    <ClCompile Include="..\g3dlite\GUniqueID.cpp" />
+    <ClCompile Include="..\g3dlite\Intersect.cpp" />
+    <ClCompile Include="..\g3dlite\license.cpp" />
+    <ClCompile Include="..\g3dlite\Line.cpp" />
+    <ClCompile Include="..\g3dlite\LineSegment.cpp" />
+    <ClCompile Include="..\g3dlite\Log.cpp" />
+    <ClCompile Include="..\g3dlite\Matrix.cpp" />
+    <ClCompile Include="..\g3dlite\Matrix3.cpp" />
+    <ClCompile Include="..\g3dlite\Matrix4.cpp" />
+    <ClCompile Include="..\g3dlite\MemoryManager.cpp" />
+    <ClCompile Include="..\g3dlite\MeshAlg.cpp" />
+    <ClCompile Include="..\g3dlite\MeshAlgAdjacency.cpp" />
+    <ClCompile Include="..\g3dlite\MeshAlgWeld.cpp" />
+    <ClCompile Include="..\g3dlite\MeshBuilder.cpp" />
+    <ClCompile Include="..\g3dlite\NetAddress.cpp" />
+    <ClCompile Include="..\g3dlite\NetworkDevice.cpp" />
+    <ClCompile Include="..\g3dlite\PhysicsFrame.cpp" />
+    <ClCompile Include="..\g3dlite\PhysicsFrameSpline.cpp" />
+    <ClCompile Include="..\g3dlite\Plane.cpp" />
+    <ClCompile Include="..\g3dlite\PrecomputedRandom.cpp" />
+    <ClCompile Include="..\g3dlite\prompt.cpp" />
+    <ClCompile Include="..\g3dlite\Quat.cpp" />
+    <ClCompile Include="..\g3dlite\Random.cpp" />
+    <ClCompile Include="..\g3dlite\Ray.cpp" />
+    <ClCompile Include="..\g3dlite\Rect2D.cpp" />
+    <ClCompile Include="..\g3dlite\ReferenceCount.cpp" />
+    <ClCompile Include="..\g3dlite\RegistryUtil.cpp" />
+    <ClCompile Include="..\g3dlite\Sphere.cpp" />
+    <ClCompile Include="..\g3dlite\SplineBase.cpp" />
+    <ClCompile Include="..\g3dlite\stringutils.cpp" />
+    <ClCompile Include="..\g3dlite\System.cpp" />
+    <ClCompile Include="..\g3dlite\TextInput.cpp" />
+    <ClCompile Include="..\g3dlite\TextOutput.cpp" />
+    <ClCompile Include="..\g3dlite\ThreadSet.cpp" />
+    <ClCompile Include="..\g3dlite\Triangle.cpp" />
+    <ClCompile Include="..\g3dlite\uint128.cpp" />
+    <ClCompile Include="..\g3dlite\UprightFrame.cpp" />
+    <ClCompile Include="..\g3dlite\Vector2.cpp" />
+    <ClCompile Include="..\g3dlite\Vector2int16.cpp" />
+    <ClCompile Include="..\g3dlite\Vector3.cpp" />
+    <ClCompile Include="..\g3dlite\Vector3int16.cpp" />
+    <ClCompile Include="..\g3dlite\Vector3int32.cpp" />
+    <ClCompile Include="..\g3dlite\Vector4.cpp" />
+    <ClCompile Include="..\g3dlite\Vector4int8.cpp" />
+    <ClCompile Include="..\g3dlite\Welder.cpp" />
+    <ClCompile Include="..\g3dlite\WinMain.cpp" />
+    <ClCompile Include="..\g3dlite\XML.cpp" />
+    <ClCompile Include="..\g3dlite\vmap\BIH.cpp">
+      <Filter>vmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\g3dlite\vmap\MapTree.cpp">
+      <Filter>vmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\g3dlite\vmap\ModelInstance.cpp">
+      <Filter>vmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\g3dlite\vmap\TileAssembler.cpp">
+      <Filter>vmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\g3dlite\vmap\VMapFactory.cpp">
+      <Filter>vmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\g3dlite\vmap\VMapManager2.cpp">
+      <Filter>vmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\g3dlite\vmap\WorldModel.cpp">
+      <Filter>vmap</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\g3dlite\AABox.h" />
+    <ClInclude Include="..\g3dlite\Any.h" />
+    <ClInclude Include="..\g3dlite\AnyVal.h" />
+    <ClInclude Include="..\g3dlite\AreaMemoryManager.h" />
+    <ClInclude Include="..\g3dlite\Array.h" />
+    <ClInclude Include="..\g3dlite\AtomicInt32.h" />
+    <ClInclude Include="..\g3dlite\BinaryFormat.h" />
+    <ClInclude Include="..\g3dlite\BinaryInput.h" />
+    <ClInclude Include="..\g3dlite\BinaryOutput.h" />
+    <ClInclude Include="..\g3dlite\BoundsTrait.h" />
+    <ClInclude Include="..\g3dlite\Box.h" />
+    <ClInclude Include="..\g3dlite\Box2D.h" />
+    <ClInclude Include="..\g3dlite\BumpMapPreprocess.h" />
+    <ClInclude Include="..\g3dlite\Capsule.h" />
+    <ClInclude Include="..\g3dlite\CollisionDetection.h" />
+    <ClInclude Include="..\g3dlite\Color1.h" />
+    <ClInclude Include="..\g3dlite\Color1uint8.h" />
+    <ClInclude Include="..\g3dlite\Color3.h" />
+    <ClInclude Include="..\g3dlite\Color3uint8.h" />
+    <ClInclude Include="..\g3dlite\Color4.h" />
+    <ClInclude Include="..\g3dlite\Color4uint8.h" />
+    <ClInclude Include="..\g3dlite\Cone.h" />
+    <ClInclude Include="..\g3dlite\constants.h" />
+    <ClInclude Include="..\g3dlite\ConvexPolyhedron.h" />
+    <ClInclude Include="..\g3dlite\CoordinateFrame.h" />
+    <ClInclude Include="..\g3dlite\Crypto.h" />
+    <ClInclude Include="..\g3dlite\Cylinder.h" />
+    <ClInclude Include="..\g3dlite\debug.h" />
+    <ClInclude Include="..\g3dlite\debugAssert.h" />
+    <ClInclude Include="..\g3dlite\debugPrintf.h" />
+    <ClInclude Include="..\g3dlite\enumclass.h" />
+    <ClInclude Include="..\g3dlite\EqualsTrait.h" />
+    <ClInclude Include="..\g3dlite\FileSystem.h" />
+    <ClInclude Include="..\g3dlite\fileutils.h" />
+    <ClInclude Include="..\g3dlite\filter.h" />
+    <ClInclude Include="..\g3dlite\format.h" />
+    <ClInclude Include="..\g3dlite\G3D.h" />
+    <ClInclude Include="..\g3dlite\G3DAll.h" />
+    <ClInclude Include="..\g3dlite\g3dfnmatch.h" />
+    <ClInclude Include="..\g3dlite\G3DGameUnits.h" />
+    <ClInclude Include="..\g3dlite\g3dmath.h" />
+    <ClInclude Include="..\g3dlite\GCamera.h" />
+    <ClInclude Include="..\g3dlite\GLight.h" />
+    <ClInclude Include="..\g3dlite\GMutex.h" />
+    <ClInclude Include="..\g3dlite\GThread.h" />
+    <ClInclude Include="..\g3dlite\GUniqueID.h" />
+    <ClInclude Include="..\g3dlite\HashTrait.h" />
+    <ClInclude Include="..\g3dlite\Intersect.h" />
+    <ClInclude Include="..\g3dlite\KDTree.h" />
+    <ClInclude Include="..\g3dlite\Line.h" />
+    <ClInclude Include="..\g3dlite\LineSegment.h" />
+    <ClInclude Include="..\g3dlite\Log.h" />
+    <ClInclude Include="..\g3dlite\Map2D.h" />
+    <ClInclude Include="..\g3dlite\Matrix.h" />
+    <ClInclude Include="..\g3dlite\Matrix2.h" />
+    <ClInclude Include="..\g3dlite\Matrix3.h" />
+    <ClInclude Include="..\g3dlite\Matrix4.h" />
+    <ClInclude Include="..\g3dlite\MemoryManager.h" />
+    <ClInclude Include="..\g3dlite\MeshAlg.h" />
+    <ClInclude Include="..\g3dlite\MeshBuilder.h" />
+    <ClInclude Include="..\g3dlite\NetAddress.h" />
+    <ClInclude Include="..\g3dlite\netheaders.h" />
+    <ClInclude Include="..\g3dlite\NetworkDevice.h" />
+    <ClInclude Include="..\g3dlite\networkHelpers.h" />
+    <ClInclude Include="..\g3dlite\ParseError.h" />
+    <ClInclude Include="..\g3dlite\PhysicsFrame.h" />
+    <ClInclude Include="..\g3dlite\PhysicsFrameSpline.h" />
+    <ClInclude Include="..\g3dlite\Plane.h" />
+    <ClInclude Include="..\g3dlite\platform.h" />
+    <ClInclude Include="..\g3dlite\Pointer.h" />
+    <ClInclude Include="..\g3dlite\PointHashGrid.h" />
+    <ClInclude Include="..\g3dlite\PointKDTree.h" />
+    <ClInclude Include="..\g3dlite\PositionTrait.h" />
+    <ClInclude Include="..\g3dlite\PrecomputedRandom.h" />
+    <ClInclude Include="..\g3dlite\prompt.h" />
+    <ClInclude Include="..\g3dlite\Quat.h" />
+    <ClInclude Include="..\g3dlite\Queue.h" />
+    <ClInclude Include="..\g3dlite\Random.h" />
+    <ClInclude Include="..\g3dlite\Ray.h" />
+    <ClInclude Include="..\g3dlite\Rect2D.h" />
+    <ClInclude Include="..\g3dlite\ReferenceCount.h" />
+    <ClInclude Include="..\g3dlite\RegistryUtil.h" />
+    <ClInclude Include="..\g3dlite\serialize.h" />
+    <ClInclude Include="..\g3dlite\Set.h" />
+    <ClInclude Include="..\g3dlite\SmallArray.h" />
+    <ClInclude Include="..\g3dlite\Sphere.h" />
+    <ClInclude Include="..\g3dlite\Spline.h" />
+    <ClInclude Include="..\g3dlite\splinefunc.h" />
+    <ClInclude Include="..\g3dlite\stringutils.h" />
+    <ClInclude Include="..\g3dlite\System.h" />
+    <ClInclude Include="..\g3dlite\Table.h" />
+    <ClInclude Include="..\g3dlite\TextInput.h" />
+    <ClInclude Include="..\g3dlite\TextOutput.h" />
+    <ClInclude Include="..\g3dlite\ThreadSet.h" />
+    <ClInclude Include="..\g3dlite\Triangle.h" />
+    <ClInclude Include="..\g3dlite\uint128.h" />
+    <ClInclude Include="..\g3dlite\units.h" />
+    <ClInclude Include="..\g3dlite\UprightFrame.h" />
+    <ClInclude Include="..\g3dlite\Vector2.h" />
+    <ClInclude Include="..\g3dlite\Vector2int16.h" />
+    <ClInclude Include="..\g3dlite\Vector3.h" />
+    <ClInclude Include="..\g3dlite\Vector3int16.h" />
+    <ClInclude Include="..\g3dlite\Vector3int32.h" />
+    <ClInclude Include="..\g3dlite\Vector4.h" />
+    <ClInclude Include="..\g3dlite\Vector4int8.h" />
+    <ClInclude Include="..\g3dlite\vectorMath.h" />
+    <ClInclude Include="..\g3dlite\WeakCache.h" />
+    <ClInclude Include="..\g3dlite\Welder.h" />
+    <ClInclude Include="..\g3dlite\WrapMode.h" />
+    <ClInclude Include="..\g3dlite\XML.h" />
+    <ClInclude Include="..\g3dlite\vmap\BIH.h">
+      <Filter>vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\g3dlite\vmap\MapTree.h">
+      <Filter>vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\g3dlite\vmap\ModelInstance.h">
+      <Filter>vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\g3dlite\vmap\TileAssembler.h">
+      <Filter>vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\g3dlite\vmap\VMapDefinitions.h">
+      <Filter>vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\g3dlite\vmap\VMapFactory.h">
+      <Filter>vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\g3dlite\vmap\VMapManager2.h">
+      <Filter>vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\g3dlite\vmap\VMapTools.h">
+      <Filter>vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\g3dlite\vmap\WorldModel.h">
+      <Filter>vmap</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\g3dlite\g3dmath.inl" />
+    <None Include="..\g3dlite\Quat.inl" />
+    <None Include="..\g3dlite\Vector2.inl" />
+    <None Include="..\g3dlite\Vector3.inl" />
+    <None Include="..\g3dlite\Vector4.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="vmap">
+      <UniqueIdentifier>{dbd5835a-898d-4174-8606-b35621c6cbc7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -117,7 +117,7 @@ void G3D_Log::section(const std::string& s) {
 void __cdecl G3D_Log::printf(const char* fmt, ...) {
     va_list arg_list;
     va_start(arg_list, fmt);
-    print(vformat(fmt, arg_list));
+    print(G3D_vformat(fmt, arg_list));
     va_end(arg_list);
 }
 

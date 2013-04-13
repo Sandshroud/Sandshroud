@@ -373,18 +373,18 @@ void MeshAlg::computeAreaStatistics(
     area.sort();
     magnitude.sort();
 
-    minEdgeLength = max(0.0, magnitude[0]);
-    maxEdgeLength = max(0.0, magnitude.last());
-    medianEdgeLength = max(0.0, magnitude[magnitude.size() / 2]);
+    minEdgeLength = G3D_max(0.0, magnitude[0]);
+    maxEdgeLength = G3D_max(0.0, magnitude.last());
+    medianEdgeLength = G3D_max(0.0, magnitude[magnitude.size() / 2]);
     meanEdgeLength = 0;
     for (int i = 0; i < magnitude.size(); ++i) {
         meanEdgeLength += magnitude[i];
     }
     meanEdgeLength /= magnitude.size();
 
-    minFaceArea = max(0.0, area[0]);
-    maxFaceArea = max(0.0, area.last());
-    medianFaceArea = max(0.0, area[area.size() / 2]);
+    minFaceArea = G3D_max(0.0, area[0]);
+    maxFaceArea = G3D_max(0.0, area.last());
+    medianFaceArea = G3D_max(0.0, area[area.size() / 2]);
     meanFaceArea = 0;
     for (int i = 0; i < area.size(); ++i) {
         meanFaceArea += area[i];
@@ -393,8 +393,8 @@ void MeshAlg::computeAreaStatistics(
 
 
     // Make sure round-off hasn't pushed values less than zero
-    meanFaceArea   = max(0.0, meanFaceArea);
-    meanEdgeLength = max(0.0, meanEdgeLength);
+    meanFaceArea   = G3D_max(0.0, meanFaceArea);
+    meanEdgeLength = G3D_max(0.0, meanEdgeLength);
 }
 
 

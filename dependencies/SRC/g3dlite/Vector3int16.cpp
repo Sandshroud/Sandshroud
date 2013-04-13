@@ -43,7 +43,7 @@ void Vector3int16::deserialize(class BinaryInput& bi) {
 }
 
 std::string Vector3int16::toString() const {
-    return G3D::format("(%d, %d, %d)", x, y, z);
+    return G3D::G3D_format("(%d, %d, %d)", x, y, z);
 }
 
 }

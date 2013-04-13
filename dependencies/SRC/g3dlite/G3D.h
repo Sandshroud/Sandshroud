@@ -135,6 +135,14 @@ template<class T> struct HashTrait< G3D::ReferenceCountedPointer<T> > {
 #include "Pointer.h"
 #include "Matrix.h"
 #include "ImageFormat.h"
+#include "vmap/ModelInstance.h"
+#include "vmap/BIH.h"
+#include "vmap/WorldModel.h"
+#include "vmap/TileAssembler.h"
+#include "vmap/MapTree.h"
+#include "vmap/VMapFactory.h"
+#include "vmap/VMapManager2.h"
+#include "vmap/VMapDefinitions.h"
 
 #endif
 

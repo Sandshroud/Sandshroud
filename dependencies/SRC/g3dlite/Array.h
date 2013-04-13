@@ -154,7 +154,7 @@ private:
          alwaysAssertM(data, "Memory manager returned NULL: out of memory?");
 
          // Call the copy constructors
-         {const int N = G3D::min(oldNum, numAllocated);
+         {const int N = G3D::G3D_min(oldNum, numAllocated);
           const T* end = data + N;
           T* oldPtr = oldData;
           for (T* ptr = data; ptr < end; ++ptr, ++oldPtr) {
@@ -723,13 +723,13 @@ public:
     Performs bounds checks in debug mode
     */
    inline T& operator[](int n) {
-        debugAssertM((n >= 0) && (n < num), format("Array index out of bounds. n = %d, size() = %d", n, num));
+        debugAssertM((n >= 0) && (n < num), G3D_format("Array index out of bounds. n = %d, size() = %d", n, num));
         debugAssert(data!=NULL);
         return data[n];
    }
 
    inline T& operator[](unsigned int n) {
-        debugAssertM(n < (unsigned int)num, format("Array index out of bounds. n = %d, size() = %d", n, num));
+        debugAssertM(n < (unsigned int)num, G3D_format("Array index out of bounds. n = %d, size() = %d", n, num));
         return data[n];
    }
 

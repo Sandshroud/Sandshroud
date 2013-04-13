@@ -227,12 +227,12 @@ inline Vector3 Vector3::unitCross (const Vector3& rkVector) const {
 
 //----------------------------------------------------------------------------
 inline Vector3 Vector3::min(const Vector3 &v) const {
-    return Vector3(G3D::min(v.x, x), G3D::min(v.y, y), G3D::min(v.z, z));
+    return Vector3(G3D::G3D_min(v.x, x), G3D::G3D_min(v.y, y), G3D::G3D_min(v.z, z));
 }
 
 //----------------------------------------------------------------------------
 inline Vector3 Vector3::max(const Vector3 &v) const {
-    return Vector3(G3D::max(v.x, x), G3D::max(v.y, y), G3D::max(v.z, z));
+    return Vector3(G3D::G3D_max(v.x, x), G3D::G3D_max(v.y, y), G3D::G3D_max(v.z, z));
 }
 
 //----------------------------------------------------------------------------

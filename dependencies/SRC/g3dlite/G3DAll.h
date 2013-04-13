@@ -18,8 +18,8 @@
 #ifndef G3D_G3DALL_H
 #define G3D_G3DALL_H
 
+#include "platform.h"
 #include "G3D.h"
-#include "GLGLG3D.h"
 
 using namespace G3D;
 

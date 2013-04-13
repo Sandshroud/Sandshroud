@@ -179,7 +179,7 @@ float Vector2::unitize (float fTolerance) {
 //----------------------------------------------------------------------------
 
 std::string Vector2::toString() const {
-    return G3D::format("(%g, %g)", x, y);
+    return G3D::G3D_format("(%g, %g)", x, y);
 }
 
 // 2-char swizzles

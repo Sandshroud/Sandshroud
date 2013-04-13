@@ -90,15 +90,6 @@
 
 #include "g3dlite/G3D.h"
 
-#include "Vmap/ModelInstance.h"
-#include "Vmap/BIH.h"
-#include "Vmap/WorldModel.h"
-#include "Vmap/TileAssembler.h"
-#include "Vmap/MapTree.h"
-#include "Vmap/VMapFactory.h"
-#include "Vmap/VMapManager2.h"
-#include "Vmap/VMapDefinitions.h"
-
 #include "recast/Recast.h"
 #include "detour/DetourNavMesh.h"
 #include "detour/DetourNavMeshQuery.h"

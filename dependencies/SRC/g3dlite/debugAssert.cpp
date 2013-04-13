@@ -107,7 +107,7 @@ static void createErrorMessage(
         }
 
 		if (lastErr != 0) {
-	        le = G3D::format("Last Error (0x%08X): %s\r\n\r\n", lastErr, (LPCSTR)realLastErr);
+	        le = G3D::G3D_format("Last Error (0x%08X): %s\r\n\r\n", lastErr, (LPCSTR)realLastErr);
 		}
 
         // Get rid of the allocated memory from FormatMessage.
@@ -125,7 +125,7 @@ static void createErrorMessage(
 
     // Build the message.
     outMessage =
-        G3D::format("%s%s%sExpression: %s%s%s:%d%s%s%s", 
+        G3D::G3D_format("%s%s%sExpression: %s%s%s:%d%s%s%s", 
                  message.c_str(), newline, newline, expression, newline, 
                  filename, lineNumber, newline, newline, le.c_str());
 }
@@ -353,7 +353,7 @@ std::string __cdecl debugPrint(const std::string& s) {
 std::string __cdecl debugPrintf(const char* fmt ...) {
     va_list argList;
     va_start(argList, fmt);
-    std::string s = G3D::vformat(fmt, argList);
+    std::string s = G3D::G3D_vformat(fmt, argList);
     va_end(argList);
 
     return debugPrint(s);
@@ -376,7 +376,7 @@ std::string consolePrint(const std::string& s) {
 std::string __cdecl consolePrintf(const char* fmt ...) {
     va_list argList;
     va_start(argList, fmt);
-    std::string s = G3D::vformat(fmt, argList);
+    std::string s = G3D::G3D_vformat(fmt, argList);
     va_end(argList);
 
     return consolePrint(s);
