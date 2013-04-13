@@ -317,12 +317,12 @@ Vector3 Color3::toHSV(const Color3& _rgb) {
 			&& (_rgb.g <= 1.0f && _rgb.g >= 0.0f)
 			&& (_rgb.b <= 1.0f && _rgb.b >= 0.0f), "R,G,B must be between [0,1]");
 	Vector3 hsv = Vector3::zero();
-	hsv.z = G3D::max(G3D::max(_rgb.r, _rgb.g), _rgb.b);
+	hsv.z = G3D::G3D_max(G3D::G3D_max(_rgb.r, _rgb.g), _rgb.b);
 	if (G3D::fuzzyEq(hsv.z, 0.0f)) {
 		return hsv;
 	}
 	
-    const float x =  G3D::min(G3D::min(_rgb.r, _rgb.g), _rgb.b);
+    const float x =  G3D::G3D_min(G3D::G3D_min(_rgb.r, _rgb.g), _rgb.b);
 	hsv.y = (hsv.z - x) / hsv.z; 
 
     if (G3D::fuzzyEq(hsv.y, 0.0f)) {
@@ -353,9 +353,9 @@ Color3 Color3::jetColorMap(const float& val) {
 	//truncated triangles where sides have slope 4
 	Color3 jet;
 
-	jet.r = G3D::min(4.0f * val - 1.5f,-4.0f * val + 4.5f) ;
-	jet.g = G3D::min(4.0f * val - 0.5f,-4.0f * val + 3.5f) ;
-	jet.b = G3D::min(4.0f * val + 0.5f,-4.0f * val + 2.5f) ;
+	jet.r = G3D::G3D_min(4.0f * val - 1.5f,-4.0f * val + 4.5f) ;
+	jet.g = G3D::G3D_min(4.0f * val - 0.5f,-4.0f * val + 3.5f) ;
+	jet.b = G3D::G3D_min(4.0f * val + 0.5f,-4.0f * val + 2.5f) ;
 
 
 	jet.r = G3D::clamp(jet.r, 0.0f, 1.0f);
@@ -370,7 +370,7 @@ Color3 Color3::jetColorMap(const float& val) {
 
 
 std::string Color3::toString() const {
-    return G3D::format("(%g, %g, %g)", r, g, b);
+    return G3D::G3D_format("(%g, %g, %g)", r, g, b);
 }
 
 //----------------------------------------------------------------------------

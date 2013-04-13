@@ -18,17 +18,17 @@
 namespace G3D {
 
 
-MD5Hash::MD5Hash(class BinaryInput& b) {
+G3D_MD5Hash::G3D_MD5Hash(class BinaryInput& b) {
     deserialize(b);
 }
 
 
-void MD5Hash::deserialize(class BinaryInput& b) {
+void G3D_MD5Hash::deserialize(class BinaryInput& b) {
     b.readBytes(value, 16);
 }
 
 
-void MD5Hash::serialize(class BinaryOutput& b) const {
+void G3D_MD5Hash::serialize(class BinaryOutput& b) const {
     b.writeBytes(value, 16);
 }
 
@@ -62,12 +62,12 @@ void md5_finish(md5_state_t *pms, md5_byte_t digest[16]);
 
 
 
-MD5Hash Crypto::md5(const void* data, size_t n) {
+G3D_MD5Hash Crypto::md5(const void* data, size_t n) {
     md5_state_t state;
     md5_init(&state);
     md5_append(&state, (const g3d_uint8*)data, (int)n);
 
-    MD5Hash h;
+    G3D_MD5Hash h;
     md5_finish(&state, &(h[0]));
     return h;
 }

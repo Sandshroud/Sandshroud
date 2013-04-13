@@ -63,11 +63,11 @@ void GImage::encodePPM(
 
     // http://netpbm.sourceforge.net/doc/ppm.html
     if (m_channels == 3) {
-        std::string header = format("P6 %d %d 255 ", m_width, m_height);
+        std::string header = G3D_format("P6 %d %d 255 ", m_width, m_height);
         out.writeBytes(header.c_str(), header.size());
         out.writeBytes(this->pixel3(), m_width * m_height * 3);
     } else if (m_channels == 1) {
-        std::string header = format("P5 %d %d 255 ", m_width, m_height);
+        std::string header = G3D_format("P5 %d %d 255 ", m_width, m_height);
         out.writeBytes(header.c_str(), header.size());
         out.writeBytes(this->pixel1(), m_width * m_height);
     } else {

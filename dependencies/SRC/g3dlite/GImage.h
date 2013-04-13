@@ -150,12 +150,12 @@ public:
     }
 
     inline const Color1uint8* pixel1() const {
-        debugAssertM(m_channels == 1, format("Tried to call GImage::pixel1 on an image with %d channels", m_channels));            
+        debugAssertM(m_channels == 1, G3D_format("Tried to call GImage::pixel1 on an image with %d channels", m_channels));            
         return (Color1uint8*)m_byte;
     }
 
     inline Color1uint8* pixel1() {
-        debugAssertM(m_channels == 1, format("Tried to call GImage::pixel1 on an image with %d channels", m_channels));            
+        debugAssertM(m_channels == 1, G3D_format("Tried to call GImage::pixel1 on an image with %d channels", m_channels));            
         return (Color1uint8*)m_byte;
     }
 
@@ -163,7 +163,7 @@ public:
         as Color4uint8.
      */
     inline const Color4uint8* pixel4() const {
-        debugAssertM(m_channels == 4, format("Tried to call GImage::pixel4 on an image with %d channels", m_channels));            
+        debugAssertM(m_channels == 4, G3D_format("Tried to call GImage::pixel4 on an image with %d channels", m_channels));            
         return (Color4uint8*)m_byte;
     }
 
@@ -176,7 +176,7 @@ public:
         as Color3uint8.
      */
     inline const Color3uint8* pixel3() const {
-         debugAssertM(m_channels == 3, format("Tried to call GImage::pixel3 on an image with %d channels", m_channels));            
+         debugAssertM(m_channels == 3, G3D_format("Tried to call GImage::pixel3 on an image with %d channels", m_channels));            
          return (Color3uint8*)m_byte;
     }
 

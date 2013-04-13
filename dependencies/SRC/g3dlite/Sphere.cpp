@@ -39,7 +39,7 @@ void Sphere::deserialize(class BinaryInput& b) {
 
 
 std::string Sphere::toString() const {
-    return format("Sphere(<%g, %g, %g>, %g)", 
+    return G3D_format("Sphere(<%g, %g, %g>, %g)", 
                   center.x, center.y, center.z, radius);
 }
 

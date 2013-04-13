@@ -63,7 +63,7 @@ void MeshBuilder::centerTriList() {
     computeBounds(vmin, vmax);
 
     Vector3 diagonal = vmax - vmin;
-    double scale = max(max(diagonal.x, diagonal.y), diagonal.z) / 2;
+    double scale = G3D_max(G3D_max(diagonal.x, diagonal.y), diagonal.z) / 2;
     debugAssert(scale > 0);
 
     Vector3 translation = vmin + diagonal / 2;

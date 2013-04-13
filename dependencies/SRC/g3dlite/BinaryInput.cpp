@@ -155,7 +155,7 @@ void BinaryInput::loadIntoMemory(g3d_int64 startPosition, g3d_int64 minLength) {
         debugAssert(file);
         int ret = fseek(file, (off_t)m_alreadyRead, SEEK_SET);
         debugAssert(ret == 0);
-        size_t toRead = (size_t)G3D::min(m_bufferLength, m_length - m_alreadyRead);
+        size_t toRead = (size_t)G3D::G3D_min(m_bufferLength, m_length - m_alreadyRead);
         ret = fread(m_buffer, 1, toRead, file);
         debugAssert(ret == toRead);
         fclose(file);
@@ -166,7 +166,7 @@ void BinaryInput::loadIntoMemory(g3d_int64 startPosition, g3d_int64 minLength) {
         debugAssert(file);
         int ret = fseeko(file, (off_t)m_alreadyRead, SEEK_SET);
         debugAssert(ret == 0);
-        size_t toRead = (size_t)G3D::min<g3d_int64>(m_bufferLength, m_length - m_alreadyRead);
+        size_t toRead = (size_t)G3D::G3D_min<g3d_int64>(m_bufferLength, m_length - m_alreadyRead);
         ret = fread(m_buffer, 1, toRead, file);
         debugAssert((size_t)ret == (size_t)toRead);
         fclose(file);
@@ -316,7 +316,7 @@ BinaryInput::BinaryInput(
     FILE* file = fopen(m_filename.c_str(), "rb");
 
     if (! file || (m_length == -1)) {
-        throw format("File not found: \"%s\"", m_filename.c_str());
+        throw G3D_format("File not found: \"%s\"", m_filename.c_str());
         return;
     }
 

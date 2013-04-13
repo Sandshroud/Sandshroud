@@ -249,8 +249,8 @@ protected:
             const Vector3& pLo = point[p]->bounds.low();
             const Vector3& pHi = point[p]->bounds.high();
             for (int a = 0; a < 3; ++a) {
-                lo[a] = G3D::min(lo[a], pLo[a]);
-                hi[a] = G3D::max(hi[a], pHi[a]);
+                lo[a] = G3D::G3D_min(lo[a], pLo[a]);
+                hi[a] = G3D::G3D_max(hi[a], pHi[a]);
             }
         }
 
@@ -437,7 +437,7 @@ protected:
             //			    splitAxis, splitLocation, lo.x, lo.y, lo.z, hi.x, hi.y, hi.z);
             
             debugAssertM(lo == splitBounds.low(),
-                         format("lo = %s, splitBounds.lo = %s",
+                         G3D_format("lo = %s, splitBounds.lo = %s",
                                 lo.toString().c_str(), splitBounds.low().toString().c_str()));
             debugAssert(hi == splitBounds.high());
             

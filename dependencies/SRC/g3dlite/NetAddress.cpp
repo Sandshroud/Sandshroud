@@ -153,12 +153,12 @@ bool NetAddress::ok() const {
 
 
 std::string NetAddress::ipString() const {
-    return format("%s", inet_ntoa(*(in_addr*)&(addr.sin_addr)));
+    return G3D_format("%s", inet_ntoa(*(in_addr*)&(addr.sin_addr)));
 }
 
 
 std::string NetAddress::toString() const {
-    return ipString() + format(":%d", ntohs(addr.sin_port));
+    return ipString() + G3D_format(":%d", ntohs(addr.sin_port));
 }
 
 }
