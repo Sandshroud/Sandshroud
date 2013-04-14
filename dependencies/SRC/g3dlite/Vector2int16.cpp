@@ -28,14 +28,14 @@ Vector2int16::Vector2int16(class BinaryInput& bi) {
 
 
 void Vector2int16::serialize(class BinaryOutput& bo) const {
-    bo.writeg3d_int16(x);
-    bo.writeg3d_int16(y);
+    bo.writeInt16(x);
+    bo.writeInt16(y);
 }
 
 
 void Vector2int16::deserialize(class BinaryInput& bi) {
-    x = bi.readg3d_int16();
-    y = bi.readg3d_int16();
+    x = bi.readInt16();
+    y = bi.readInt16();
 }
 
 

@@ -362,11 +362,11 @@ Matrix3 Vector3::cross() const {
 
 
 void serialize(const Vector3::Axis& a, class BinaryOutput& bo) {
-    bo.writeg3d_uint8((g3d_uint8)a);
+    bo.writeUInt8((g3d_uint8)a);
 }
 
 void deserialize(Vector3::Axis& a, class BinaryInput& bi) {
-    a = (Vector3::Axis)bi.readg3d_uint8();
+    a = (Vector3::Axis)bi.readUInt8();
 }
 
 //----------------------------------------------------------------------------

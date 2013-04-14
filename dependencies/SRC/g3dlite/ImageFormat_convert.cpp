@@ -577,7 +577,7 @@ static void rgb8_to_yuv420p(const Array<const void*>& srcBytes, int srcWidth, in
             dstY[yIndex] =     PIXEL_RGB8_TO_YUV_Y(src[srcPixelOffset2].r, src[srcPixelOffset2].g, src[srcPixelOffset2].b);
             dstY[yIndex + 1] = PIXEL_RGB8_TO_YUV_Y(src[srcPixelOffset3].r, src[srcPixelOffset3].g, src[srcPixelOffset3].b);
 
-            g3d_uint32 blendedPixel = blendPixels(src[srcPixelOffset0].asg3d_uint32(), src[srcPixelOffset2].asg3d_uint32());
+            g3d_uint32 blendedPixel = blendPixels(src[srcPixelOffset0].asUInt32(), src[srcPixelOffset2].asUInt32());
             Color3uint8 uvSrcColor = Color3uint8::fromARGB(blendedPixel);
 
             int uvIndex = y / 2 * srcWidth / 2 + x / 2;
@@ -602,7 +602,7 @@ static void rgb8_to_yuv422(const Array<const void*>& srcBytes, int srcWidth, int
             int srcIndex = y * srcWidth + x;
             int dstIndex = srcIndex * 2;
 
-            g3d_uint32 blendedPixel = blendPixels(src[srcIndex].asg3d_uint32(), src[srcIndex + 1].asg3d_uint32());
+            g3d_uint32 blendedPixel = blendPixels(src[srcIndex].asUInt32(), src[srcIndex + 1].asUInt32());
             Color3uint8 uvSrcColor = Color3uint8::fromARGB(blendedPixel);
 
             dst[dstIndex]     = PIXEL_RGB8_TO_YUV_Y(src[srcIndex].r, src[srcIndex].g, src[srcIndex].b);

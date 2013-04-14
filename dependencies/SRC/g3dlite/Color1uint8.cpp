@@ -26,12 +26,12 @@ Color1uint8::Color1uint8(class BinaryInput& bi) {
 
 
 void Color1uint8::serialize(class BinaryOutput& bo) const {
-    bo.writeg3d_uint8(value);
+    bo.writeUInt8(value);
 }
 
 
 void Color1uint8::deserialize(class BinaryInput& bi) {
-    value = bi.readg3d_uint8();
+    value = bi.readUInt8();
 }
 
 

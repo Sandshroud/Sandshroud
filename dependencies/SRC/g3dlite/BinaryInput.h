@@ -60,7 +60,7 @@ namespace G3D {
  Most classes define serialize/deserialize methods that use BinaryInput,
  BinaryOutput, TextInput, and TextOutput.  There are text serializer 
  functions for primitive types (e.g. int, std::string, float, double) but not 
- binary serializers-- you <B>must</b> call the BinaryInput::readg3d_int32 or
+ binary serializers-- you <B>must</b> call the BinaryInput::readInt32 or
  other appropriate function.  This is because it would be very hard to 
  debug the error sequence: <CODE>serialize(1.0, bo); ... float f; deserialize(f, bi);</CODE>
  in which a double is serialized and then deserialized as a float. 
@@ -218,7 +218,7 @@ public:
      */
     inline g3d_uint8 operator[](g3d_int64 n) {
         setPosition(n);
-        return readg3d_uint8();
+        return readUInt8();
     }
 
     /**
@@ -259,21 +259,21 @@ public:
         setPosition(0);
     }
 
-    inline g3d_int8 readg3d_int8() {
+    inline g3d_int8 readInt8() {
         prepareToRead(1);
         return m_buffer[m_pos++];
     }
 
     inline bool readBool8() {
-        return (readg3d_int8() != 0);
+        return (readInt8() != 0);
     }
 
-    inline g3d_uint8 readg3d_uint8() {
+    inline g3d_uint8 readUInt8() {
         prepareToRead(1);
         return ((g3d_uint8*)m_buffer)[m_pos++];
     }
 
-    g3d_uint16 inline readg3d_uint16() {
+    g3d_uint16 inline readUInt16() {
         prepareToRead(2);
 
         m_pos += 2;
@@ -295,12 +295,12 @@ public:
 
     }
 
-    inline g3d_int16 readg3d_int16() {
-        g3d_uint16 a = readg3d_uint16();
+    inline g3d_int16 readInt16() {
+        g3d_uint16 a = readUInt16();
         return *(g3d_int16*)&a;
     }
 
-    inline g3d_uint32 readg3d_uint32() {
+    inline g3d_uint32 readUInt32() {
         prepareToRead(4);
 
         m_pos += 4;
@@ -326,15 +326,15 @@ public:
     }
 
 
-    inline g3d_int32 readg3d_int32() {
-        g3d_uint32 a = readg3d_uint32();
+    inline g3d_int32 readInt32() {
+        g3d_uint32 a = readUInt32();
         return *(g3d_int32*)&a;
     }
 
-    g3d_uint64 readg3d_uint64();
+    g3d_uint64 readUInt64();
 
-    inline g3d_int64 readg3d_int64() {
-        g3d_uint64 a = readg3d_uint64();
+    inline g3d_int64 readInt64() {
+        g3d_uint64 a = readUInt64();
         return *(g3d_int64*)&a;
     }
 
@@ -343,7 +343,7 @@ public:
             g3d_uint32 a;
             float32 b;
         };
-        a = readg3d_uint32();
+        a = readUInt32();
         return b;
     }    
 
@@ -352,7 +352,7 @@ public:
             g3d_uint64 a;
             float64 b;
         };
-        a = readg3d_uint64();
+        a = readUInt64();
         return b;
     }
 
@@ -421,14 +421,14 @@ public:
     void read##ucase(Array<lcase>& out, g3d_int64 n);
 
     DECLARE_READER(Bool8,   bool)
-    DECLARE_READER(g3d_uint8,   g3d_uint8)
-    DECLARE_READER(g3d_int8,    g3d_int8)
-    DECLARE_READER(g3d_uint16,  g3d_uint16)
-    DECLARE_READER(g3d_int16,   g3d_int16)
-    DECLARE_READER(g3d_uint32,  g3d_uint32)
-    DECLARE_READER(g3d_int32,   g3d_int32)
-    DECLARE_READER(g3d_uint64,  g3d_uint64)
-    DECLARE_READER(g3d_int64,   g3d_int64)
+    DECLARE_READER(UInt8,   g3d_uint8)
+    DECLARE_READER(Int8,    g3d_int8)
+    DECLARE_READER(UInt16,  g3d_uint16)
+    DECLARE_READER(Int16,   g3d_int16)
+    DECLARE_READER(UInt32,  g3d_uint32)
+    DECLARE_READER(Int32,   g3d_int32)
+    DECLARE_READER(UInt64,  g3d_uint64)
+    DECLARE_READER(Int64,   g3d_int64)
     DECLARE_READER(Float32, float32)
     DECLARE_READER(Float64, float64)    
 #   undef DECLARE_READER

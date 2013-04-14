@@ -80,7 +80,7 @@ class BinaryOutput;
 
   \cite http://tfcduke.developpez.com/tutoriel/format/tga/fichiers/tga_specs.pdf
 
-  \sa Image3, Image3g3d_uint8, Image4, Image4g3d_uint8, Image1, Image1g3d_uint8, Texture, Map2D
+  \sa Image3, Image3uint8, Image4, Image4uint8, Image1, Image1uint8, Texture, Map2D
 
   */
 class GImage {
@@ -136,7 +136,7 @@ public:
 
     /** Returns a pointer to the underlying data, which is stored
         in row-major order without row padding.
-        e.g., <code>g3d_uint8* ptr = image.rawData<g3d_uint8>();
+        e.g., <code>uint8* ptr = image.rawData<uint8>();
     */
     template<typename Type>
     inline const Type* rawData() const {

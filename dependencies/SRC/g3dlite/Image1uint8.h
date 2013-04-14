@@ -1,5 +1,5 @@
 /**
-  @file Image1g3d_uint8.h
+  @file Image1uint8.h
 
   @maintainer Morgan McGuire, http://graphics.cs.williams.edu
 
@@ -7,8 +7,8 @@
   @edited  2007-01-31
 */
 
-#ifndef G3D_IMAGE1g3d_uint8_H
-#define G3D_IMAGE1g3d_uint8_H
+#ifndef G3D_IMAGE1UINT8_H
+#define G3D_IMAGE1UINT8_H
 
 #include "platform.h"
 #include "Map2D.h"
@@ -18,22 +18,22 @@
 
 namespace G3D {
 
-typedef ReferenceCountedPointer<class Image1g3d_uint8> Image1g3d_uint8Ref;
+typedef ReferenceCountedPointer<class Image1uint8> Image1uint8Ref;
 
 /**
  Compact storage for luminance 8-bit images.
 
  See also G3D::Image3, G3D::GImage
  */
-class Image1g3d_uint8 : public Map2D<Color1uint8, Color1> {
+class Image1uint8 : public Map2D<Color1uint8, Color1> {
 public:
 
-    typedef Image1g3d_uint8      Type;
-    typedef Image1g3d_uint8Ref   Ref;
+    typedef Image1uint8      Type;
+    typedef Image1uint8Ref   Ref;
 
 protected:
 
-    Image1g3d_uint8(int w, int h, WrapMode wrap);
+    Image1uint8(int w, int h, WrapMode wrap);
 
     void copyGImage(const class GImage& im);
     void copyArray(const Color1* src, int w, int h);
@@ -65,7 +65,7 @@ public:
     static Ref fromArray(const class Color4* ptr, int width, int height, WrapMode wrap = WrapMode::ERROR);
 
     static Ref fromImage1(const ReferenceCountedPointer<class Image1>& im);
-    static Ref fromImage3g3d_uint8(const ReferenceCountedPointer<class Image3g3d_uint8>& im);
+    static Ref fromImage3uint8(const ReferenceCountedPointer<class Image3uint8>& im);
 
     /** Loads from any of the file formats supported by G3D::GImage.  If there is an alpha channel on the input,
         it is stripped. */

@@ -29,18 +29,18 @@ Color4uint8::Color4uint8(class BinaryInput& bi) {
 
 
 void Color4uint8::serialize(class BinaryOutput& bo) const {
-    bo.writeg3d_uint8(r);
-    bo.writeg3d_uint8(g);
-    bo.writeg3d_uint8(b);
-    bo.writeg3d_uint8(a);
+    bo.writeUInt8(r);
+    bo.writeUInt8(g);
+    bo.writeUInt8(b);
+    bo.writeUInt8(a);
 }
 
 
 void Color4uint8::deserialize(class BinaryInput& bi) {
-    r = bi.readg3d_uint8();
-    g = bi.readg3d_uint8();
-    b = bi.readg3d_uint8();
-    a = bi.readg3d_uint8();
+    r = bi.readUInt8();
+    g = bi.readUInt8();
+    b = bi.readUInt8();
+    a = bi.readUInt8();
 }
 
 

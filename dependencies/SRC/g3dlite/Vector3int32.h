@@ -9,8 +9,8 @@
   All rights reserved.
  */
 
-#ifndef Vector3int32_H
-#define Vector3int32_H
+#ifndef VECTOR3INT32_H
+#define VECTOR3INT32_H
 
 #include "platform.h"
 #include "g3dmath.h"
@@ -20,7 +20,7 @@ namespace G3D {
 
 /**
  \ Vector3int32
- A Vector3 that packs its fields into g3d_uint32s.
+ A Vector3 that packs its fields into uint32s.
  */
 G3D_BEGIN_PACKED_CLASS(4)
 class Vector3int32 {
@@ -116,9 +116,9 @@ G3D_END_PACKED_CLASS(4)
 
 template <> struct HashTrait<G3D::Vector3int32> {
     static size_t hashCode(const G3D::Vector3int32& key) {
-        // Mask for the top bit of a g3d_uint32
+        // Mask for the top bit of a uint32
         const G3D::g3d_uint32 top = (1UL << 31);
-        // Mask for the bottom 10 bits of a g3d_uint32
+        // Mask for the bottom 10 bits of a uint32
         const G3D::g3d_uint32 bot = 0x000003FF;
         return static_cast<size_t>(((key.x & top) | ((key.y & top) >> 1) | ((key.z & top) >> 2)) | 
                                    (((key.x & bot) << 19) ^ ((key.y & bot) << 10) ^ (key.z & bot)));
