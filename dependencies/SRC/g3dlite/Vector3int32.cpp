@@ -38,16 +38,16 @@ Vector3int32::Vector3int32(class BinaryInput& bi) {
 
 
 void Vector3int32::serialize(class BinaryOutput& bo) const {
-    bo.writeg3d_int32(x);
-    bo.writeg3d_int32(y);
-    bo.writeg3d_int32(z);
+    bo.writeInt32(x);
+    bo.writeInt32(y);
+    bo.writeInt32(z);
 }
 
 
 void Vector3int32::deserialize(class BinaryInput& bi) {
-    x = bi.readg3d_int32();
-    y = bi.readg3d_int32();
-    z = bi.readg3d_int32();
+    x = bi.readInt32();
+    y = bi.readInt32();
+    z = bi.readInt32();
 }
 
 std::string Vector3int32::toString() const {

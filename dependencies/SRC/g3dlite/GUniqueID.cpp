@@ -12,12 +12,12 @@
 namespace G3D {
 
 void GUniqueID::serialize(BinaryOutput& b) const {
-    b.writeg3d_uint64(id);
+    b.writeUInt64(id);
 }
 
 
 void GUniqueID::deserialize(BinaryInput& b) {
-    id = b.readg3d_uint64();
+    id = b.readUInt64();
 }
 
 void GUniqueID::serialize(TextOutput& t) const {

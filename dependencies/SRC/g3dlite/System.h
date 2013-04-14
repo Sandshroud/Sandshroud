@@ -19,6 +19,9 @@
 #include "G3DGameUnits.h"
 #include "BinaryFormat.h"
 #include <string>
+#ifdef G3D_LINUX
+#   include <sys/socket.h>
+#endif
 
 #ifdef G3D_OSX
 #   include <CoreServices/CoreServices.h>
@@ -128,7 +131,7 @@ private:
 
 #ifdef G3D_OSX
     /** In Cycles/Second */
-    Sg3d_int32         m_OSXCPUSpeed;
+    SInt32         m_OSXCPUSpeed;
     double         m_secondsPerNS;
 #endif
 
@@ -477,7 +480,7 @@ public:
 		//When endCycleCount() is called, it converts the two into a difference
 		//of clock cycles
 		
-        return (g3d_uint64) UnsignedWideTog3d_uint64(UpTime());
+        return (g3d_uint64) UnsignedWideToUInt64(UpTime());
 		//return (g3d_uint64) mach_absolute_time();
     }
 
@@ -494,10 +497,10 @@ inline void System::endCycleCount(g3d_uint64& cycleCount) {
 #else
     AbsoluteTime end = UpTime();
     Nanoseconds diffNS =
-        AbsoluteDeltaToNanoseconds(end, g3d_uint64ToUnsignedWide(cycleCount));
+        AbsoluteDeltaToNanoseconds(end, UInt64ToUnsignedWide(cycleCount));
     cycleCount =
         (g3d_uint64) ((double) (instance().m_OSXCPUSpeed) *
-                  (double) UnsignedWideTog3d_uint64(diffNS) * instance().m_secondsPerNS);
+                  (double) UnsignedWideToUInt64(diffNS) * instance().m_secondsPerNS);
 #endif
 }
  */

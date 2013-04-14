@@ -131,7 +131,7 @@ public:
     ~BinaryOutput();
     
     /** Compresses the data in the buffer in place, 
-        preceeding it with a little-endian g3d_uint32 indicating 
+        preceeding it with a little-endian uint32 indicating 
         the uncompressed size.
 
         Call immediately before commit().
@@ -267,39 +267,39 @@ public:
     /**
      Writes a signed 8-bit integer to the current position.
      */
-    inline void writeg3d_int8(g3d_int8 i) {
+    inline void writeInt8(g3d_int8 i) {
         reserveBytes(1);
         m_buffer[m_pos] = *(g3d_uint8*)&i;
         m_pos++;
     }
 
     inline void writeBool8(bool b) {
-        writeg3d_int8(b ? 1 : 0);
+        writeInt8(b ? 1 : 0);
     }
 
-    inline void writeg3d_uint8(g3d_uint8 i) {
+    inline void writeUInt8(g3d_uint8 i) {
         reserveBytes(1);
         m_buffer[m_pos] = i;
         m_pos++;
     }
 
-    void writeg3d_uint16(g3d_uint16 u);
+    void writeUInt16(g3d_uint16 u);
 
-    inline void writeg3d_int16(g3d_int16 i) {
-        writeg3d_uint16(*(g3d_uint16*)&i);
+    inline void writeInt16(g3d_int16 i) {
+        writeUInt16(*(g3d_uint16*)&i);
     }
 
-    void writeg3d_uint32(g3d_uint32 u);
+    void writeUInt32(g3d_uint32 u);
 
-    inline void writeg3d_int32(g3d_int32 i) {
+    inline void writeInt32(g3d_int32 i) {
         debugAssert(m_beginEndBits == 0);
-        writeg3d_uint32(*(g3d_uint32*)&i);
+        writeUInt32(*(g3d_uint32*)&i);
     }
 
-    void writeg3d_uint64(g3d_uint64 u);
+    void writeUInt64(g3d_uint64 u);
 
-    inline void writeg3d_int64(g3d_int64 i) {
-        writeg3d_uint64(*(g3d_uint64*)&i);
+    inline void writeInt64(g3d_int64 i) {
+        writeUInt64(*(g3d_uint64*)&i);
     }
 
     inline void writeFloat32(float32 f) {
@@ -309,7 +309,7 @@ public:
             g3d_uint32 b;
         };
         a = f;
-        writeg3d_uint32(b);
+        writeUInt32(b);
     }
 
     inline void writeFloat64(float64 f) {
@@ -318,7 +318,7 @@ public:
             g3d_uint64 b;
         };
         a = f;
-        writeg3d_uint64(b);
+        writeUInt64(b);
     }
 
     /**
@@ -398,14 +398,14 @@ public:
     void write##ucase(const Array<lcase>& out, int n);
 
     DECLARE_WRITER(Bool8,   bool)
-    DECLARE_WRITER(g3d_uint8,   g3d_uint8)
-    DECLARE_WRITER(g3d_int8,    g3d_int8)
-    DECLARE_WRITER(g3d_uint16,  g3d_uint16)
-    DECLARE_WRITER(g3d_int16,   g3d_int16)
-    DECLARE_WRITER(g3d_uint32,  g3d_uint32)
-    DECLARE_WRITER(g3d_int32,   g3d_int32)
-    DECLARE_WRITER(g3d_uint64,  g3d_uint64)
-    DECLARE_WRITER(g3d_int64,   g3d_int64)
+    DECLARE_WRITER(UInt8,   g3d_uint8)
+    DECLARE_WRITER(Int8,    g3d_int8)
+    DECLARE_WRITER(UInt16,  g3d_uint16)
+    DECLARE_WRITER(Int16,   g3d_int16)
+    DECLARE_WRITER(UInt32,  g3d_uint32)
+    DECLARE_WRITER(Int32,   g3d_int32)
+    DECLARE_WRITER(UInt64,  g3d_uint64)
+    DECLARE_WRITER(Int64,   g3d_int64)
     DECLARE_WRITER(Float32, float32)
     DECLARE_WRITER(Float64, float64)    
 #   undef DECLARE_WRITER

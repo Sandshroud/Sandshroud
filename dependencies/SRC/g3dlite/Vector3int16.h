@@ -9,8 +9,8 @@
   All rights reserved.
  */
 
-#ifndef Vector3int16_H
-#define Vector3int16_H
+#ifndef VECTOR3INT16_H
+#define VECTOR3INT16_H
 
 #include "platform.h"
 #include "g3dmath.h"
@@ -27,7 +27,7 @@ namespace G3D {
 
 /**
  \class Vector3int16
- A Vector3 that packs its fields into g3d_uint16s.
+ A Vector3 that packs its fields into uint16s.
  */
 G3D_BEGIN_PACKED_CLASS(2)
 class Vector3int16 {

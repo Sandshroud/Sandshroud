@@ -16,6 +16,15 @@
 #include "RegistryUtil.h"
 #include "System.h"
 
+#ifdef __MINGW32__
+#  ifndef HKEY_PERFORMANCE_TEXT
+#    define HKEY_PERFORMANCE_TEXT ((HKEY)((LONG)0x80000050))
+#  endif
+#  ifndef HKEY_PERFORMANCE_NLSTEXT
+#    define HKEY_PERFORMANCE_NLSTEXT ((HKEY)((LONG)0x80000060))
+#  endif
+#endif
+
 namespace G3D {
 
 // static helpers
@@ -74,7 +83,7 @@ bool RegistryUtil::valueExists(const std::string& key, const std::string& value)
 }
 
 
-bool RegistryUtil::readg3d_int32(const std::string& key, const std::string& value, g3d_int32& data) {
+bool RegistryUtil::readInt32(const std::string& key, const std::string& value, g3d_int32& data) {
     size_t pos = key.find('\\', 0);
     if (pos == std::string::npos) {
         return false;
@@ -174,7 +183,7 @@ bool RegistryUtil::readString(const std::string& key, const std::string& value, 
     return (result == ERROR_SUCCESS);
 }
 
-bool RegistryUtil::writeg3d_int32(const std::string& key, const std::string& value, g3d_int32 data) {
+bool RegistryUtil::writeInt32(const std::string& key, const std::string& value, g3d_int32 data) {
     size_t pos = key.find('\\', 0);
     if (pos == std::string::npos) {
         return false;

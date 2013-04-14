@@ -487,7 +487,7 @@ void GCamera::serialize(BinaryOutput& bo) const {
     debugAssert(farPlaneZ() < 0.0f);
     bo.writeFloat32(farPlaneZ());
     m_cframe.serialize(bo);
-    bo.writeg3d_int8(m_direction);
+    bo.writeInt8(m_direction);
     m_pixelOffset.serialize(bo);
 }
 
@@ -499,7 +499,7 @@ void GCamera::deserialize(BinaryInput& bi) {
     m_farPlaneZ = bi.readFloat32();
     debugAssert(m_farPlaneZ < 0.0f);
     m_cframe.deserialize(bi);
-    m_direction = (FOVDirection)bi.readg3d_int8();
+    m_direction = (FOVDirection)bi.readInt8();
     m_pixelOffset.deserialize(bi);
 }
 

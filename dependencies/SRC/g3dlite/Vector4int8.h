@@ -12,8 +12,8 @@
   All rights reserved.
  */
 
-#ifndef G3D_Vector4int8_H
-#define G3D_Vector4int8_H
+#ifndef G3D_VECTOR4INT8_H
+#define G3D_VECTOR4INT8_H
 
 #include "platform.h"
 #include "g3dmath.h"
@@ -24,7 +24,7 @@ class Vector3;
 class Vector4;
 
 /**
- Homogeneous vector stored efficiently in four signed g3d_int8s.
+ Homogeneous vector stored efficiently in four signed int8s.
 
  */
 class Vector4int8 {
@@ -37,12 +37,12 @@ private:
 
   
     /** For fast operations, treat this packed data structure as 
-      an g3d_int32 */
-    inline g3d_uint32& asg3d_int32() {
+      an int32 */
+    inline g3d_uint32& asInt32() {
         return *reinterpret_cast<g3d_uint32*>(this);
     }
 
-    inline const g3d_uint32& asg3d_int32() const {
+    inline const g3d_uint32& asInt32() const {
         return *reinterpret_cast<const g3d_uint32*>(this);
     }
 
@@ -77,7 +77,7 @@ public:
     //
     // WARNING.  These member functions rely on
     // (1) Vector4int8 not having virtual functions
-    // (2) the data packed in a 4*sizeof(g3d_int8) memory block
+    // (2) the data packed in a 4*sizeof(int8) memory block
     inline g3d_int8& operator[] (int i) {
         debugAssert(i >= 0 && i <= 4);
         return ((g3d_int8*)this)[i];
@@ -90,12 +90,12 @@ public:
 
     // assignment and comparison
     Vector4int8& operator= (const Vector4int8& other) {
-        asg3d_int32() = other.asg3d_int32();
+        asInt32() = other.asInt32();
         return *this;
     }
 
     inline bool operator== (const Vector4int8& other) const {
-        return asg3d_int32() == other.asg3d_int32();
+        return asInt32() == other.asInt32();
     }
 
     inline bool operator!= (const Vector4int8& other) const {
@@ -103,7 +103,7 @@ public:
     }
 
     inline unsigned int hashCode() const {
-        return asg3d_int32();
+        return asInt32();
     }
 };
 

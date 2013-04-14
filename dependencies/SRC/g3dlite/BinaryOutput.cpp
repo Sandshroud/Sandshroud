@@ -22,6 +22,10 @@
 #    include <errno.h>
 #endif
 
+#ifdef __CYGWIN__
+#    include <errno.h>
+#endif
+
 // Largest memory buffer that the system will use for writing to
 // disk.  After this (or if the system runs out of memory)
 // chunks of the file will be dumped to disk.
@@ -53,14 +57,14 @@ void BinaryOutput::write##ucase(const Array<lcase>& out, int n) {\
 }
 
 
-IMPLEMENT_WRITER(g3d_uint8,   g3d_uint8)
-IMPLEMENT_WRITER(g3d_int8,    g3d_int8)
-IMPLEMENT_WRITER(g3d_uint16,  g3d_uint16)
-IMPLEMENT_WRITER(g3d_int16,   g3d_int16)
-IMPLEMENT_WRITER(g3d_uint32,  g3d_uint32)
-IMPLEMENT_WRITER(g3d_int32,   g3d_int32)
-IMPLEMENT_WRITER(g3d_uint64,  g3d_uint64)
-IMPLEMENT_WRITER(g3d_int64,   g3d_int64)
+IMPLEMENT_WRITER(UInt8,   g3d_uint8)
+IMPLEMENT_WRITER(Int8,    g3d_int8)
+IMPLEMENT_WRITER(UInt16,  g3d_uint16)
+IMPLEMENT_WRITER(Int16,   g3d_int16)
+IMPLEMENT_WRITER(UInt32,  g3d_uint32)
+IMPLEMENT_WRITER(Int32,   g3d_int32)
+IMPLEMENT_WRITER(UInt64,  g3d_uint64)
+IMPLEMENT_WRITER(Int64,   g3d_int64)
 IMPLEMENT_WRITER(Float32, float32)
 IMPLEMENT_WRITER(Float64, float64)    
 
@@ -80,8 +84,8 @@ void BinaryOutput::write##ucase(const lcase* out, int n) {\
 }
 
 IMPLEMENT_WRITER(Bool8,   bool)
-IMPLEMENT_WRITER(g3d_uint8,   g3d_uint8)
-IMPLEMENT_WRITER(g3d_int8,    g3d_int8)
+IMPLEMENT_WRITER(UInt8,   g3d_uint8)
+IMPLEMENT_WRITER(Int8,    g3d_int8)
 
 #undef IMPLEMENT_WRITER
 
@@ -98,12 +102,12 @@ void BinaryOutput::write##ucase(const lcase* out, int n) {\
 }
 
 
-IMPLEMENT_WRITER(g3d_uint16,  g3d_uint16)
-IMPLEMENT_WRITER(g3d_int16,   g3d_int16)
-IMPLEMENT_WRITER(g3d_uint32,  g3d_uint32)
-IMPLEMENT_WRITER(g3d_int32,   g3d_int32)
-IMPLEMENT_WRITER(g3d_uint64,  g3d_uint64)
-IMPLEMENT_WRITER(g3d_int64,   g3d_int64)
+IMPLEMENT_WRITER(UInt16,  g3d_uint16)
+IMPLEMENT_WRITER(Int16,   g3d_int16)
+IMPLEMENT_WRITER(UInt32,  g3d_uint32)
+IMPLEMENT_WRITER(Int32,   g3d_int32)
+IMPLEMENT_WRITER(UInt64,  g3d_uint64)
+IMPLEMENT_WRITER(Int64,   g3d_int64)
 IMPLEMENT_WRITER(Float32, float32)
 IMPLEMENT_WRITER(Float64, float64)    
 
@@ -363,7 +367,7 @@ void BinaryOutput::commit(
 }
 
 
-void BinaryOutput::writeg3d_uint16(g3d_uint16 u) {
+void BinaryOutput::writeUInt16(g3d_uint16 u) {
     reserveBytes(2);
 
     g3d_uint8* convert = (g3d_uint8*)&u;
@@ -379,7 +383,7 @@ void BinaryOutput::writeg3d_uint16(g3d_uint16 u) {
 }
 
 
-void BinaryOutput::writeg3d_uint32(g3d_uint32 u) {
+void BinaryOutput::writeUInt32(g3d_uint32 u) {
     reserveBytes(4);
 
     g3d_uint8* convert = (g3d_uint8*)&u;
@@ -399,7 +403,7 @@ void BinaryOutput::writeg3d_uint32(g3d_uint32 u) {
 }
 
 
-void BinaryOutput::writeg3d_uint64(g3d_uint64 u) {
+void BinaryOutput::writeUInt64(g3d_uint64 u) {
     reserveBytes(8);
 
     g3d_uint8* convert = (g3d_uint8*)&u;
@@ -442,13 +446,13 @@ void BinaryOutput::writeStringEven(const char* s) {
 
     // Pad with another NULL
     if ((len % 2) == 1) {
-        writeg3d_uint8(0);
+        writeUInt8(0);
     }
 }
 
 
 void BinaryOutput::writeString32(const char* s) {
-    writeg3d_uint32(strlen(s) + 1);
+    writeUInt32(strlen(s) + 1);
     writeString(s);
 }
 
@@ -509,7 +513,7 @@ void BinaryOutput::writeBits(g3d_uint32 value, int numBits) {
 
         if (m_bitPos > 7) {
             // We've reached the end of this byte
-            writeg3d_uint8(m_bitString);
+            writeUInt8(m_bitString);
             m_bitString = 0x00;
             m_bitPos = 0;
         }
@@ -520,7 +524,7 @@ void BinaryOutput::writeBits(g3d_uint32 value, int numBits) {
 void BinaryOutput::endBits() {
     debugAssertM(m_beginEndBits == 1, "Not in beginBits...endBits");
     if (m_bitPos > 0) {
-        writeg3d_uint8(m_bitString);
+        writeUInt8(m_bitString);
     }
     m_bitString = 0;
     m_bitPos = 0;

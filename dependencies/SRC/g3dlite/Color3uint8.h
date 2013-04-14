@@ -81,10 +81,10 @@ public:
     }
 
     /**
-     Returns the color packed into a g3d_uint32
+     Returns the color packed into a uint32
      (the upper byte is 0xFF)
      */
-    g3d_uint32 asg3d_uint32() const {
+    g3d_uint32 asUInt32() const {
         return (0xFF << 24) + ((g3d_uint32)r << 16) + ((g3d_uint32)g << 8) + b;
     }
 
@@ -96,7 +96,7 @@ public:
     //
     // WARNING.  These member functions rely on
     // (1) Color3 not having virtual functions
-    // (2) the data packed in a 3*sizeof(g3d_uint8) memory block
+    // (2) the data packed in a 3*sizeof(uint8) memory block
     g3d_uint8& operator[] (int i) const {
         debugAssert((unsigned int)i < 3);
         return ((g3d_uint8*)this)[i];

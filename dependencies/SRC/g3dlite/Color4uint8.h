@@ -10,8 +10,8 @@
   All rights reserved.
  */
 
-#ifndef Color4uint8_H
-#define Color4uint8_H
+#ifndef COLOR4UINT8_H
+#define COLOR4UINT8_H
 
 #include "g3dmath.h"
 #include "platform.h"
@@ -73,7 +73,7 @@ public:
         return c;
     }
 
-    inline g3d_uint32 asg3d_uint32() const {
+    inline g3d_uint32 asUInt32() const {
         return ((g3d_uint32)a << 24) + ((g3d_uint32)r << 16) + ((g3d_uint32)g << 8) + b;
     }
 
@@ -81,7 +81,7 @@ public:
     //
     // WARNING.  These member functions rely on
     // (1) Color4uint8 not having virtual functions
-    // (2) the data packed in a 3*sizeof(g3d_uint8) memory block
+    // (2) the data packed in a 3*sizeof(uint8) memory block
     g3d_uint8& operator[] (int i) const {
         return ((g3d_uint8*)this)[i];
     }

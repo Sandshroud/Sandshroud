@@ -41,17 +41,17 @@ Vector4int8::Vector4int8(class BinaryInput& b) {
 
 void Vector4int8::serialize(class BinaryOutput& b) const {
     // Intentionally write individual bytes to avoid endian issues
-    b.writeg3d_int8(x);
-    b.writeg3d_int8(y);
-    b.writeg3d_int8(z);
-    b.writeg3d_int8(w);
+    b.writeInt8(x);
+    b.writeInt8(y);
+    b.writeInt8(z);
+    b.writeInt8(w);
 }
 
 void Vector4int8::deserialize(class BinaryInput& b) {
-    x = b.readg3d_int8();
-    y = b.readg3d_int8();
-    z = b.readg3d_int8();
-    w = b.readg3d_int8();
+    x = b.readInt8();
+    y = b.readInt8();
+    z = b.readInt8();
+    w = b.readInt8();
 }
 
 } // namespace G3D

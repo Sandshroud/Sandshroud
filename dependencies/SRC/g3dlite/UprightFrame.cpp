@@ -95,11 +95,11 @@ void UprightFrame::deserialize(class BinaryInput& b) {
 void UprightSpline::serialize(class BinaryOutput& b) const {
     b.writeBool8(cyclic);
 
-    b.writeg3d_int32(control.size());
+    b.writeInt32(control.size());
     for (int i = 0; i < control.size(); ++i) {
         control[i].serialize(b);
     }
-    b.writeg3d_int32(time.size());
+    b.writeInt32(time.size());
     for (int i = 0; i < time.size(); ++i) {
         b.writeFloat32(time[i]);
     }
@@ -109,13 +109,13 @@ void UprightSpline::serialize(class BinaryOutput& b) const {
 void UprightSpline::deserialize(class BinaryInput& b) {
     cyclic = b.readBool8();
 
-    control.resize(b.readg3d_int32());
+    control.resize(b.readInt32());
     for (int i = 0; i < control.size(); ++i) {
         control[i].deserialize(b);
     }
 
     if (b.hasMore()) {
-        time.resize(b.readg3d_int32());
+        time.resize(b.readInt32());
         for (int i = 0; i < time.size(); ++i) {
             time[i] = b.readFloat32();
         }
