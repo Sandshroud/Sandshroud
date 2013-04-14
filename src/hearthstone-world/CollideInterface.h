@@ -28,6 +28,8 @@ public:
 	bool IsIncity(uint32 mapid, float x, float y, float z);
 	uint32 GetVmapAreaFlags(uint32 mapId, float x, float y, float z);
 	float GetHeight(uint32 mapId, float x, float y, float z);
+
+	void LoadGameobjectModel(uint32 SQLID, uint32 mapId, uint32 displayID, float scale, float posX, float posY, float posZ, float orientation, int32 phasemask);
 };
 
 extern SERVER_DECL CCollideInterface CollideInterface;

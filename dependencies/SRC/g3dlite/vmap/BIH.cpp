@@ -2,19 +2,18 @@
  * Demonstrike Core
  */
 
-#include "G3DAll.h"
+#include "../G3DAll.h"
 
 #ifdef _MSC_VER
-    #define isnan(x) _isnan(x)
+  #define isnan _isnan
 #else
-    #define isnan(x) std::isnan(x)
+  #define isnan std::isnan
 #endif
-
 
 void BIH::buildHierarchy(std::vector<g3d_uint32> &tempTree, buildData &dat, BuildStats &stats)
 {
     // create space for the first node
-    tempTree.push_back(3 << 30); // dummy leaf
+    tempTree.push_back(g3d_uint32(3 << 30)); // dummy leaf
     tempTree.insert(tempTree.end(), 2, 0);
     //tempTree.add(0);
 
@@ -44,7 +43,7 @@ void BIH::subdivide(int left, int right, std::vector<g3d_uint32> &tempTree, buil
         prevAxis = axis;
         prevSplit = split;
         // perform quick consistency checks
-        Vector3 d( gridBox.hi - gridBox.lo );
+        G3D::Vector3 d( gridBox.hi - gridBox.lo );
         if (d.x < 0 || d.y < 0 || d.z < 0)
             throw std::logic_error("negative node extents");
         for (int i = 0; i < 3; i++)
@@ -120,7 +119,7 @@ void BIH::subdivide(int left, int right, std::vector<g3d_uint32> &tempTree, buil
         if (right == rightOrig)
         {
             // all left
-            if (prevAxis == axis && prevSplit == split) {
+            if (prevAxis == axis && G3D::fuzzyEq(prevSplit, split)) {
                 // we are stuck here - create a leaf
                 stats.updateLeaf(depth, right - left + 1);
                 createNode(tempTree, nodeIndex, left, right);
@@ -139,7 +138,7 @@ void BIH::subdivide(int left, int right, std::vector<g3d_uint32> &tempTree, buil
         else if (left > right)
         {
             // all right
-            if (prevAxis == axis && prevSplit == split) {
+            if (prevAxis == axis && G3D::fuzzyEq(prevSplit, split)) {
                 // we are stuck here - create a leaf
                 stats.updateLeaf(depth, right - left + 1);
                 createNode(tempTree, nodeIndex, left, right);
@@ -248,16 +247,16 @@ bool BIH::writeToFile(FILE *wf) const
 bool BIH::readFromFile(FILE *rf)
 {
     g3d_uint32 treeSize;
-    Vector3 lo, hi;
+    G3D::Vector3 lo, hi;
     g3d_uint32 check=0, count=0;
     check += (g3d_uint32)fread(&lo, sizeof(float), 3, rf);
     check += (g3d_uint32)fread(&hi, sizeof(float), 3, rf);
-    bounds = AABox(lo, hi);
+    bounds = G3D::AABox(lo, hi);
     check += (g3d_uint32)fread(&treeSize, sizeof(g3d_uint32), 1, rf);
     tree.resize(treeSize);
     check += (g3d_uint32)fread(&tree[0], sizeof(g3d_uint32), treeSize, rf);
     check += (g3d_uint32)fread(&count, sizeof(g3d_uint32), 1, rf);
-    objects.resize(count); // = newG3D::g3d_uint32[nObjects];
+    objects.resize(count); // = new g3d_uint32[nObjects];
     check += (g3d_uint32)fread(&objects[0], sizeof(g3d_uint32), count, rf);
     return check == (3 + 3 + 2 + treeSize + count);
 }
@@ -278,20 +277,20 @@ void BIH::BuildStats::updateLeaf(int depth, int n)
 void BIH::BuildStats::printStats()
 {
     printf("Tree stats:\n");
-    printf("  * Nodes:            %d\n", numNodes);
-    printf("  * Leaves:        %d\n", numLeaves);
+    printf("  * Nodes:          %d\n", numNodes);
+    printf("  * Leaves:         %d\n", numLeaves);
     printf("  * Objects: min    %d\n", minObjects);
-    printf("            avg    %.2f\n", (float) sumObjects / numLeaves);
-    printf("            avg(n>0) %.2f\n", (float) sumObjects / (numLeaves - numLeavesN[0]));
-    printf("            max    %d\n", maxObjects);
-    printf("  * Depth:        min    %d\n", minDepth);
-    printf("            avg    %.2f\n", (float) sumDepth / numLeaves);
-    printf("            max    %d\n", maxDepth);
+    printf("             avg    %.2f\n", (float) sumObjects / numLeaves);
+    printf("           avg(n>0) %.2f\n", (float) sumObjects / (numLeaves - numLeavesN[0]));
+    printf("             max    %d\n", maxObjects);
+    printf("  * Depth:   min    %d\n", minDepth);
+    printf("             avg    %.2f\n", (float) sumDepth / numLeaves);
+    printf("             max    %d\n", maxDepth);
     printf("  * Leaves w/: N=0  %3d%%\n", 100 * numLeavesN[0] / numLeaves);
-    printf("                N=1  %3d%%\n", 100 * numLeavesN[1] / numLeaves);
-    printf("                N=2  %3d%%\n", 100 * numLeavesN[2] / numLeaves);
-    printf("                N=3  %3d%%\n", 100 * numLeavesN[3] / numLeaves);
-    printf("                N=4  %3d%%\n", 100 * numLeavesN[4] / numLeaves);
-    printf("                N>4  %3d%%\n", 100 * numLeavesN[5] / numLeaves);
-    printf("  * BVH2 nodes:    %d (%3d%%)\n", numBVH2, 100 * numBVH2 / (numNodes + numLeaves - 2 * numBVH2));
+    printf("               N=1  %3d%%\n", 100 * numLeavesN[1] / numLeaves);
+    printf("               N=2  %3d%%\n", 100 * numLeavesN[2] / numLeaves);
+    printf("               N=3  %3d%%\n", 100 * numLeavesN[3] / numLeaves);
+    printf("               N=4  %3d%%\n", 100 * numLeavesN[4] / numLeaves);
+    printf("               N>4  %3d%%\n", 100 * numLeavesN[5] / numLeaves);
+    printf("  * BVH2 nodes:     %d (%3d%%)\n", numBVH2, 100 * numBVH2 / (numNodes + numLeaves - 2 * numBVH2));
 }

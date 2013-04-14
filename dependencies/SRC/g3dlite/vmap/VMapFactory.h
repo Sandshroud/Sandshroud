@@ -17,9 +17,6 @@ namespace VMAP
         public:
             static VMapManager2* createOrGetVMapManager();
             static void clear();
-
-            static void preventSpellsFromBeingTestedForLoS(const char* pSpellIdString);
-            static bool checkSpellForLoS(unsigned int pSpellId);
     };
 
 }
