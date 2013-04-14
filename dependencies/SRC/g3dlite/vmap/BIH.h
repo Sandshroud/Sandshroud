@@ -6,10 +6,6 @@
 
 #define MAX_STACK_SIZE 64
 
-using G3D::Vector3;
-using G3D::AABox;
-using G3D::Ray;
-
 static inline G3D::g3d_uint32 floatToRawIntBits(float f)
 {
     union
@@ -34,7 +30,7 @@ static inline float intBitsToFloat(G3D::g3d_uint32 i)
 
 struct AABound
 {
-    Vector3 lo, hi;
+    G3D::Vector3 lo, hi;
 };
 
 /** Bounding Interval Hierarchy Class.
@@ -46,23 +42,35 @@ struct AABound
 
 class BIH
 {
-    public:
-        BIH() {};
-        template< class T, class BoundsFunc >
-        void build(const std::vector<T> &primitives, BoundsFunc &getBounds, G3D::g3d_uint32 leafSize = 3, bool printStats=false)
+    private:
+        void init_empty()
         {
-            if(primitives.size() == 0)
+            tree.clear();
+            objects.clear();
+            // create space for the first node
+            tree.push_back(3u << 30u); // dummy leaf
+            tree.insert(tree.end(), 2, 0);
+        }
+    public:
+        BIH() { init_empty(); }
+        template< class BoundsFunc, class PrimArray >
+        void build(const PrimArray &primitives, BoundsFunc &getBounds, G3D::g3d_uint32 leafSize = 3, bool printStats=false)
+        {
+            if (primitives.size() == 0)
+            {
+                init_empty();
                 return;
+            }
+
             buildData dat;
             dat.maxPrims = leafSize;
             dat.numPrims = G3D::g3d_uint32(primitives.size());
             dat.indices = new G3D::g3d_uint32[dat.numPrims];
-            dat.primBound = new AABox[dat.numPrims];
+            dat.primBound = new G3D::AABox[dat.numPrims];
             getBounds(primitives[0], bounds);
             for (G3D::g3d_uint32 i=0; i<dat.numPrims; ++i)
             {
                 dat.indices[i] = i;
-                AABox tb;
                 getBounds(primitives[i], dat.primBound[i]);
                 bounds.merge(dat.primBound[i]);
             }
@@ -80,20 +88,20 @@ class BIH
             delete[] dat.primBound;
             delete[] dat.indices;
         }
-        G3D::g3d_uint32 primCount() { return G3D::g3d_uint32(objects.size()); }
+        G3D::g3d_uint32 primCount() const { return objects.size(); }
 
         template<typename RayCallback>
-        void intersectRay(const Ray &r, RayCallback& intersectCallback, float &maxDist, bool stopAtFirst=false) const
+        void intersectRay(const G3D::Ray &r, RayCallback& intersectCallback, float &maxDist, bool stopAtFirst=false) const
         {
             float intervalMin = -1.f;
             float intervalMax = -1.f;
-            Vector3 org = r.origin();
-            Vector3 dir = r.direction();
-            Vector3 invDir;
+            G3D::Vector3 org = r.origin();
+            G3D::Vector3 dir = r.direction();
+            G3D::Vector3 invDir;
             for (int i=0; i<3; ++i)
             {
                 invDir[i] = 1.f / dir[i];
-                if (dir[i] != 0.f)
+                if (G3D::fuzzyNe(dir[i], 0.0f))
                 {
                     float t1 = (bounds.low()[i]  - org[i]) * invDir[i];
                     float t2 = (bounds.high()[i] - org[i]) * invDir[i];
@@ -121,7 +129,7 @@ class BIH
             G3D::g3d_uint32 offsetBack3[3];
             // compute custom offsets from direction sign bit
 
-            for(int i=0; i<3; ++i)
+            for (int i=0; i<3; ++i)
             {
                 offsetFront[i] = floatToRawIntBits(dir[i]) >> 31;
                 offsetBack[i] = offsetFront[i] ^ 1;
@@ -142,7 +150,7 @@ class BIH
                 {
                     G3D::g3d_uint32 tn = tree[node];
                     G3D::g3d_uint32 axis = (tn & (3 << 30)) >> 30;
-                    bool BVH2 = ((tn & (1 << 29)) ? true : false);
+                    bool BVH2 = tn & (1 << 29);
                     int offset = tn & ~(7 << 29);
                     if (!BVH2)
                     {
@@ -183,7 +191,7 @@ class BIH
                             int n = tree[node + 1];
                             while (n > 0) {
                                 bool hit = intersectCallback(r, objects[offset], maxDist, stopAtFirst);
-                                if(stopAtFirst && hit) return;
+                                if (stopAtFirst && hit) return;
                                 --n;
                                 ++offset;
                             }
@@ -222,7 +230,7 @@ class BIH
         }
 
         template<typename IsectCallback>
-        void intersectPoint(const Vector3 &p, IsectCallback& intersectCallback) const
+        void intersectPoint(const G3D::Vector3 &p, IsectCallback& intersectCallback) const
         {
             if (!bounds.contains(p))
                 return;
@@ -236,7 +244,7 @@ class BIH
                 {
                     G3D::g3d_uint32 tn = tree[node];
                     G3D::g3d_uint32 axis = (tn & (3 << 30)) >> 30;
-                    bool BVH2 = ((tn & (1 << 29)) ? true : false);
+                    bool BVH2 = tn & (1 << 29);
                     int offset = tn & ~(7 << 29);
                     if (!BVH2)
                     {
@@ -299,18 +307,18 @@ class BIH
             }
         }
 
-        bool writeToFile(FILE *wf) const;
-        bool readFromFile(FILE *rf);
+        bool writeToFile(FILE* wf) const;
+        bool readFromFile(FILE* rf);
 
     protected:
         std::vector<G3D::g3d_uint32> tree;
         std::vector<G3D::g3d_uint32> objects;
-        AABox bounds;
+        G3D::AABox bounds;
 
         struct buildData
         {
             G3D::g3d_uint32 *indices;
-            AABox *primBound;
+            G3D::AABox *primBound;
             G3D::g3d_uint32 numPrims;
             int maxPrims;
         };
@@ -341,7 +349,7 @@ class BIH
                 maxObjects(0xFFFFFFFF), sumDepth(0), minDepth(0x0FFFFFFF),
                 maxDepth(0xFFFFFFFF), numBVH2(0)
             {
-                for(int i=0; i<6; ++i) numLeavesN[i] = 0;
+                for (int i=0; i<6; ++i) numLeavesN[i] = 0;
             }
 
             void updateInner() { numNodes++; }
@@ -352,7 +360,8 @@ class BIH
 
         void buildHierarchy(std::vector<G3D::g3d_uint32> &tempTree, buildData &dat, BuildStats &stats);
 
-        void createNode(std::vector<G3D::g3d_uint32> &tempTree, int nodeIndex, G3D::g3d_uint32 left, G3D::g3d_uint32 right) {
+        void createNode(std::vector<G3D::g3d_uint32> &tempTree, int nodeIndex, G3D::g3d_uint32 left, G3D::g3d_uint32 right) const
+        {
             // write leaf node
             tempTree[nodeIndex + 0] = (3 << 30) | left;
             tempTree[nodeIndex + 1] = right - left + 1;

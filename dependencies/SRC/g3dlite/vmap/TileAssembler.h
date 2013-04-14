@@ -4,12 +4,6 @@
 
 #pragma once
 
-#include <list>
-#include <vector>
-#include <map>
-#include <sstream>
-#include <string>
-
 namespace VMAP
 {
     /**
@@ -46,6 +40,31 @@ namespace VMAP
     typedef std::map<G3D::g3d_uint32, MapSpawns*> MapData;
     //===============================================
 
+    struct GroupModel_Raw
+    {
+        G3D::g3d_uint32 mogpflags;
+        G3D::g3d_uint32 GroupWMOID;
+
+        G3D::AABox bounds;
+        G3D::g3d_uint32 liquidflags;
+        std::vector<MeshTriangle> triangles;
+        std::vector<G3D::Vector3> vertexArray;
+        class WmoLiquid* liquid;
+
+        GroupModel_Raw() : liquid(0) {}
+        ~GroupModel_Raw();
+
+        bool Read(FILE* f);
+    };
+
+    struct WorldModel_Raw
+    {
+        G3D::g3d_uint32 RootWMOID;
+        std::vector<GroupModel_Raw> groupsArray;
+
+        bool Read(const char * path);
+    };
+
     class TileAssembler
     {
         private:
@@ -55,6 +74,7 @@ namespace VMAP
             G3D::Table<std::string, unsigned int > iUniqueNameIds;
             unsigned int iCurrentUniqueNameId;
             MapData mapData;
+            std::set<std::string> spawnedModelFiles;
 
         public:
             TileAssembler(const std::string& pSrcDirName, const std::string& pDestDirName);
@@ -63,11 +83,11 @@ namespace VMAP
             bool convertWorld2();
             bool readMapSpawns();
             bool calculateTransformedBound(ModelSpawn &spawn);
+            void exportGameobjectModels();
 
             bool convertRawFile(const std::string& pModelFilename);
             void setModelNameFilterMethod(bool (*pFilterMethod)(char *pName)) { iFilterMethod = pFilterMethod; }
             std::string getDirEntryNameFromModName(unsigned int pMapId, const std::string& pModPosName);
-            unsigned int getUniqueNameId(const std::string pName);
     };
 
-}                                                            // VMAP
+}                                                           // VMAP

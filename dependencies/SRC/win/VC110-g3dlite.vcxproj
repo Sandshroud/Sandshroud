@@ -99,6 +99,8 @@
     <ClCompile Include="..\g3dlite\Vector4.cpp" />
     <ClCompile Include="..\g3dlite\Vector4int8.cpp" />
     <ClCompile Include="..\g3dlite\vmap\BIH.cpp" />
+    <ClCompile Include="..\g3dlite\vmap\DynamicTree.cpp" />
+    <ClCompile Include="..\g3dlite\vmap\GameObjectModel.cpp" />
     <ClCompile Include="..\g3dlite\vmap\MapTree.cpp" />
     <ClCompile Include="..\g3dlite\vmap\ModelInstance.cpp" />
     <ClCompile Include="..\g3dlite\vmap\TileAssembler.cpp" />
@@ -217,6 +219,9 @@
     <ClInclude Include="..\g3dlite\Vector4int8.h" />
     <ClInclude Include="..\g3dlite\vectorMath.h" />
     <ClInclude Include="..\g3dlite\vmap\BIH.h" />
+    <ClInclude Include="..\g3dlite\vmap\BIHWrapper.h" />
+    <ClInclude Include="..\g3dlite\vmap\DynamicTree.h" />
+    <ClInclude Include="..\g3dlite\vmap\GameObjectModel.h" />
     <ClInclude Include="..\g3dlite\vmap\MapTree.h" />
     <ClInclude Include="..\g3dlite\vmap\ModelInstance.h" />
     <ClInclude Include="..\g3dlite\vmap\TileAssembler.h" />

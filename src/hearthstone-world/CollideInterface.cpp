@@ -22,6 +22,7 @@ void CCollideInterface::Init()
 	CollisionMgr = new VMAP::VMapManager2;
 	for(uint32 i = 0; i < NUM_MAPS; i++)
 		m_mapLocks[i] = NULL;
+	CollisionMgr->LoadGameObjectModelList(sWorld.vMapPath);
 }
 
 void CCollideInterface::ActivateMap(uint32 mapId)
@@ -168,7 +169,7 @@ float CCollideInterface::GetHeight(uint32 mapId, float x, float y, float z)
 	m_mapLocks[mapId]->m_lock.AcquireReadLock();
 
 	// get data
-	float res = CollisionMgr ? CollisionMgr->getHeight(mapId, x, y, z) : NO_WMO_HEIGHT;
+	float res = CollisionMgr ? CollisionMgr->getHeight(mapId, x, y, z, 10.0f) : NO_WMO_HEIGHT;
 
 	// release write lock
 	m_mapLocks[mapId]->m_lock.ReleaseReadLock();
