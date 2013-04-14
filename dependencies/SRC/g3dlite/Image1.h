@@ -23,7 +23,7 @@ typedef ReferenceCountedPointer<class Image1> Image1Ref;
 /**
  Luminance image with 32-bit floating point storage.
 
- See also G3D::Image1g3d_uint8, G3D::GImage.
+ See also G3D::Image1uint8, G3D::GImage.
  */
 class Image1 : public Map2D<Color1, Color1> {
 public:
@@ -64,7 +64,7 @@ public:
     static Ref fromArray(const class Color3* ptr, int width, int height, WrapMode wrap = WrapMode::ERROR);
     static Ref fromArray(const class Color4* ptr, int width, int height, WrapMode wrap = WrapMode::ERROR);
 
-    static Ref fromImage1g3d_uint8(const ReferenceCountedPointer<class Image1g3d_uint8>& im);
+    static Ref fromImage1uint8(const ReferenceCountedPointer<class Image1uint8>& im);
 
     static Ref fromGImage(const class GImage& im, WrapMode wrap = WrapMode::ERROR);
 

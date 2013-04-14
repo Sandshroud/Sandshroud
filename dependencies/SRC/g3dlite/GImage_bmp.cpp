@@ -43,19 +43,19 @@ void GImage::encodeBMP(
     //  DWORD   bfOffBits; 
 
     // Type
-    out.writeg3d_uint8('B');
-    out.writeg3d_uint8('M');
+    out.writeUInt8('B');
+    out.writeUInt8('M');
 
     // File size
-    out.writeg3d_uint32(fileHeaderSize + infoHeaderSize + pixelBufferSize);
+    out.writeUInt32(fileHeaderSize + infoHeaderSize + pixelBufferSize);
 
     // Two reserved fields set to zero
-    out.writeg3d_uint16(0);
-    out.writeg3d_uint16(0);
+    out.writeUInt16(0);
+    out.writeUInt16(0);
 
 	// The offset, in bytes, from the BITMAPFILEHEADER structure
     // to the bitmap bits.
-    out.writeg3d_uint32(infoHeaderSize + fileHeaderSize);
+    out.writeUInt32(infoHeaderSize + fileHeaderSize);
 
     // Now the BITMAPINFOHEADER
     //
@@ -72,33 +72,33 @@ void GImage::encodeBMP(
     //  DWORD  biClrImportant; 
 
     // Size of the info header
-    out.writeg3d_uint32(infoHeaderSize);
+    out.writeUInt32(infoHeaderSize);
  
     // Width and height of the image
-	out.writeg3d_uint32(m_width);
-    out.writeg3d_uint32(m_height);
+    out.writeUInt32(m_width);
+    out.writeUInt32(m_height);
 
     // Planes ("must be set to 1")
-    out.writeg3d_uint16(1);
+    out.writeUInt16(1);
 
     // BitCount and CompressionType
-    out.writeg3d_uint16(24);
-    out.writeg3d_uint32(BI_RGB);
+    out.writeUInt16(24);
+    out.writeUInt32(BI_RGB);
 
     // Image size ("may be zero for BI_RGB bitmaps")
-    out.writeg3d_uint32(0);
+    out.writeUInt32(0);
 
     // biXPelsPerMeter
-    out.writeg3d_uint32(0);
+    out.writeUInt32(0);
     // biYPelsPerMeter
-    out.writeg3d_uint32(0);
+    out.writeUInt32(0);
 
     // biClrUsed
-    out.writeg3d_uint32(0); 
+    out.writeUInt32(0); 
 
     // biClrImportant
-    out.writeg3d_uint32(0); 
-    
+    out.writeUInt32(0); 
+
     BMScanWidth = m_width * 3;
 
     if (BMScanWidth & 3) {
@@ -127,9 +127,9 @@ void GImage::encodeBMP(
                 blue  = m_byte[dest];
             }
 
-            out.writeg3d_uint8(blue);
-            out.writeg3d_uint8(green);
-            out.writeg3d_uint8(red);
+            out.writeUInt8(blue);
+            out.writeUInt8(green);
+            out.writeUInt8(red);
 
             dest += m_channels;
         }
@@ -172,14 +172,14 @@ void GImage::decodeBMP(
 	// Skip to the BITMAPINFOHEADER's width and height
 	input.skip(16);
 
-    m_width  = input.readg3d_uint32();
-    m_height = input.readg3d_uint32();
+    m_width  = input.readUInt32();
+    m_height = input.readUInt32();
 
 	// Skip to the bit count and compression type
 	input.skip(2);
 
-    g3d_uint16 bitCount        = input.readg3d_uint16();
-    g3d_uint32 compressionType = input.readg3d_uint32();
+    g3d_uint16 bitCount        = input.readUInt16();
+    g3d_uint32 compressionType = input.readUInt32();
 
     g3d_uint8 red;
     g3d_uint8 green;
@@ -199,7 +199,7 @@ void GImage::decodeBMP(
         // Skip to the palette color count in the header
         input.skip(12);
 
-        int numColors = input.readg3d_uint32();
+        int numColors = input.readUInt32();
 
         palette = (g3d_uint8*)System::malloc(numColors * 3);
         debugAssert(palette);
@@ -211,10 +211,10 @@ void GImage::decodeBMP(
         for(c = 0; c < numColors * 3; c += 3) {
             // Palette information in bitmaps is stored in BGR_ format.
             // That means it's blue-green-red-blank, for each entry.
-            blue  = input.readg3d_uint8();
-            green = input.readg3d_uint8();
-            red   = input.readg3d_uint8();
-            blank = input.readg3d_uint8();
+            blue  = input.readUInt8();
+            green = input.readUInt8();
+            red   = input.readUInt8();
+            blank = input.readUInt8();
 
             palette[c]     = red;
             palette[c + 1] = green;
@@ -271,7 +271,7 @@ void GImage::decodeBMP(
 
             for (int w = 0; w < BMScanWidth; ++w) {
 
-                BMGroup = input.readg3d_uint8();
+                BMGroup = input.readUInt8();
 
                 // Now we read the pixels. Usually there are eight pixels per byte,
                 // since each pixel is represented by one bit, but if the width
@@ -311,7 +311,7 @@ void GImage::decodeBMP(
 
             for (int w = 0; w < BMScanWidth; w++) {
 
-                BMGroup = input.readg3d_uint8();
+                BMGroup = input.readUInt8();
                 int src[2];
                 src[0] = 3 * ((BMGroup & 0xF0) >> 4);
                 src[1] = 3 * (BMGroup & 0x0F);
@@ -354,7 +354,7 @@ void GImage::decodeBMP(
 
             for (int w = 0; w < BMScanWidth; ++w) {
 
-                BMPixel8 = input.readg3d_uint8();
+                BMPixel8 = input.readUInt8();
 
                 if (currPixel < m_width) {
                     dest = 3 * ((h * m_width) + currPixel);
@@ -395,9 +395,9 @@ void GImage::decodeBMP(
             dest = 3 * h * m_width;
             for (int w = 0; w < m_width; ++w) {
 
-                blue  = input.readg3d_uint8();
-                green = input.readg3d_uint8();
-                red   = input.readg3d_uint8();
+                blue  = input.readUInt8();
+                green = input.readUInt8();
+                red   = input.readUInt8();
 
                 m_byte[dest]     = red;
                 m_byte[dest + 1] = green;
@@ -436,14 +436,14 @@ void GImage::decodeICO(
     BinaryInput&            input) {
 
 	// Header
-	g3d_uint16 r = input.readg3d_uint16();
+	g3d_uint16 r = input.readUInt16();
 	debugAssert(r == 0);
-	r = input.readg3d_uint16();
+	r = input.readUInt16();
 	debugAssert(r == 1);
 
 	// Read the number of icons, although we'll only load the
 	// first one.
-	int count = input.readg3d_uint16();
+	int count = input.readUInt16();
 
 	m_channels = 4;
 
@@ -467,10 +467,10 @@ void GImage::decodeICO(
 
     input.skip(maxHeaderNum * 16);
 
-    m_width = input.readg3d_uint8();
-    m_height = input.readg3d_uint8();
-    int numColors = input.readg3d_uint8();
-	
+    m_width = input.readUInt8();
+    m_height = input.readUInt8();
+    int numColors = input.readUInt8();
+
     m_byte = (g3d_uint8*)m_memMan->alloc(m_width * m_height * m_channels);
     debugAssert(m_byte);
 
@@ -504,7 +504,7 @@ void GImage::decodeICO(
     // Skip 'size' unused
     input.skip(4);
     
-    int offset = input.readg3d_uint32();
+    int offset = input.readUInt32();
     
     // Skip over any other icon descriptions
     input.setPosition(offset);
@@ -515,10 +515,10 @@ void GImage::decodeICO(
     Array<Color4uint8> palette;
     palette.resize(numColors, true);
     for (int c = 0; c < numColors; ++c) {
-        palette[c].b = input.readg3d_uint8();
-        palette[c].g = input.readg3d_uint8();
-        palette[c].r = input.readg3d_uint8();
-        palette[c].a = input.readg3d_uint8();
+        palette[c].b = input.readUInt8();
+        palette[c].g = input.readUInt8();
+        palette[c].r = input.readUInt8();
+        palette[c].a = input.readUInt8();
     }
 
 	// The actual image and mask follow
@@ -543,7 +543,7 @@ void GImage::decodeICO(
 		int x = 0;
 		// Read the row
 		for (int i = 0; i < bytesPerRow; ++i) {
-			g3d_uint8 byte = input.readg3d_uint8();
+			g3d_uint8 byte = input.readUInt8();
 			for (int j = 0; (j < 8) && (x < width); ++x, j += bitsPerPixel) {
 				int bit = ((byte << j) >> (8 - bitsPerPixel)) & mask;
 				pixel4(x, y) = colorTable[bit];
@@ -594,7 +594,7 @@ void GImage::decodeICO(
 
             for (int w = 0; w < BMScanWidth; ++w) {
 
-                BMGroup = input.readg3d_uint8();
+                BMGroup = input.readUInt8();
 
                 // Now we read the pixels. Usually there are eight pixels per byte,
                 // since each pixel is represented by one bit, but if the width
@@ -632,7 +632,7 @@ void GImage::decodeICO(
 
             for (int w = 0; w < BMScanWidth; w++) {
 
-                BMGroup = input.readg3d_uint8();
+                BMGroup = input.readUInt8();
                 int src[2];
                 src[0] = ((BMGroup & 0xF0) >> 4);
                 src[1] = (BMGroup & 0x0F);
@@ -673,7 +673,7 @@ void GImage::decodeICO(
 
             for (int w = 0; w < BMScanWidth; ++w) {
 
-                BMPixel8 = input.readg3d_uint8();
+                BMPixel8 = input.readUInt8();
 
                 if (currPixel < m_width) {
                     dest = 4 * ((h * m_width) + currPixel);
@@ -703,7 +703,7 @@ void GImage::decodeICO(
 		int x = 0;
 		// Read the row
 		for (int i = 0; i < bytesPerRow; ++i) {
-			g3d_uint8 byte = input.readg3d_uint8();
+			g3d_uint8 byte = input.readUInt8();
 			for (int j = 0; (j < 8) && (x < m_width); ++x, ++j) {
 				int bit = (byte >> (7 - j)) & 0x01;
 				pixel4(x, y).a = (1 - bit) * 0xFF;

@@ -1,5 +1,5 @@
 /**
-  @file Image3g3d_uint8.cpp
+  @file Image3uint8.cpp
 
   @maintainer Morgan McGuire, http://graphics.cs.williams.edu
 
@@ -7,8 +7,8 @@
   @edited  2008-01-08
 */
 
-#include "Image1g3d_uint8.h"
-#include "Image3g3d_uint8.h"
+#include "Image1uint8.h"
+#include "Image3uint8.h"
 #include "Image3.h"
 #include "GImage.h"
 #include "Color1.h"
@@ -19,17 +19,17 @@
 
 namespace G3D {
 
-Image3g3d_uint8::Ref Image3g3d_uint8::fromImage1g3d_uint8(const ReferenceCountedPointer<class Image1g3d_uint8>& im) {
+Image3uint8::Ref Image3uint8::fromImage1uint8(const ReferenceCountedPointer<class Image1uint8>& im) {
     return fromArray(im->getCArray(), im->width(), im->height(), im->wrapMode());
 }
 
 
-Image3g3d_uint8::Image3g3d_uint8(int w, int h, WrapMode wrap) : Map2D<Color3uint8>(w, h, wrap) {
+Image3uint8::Image3uint8(int w, int h, WrapMode wrap) : Map2D<Color3uint8>(w, h, wrap) {
     setAll(Color3::black());
 }
 
 
-Image3g3d_uint8::Ref Image3g3d_uint8::fromGImage(const GImage& im, WrapMode wrap) {
+Image3uint8::Ref Image3uint8::fromGImage(const GImage& im, WrapMode wrap) {
     switch (im.channels()) {
     case 1:
         return fromArray(im.pixel1(), im.width(), im.height(), wrap);
@@ -47,7 +47,7 @@ Image3g3d_uint8::Ref Image3g3d_uint8::fromGImage(const GImage& im, WrapMode wrap
 }
 
 
-Image3g3d_uint8::Ref Image3g3d_uint8::fromImage3(const ReferenceCountedPointer<Image3>& im) {
+Image3uint8::Ref Image3uint8::fromImage3(const ReferenceCountedPointer<Image3>& im) {
     Ref out = createEmpty(static_cast<WrapMode>(im->wrapMode()));
     out->copyArray(im->getCArray(), im->width(), im->height());
 
@@ -55,72 +55,72 @@ Image3g3d_uint8::Ref Image3g3d_uint8::fromImage3(const ReferenceCountedPointer<I
 }
 
 
-Image3g3d_uint8::Ref Image3g3d_uint8::createEmpty(int width, int height, WrapMode wrap) {
+Image3uint8::Ref Image3uint8::createEmpty(int width, int height, WrapMode wrap) {
     return new Type(width, height, wrap);
 }
 
 
-Image3g3d_uint8::Ref Image3g3d_uint8::createEmpty(WrapMode wrap) {
+Image3uint8::Ref Image3uint8::createEmpty(WrapMode wrap) {
     return createEmpty(0, 0, wrap);
 }
 
 
-Image3g3d_uint8::Ref Image3g3d_uint8::fromFile(const std::string& filename, WrapMode wrap, GImage::Format fmt) {
+Image3uint8::Ref Image3uint8::fromFile(const std::string& filename, WrapMode wrap, GImage::Format fmt) {
     Ref out = createEmpty(wrap);
     out->load(filename, fmt);
     return out;
 }
 
 
-Image3g3d_uint8::Ref Image3g3d_uint8::fromArray(const class Color3uint8* ptr, int w, int h, WrapMode wrap) {
+Image3uint8::Ref Image3uint8::fromArray(const class Color3uint8* ptr, int w, int h, WrapMode wrap) {
     Ref out = createEmpty(wrap);
     out->copyArray(ptr, w, h);
     return out;
 }
 
 
-Image3g3d_uint8::Ref Image3g3d_uint8::fromArray(const class Color1* ptr, int w, int h, WrapMode wrap) {
+Image3uint8::Ref Image3uint8::fromArray(const class Color1* ptr, int w, int h, WrapMode wrap) {
     Ref out = createEmpty(wrap);
     out->copyArray(ptr, w, h);
     return out;
 }
 
 
-Image3g3d_uint8::Ref Image3g3d_uint8::fromArray(const class Color1uint8* ptr, int w, int h, WrapMode wrap) {
+Image3uint8::Ref Image3uint8::fromArray(const class Color1uint8* ptr, int w, int h, WrapMode wrap) {
     Ref out = createEmpty(wrap);
     out->copyArray(ptr, w, h);
     return out;
 }
 
 
-Image3g3d_uint8::Ref Image3g3d_uint8::fromArray(const class Color3* ptr, int w, int h, WrapMode wrap) {
+Image3uint8::Ref Image3uint8::fromArray(const class Color3* ptr, int w, int h, WrapMode wrap) {
     Ref out = createEmpty(wrap);
     out->copyArray(ptr, w, h);
     return out;
 }
 
 
-Image3g3d_uint8::Ref Image3g3d_uint8::fromArray(const class Color4uint8* ptr, int w, int h, WrapMode wrap) {
+Image3uint8::Ref Image3uint8::fromArray(const class Color4uint8* ptr, int w, int h, WrapMode wrap) {
     Ref out = createEmpty(wrap);
     out->copyArray(ptr, w, h);
     return out;
 }
 
 
-Image3g3d_uint8::Ref Image3g3d_uint8::fromArray(const class Color4* ptr, int w, int h, WrapMode wrap) {
+Image3uint8::Ref Image3uint8::fromArray(const class Color4* ptr, int w, int h, WrapMode wrap) {
     Ref out = createEmpty(wrap);
     out->copyArray(ptr, w, h);
     return out;
 }
 
 
-void Image3g3d_uint8::load(const std::string& filename, GImage::Format fmt) {
+void Image3uint8::load(const std::string& filename, GImage::Format fmt) {
     copyGImage(GImage(filename, fmt));
     setChanged(true);
 }
 
 
-void Image3g3d_uint8::copyGImage(const GImage& im) {
+void Image3uint8::copyGImage(const GImage& im) {
     switch (im.channels()) {
     case 1:
         copyArray(im.pixel1(), im.width(), im.height());
@@ -137,7 +137,7 @@ void Image3g3d_uint8::copyGImage(const GImage& im) {
 }
 
 
-void Image3g3d_uint8::copyArray(const Color1uint8* src, int w, int h) {
+void Image3uint8::copyArray(const Color1uint8* src, int w, int h) {
     resize(w, h);
     int N = w * h;
 
@@ -147,7 +147,7 @@ void Image3g3d_uint8::copyArray(const Color1uint8* src, int w, int h) {
     }
 }
 
-void Image3g3d_uint8::copyArray(const Color1* src, int w, int h) {
+void Image3uint8::copyArray(const Color1* src, int w, int h) {
     resize(w, h);
     int N = w * h;
 
@@ -158,13 +158,13 @@ void Image3g3d_uint8::copyArray(const Color1* src, int w, int h) {
 }
 
 
-void Image3g3d_uint8::copyArray(const Color3uint8* ptr, int w, int h) {
+void Image3uint8::copyArray(const Color3uint8* ptr, int w, int h) {
     resize(w, h);
     System::memcpy(getCArray(), ptr, w * h * 3);
 }
 
 
-void Image3g3d_uint8::copyArray(const Color3* src, int w, int h) {
+void Image3uint8::copyArray(const Color3* src, int w, int h) {
     resize(w, h);
     int N = w * h;
 
@@ -175,15 +175,15 @@ void Image3g3d_uint8::copyArray(const Color3* src, int w, int h) {
 }
 
 
-void Image3g3d_uint8::copyArray(const Color4uint8* ptr, int w, int h) {
+void Image3uint8::copyArray(const Color4uint8* ptr, int w, int h) {
     resize(w, h);
     
     // Copy 3/4 bytes
-    GImage::RGBAtoRGB((const g3d_uint8*)ptr, (g3d_uint8*)getCArray(), w * h);
+    GImage::RGBAtoRGB((const uint8*)ptr, (uint8*)getCArray(), w * h);
 }
 
 
-void Image3g3d_uint8::copyArray(const Color4* src, int w, int h) {
+void Image3uint8::copyArray(const Color4* src, int w, int h) {
     resize(w, h);
     int N = w * h;
 
@@ -195,17 +195,17 @@ void Image3g3d_uint8::copyArray(const Color4* src, int w, int h) {
 
 
 /** Saves in any of the formats supported by G3D::GImage. */
-void Image3g3d_uint8::save(const std::string& filename, GImage::Format fmt) {
+void Image3uint8::save(const std::string& filename, GImage::Format fmt) {
     GImage im(width(), height(), 3);
     System::memcpy(im.byte(), getCArray(), width() * height() * 3);
     im.save(filename, fmt);
 }
 
 
-ReferenceCountedPointer<class Image1g3d_uint8> Image3g3d_uint8::getChannel(int c) const {
+ReferenceCountedPointer<class Image1uint8> Image3uint8::getChannel(int c) const {
     debugAssert(c >= 0 && c <= 2);
 
-    Image1g3d_uint8Ref dst = Image1g3d_uint8::createEmpty(width(), height(), wrapMode());
+    Image1uint8Ref dst = Image1uint8::createEmpty(width(), height(), wrapMode());
     const Color3uint8* srcArray = getCArray();
     Color1uint8* dstArray = dst->getCArray();
 
@@ -218,7 +218,7 @@ ReferenceCountedPointer<class Image1g3d_uint8> Image3g3d_uint8::getChannel(int c
 }
 
 
-const ImageFormat* Image3g3d_uint8::format() const {
+const ImageFormat* Image3uint8::format() const {
     return ImageFormat::RGB8();
 }
 

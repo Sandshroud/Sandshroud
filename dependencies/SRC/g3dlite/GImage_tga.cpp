@@ -18,40 +18,40 @@ void GImage::encodeTGA(
     out.setEndian(G3D_LITTLE_ENDIAN);
 
     // ID length
-    out.writeg3d_uint8(0);
+    out.writeUInt8(0);
 
     // Color map Type
-    out.writeg3d_uint8(0);
+    out.writeUInt8(0);
 
     // Type
-    out.writeg3d_uint8(2);
+    out.writeUInt8(2);
 
     // Color map
     out.skip(5);
 
     // x, y offsets
-    out.writeg3d_uint16(0);
-    out.writeg3d_uint16(0);
+    out.writeUInt16(0);
+    out.writeUInt16(0);
 
     // Width & height
-    out.writeg3d_uint16(m_width);
-    out.writeg3d_uint16(m_height);
+    out.writeUInt16(m_width);
+    out.writeUInt16(m_height);
 
     // Color depth
     if (m_channels == 1) {
         // Force RGB mode
-        out.writeg3d_uint8(8 * 3);
+        out.writeUInt8(8 * 3);
     } else {
-        out.writeg3d_uint8(8 * m_channels);
+        out.writeUInt8(8 * m_channels);
     }
 
     // Image descriptor
     if (m_channels < 4) {
         // 0 alpha bits
-        out.writeg3d_uint8(0);
+        out.writeUInt8(0);
     } else {
         // 8 alpha bits
-        out.writeg3d_uint8(8);
+        out.writeUInt8(8);
     }
 
     // Image ID (zero length)
@@ -61,9 +61,9 @@ void GImage::encodeTGA(
         for (int y = m_height - 1; y >= 0; --y) {
             for (int x = 0; x < m_width; ++x) {
                 g3d_uint8 p = (m_byte[(y * m_width + x)]);
-                out.writeg3d_uint8(p);
-                out.writeg3d_uint8(p);
-                out.writeg3d_uint8(p);
+                out.writeUInt8(p);
+                out.writeUInt8(p);
+                out.writeUInt8(p);
             }
         }
     } else if (m_channels == 3) {
@@ -71,9 +71,9 @@ void GImage::encodeTGA(
         for (int y = m_height - 1; y >= 0; --y) {
             for (int x = 0; x < m_width; ++x) {
                 g3d_uint8* p = &(m_byte[3 * (y * m_width + x)]);
-                out.writeg3d_uint8(p[2]);
-                out.writeg3d_uint8(p[1]);
-                out.writeg3d_uint8(p[0]);
+                out.writeUInt8(p[2]);
+                out.writeUInt8(p[1]);
+                out.writeUInt8(p[0]);
             }
         }
     } else {
@@ -81,10 +81,10 @@ void GImage::encodeTGA(
         for (int y = m_height - 1; y >= 0; --y) {
             for (int x = 0; x < m_width; ++x) {
                 g3d_uint8* p = &(m_byte[4 * (y * m_width + x)]);
-                out.writeg3d_uint8(p[2]);
-                out.writeg3d_uint8(p[1]);
-                out.writeg3d_uint8(p[0]);
-                out.writeg3d_uint8(p[3]);
+                out.writeUInt8(p[2]);
+                out.writeUInt8(p[1]);
+                out.writeUInt8(p[0]);
+                out.writeUInt8(p[3]);
             }
         }
     }
@@ -95,9 +95,9 @@ void GImage::encodeTGA(
 }
 
 inline static void readBGR(g3d_uint8* byte, BinaryInput& bi) {
-    int b = bi.readg3d_uint8();
-    int g = bi.readg3d_uint8();
-    int r = bi.readg3d_uint8();
+    int b = bi.readUInt8();
+    int g = bi.readUInt8();
+    int r = bi.readUInt8();
 
     byte[0] = r;
     byte[1] = g;
@@ -106,7 +106,7 @@ inline static void readBGR(g3d_uint8* byte, BinaryInput& bi) {
 
 inline static void readBGRA(g3d_uint8* byte, BinaryInput& bi) {
     readBGR(byte, bi);
-    byte[3] = bi.readg3d_uint8();
+    byte[3] = bi.readUInt8();
 }
 
 void GImage::decodeTGA(
@@ -124,9 +124,9 @@ void GImage::decodeTGA(
 
     input.setPosition(pos);
 
-    int IDLength     = input.readg3d_uint8();
-    int colorMapType = input.readg3d_uint8();
-    int imageType    = input.readg3d_uint8();
+    int IDLength     = input.readUInt8();
+    int colorMapType = input.readUInt8();
+    int imageType    = input.readUInt8();
 
     (void)colorMapType;
 	
@@ -143,10 +143,10 @@ void GImage::decodeTGA(
     // Skip x and y offsets
     input.skip(4); 
 
-    m_width  = input.readg3d_int16();
-    m_height = input.readg3d_int16();
+    m_width  = input.readInt16();
+    m_height = input.readInt16();
 
-    int colorDepth = input.readg3d_uint8();
+    int colorDepth = input.readUInt8();
 
     if ((colorDepth != 24) && (colorDepth != 32)) {
         throw Error("TGA files must be 24 or 32 bit.", input.getFilename());
@@ -160,7 +160,7 @@ void GImage::decodeTGA(
 
     // Image descriptor contains overlay data as well
     // as data indicating where the origin is
-    int imageDescriptor = input.readg3d_uint8();
+    int imageDescriptor = input.readUInt8();
     (void)imageDescriptor;
 	
     // Image ID
@@ -196,7 +196,7 @@ void GImage::decodeTGA(
         for (y = m_height - 1; y >= 0; --y) {
             for (int x = 0; x < m_width; /* intentionally no x increment */) {
                 // The specification guarantees that no packet will wrap past the end of a row
-                const g3d_uint8 repetitionCount = input.readg3d_uint8();
+                const g3d_uint8 repetitionCount = input.readUInt8();
                 const g3d_uint8 numValues = (repetitionCount & (~128)) + 1;
                 int byteOffset = (x + y * m_width) * 3;
 

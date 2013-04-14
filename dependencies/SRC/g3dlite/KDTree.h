@@ -479,9 +479,9 @@ protected:
          */
         static void serializeStructure(const Node* n, BinaryOutput& bo) {
             if (n == NULL) {
-                bo.writeg3d_uint8(0);
+                bo.writeUInt8(0);
             } else {
-                bo.writeg3d_uint8(1);
+                bo.writeUInt8(1);
                 n->splitBounds.serialize(bo);
                 serialize(n->splitAxis, bo);
                 bo.writeFloat32(n->splitLocation);
@@ -493,7 +493,7 @@ protected:
 
         /** Clears the member table */
         static Node* deserializeStructure(BinaryInput& bi) {
-            if (bi.readg3d_uint8() == 0) {
+            if (bi.readUInt8() == 0) {
                 return NULL;
             } else {
                 Node* n = new Node();

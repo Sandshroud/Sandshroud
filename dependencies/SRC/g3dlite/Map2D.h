@@ -93,9 +93,9 @@ namespace G3D {
 
   G3D::Image4 - A subclass of Map2D<Color4> that supports image loading and saving and conversion to Texture.
 
-  G3D::Image3g3d_uint8 - A subclass of Map2D<Color3uint8> that supports image loading and saving and conversion to Texture.
+  G3D::Image3uint8 - A subclass of Map2D<Color3uint8> that supports image loading and saving and conversion to Texture.
 
-  G3D::Image4g3d_uint8 -  A subclass of Map2D<Color4uint8> that supports image loading and saving and conversion to Texture.
+  G3D::Image4uint8 -  A subclass of Map2D<Color4uint8> that supports image loading and saving and conversion to Texture.
 
   There are two type parameters-- the first (@ Storage) is the type 
   used to store the "pixel" values efficiently and 

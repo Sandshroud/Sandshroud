@@ -10,7 +10,7 @@ namespace G3D {
  
 template<typename T> 
 void serialize(const Array<T>& array, BinaryOutput& b) { 
-    b.writeg3d_int32(array.size()); 
+    b.writeInt32(array.size()); 
     for (int i = 0; i < array.size(); ++i) { 
     serialize(array[i], b); 
     } 
@@ -18,7 +18,7 @@ void serialize(const Array<T>& array, BinaryOutput& b) {
 
 template<typename T> 
 void deserialize(Array<T>& array, BinaryInput& b) { 
-    int N = b.readg3d_int32();
+    int N = b.readInt32();
     array.resize(N);
     for (int i = 0; i < array.size(); ++i) { 
         deserialize(array[i], b); 

@@ -36,7 +36,7 @@
     }
   </pre>
 
-  See GLGKey.h for an example.
+  See GLG3D/GKey.h for an example.
   \sa G3D_DECLARE_ENUM_CLASS_HASHCODE
  */
 #define G3D_DECLARE_ENUM_CLASS_METHODS(Classname)\
@@ -182,11 +182,11 @@ public:\
     }\
 \
     void serialize(BinaryOutput& b) const {\
-        b.writeg3d_int32(value);\
+        b.writeInt32(value);\
     }\
 \
     void deserialize(BinaryInput& b) {\
-        value = (Value)b.readg3d_int32();\
+        value = (Value)b.readInt32();\
     }
 
 /** \def G3D_DECLARE_ENUM_CLASS_HASHCODE

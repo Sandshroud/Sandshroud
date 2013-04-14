@@ -10,8 +10,8 @@
   All rights reserved.
  */
 
-#ifndef G3D_Color1uint8_H
-#define G3D_Color1uint8_H
+#ifndef G3D_COLOR1UINT8_H
+#define G3D_COLOR1UINT8_H
 
 #include "platform.h"
 #include "g3dmath.h"
@@ -29,7 +29,7 @@ namespace G3D {
  but Vector3(1,1,1) == Vector3int16(1,1,1).
 
  <B>Note</B>:
- Conversion of a float32 to g3d_uint8 is accomplished by min(iFloor(f * 256)) and 
+ Conversion of a float32 to uint8 is accomplished by min(iFloor(f * 256)) and 
  back to float32 by u / 255.0f.  This gives equal size intervals.
 Consider a number line from 0 to 1 and a corresponding one from 0 to 255.  If we use iRound(x * 255), then the mapping for three critical intervals are:
 

@@ -276,27 +276,27 @@ void GImage::decode(
 void GImage::decodePCX(
     BinaryInput&                input) {
 
-    g3d_uint8  manufacturer = input.readg3d_uint8();
-    g3d_uint8  version      = input.readg3d_uint8();
-    g3d_uint8  encoding     = input.readg3d_uint8();
-    g3d_uint8  bitsPerPixel = input.readg3d_uint8();
+    g3d_uint8  manufacturer = input.readUInt8();
+    g3d_uint8  version      = input.readUInt8();
+    g3d_uint8  encoding     = input.readUInt8();
+    g3d_uint8  bitsPerPixel = input.readUInt8();
 
-    g3d_uint16 xmin         = input.readg3d_uint16();
-    g3d_uint16 ymin         = input.readg3d_uint16();
-    g3d_uint16 xmax         = input.readg3d_uint16();
-    g3d_uint16 ymax         = input.readg3d_uint16();
+    g3d_uint16 xmin         = input.readUInt16();
+    g3d_uint16 ymin         = input.readUInt16();
+    g3d_uint16 xmax         = input.readUInt16();
+    g3d_uint16 ymax         = input.readUInt16();
 
-    g3d_uint16 horizDPI     = input.readg3d_uint16();
-    g3d_uint16 vertDPI      = input.readg3d_uint16();
+    g3d_uint16 horizDPI     = input.readUInt16();
+    g3d_uint16 vertDPI      = input.readUInt16();
 
     Color3uint8 colorMap[16];
     input.readBytes(colorMap, 48);
 
     input.skip(1);
 
-    g3d_uint8  planes       = input.readg3d_uint8();
-    g3d_uint16 bytesPerLine = input.readg3d_uint16();
-    g3d_uint16 paletteType  = input.readg3d_uint16();
+    g3d_uint8  planes       = input.readUInt8();
+    g3d_uint16 bytesPerLine = input.readUInt16();
+    g3d_uint16 paletteType  = input.readUInt16();
     input.skip(4 + 54);
 
     (void)bytesPerLine;
@@ -331,14 +331,14 @@ void GImage::decodePCX(
                 int p = row * m_width;
                 int p1 = p + m_width;
                 while (p < p1) {
-                    g3d_uint8 value = input.readg3d_uint8();
+                    g3d_uint8 value = input.readUInt8();
                     int length = 1;
             
                     if (value >= 192) {
                         // This is the length, not the value.  Mask off
                         // the two high bits and read the true index.
                         length = value & 0x3F;
-                        value = input.readg3d_uint8();
+                        value = input.readUInt8();
                     }
 
                     // Set the whole run
@@ -359,7 +359,7 @@ void GImage::decodePCX(
 
         input.setPosition(paletteBeginning);
 
-        g3d_uint8 dummy = input.readg3d_uint8();
+        g3d_uint8 dummy = input.readUInt8();
 
         if (dummy != 12) {
             G3D_Log::common()->println("\n*********************");
@@ -374,14 +374,14 @@ void GImage::decodePCX(
         // The palette indices are run length encoded.
         int p = 0;
         while (p < m_width * m_height) {
-            g3d_uint8 index  = input.readg3d_uint8();
+            g3d_uint8 index  = input.readUInt8();
             g3d_uint8 length = 1;
 
             if (index >= 192) {
                 // This is the length, not the index.  Mask off
                 // the two high bits and read the true index.
                 length = index & 0x3F;
-                index  = input.readg3d_uint8();
+                index  = input.readUInt8();
             }
 
             Color3uint8 color = palette[index];

@@ -15,7 +15,6 @@
 #include "platform.h"
 #include "Vector3.h"
 #include "Array.h"
-#include "Sphere.h"
 
 namespace G3D {
 

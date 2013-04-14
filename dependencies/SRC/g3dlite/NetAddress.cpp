@@ -131,8 +131,8 @@ NetAddress::NetAddress(const struct in_addr& addr, g3d_uint16 port) {
 
 
 void NetAddress::serialize(class BinaryOutput& b) const {
-    b.writeg3d_uint32(ip());
-    b.writeg3d_uint16(port());
+    b.writeUInt32(ip());
+    b.writeUInt16(port());
 }
 
 
@@ -140,8 +140,8 @@ void NetAddress::deserialize(class BinaryInput& b) {
     g3d_uint32 i;
     g3d_uint16 p;
 
-    i = b.readg3d_uint32();
-    p = b.readg3d_uint16();
+    i = b.readUInt32();
+    p = b.readUInt16();
 
     init(i, p);
 }

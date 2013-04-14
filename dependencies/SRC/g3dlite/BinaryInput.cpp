@@ -17,7 +17,7 @@
     std::string s = "Hello World!";
 
     b.writeFloat32(f);
-    b.writeg3d_int32(i);
+    b.writeInt32(i);
     b.writeString(s);
     b.commit();
     
@@ -25,7 +25,7 @@
     BinaryInput in("c:/tmp/test.b", BinaryInput::LITTLE_ENDIAN);
 
     debugAssert(f == in.readFloat32());
-    int ii = in.readg3d_int32();
+    int ii = in.readInt32();
     debugAssert(i == ii);
     debugAssert(s == in.readString());
     }
@@ -74,14 +74,14 @@ void BinaryInput::read##ucase(Array<lcase>& out, g3d_int64 n) {\
 }
 
 
-IMPLEMENT_READER(g3d_uint8,   g3d_uint8)
-IMPLEMENT_READER(g3d_int8,    g3d_int8)
-IMPLEMENT_READER(g3d_uint16,  g3d_uint16)
-IMPLEMENT_READER(g3d_int16,   g3d_int16)
-IMPLEMENT_READER(g3d_uint32,  g3d_uint32)
-IMPLEMENT_READER(g3d_int32,   g3d_int32)
-IMPLEMENT_READER(g3d_uint64,  g3d_uint64)
-IMPLEMENT_READER(g3d_int64,   g3d_int64)
+IMPLEMENT_READER(UInt8,   g3d_uint8)
+IMPLEMENT_READER(Int8,    g3d_int8)
+IMPLEMENT_READER(UInt16,  g3d_uint16)
+IMPLEMENT_READER(Int16,   g3d_int16)
+IMPLEMENT_READER(UInt32,  g3d_uint32)
+IMPLEMENT_READER(Int32,   g3d_int32)
+IMPLEMENT_READER(UInt64,  g3d_uint64)
+IMPLEMENT_READER(Int64,   g3d_int64)
 IMPLEMENT_READER(Float32, float32)
 IMPLEMENT_READER(Float64, float64)    
 
@@ -101,8 +101,8 @@ void BinaryInput::read##ucase(lcase* out, g3d_int64 n) {\
 }
 
 IMPLEMENT_READER(Bool8,   bool)
-IMPLEMENT_READER(g3d_uint8,   g3d_uint8)
-IMPLEMENT_READER(g3d_int8,    g3d_int8)
+IMPLEMENT_READER(UInt8,   g3d_uint8)
+IMPLEMENT_READER(Int8,    g3d_int8)
 
 #undef IMPLEMENT_READER
 
@@ -119,12 +119,12 @@ void BinaryInput::read##ucase(lcase* out, g3d_int64 n) {\
 }
 
 
-IMPLEMENT_READER(g3d_uint16,  g3d_uint16)
-IMPLEMENT_READER(g3d_int16,   g3d_int16)
-IMPLEMENT_READER(g3d_uint32,  g3d_uint32)
-IMPLEMENT_READER(g3d_int32,   g3d_int32)
-IMPLEMENT_READER(g3d_uint64,  g3d_uint64)
-IMPLEMENT_READER(g3d_int64,   g3d_int64)
+IMPLEMENT_READER(UInt16,  g3d_uint16)
+IMPLEMENT_READER(Int16,   g3d_int16)
+IMPLEMENT_READER(UInt32,  g3d_uint32)
+IMPLEMENT_READER(Int32,   g3d_int32)
+IMPLEMENT_READER(UInt64,  g3d_uint64)
+IMPLEMENT_READER(Int64,   g3d_int64)
 IMPLEMENT_READER(Float32, float32)
 IMPLEMENT_READER(Float64, float64)    
 
@@ -187,7 +187,7 @@ static bool needSwapBytes(G3DEndian fileEndian) {
 
 
 /** Helper used by the constructors for decompression */
-static g3d_uint32 readg3d_uint32(const g3d_uint8* data, bool swapBytes) {
+static g3d_uint32 readUInt32(const g3d_uint8* data, bool swapBytes) {
     if (swapBytes) {
         g3d_uint8 out[4];
         out[0] = data[3];
@@ -227,7 +227,7 @@ BinaryInput::BinaryInput(
 
     if (compressed) {
         // Read the decompressed size from the first 4 bytes
-        m_length = G3D::readg3d_uint32(data, m_swapBytes);
+        m_length = G3D::readUInt32(data, m_swapBytes);
 
         debugAssert(m_freeBuffer);
         m_buffer = (g3d_uint8*)System::alignedMalloc(m_length, 16);
@@ -365,7 +365,7 @@ void BinaryInput::decompress() {
     // a new buffer to use as the destination.
     
     g3d_int64 tempLength = m_length;
-    m_length = G3D::readg3d_uint32(m_buffer, m_swapBytes);
+    m_length = G3D::readUInt32(m_buffer, m_swapBytes);
     
     // The file couldn't have better than 500:1 compression
     alwaysAssertM(m_length < m_bufferLength * 500, "Compressed file header is corrupted");
@@ -407,7 +407,7 @@ BinaryInput::~BinaryInput() {
 }
 
 
-g3d_uint64 BinaryInput::readg3d_uint64() {
+g3d_uint64 BinaryInput::readUInt64() {
     prepareToRead(8);
     g3d_uint8 out[8];
 
@@ -503,11 +503,11 @@ std::string BinaryInput::readStringNewline() {
     const std::string s = readString(n);
 
     // Consume the newline
-    char firstNLChar = readg3d_uint8();
+    char firstNLChar = readUInt8();
 
     // Consume the 2nd newline
     if (isNewline(m_buffer[m_pos + 1]) && (m_buffer[m_pos + 1] != firstNLChar)) {
-        readg3d_uint8();
+        readUInt8();
     }
 
     return s;
@@ -524,7 +524,7 @@ std::string BinaryInput::readStringEven() {
 
 
 std::string BinaryInput::readString32() {
-    int len = readg3d_uint32();
+    int len = readUInt32();
     return readString(len);
 }
 
@@ -576,7 +576,7 @@ void BinaryInput::beginBits() {
     m_bitPos = 0;
 
     debugAssertM(hasMore(), "Can't call beginBits when at the end of a file");
-    m_bitString = readg3d_uint8();
+    m_bitString = readUInt8();
 }
 
 
@@ -591,7 +591,7 @@ g3d_uint32 BinaryInput::readBits(int numBits) {
             // Consume a new byte for reading.  We do this at the beginning
             // of the loop so that we don't try to read past the end of the file.
             m_bitPos = 0;
-            m_bitString = readg3d_uint8();
+            m_bitString = readUInt8();
         }
 
         // Slide the lowest bit of the bitString into

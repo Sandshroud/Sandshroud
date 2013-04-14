@@ -26,10 +26,10 @@ typedef ReferenceCountedPointer<class Image4> Image4Ref;
  Whenever a method needs to convert from RGB to RGBA, A=1 is assumed.
 
  Bilinear interpolation on Image4 is about 8x faster than on
- Image4g3d_uint8 due to the large cost of converting int->float on modern
+ Image4uint8 due to the large cost of converting int->float on modern
  machines.
 
- @sa G3D::Image4g3d_uint8, G3D::GImage.
+ @sa G3D::Image4uint8, G3D::GImage.
  */
 class Image4 : public Map2D<Color4, Color4> {
 public:
@@ -70,7 +70,7 @@ public:
     static Ref fromArray(const class Color3* ptr, int width, int height, WrapMode wrap = WrapMode::ERROR);
     static Ref fromArray(const class Color4* ptr, int width, int height, WrapMode wrap = WrapMode::ERROR);
 
-    static Ref fromImage4g3d_uint8(const ReferenceCountedPointer<class Image4g3d_uint8>& im);
+    static Ref fromImage4uint8(const ReferenceCountedPointer<class Image4uint8>& im);
 
     static Ref fromGImage(const class GImage& im, WrapMode wrap = WrapMode::ERROR);
 

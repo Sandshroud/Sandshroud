@@ -9,7 +9,7 @@
 
 
 #include "Image4.h"
-#include "Image4g3d_uint8.h"
+#include "Image4uint8.h"
 #include "GImage.h"
 #include "Color3.h"
 #include "Color3uint8.h"
@@ -42,7 +42,7 @@ Image4::Ref Image4::fromGImage(const GImage& im, WrapMode wrap) {
 }
 
 
-Image4::Ref Image4::fromImage4g3d_uint8(const ReferenceCountedPointer<Image4g3d_uint8>& im) {
+Image4::Ref Image4::fromImage4uint8(const ReferenceCountedPointer<Image4uint8>& im) {
     Ref out = createEmpty(static_cast<WrapMode>(im->wrapMode()));
     out->resize(im->width(), im->height());
 
@@ -143,7 +143,7 @@ void Image4::copyArray(const Color4uint8* src, int w, int h) {
 
     int N = w * h;
     Color4* dst = data.getCArray();
-    // Convert g3d_int8 -> float
+    // Convert int8 -> float
     for (int i = 0; i < N; ++i) {
         dst[i] = Color4(src[i]);
     }

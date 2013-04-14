@@ -204,10 +204,10 @@ private:
     template<typename T> static void serializeMessage
               (g3d_uint32 t, const T& m, BinaryOutput& b) {
 
-        b.writeg3d_uint32(t);
+        b.writeUInt32(t);
 
         // Reserve space for the 4 byte size header
-        b.writeg3d_uint32(0);
+        b.writeUInt32(0);
 
         size_t L = b.length();
         m.serialize(b);
@@ -215,7 +215,7 @@ private:
             // No data was created by serialization.
             // We need to send at least one byte because receive assumes that
             // a zero length message is an error.
-            b.writeg3d_uint8(0xFF);
+            b.writeUInt8(0xFF);
         }
     
         g3d_uint32 len = b.size() - 8;
@@ -444,9 +444,9 @@ private:
         BinaryOutput& b) const {
 
         debugAssert(type != 0);
-        b.writeg3d_uint32(type);
+        b.writeUInt32(type);
         m.serialize(b);
-        b.writeg3d_uint32(1);
+        b.writeUInt32(1);
     
         debugAssertM(b.size() < MTU, 
                     G3D_format("This LightweightConduit is limited to messages of "

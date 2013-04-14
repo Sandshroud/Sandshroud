@@ -1,5 +1,5 @@
 /**
-  @file Image4g3d_uint8.h
+  @file Image4uint8.h
 
   @maintainer Morgan McGuire, http://graphics.cs.williams.edu
 
@@ -7,8 +7,8 @@
   @edited  2007-01-31
 */
 
-#ifndef G3D_IMAGE4g3d_uint8_H
-#define G3D_IMAGE4g3d_uint8_H
+#ifndef G3D_IMAGE4UINT8_H
+#define G3D_IMAGE4UINT8_H
 
 #include "platform.h"
 #include "Map2D.h"
@@ -19,22 +19,22 @@
 
 namespace G3D {
 
-typedef ReferenceCountedPointer<class Image4g3d_uint8> Image4g3d_uint8Ref;
+typedef ReferenceCountedPointer<class Image4uint8> Image4uint8Ref;
 
 /**
  Compact storage for RGBA 8-bit per channel images.
 
  See also G3D::Image4, G3D::GImage
  */
-class Image4g3d_uint8 : public Map2D<Color4uint8, Color4> {
+class Image4uint8 : public Map2D<Color4uint8, Color4> {
 public:
 
-    typedef Image4g3d_uint8      Type;
-    typedef Image4g3d_uint8Ref   Ref;
+    typedef Image4uint8      Type;
+    typedef Image4uint8Ref   Ref;
 
 protected:
 
-    Image4g3d_uint8(int w, int h, WrapMode wrap);
+    Image4uint8(int w, int h, WrapMode wrap);
 
     void copyGImage(const class GImage& im);
     void copyArray(const Color1* src, int w, int h);
@@ -77,7 +77,7 @@ public:
     void save(const std::string& filename, GImage::Format fmt = GImage::AUTODETECT);
 
     /** Extracts color channel 0 <= c <= 3 and returns it as a new monochrome image. */
-    ReferenceCountedPointer<class Image1g3d_uint8> getChannel(int c) const;
+    ReferenceCountedPointer<class Image1uint8> getChannel(int c) const;
 };
 
 } // G3D

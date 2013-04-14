@@ -58,7 +58,7 @@ public:
     static bool valueExists(const std::string& key, const std::string& value);
 
     /** returns false if the key could not be read for any reason. */
-    static bool readg3d_int32(const std::string& key, const std::string& value, g3d_int32& data);
+    static bool readInt32(const std::string& key, const std::string& value, g3d_int32& data);
 
     /** 
       Reads an arbitrary amount of data from a binary registry key.
@@ -74,7 +74,7 @@ public:
     static bool readString(const std::string& key, const std::string& value, std::string& data);
 
     /** returns false if the key could not be written for any reason. */
-    static bool writeg3d_int32(const std::string& key, const std::string& value, g3d_int32 data);
+    static bool writeInt32(const std::string& key, const std::string& value, g3d_int32 data);
 
     /** 
       Writes an arbitrary amount of data to a binary registry key.
