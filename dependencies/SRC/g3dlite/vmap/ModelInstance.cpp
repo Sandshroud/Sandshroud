@@ -9,7 +9,7 @@ using G3D::Ray;
 
 namespace VMAP
 {
-    ModelInstance::ModelInstance(const ModelSpawn &spawn, WorldModel *model): ModelSpawn(spawn), iModel(model)
+    ModelInstance::ModelInstance(const ModelSpawn &spawn, WorldModel* model): ModelSpawn(spawn), iModel(model)
     {
         iInvRot = G3D::Matrix3::fromEulerAnglesZYX(G3D::pi()*iRot.y/180.f, G3D::pi()*iRot.x/180.f, G3D::pi()*iRot.z/180.f).inverse();
         iInvScale = 1.f/iScale;
@@ -19,25 +19,28 @@ namespace VMAP
     {
         if (!iModel)
         {
-#ifdef VMAP_DEBUG
-            DEBUG_LOG("ModelInstance", "<object not loaded>");
-#endif
+            //std::cout << "<object not loaded>\n";
             return false;
         }
         float time = pRay.intersectionTime(iBound);
         if (time == G3D::inf())
         {
-#ifdef VMAP_DEBUG
-            DEBUG_LOG("ModelInstance", "Ray does not hit '%s'", name.c_str());
-#endif
+//            std::cout << "Ray does not hit '" << name << "'\n";
+
             return false;
         }
+//        std::cout << "Ray crosses bound of '" << name << "'\n";
+/*        std::cout << "ray from:" << pRay.origin().x << ", " << pRay.origin().y << ", " << pRay.origin().z
+                  << " dir:" << pRay.direction().x << ", " << pRay.direction().y << ", " << pRay.direction().z
+                  << " t/tmax:" << time << '/' << pMaxDist;
+        std::cout << "\nBound lo:" << iBound.low().x << ", " << iBound.low().y << ", " << iBound.low().z << " hi: "
+                  << iBound.high().x << ", " << iBound.high().y << ", " << iBound.high().z << std::endl; */
         // child bounds are defined in object space:
         Vector3 p = iInvRot * (pRay.origin() - iPos) * iInvScale;
         Ray modRay(p, iInvRot * pRay.direction());
         float distance = pMaxDist * iInvScale;
         bool hit = iModel->IntersectRay(modRay, distance, pStopAtFirstHit);
-        if(hit)
+        if (hit)
         {
             distance *= iScale;
             pMaxDist = distance;
@@ -50,7 +53,7 @@ namespace VMAP
         if (!iModel)
         {
 #ifdef VMAP_DEBUG
-            DEBUG_LOG("ModelInstance", "<object not loaded>");
+            std::cout << "<object not loaded>\n";
 #endif
             return;
         }
@@ -84,7 +87,7 @@ namespace VMAP
         if (!iModel)
         {
 #ifdef VMAP_DEBUG
-            DEBUG_LOG("ModelInstance", "<object not loaded>");
+            std::cout << "<object not loaded>\n";
 #endif
             return false;
         }
@@ -131,72 +134,72 @@ namespace VMAP
         return false;
     }
 
-    bool ModelSpawn::readFromFile(FILE *rf, ModelSpawn &spawn)
+    bool ModelSpawn::readFromFile(FILE* rf, ModelSpawn &spawn)
     {
-        g3d_uint32 check=0, nameLen;
-        check += (g3d_uint32)fread(&spawn.flags, sizeof(g3d_uint32), 1, rf);
+        G3D::g3d_uint32 check = 0, nameLen;
+        check += fread(&spawn.flags, sizeof(G3D::g3d_uint32), 1, rf);
         // EoF?
         if (!check)
         {
             if (ferror(rf))
-                ERROR_LOG("Error reading ModelSpawn!");
+                std::cout << "Error reading ModelSpawn!\n";
             return false;
         }
-        check += (g3d_uint32)fread(&spawn.adtId, sizeof(g3d_uint16), 1, rf);
-        check += (g3d_uint32)fread(&spawn.ID, sizeof(g3d_uint32), 1, rf);
-        check += (g3d_uint32)fread(&spawn.iPos, sizeof(float), 3, rf);
-        check += (g3d_uint32)fread(&spawn.iRot, sizeof(float), 3, rf);
-        check += (g3d_uint32)fread(&spawn.iScale, sizeof(float), 1, rf);
-        bool has_bound = ((spawn.flags & MOD_HAS_BOUND) ? true : false);
+        check += fread(&spawn.adtId, sizeof(G3D::g3d_uint16), 1, rf);
+        check += fread(&spawn.ID, sizeof(G3D::g3d_uint32), 1, rf);
+        check += fread(&spawn.iPos, sizeof(float), 3, rf);
+        check += fread(&spawn.iRot, sizeof(float), 3, rf);
+        check += fread(&spawn.iScale, sizeof(float), 1, rf);
+        bool has_bound = (spawn.flags & MOD_HAS_BOUND);
         if (has_bound) // only WMOs have bound in MPQ, only available after computation
         {
             Vector3 bLow, bHigh;
-            check += (g3d_uint32)fread(&bLow, sizeof(float), 3, rf);
-            check += (g3d_uint32)fread(&bHigh, sizeof(float), 3, rf);
+            check += fread(&bLow, sizeof(float), 3, rf);
+            check += fread(&bHigh, sizeof(float), 3, rf);
             spawn.iBound = G3D::AABox(bLow, bHigh);
         }
-        check += (g3d_uint32)fread(&nameLen, sizeof(g3d_uint32), 1, rf);
-        if(check != (has_bound ? 17 : 11))
+        check += fread(&nameLen, sizeof(G3D::g3d_uint32), 1, rf);
+        if (check != G3D::g3d_uint32(has_bound ? 17 : 11))
         {
-            ERROR_LOG("Error reading ModelSpawn!");
+            std::cout << "Error reading ModelSpawn!\n";
             return false;
         }
         char nameBuff[500];
-        if (nameLen>500) // file names should never be that long, must be file error
+        if (nameLen > 500) // file names should never be that long, must be file error
         {
-            ERROR_LOG("Error reading ModelSpawn, file name too long!");
+            std::cout << "Error reading ModelSpawn, file name too long!\n";
             return false;
         }
-        check = (g3d_uint32)fread(nameBuff, sizeof(char), nameLen, rf);
+        check = fread(nameBuff, sizeof(char), nameLen, rf);
         if (check != nameLen)
         {
-            ERROR_LOG("Error reading name string of ModelSpawn!");
+            std::cout << "Error reading ModelSpawn!\n";
             return false;
         }
         spawn.name = std::string(nameBuff, nameLen);
         return true;
     }
 
-    bool ModelSpawn::writeToFile(FILE *wf, const ModelSpawn &spawn)
+    bool ModelSpawn::writeToFile(FILE* wf, const ModelSpawn &spawn)
     {
-        g3d_uint32 check=0;
-        check += (g3d_uint32)fwrite(&spawn.flags, sizeof(g3d_uint32), 1, wf);
-        check += (g3d_uint32)fwrite(&spawn.adtId, sizeof(g3d_uint16), 1, wf);
-        check += (g3d_uint32)fwrite(&spawn.ID, sizeof(g3d_uint32), 1, wf);
-        check += (g3d_uint32)fwrite(&spawn.iPos, sizeof(float), 3, wf);
-        check += (g3d_uint32)fwrite(&spawn.iRot, sizeof(float), 3, wf);
-        check += (g3d_uint32)fwrite(&spawn.iScale, sizeof(float), 1, wf);
-        bool has_bound = ((spawn.flags & MOD_HAS_BOUND) ? true : false);
-        if(has_bound) // only WMOs have bound in MPQ, only available after computation
+        G3D::g3d_uint32 check=0;
+        check += fwrite(&spawn.flags, sizeof(G3D::g3d_uint32), 1, wf);
+        check += fwrite(&spawn.adtId, sizeof(G3D::g3d_uint16), 1, wf);
+        check += fwrite(&spawn.ID, sizeof(G3D::g3d_uint32), 1, wf);
+        check += fwrite(&spawn.iPos, sizeof(float), 3, wf);
+        check += fwrite(&spawn.iRot, sizeof(float), 3, wf);
+        check += fwrite(&spawn.iScale, sizeof(float), 1, wf);
+        bool has_bound = (spawn.flags & MOD_HAS_BOUND);
+        if (has_bound) // only WMOs have bound in MPQ, only available after computation
         {
-            check += (g3d_uint32)fwrite(&spawn.iBound.low(), sizeof(float), 3, wf);
-            check += (g3d_uint32)fwrite(&spawn.iBound.high(), sizeof(float), 3, wf);
+            check += fwrite(&spawn.iBound.low(), sizeof(float), 3, wf);
+            check += fwrite(&spawn.iBound.high(), sizeof(float), 3, wf);
         }
-        g3d_uint32 nameLen =G3D::g3d_uint32(spawn.name.length());
-        check += (g3d_uint32)fwrite(&nameLen, sizeof(g3d_uint32), 1, wf);
-        if(check != (has_bound ? 17 : 11)) return false;
-        check = (g3d_uint32)fwrite(spawn.name.c_str(), sizeof(char), nameLen, wf);
-        if(check != nameLen) return false;
+        G3D::g3d_uint32 nameLen = spawn.name.length();
+        check += fwrite(&nameLen, sizeof(G3D::g3d_uint32), 1, wf);
+        if (check != G3D::g3d_uint32(has_bound ? 17 : 11)) return false;
+        check = fwrite(spawn.name.c_str(), sizeof(char), nameLen, wf);
+        if (check != nameLen) return false;
         return true;
     }
 

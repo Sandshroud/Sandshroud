@@ -17,7 +17,7 @@ namespace VMAP
     template<class TValue>
     class IntersectionCallBack {
     public:
-        TValue*        closestEntity;
+        TValue*      closestEntity;
         G3D::Vector3 hitLocation;
         G3D::Vector3 hitNormal;
 
@@ -36,15 +36,15 @@ namespace VMAP
     public:
 
         static bool collisionLocationForMovingPointFixedAABox(
-            const G3D::Vector3&    origin,
-            const G3D::Vector3&    dir,
-            const G3D::AABox&        box,
-            G3D::Vector3&            location,
-            bool&                    Inside)
+            const G3D::Vector3&     origin,
+            const G3D::Vector3&     dir,
+            const G3D::AABox&       box,
+            G3D::Vector3&           location,
+            bool&                   Inside)
         {
 
             // Integer representation of a floating-point value.
-#define IR(x)        (reinterpret_cast<G3D::g3d_uint32 const&>(x))
+#define IR(x)   (reinterpret_cast<G3D::uint32 const&>(x))
 
             Inside = true;
             const G3D::Vector3& MinB = box.low();
@@ -57,7 +57,7 @@ namespace VMAP
                 if (origin[i] < MinB[i])
                 {
                     location[i] = MinB[i];
-                    Inside        = false;
+                    Inside      = false;
 
                     // Calculate T distances to candidate planes
                     if (IR(dir[i]))
@@ -68,7 +68,7 @@ namespace VMAP
                 else if (origin[i] > MaxB[i])
                 {
                     location[i] = MaxB[i];
-                    Inside        = false;
+                    Inside      = false;
 
                     // Calculate T distances to candidate planes
                     if (IR(dir[i]))

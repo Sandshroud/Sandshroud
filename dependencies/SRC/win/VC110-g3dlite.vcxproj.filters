@@ -104,6 +104,12 @@
     <ClCompile Include="..\g3dlite\vmap\WorldModel.cpp">
       <Filter>vmap</Filter>
     </ClCompile>
+    <ClCompile Include="..\g3dlite\vmap\DynamicTree.cpp">
+      <Filter>vmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\g3dlite\vmap\GameObjectModel.cpp">
+      <Filter>vmap</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\g3dlite\AABox.h" />
@@ -241,6 +247,15 @@
       <Filter>vmap</Filter>
     </ClInclude>
     <ClInclude Include="..\g3dlite\vmap\WorldModel.h">
+      <Filter>vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\g3dlite\vmap\BIHWrapper.h">
+      <Filter>vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\g3dlite\vmap\DynamicTree.h">
+      <Filter>vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\g3dlite\vmap\GameObjectModel.h">
       <Filter>vmap</Filter>
     </ClInclude>
   </ItemGroup>
