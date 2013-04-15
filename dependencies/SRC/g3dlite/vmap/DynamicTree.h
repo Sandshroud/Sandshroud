@@ -4,7 +4,7 @@
 
 #pragma once
 
-class GameObjectModel;
+class GameobjectModelInstance;
 struct DynTreeImpl;
 
 class DynamicMapTree
@@ -28,9 +28,9 @@ public:
 
     float getHeight(float x, float y, float z, float maxSearchDist, G3D::g3d_uint32 phasemask) const;
 
-    void insert(const GameObjectModel&);
-    void remove(const GameObjectModel&);
-    bool contains(const GameObjectModel&) const;
+    void insert(const VMAP::GameobjectModelInstance&);
+    void remove(const VMAP::GameobjectModelInstance&);
+    bool contains(const VMAP::GameobjectModelInstance&) const;
     int size() const;
 
     void balance();

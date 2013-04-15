@@ -41,18 +41,22 @@ class BIHWrap
     G3D::Table<const T*, G3D::g3d_uint32> m_obj2Idx;
     G3D::Set<const T*> m_objects_to_push;
     int unbalanced_times;
+    G3D::GMutex mutex;
 
 public:
-    BIHWrap() : unbalanced_times(0) {}
+    BIHWrap() : unbalanced_times(0), mutex() { m_objects_to_push.clear(); m_obj2Idx.clear(); m_objects.clear(); }
 
     void insert(const T& obj)
     {
+        mutex.lock();
         ++unbalanced_times;
         m_objects_to_push.insert(&obj);
+        mutex.unlock();
     }
 
     void remove(const T& obj)
     {
+        mutex.lock();
         ++unbalanced_times;
         G3D::g3d_uint32 Idx = 0;
         const T * temp;
@@ -60,12 +64,17 @@ public:
             m_objects[Idx] = NULL;
         else
             m_objects_to_push.remove(&obj);
+        mutex.unlock();
     }
 
     void balance()
     {
+        mutex.lock();
         if (unbalanced_times == 0)
+        {
+            mutex.unlock();
             return;
+        }
 
         unbalanced_times = 0;
         m_objects.fastClear();
@@ -74,6 +83,7 @@ public:
         //assert that m_obj2Idx has all the keys
 
         m_tree.build(m_objects, BoundsFunc::getBounds2);
+        mutex.unlock();
     }
 
     template<typename RayCallback>

@@ -346,12 +346,14 @@ void MapMgr::PushObject(Object* obj)
 			}break;
 		case HIGHGUID_TYPE_GAMEOBJECT:
 			{
-				m_gameObjectStorage.insert(make_pair(obj->GetUIdFromGUID(), TO_GAMEOBJECT(obj)));
-				if( TO_GAMEOBJECT(obj)->m_spawn != NULL)
+				GameObject* go = TO_GAMEOBJECT(obj);
+				m_gameObjectStorage.insert(make_pair(obj->GetUIdFromGUID(), go));
+				if( go->m_spawn != NULL)
 				{
-					_sqlids_gameobjects.insert(make_pair( TO_GAMEOBJECT(obj)->m_spawn->id, TO_GAMEOBJECT(obj) ) );
+					_sqlids_gameobjects.insert(make_pair(go->m_spawn->id, go ) );
 				}
-				CALL_INSTANCE_SCRIPT_EVENT( this, OnGameObjectPushToWorld )( TO_GAMEOBJECT(obj) );
+				CALL_INSTANCE_SCRIPT_EVENT( this, OnGameObjectPushToWorld )( go );
+				CollideInterface.LoadGameobjectModel(obj->GetUIdFromGUID(), _mapId, go->GetDisplayId(), go->GetFloatValue(OBJECT_FIELD_SCALE_X), go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), go->GetOrientation(), go->GetPhaseMask());
 			}break;
 
 		case HIGHGUID_TYPE_DYNAMICOBJECT:
@@ -1701,13 +1703,16 @@ void MapMgr::_PerformObjectDuties()
 
 	// Update any events.
 	eventHolder.Update(difftime);
+	if(!SetThreadState(THREADSTATE_AWAITING))
+		return;
 
+	// Update our collision system via singular map system
+	CollideInterface.UpdateSingleMap(_mapId, difftime);
 	if(!SetThreadState(THREADSTATE_AWAITING))
 		return;
 
 	// Call our script's update function.
 	_script->Update(difftime);
-
 	if(!SetThreadState(THREADSTATE_AWAITING))
 		return;
 

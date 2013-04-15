@@ -47,44 +47,53 @@ namespace VMAP
             int iRefCount;
     };
 
+    typedef std::map<G3D::g3d_uint32, GameobjectModelSpawn> GOModelSpawnList;
+    typedef std::map<G3D::g3d_uint32, DynamicMapTree*> DynamicTreeMap;
     typedef std::map<G3D::g3d_uint32, StaticMapTree*> InstanceTreeMap;
     typedef std::map<std::string, ManagedModel> ModelFileMap;
 
     class VMapManager2
     {
         protected:
+            std::string vmapDir;
+
             // Tree to check collision
             ModelFileMap iLoadedModelFiles;
+            DynamicTreeMap iDynamicMapTrees;
             InstanceTreeMap iInstanceMapTrees;
+            GOModelSpawnList GOModelList;
 
             // Mutex for iLoadedModelFiles
             G3D::GMutex LoadedModelFilesLock;
 
-            bool _loadMap(G3D::g3d_uint32 mapId, const std::string& basePath, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY);
+            bool _loadMap(G3D::g3d_uint32 mapId, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY);
+            bool _loadObject(DynamicMapTree* tree, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_int32 m_phase);
             /* void _unloadMap(G3D::g3d_uint32 pMapId, G3D::g3d_uint32 x, G3D::g3d_uint32 y); */
 
         public:
             // public for debug
             G3D::Vector3 convertPositionToInternalRep(float x, float y, float z) const;
-            G3D::Vector3 convertPositionToMangosRep(float x, float y, float z) const;
             static std::string getMapFileName(unsigned int mapId);
 
-            VMapManager2();
+            VMapManager2(std::string vMapDirectory);
             ~VMapManager2(void);
 
-            void LoadGameObjectModelList(std::string vMapDirectory);
+            void updateDynamicMapTrees(G3D::g3d_uint32 t_diff);
+            void updateDynamicMapTree(G3D::g3d_uint32 mapid, G3D::g3d_uint32 t_diff);
+            void LoadGameObjectModelList();
 
-            int loadMap(const char* pBasePath, unsigned int mapId, int x, int y);
+            int loadMap(unsigned int mapId, int x, int y);
+            int loadObject(unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_int32 m_phase);
 
             void unloadMap(unsigned int mapId, int x, int y);
             void unloadMap(unsigned int mapId);
 
-            bool isInLineOfSight(unsigned int mapId, float x1, float y1, float z1, float x2, float y2, float z2) ;
+            bool isInLineOfSight(unsigned int mapId, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2) ;
             /**
             fill the hit pos and return true, if an object was hit
             */
-            bool getObjectHitPos(unsigned int mapId, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float& ry, float& rz, float modifyDist);
-            float getHeight(unsigned int mapId, float x, float y, float z, float maxSearchDist);
+            bool getObjectHitPos(unsigned int mapId, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float& ry, float& rz, float modifyDist);
+            float getHeight(unsigned int mapId, G3D::g3d_int32 m_phase, float x, float y, float z, float maxSearchDist);
             G3D::g3d_uint32 GetVmapFlags(unsigned int mapid, float x, float y, float z);
 
             bool processCommand(char *) { return false; } // for debug and extensions
@@ -92,7 +101,7 @@ namespace VMAP
             bool getAreaInfo(unsigned int pMapId, float x, float y, float& z, G3D::g3d_uint32& flags, G3D::g3d_int32& adtId, G3D::g3d_int32& rootId, G3D::g3d_int32& groupId) const;
             bool GetLiquidLevel(G3D::g3d_uint32 pMapId, float x, float y, float z, G3D::g3d_uint8 reqLiquidType, float& level, float& floor, G3D::g3d_uint32& type) const;
 
-            WorldModel* acquireModelInstance(const std::string& basepath, const std::string& filename);
+            WorldModel* acquireModelInstance(const std::string& filename);
             void releaseModelInstance(const std::string& filename);
 
             // what's the use of this? o.O

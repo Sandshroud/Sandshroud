@@ -12,17 +12,17 @@ int CHECK_TREE_PERIOD = 200;
 
 } // namespace
 
-template<> struct HashTrait< GameObjectModel>{
-    static size_t hashCode(const GameObjectModel& g) { return (size_t)(void*)&g; }
+template<> struct HashTrait< VMAP::GameobjectModelInstance>{
+    static size_t hashCode(const VMAP::GameobjectModelInstance& g) { return (size_t)(void*)&g; }
 };
 
-template<> struct PositionTrait< GameObjectModel> {
-    static void getPosition(const GameObjectModel& g, G3D::Vector3& p) { p = g.getPosition(); }
+template<> struct PositionTrait< VMAP::GameobjectModelInstance> {
+    static void getPosition(const VMAP::GameobjectModelInstance& g, G3D::Vector3& p) { p = g.getPosition(); }
 };
 
-template<> struct BoundsTrait< GameObjectModel> {
-    static void getBounds(const GameObjectModel& g, G3D::AABox& out) { out = g.getBounds();}
-    static void getBounds2(const GameObjectModel* g, G3D::AABox& out) { out = g->getBounds();}
+template<> struct BoundsTrait< VMAP::GameobjectModelInstance> {
+    static void getBounds(const VMAP::GameobjectModelInstance& g, G3D::AABox& out) { out = g.getBounds();}
+    static void getBounds2(const VMAP::GameobjectModelInstance* g, G3D::AABox& out) { out = g->getBounds();}
 };
 
 template<class Node>
@@ -78,14 +78,22 @@ struct TimeTrackerSmall
 
 struct DynTreeImpl
 {
-    typedef BIHWrap<GameObjectModel> ModelWrap;
-    typedef G3D::Table<const GameObjectModel*, ModelWrap*> MemberTable;
-    typedef GameObjectModel Model;
+    typedef BIHWrap<VMAP::GameobjectModelInstance> ModelWrap;
+    typedef G3D::Table<const VMAP::GameobjectModelInstance*, ModelWrap*> MemberTable;
+    typedef VMAP::GameobjectModelInstance Model;
 
     DynTreeImpl() :
         rebalance_timer(CHECK_TREE_PERIOD),
         unbalanced_times(0)
     {
+        memset(nodes, NULL, sizeof(nodes));
+    }
+
+    ~DynTreeImpl()
+    {
+        for (int x = 0; x < CELL_NUMBER; ++x)
+            for (int y = 0; y < CELL_NUMBER; ++y)
+                delete nodes[x][y];
     }
 
     ModelWrap& getGrid(int x, int y)
@@ -105,7 +113,7 @@ struct DynTreeImpl
     void insert(const Model& mdl)
     {
         G3D::Vector3 pos;
-        PositionTrait<GameObjectModel>::getPosition(mdl, pos);
+        PositionTrait<Model>::getPosition(mdl, pos);
         ModelWrap& node = getGridFor(pos.x, pos.y);
         node.insert(mdl);
         memberTable.set(&mdl, &node);
@@ -249,7 +257,7 @@ struct DynTreeImpl
     TimeTrackerSmall rebalance_timer;
 
     int unbalanced_times;
-    bool contains(const GameObjectModel& value) const { return memberTable.containsKey(&value); }
+    bool contains(const Model& value) const { return memberTable.containsKey(&value); }
     int size() const { return memberTable.size(); }
     MemberTable memberTable;
     ModelWrap* nodes[CELL_NUMBER][CELL_NUMBER];
@@ -265,17 +273,17 @@ DynamicMapTree::~DynamicMapTree()
     delete impl;
 }
 
-void DynamicMapTree::insert(const GameObjectModel& mdl)
+void DynamicMapTree::insert(const VMAP::GameobjectModelInstance& mdl)
 {
     impl->insert(mdl);
 }
 
-void DynamicMapTree::remove(const GameObjectModel& mdl)
+void DynamicMapTree::remove(const VMAP::GameobjectModelInstance& mdl)
 {
     impl->remove(mdl);
 }
 
-bool DynamicMapTree::contains(const GameObjectModel& mdl) const
+bool DynamicMapTree::contains(const VMAP::GameobjectModelInstance& mdl) const
 {
     return impl->contains(mdl);
 }
@@ -300,7 +308,7 @@ struct DynamicTreeIntersectionCallback
     bool did_hit;
     G3D::g3d_uint32 phase_mask;
     DynamicTreeIntersectionCallback(G3D::g3d_uint32 phasemask) : did_hit(false), phase_mask(phasemask) {}
-    bool operator()(const G3D::Ray& r, const GameObjectModel& obj, float& distance)
+    bool operator()(const G3D::Ray& r, const VMAP::GameobjectModelInstance& obj, float& distance)
     {
         did_hit = obj.intersectRay(r, distance, true, phase_mask);
         return did_hit;
@@ -315,20 +323,20 @@ struct DynamicTreeIntersectionCallback_WithLogger
     DynamicTreeIntersectionCallback_WithLogger(G3D::g3d_uint32 phasemask) : did_hit(false), phase_mask(phasemask)
     {
 #ifdef _DEBUG
-        G3D::G3D_Log::common()->printf("Dynamic Intersection log");
+        printf("Dynamic Intersection log\n");
 #endif
     }
-    bool operator()(const G3D::Ray& r, const GameObjectModel& obj, float& distance)
+    bool operator()(const G3D::Ray& r, const VMAP::GameobjectModelInstance& obj, float& distance)
     {
 #ifdef _DEBUG
-        G3D::G3D_Log::common()->printf("testing intersection with %s", obj.name.c_str());
+        printf("testing intersection with %s\n", obj.name.c_str());
 #endif
         bool hit = obj.intersectRay(r, distance, true, phase_mask);
         if (hit)
         {
             did_hit = true;
 #ifdef _DEBUG
-            G3D::G3D_Log::common()->printf("result: intersects");
+            printf("result: intersects\n");
 #endif
         }
         return hit;

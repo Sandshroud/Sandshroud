@@ -259,7 +259,7 @@ namespace VMAP
     bool StaticMapTree::InitMap(const std::string &fname, VMapManager2* vm)
     {
 #ifdef _DEBUG
-        G3D::G3D_Log::common()->printf("StaticMapTree::InitMap() : initializing StaticMapTree '%s'", fname.c_str());
+        printf("StaticMapTree::InitMap() : initializing StaticMapTree '%s'\n", fname.c_str());
 #endif
         bool success = true;
         std::string fullname = iBasePath + fname;
@@ -288,13 +288,13 @@ namespace VMAP
             // only non-tiled maps have them, and if so exactly one (so far at least...)
             ModelSpawn spawn;
 #ifdef _DEBUG
-            G3D::G3D_Log::common()->printf("StaticMapTree::InitMap() : map isTiled: %u", static_cast<uint32>(iIsTiled));
+            printf("StaticMapTree::InitMap() : map isTiled: %u\n", static_cast<G3D::g3d_uint32>(iIsTiled));
 #endif
             if (!iIsTiled && ModelSpawn::readFromFile(rf, spawn))
             {
-                WorldModel* model = vm->acquireModelInstance(iBasePath, spawn.name);
+                WorldModel* model = vm->acquireModelInstance(spawn.name);
 #ifdef _DEBUG
-                G3D::G3D_Log::common()->printf("StaticMapTree::InitMap() : loading %s", spawn.name.c_str());
+                printf("StaticMapTree::InitMap() : loading %s\n", spawn.name.c_str());
 #endif
                 if (model)
                 {
@@ -305,7 +305,9 @@ namespace VMAP
                 else
                 {
                     success = false;
-                    G3D::G3D_Log::common()->printf("StaticMapTree::InitMap() : could not acquire WorldModel pointer for '%s'", spawn.name.c_str());
+#ifdef _DEBUG
+                    printf("StaticMapTree::InitMap() : could not acquire WorldModel pointer for '%s'\n", spawn.name.c_str());
+#endif
                 }
             }
 
@@ -341,7 +343,9 @@ namespace VMAP
         }
         if (!iTreeValues)
         {
-            G3D::G3D_Log::common()->printf("StaticMapTree::LoadMapTile() : tree has not been initialized [%u, %u]", tileX, tileY);
+#ifdef _DEBUG
+            printf("StaticMapTree::LoadMapTile() : tree has not been initialized [%u, %u]\n", tileX, tileY);
+#endif
             return false;
         }
         bool result = true;
@@ -365,9 +369,11 @@ namespace VMAP
                 if (result)
                 {
                     // acquire model instance
-                    WorldModel* model = vm->acquireModelInstance(iBasePath, spawn.name);
+                    WorldModel* model = vm->acquireModelInstance(spawn.name);
+#ifdef _DEBUG
                     if (!model)
-                        G3D::G3D_Log::common()->printf("StaticMapTree::LoadMapTile() : could not acquire WorldModel pointer [%u, %u]", tileX, tileY);
+                        printf("StaticMapTree::LoadMapTile() : could not acquire WorldModel pointer [%u, %u]\n", tileX, tileY);
+#endif
 
                     // update tree
                     G3D::g3d_uint32 referencedVal;
@@ -379,7 +385,7 @@ namespace VMAP
 #ifdef _DEBUG
                             if (referencedVal > iNTreeValues)
                             {
-                                G3D::G3D_Log::common()->printf("StaticMapTree::LoadMapTile() : invalid tree element (%u/%u)", referencedVal, iNTreeValues);
+                                printf("StaticMapTree::LoadMapTile() : invalid tree element (%u/%u)\n", referencedVal, iNTreeValues);
                                 continue;
                             }
 #endif
@@ -391,9 +397,9 @@ namespace VMAP
                             ++iLoadedSpawns[referencedVal];
 #ifdef VMAP_DEBUG
                             if (iTreeValues[referencedVal].ID != spawn.ID)
-                                G3D::G3D_Log::common()->printf("StaticMapTree::LoadMapTile() : trying to load wrong spawn in node");
+                                printf("StaticMapTree::LoadMapTile() : trying to load wrong spawn in node\n");
                             else if (iTreeValues[referencedVal].name != spawn.name)
-                                G3D::G3D_Log::common()->printf("StaticMapTree::LoadMapTile() : name collision on GUID=%u", spawn.ID);
+                                printf("StaticMapTree::LoadMapTile() : name collision on GUID=%u\n", spawn.ID);
 #endif
                         }
                     }
@@ -417,7 +423,9 @@ namespace VMAP
         loadedTileMap::iterator tile = iLoadedTiles.find(tileID);
         if (tile == iLoadedTiles.end())
         {
-            G3D::G3D_Log::common()->printf("StaticMapTree::UnloadMapTile() : trying to unload non-loaded tile - Map:%u X:%u Y:%u", iMapID, tileX, tileY);
+#ifdef _DEBUG
+            printf("StaticMapTree::UnloadMapTile() : trying to unload non-loaded tile - Map:%u X:%u Y:%u\n", iMapID, tileX, tileY);
+#endif
             return;
         }
         if (tile->second) // file associated with tile
@@ -451,7 +459,11 @@ namespace VMAP
                         else
                         {
                             if (!iLoadedSpawns.count(referencedNode))
-                                G3D::G3D_Log::common()->printf("StaticMapTree::UnloadMapTile() : trying to unload non-referenced model '%s' (ID:%u)", spawn.name.c_str(), spawn.ID);
+                            {
+#ifdef _DEBUG
+                                printf("StaticMapTree::UnloadMapTile() : trying to unload non-referenced model '%s' (ID:%u)\n", spawn.name.c_str(), spawn.ID);
+#endif
+                            }
                             else if (--iLoadedSpawns[referencedNode] == 0)
                             {
                                 iTreeValues[referencedNode].setUnloaded();

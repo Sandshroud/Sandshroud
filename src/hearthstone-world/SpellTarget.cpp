@@ -114,7 +114,7 @@ void Spell::HandleTargetNoObject()
 	newz = m_caster->GetCHeightForPosition(true, newx, newy, newz);
 
 	//if not in line of sight, or too far away we summon inside caster
-	if(fabs(newz - m_caster->GetPositionZ()) > 10 || !CollideInterface.CheckLOS(m_caster->GetMapId(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ() + 2, newx, newy, newz + 2))
+	if(fabs(newz - m_caster->GetPositionZ()) > 10 || !CollideInterface.CheckLOS(m_caster->GetMapId(), m_caster->GetPhaseMask(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ() + 2, newx, newy, newz + 2))
 	{
 		newx = m_caster->GetPositionX();
 		newy = m_caster->GetPositionY();
@@ -196,7 +196,7 @@ bool Spell::AddTarget(uint32 i, uint32 TargetType, Object* obj)
 			}*/
 		}
 
-		if(!CollideInterface.CheckLOS(m_caster->GetMapId(), x, y, z + 2, obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ() + 2))
+		if(!CollideInterface.CheckLOS(m_caster->GetMapId(), m_caster->GetPhaseMask(), x, y, z + 2, obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ() + 2))
 			return false;
 	}
 	return true;
