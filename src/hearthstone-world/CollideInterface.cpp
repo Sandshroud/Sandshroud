@@ -295,6 +295,14 @@ void CCollideInterface::LoadGameobjectModel(uint64 Guid, uint32 mapId, uint32 di
 	CollisionMgr->loadObject(Guid, mapId, displayID, scale, posX, posY, posZ, orientation, phasemask);
 }
 
+void CCollideInterface::UpdateObjectModel(uint64 Guid, uint32 mapId, uint32 displayID)
+{
+	if( !CollisionMgr )
+		return;
+
+	CollisionMgr->changeObjectModel(Guid, mapId, displayID);
+}
+
 void CCollideInterface::UnLoadGameobjectModel(uint64 Guid, uint32 mapId)
 {
 	if( !CollisionMgr )

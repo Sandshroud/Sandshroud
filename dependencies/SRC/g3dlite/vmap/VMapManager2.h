@@ -93,6 +93,8 @@ namespace VMAP
             int loadMap(unsigned int mapId, int x, int y);
             int loadObject(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_int32 m_phase);
 
+            void changeObjectModel(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID);
+
             void unloadMap(unsigned int mapId, int x, int y);
             void unloadMap(unsigned int mapId);
             void unloadObject(unsigned int mapId, G3D::g3d_uint64 guid);
