@@ -32,6 +32,7 @@ public:
 	float GetHeight(uint32 mapId, int32 m_phase, float x, float y, float z);
 
 	void LoadGameobjectModel(uint64 Guid, uint32 mapId, uint32 displayID, float scale, float posX, float posY, float posZ, float orientation, int32 phasemask);
+	void UnLoadGameobjectModel(uint64 Guid, uint32 mapId);
 };
 
 extern SERVER_DECL CCollideInterface CollideInterface;
