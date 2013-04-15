@@ -353,7 +353,7 @@ void MapMgr::PushObject(Object* obj)
 					_sqlids_gameobjects.insert(make_pair(go->m_spawn->id, go ) );
 				}
 				CALL_INSTANCE_SCRIPT_EVENT( this, OnGameObjectPushToWorld )( go );
-				CollideInterface.LoadGameobjectModel(obj->GetUIdFromGUID(), _mapId, go->GetDisplayId(), go->GetFloatValue(OBJECT_FIELD_SCALE_X), go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), go->GetOrientation(), go->GetPhaseMask());
+				CollideInterface.LoadGameobjectModel(obj->GetGUID(), _mapId, go->GetDisplayId(), go->GetFloatValue(OBJECT_FIELD_SCALE_X), go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), go->GetOrientation(), go->GetPhaseMask());
 			}break;
 
 		case HIGHGUID_TYPE_DYNAMICOBJECT:
@@ -485,6 +485,7 @@ void MapMgr::RemoveObject(Object* obj, bool free_guid)
 			if(TO_GAMEOBJECT(obj)->m_spawn != NULL)
 				_sqlids_gameobjects.erase(TO_GAMEOBJECT(obj)->m_spawn->id);
 			CALL_INSTANCE_SCRIPT_EVENT( this, OnGameObjectRemoveFromWorld )( TO_GAMEOBJECT(obj) );
+			CollideInterface.UnLoadGameobjectModel(obj->GetGUID(), _mapId);
 		}break;
 
 	case HIGHGUID_TYPE_PLAYER:

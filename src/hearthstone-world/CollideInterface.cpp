@@ -87,7 +87,7 @@ bool CCollideInterface::ActivateTile(uint32 mapId, uint32 tileX, uint32 tileY)
 	m_mapLocks[mapId]->m_lock.AcquireWriteLock();
 	if( m_mapLocks[mapId]->m_tileLoadCount[tileX][tileY] == 0 )
 	{
-		if(CollisionMgr->loadMap(sWorld.vMapPath.c_str(), mapId, tileX, tileY))
+		if(CollisionMgr->loadMap(mapId, tileX, tileY))
 			OUT_DEBUG("Loading VMap [%u/%u] successful", tileX, tileY);
 		else
 		{
@@ -292,7 +292,15 @@ void CCollideInterface::LoadGameobjectModel(uint64 Guid, uint32 mapId, uint32 di
 	if( !CollisionMgr )
 		return;
 
-	CollisionMgr->loadObject(mapId, displayID, scale, posX, posY, posZ, orientation, phasemask);
+	CollisionMgr->loadObject(Guid, mapId, displayID, scale, posX, posY, posZ, orientation, phasemask);
+}
+
+void CCollideInterface::UnLoadGameobjectModel(uint64 Guid, uint32 mapId)
+{
+	if( !CollisionMgr )
+		return;
+
+	CollisionMgr->unloadObject(mapId, Guid);
 }
 
 void CCollideInterface::DeInit()
