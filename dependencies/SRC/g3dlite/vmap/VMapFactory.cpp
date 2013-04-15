@@ -10,10 +10,10 @@ namespace VMAP
 
     //===============================================
     // just return the instance
-    VMapManager2* VMapFactory::createOrGetVMapManager()
+    VMapManager2* VMapFactory::createOrGetVMapManager(std::string vmapDir)
     {
         if(gVMapManager == 0)
-            gVMapManager = new VMapManager2();                // should be taken from config ... Please change if you like :-)
+            gVMapManager = new VMapManager2(vmapDir);                // should be taken from config ... Please change if you like :-)
         return gVMapManager;
     }
 
