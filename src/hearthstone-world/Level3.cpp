@@ -2915,10 +2915,10 @@ bool ChatHandler::HandleCollisionTestLOS(const char * args, WorldSession * m_ses
 		{
 			const LocationVector & loc2 = pObj->GetPosition();
 			const LocationVector & loc1 = m_session->GetPlayer()->GetPosition();
-			bool res = CollideInterface.CheckLOS(pObj->GetMapId(), loc1.x, loc1.y, loc1.z, loc2.x, loc2.y, loc2.z);
-			bool res1 = CollideInterface.CheckLOS(pObj->GetMapId(), loc1.x, loc1.y, loc1.z+1.0f, loc2.x, loc2.y, loc2.z+1.0f);
-			bool res2 = CollideInterface.CheckLOS(pObj->GetMapId(), loc1.x, loc1.y, loc1.z+2.0f, loc2.x, loc2.y, loc2.z+2.0f);
-			bool res5 = CollideInterface.CheckLOS(pObj->GetMapId(), loc1.x, loc1.y, loc1.z+5.0f, loc2.x, loc2.y, loc2.z+5.0f);
+			bool res = CollideInterface.CheckLOS(pObj->GetMapId(), pObj->GetPhaseMask(), loc1.x, loc1.y, loc1.z, loc2.x, loc2.y, loc2.z);
+			bool res1 = CollideInterface.CheckLOS(pObj->GetMapId(), pObj->GetPhaseMask(), loc1.x, loc1.y, loc1.z+1.0f, loc2.x, loc2.y, loc2.z+1.0f);
+			bool res2 = CollideInterface.CheckLOS(pObj->GetMapId(), pObj->GetPhaseMask(), loc1.x, loc1.y, loc1.z+2.0f, loc2.x, loc2.y, loc2.z+2.0f);
+			bool res5 = CollideInterface.CheckLOS(pObj->GetMapId(), pObj->GetPhaseMask(), loc1.x, loc1.y, loc1.z+5.0f, loc2.x, loc2.y, loc2.z+5.0f);
 			bool objectfunction = m_session->GetPlayer()->IsInLineOfSight(pObj);
 			SystemMessage(m_session, "Difference 0: Result was: %s.", res ? "in LOS" : "not in LOS");
 			SystemMessage(m_session, "Difference 1: Result was: %s.", res1 ? "in LOS" : "not in LOS");

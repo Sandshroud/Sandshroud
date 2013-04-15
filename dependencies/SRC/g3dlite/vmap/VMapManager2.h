@@ -47,6 +47,13 @@ namespace VMAP
             int iRefCount;
     };
 
+    typedef std::map<G3D::g3d_uint64, GameobjectModelInstance*> ModelGUIDEs;
+    struct GOMapGuides
+    {
+        ModelGUIDEs ModelsByGuid;
+    };
+
+    typedef std::map<G3D::g3d_uint32, GOMapGuides* > GOModelInstanceByGUID;
     typedef std::map<G3D::g3d_uint32, GameobjectModelSpawn> GOModelSpawnList;
     typedef std::map<G3D::g3d_uint32, DynamicMapTree*> DynamicTreeMap;
     typedef std::map<G3D::g3d_uint32, StaticMapTree*> InstanceTreeMap;
@@ -56,6 +63,7 @@ namespace VMAP
     {
         protected:
             std::string vmapDir;
+            GOModelInstanceByGUID GOModelTracker;
 
             // Tree to check collision
             ModelFileMap iLoadedModelFiles;
@@ -67,7 +75,7 @@ namespace VMAP
             G3D::GMutex LoadedModelFilesLock;
 
             bool _loadMap(G3D::g3d_uint32 mapId, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY);
-            bool _loadObject(DynamicMapTree* tree, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_int32 m_phase);
+            bool _loadObject(DynamicMapTree* tree, G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_int32 m_phase);
             /* void _unloadMap(G3D::g3d_uint32 pMapId, G3D::g3d_uint32 x, G3D::g3d_uint32 y); */
 
         public:
@@ -83,10 +91,11 @@ namespace VMAP
             void LoadGameObjectModelList();
 
             int loadMap(unsigned int mapId, int x, int y);
-            int loadObject(unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_int32 m_phase);
+            int loadObject(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_int32 m_phase);
 
             void unloadMap(unsigned int mapId, int x, int y);
             void unloadMap(unsigned int mapId);
+            void unloadObject(unsigned int mapId, G3D::g3d_uint64 guid);
 
             bool isInLineOfSight(unsigned int mapId, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2) ;
             /**

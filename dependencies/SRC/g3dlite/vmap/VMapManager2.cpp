@@ -83,7 +83,7 @@ namespace VMAP
     }
 
     // load one tile (internal use only)
-    int VMapManager2::loadObject(unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_int32 m_phase)
+    int VMapManager2::loadObject(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_int32 m_phase)
     {
         int result = VMAP_LOAD_RESULT_IGNORED;
         DynamicTreeMap::iterator DIT = iDynamicMapTrees.find(mapId);
@@ -95,7 +95,7 @@ namespace VMAP
         if(DIT->second == NULL)
             return result; // Shouldn't happen.
 
-        if(_loadObject(DIT->second, DisplayID, scale, x, y, z, o, m_phase))
+        if(_loadObject(DIT->second, guid, mapId, DisplayID, scale, x, y, z, o, m_phase))
             result = VMAP_LOAD_RESULT_OK;
         else
             result = VMAP_LOAD_RESULT_ERROR;
@@ -103,7 +103,7 @@ namespace VMAP
     }
 
     // Load our object into our dynamic tree(Internal only please!)
-    bool VMapManager2::_loadObject(DynamicMapTree* tree, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_int32 m_phase)
+    bool VMapManager2::_loadObject(DynamicMapTree* tree, G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_int32 m_phase)
     {
         GOModelSpawnList::const_iterator it = GOModelList.find(DisplayID);
         if (it == GOModelList.end())
@@ -130,8 +130,43 @@ namespace VMAP
         }
 
         Instance->SetData(mdl_box, x, y, z, o, scale);
+        GOMapGuides* guides = NULL;
+        GOModelInstanceByGUID::iterator itr = GOModelTracker.find(mapId);
+        if(GOModelTracker.find(mapId) == GOModelTracker.end())
+        {
+            guides = new GOMapGuides();
+            GOModelTracker.insert(GOModelInstanceByGUID::value_type(mapId, guides));
+        }
+        else
+            guides = GOModelTracker.at(mapId);
+
+        guides->ModelsByGuid.insert(ModelGUIDEs::value_type(guid, Instance));
         tree->insert(*Instance);
         return true;
+    }
+
+    void VMapManager2::unloadObject(unsigned int mapId, G3D::g3d_uint64 guid)
+    {
+        GOModelInstanceByGUID::iterator itr = GOModelTracker.find(mapId);
+        if(itr == GOModelTracker.end())
+            return;
+        GOMapGuides* guides = GOModelTracker.at(mapId);
+        DynamicTreeMap::iterator DynamicTree = iDynamicMapTrees.find(mapId);
+        if (DynamicTree != iDynamicMapTrees.end())
+        {
+            if(guides->ModelsByGuid.find(guid) != guides->ModelsByGuid.end())
+            {
+                GameobjectModelInstance* Instance = guides->ModelsByGuid.at(guid);
+                DynamicTree->second->remove(*Instance);
+                guides->ModelsByGuid.erase(guid);
+                delete Instance;
+            }
+        }
+        if(guides->ModelsByGuid.size() == 0)
+        {
+            GOModelTracker.erase(mapId);
+            delete guides;
+        }
     }
 
     void VMapManager2::unloadMap(unsigned int mapId)
