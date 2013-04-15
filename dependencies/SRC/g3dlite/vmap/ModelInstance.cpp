@@ -215,9 +215,10 @@ namespace VMAP
 //        iRot = Vector3(orientation, 0, 0);
         iScale = scale;
         iInvScale = 1.0f / iScale;
+        iOrientation = orientation;
 
 //        iInvRot = G3D::Matrix3::fromEulerAnglesZYX(G3D::pi()*iRot.y/180.f, G3D::pi()*iRot.x/180.f, G3D::pi()*iRot.z/180.f).inverse();
-        G3D::Matrix3 iRotation = G3D::Matrix3::fromEulerAnglesZYX(orientation, 0, 0);
+        G3D::Matrix3 iRotation = G3D::Matrix3::fromEulerAnglesZYX(iOrientation, 0, 0);
         iInvRot = iRotation.inverse();
 
         // transform bounding box:
