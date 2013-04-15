@@ -22,7 +22,7 @@ namespace VMAP
         public:
             G3D::AABox BoundBase;
             std::string name;
-            const G3D::AABox& getBounds() const { return BoundBase; }
+            const G3D::AABox& getBaseBounds() const { return BoundBase; }
     };
 
     class ModelSpawn
@@ -67,19 +67,24 @@ namespace VMAP
     class GameobjectModelInstance : public GameobjectModelSpawn
     {
         public:
-            GameobjectModelInstance() : iInvScale(0.0f), iScale(0.0f), iModel(0), m_PhaseMask(-1) {}
+            GameobjectModelInstance() : iInvScale(0.0f), iScale(0.0f), iModel(0), m_PhaseMask(-1), iOrientation(0.0f) {}
             GameobjectModelInstance(const GameobjectModelSpawn &spawn, WorldModel* model, G3D::g3d_uint32 m_phase);
 
-            void setUnloaded() { iModel = 0; }
+            void setUnloaded() { iModel = NULL; iBound = G3D::AABox(G3D::Vector3(0, 0, 0)); }
+            void LoadModel(WorldModel* m, G3D::AABox& bound) { if(m != NULL) { iModel = m; iBound = bound; }};
             void SetData(G3D::AABox Box, float x, float y, float z, float orientation, float scale);
             bool intersectRay(const G3D::Ray& pRay, float& pMaxDist, bool pStopAtFirstHit, G3D::g3d_int32 m_phase) const;
+            const float GetOrientation() const { return iOrientation; };
             const G3D::Vector3& getPosition() const { return iPos;}
+            const G3D::AABox& getBounds() const { return iBound; };
+            const float GetScale() const { return iScale; };
         protected:
             G3D::g3d_int32 m_PhaseMask;
             WorldModel* iModel;
 
             float iInvScale;
             float iScale;
+            float iOrientation;
 
             G3D::AABox iBound;
             G3D::Vector3 iPos;

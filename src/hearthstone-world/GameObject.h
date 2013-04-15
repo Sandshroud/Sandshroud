@@ -462,7 +462,7 @@ public:
 	uint8 GetType() { return GetByte( GAMEOBJECT_BYTES_1, GAMEOBJECT_BYTES_TYPE_ID ); }
 	void SetLevel(uint32 level) { SetUInt32Value( GAMEOBJECT_LEVEL, level ); }
 	uint32 GetLevel() { return GetUInt32Value( GAMEOBJECT_LEVEL ); }
-	void SetDisplayId(uint32 id) { SetUInt32Value( GAMEOBJECT_DISPLAYID, id ); }
+	void SetDisplayId(uint32 id);
 	uint32 GetDisplayId() { return GetUInt32Value( GAMEOBJECT_DISPLAYID ); }
 
 	//Destructable Building
