@@ -972,7 +972,7 @@ bool Spell::GenerateTargets(SpellCastTargets *t)
 				t->m_destZ = m_caster->GetCHeightForPosition(true, t->m_destX, t->m_destY, m_caster->GetPositionZ() + 2.0f);
 				t->m_targetMask = TARGET_FLAG_DEST_LOCATION;
 			}
-			while(sWorld.Collision && !CollideInterface.CheckLOS(m_caster->GetMapId(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), t->m_destX, t->m_destY, t->m_destZ));
+			while(sWorld.Collision && !CollideInterface.CheckLOS(m_caster->GetMapId(), m_caster->GetPhaseMask(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), t->m_destX, t->m_destY, t->m_destZ));
 			result = true;
 		}
 		else if(TargetType & SPELL_TARGET_AREA)  //targetted aoe

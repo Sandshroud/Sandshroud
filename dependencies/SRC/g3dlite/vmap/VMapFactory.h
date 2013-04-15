@@ -15,7 +15,7 @@ namespace VMAP
     class VMapFactory
     {
         public:
-            static VMapManager2* createOrGetVMapManager();
+            static VMapManager2* createOrGetVMapManager(std::string vmapDir);
             static void clear();
     };
 
