@@ -739,6 +739,15 @@ void GameObject::UpdateRotation(float orientation3, float orientation4)
 	SetFloatValue(GAMEOBJECT_PARENTROTATION_3, orientation4);
 }
 
+void GameObject::SetDisplayId(uint32 id)
+{
+	SetUInt32Value( GAMEOBJECT_DISPLAYID, id );
+	if(IsInWorld())
+	{
+		CollideInterface.UpdateObjectModel(GetGUID(), GetMapId(), id);
+	}
+}
+
 //Destructable Buildings
 void GameObject::TakeDamage(uint32 amount, Object* mcaster, Player* pcaster, uint32 spellid)
 {

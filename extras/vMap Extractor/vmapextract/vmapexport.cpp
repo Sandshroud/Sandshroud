@@ -44,9 +44,12 @@
 #include "adtfile.h"
 #include "wdtfile.h"
 #include "dbcfile.h"
-#include "vmapexport.h"
 #include "wmo.h"
 #include "mpq_libmpq04.h"
+
+#include "vmapexport.h"
+
+int expansion;
 
 //------------------------------------------------------------------------------
 // Defines
@@ -72,21 +75,30 @@ bool hasInputPathParam = false;
 bool preciseVectorData = false;
 
 // Constants
-int expansion = 0;
 
 //static const char * szWorkDirMaps = ".\\Maps";
-const char * szWorkDirWmo = "./Buildings";
-const char * szRawVMAPMagic = "VMAP003";
+const char* szWorkDirWmo = "./Buildings";
+const char* szRawVMAPMagic = "VMAP041";
 
 // Local testing functions
 
-static const char * GetPlainName(const char * szFileName)
+bool FileExists(const char* file)
 {
-    const char * szTemp;
+    if (FILE* n = fopen(file, "rb"))
+    {
+        fclose(n);
+        return true;
+    }
+    return false;
+}
 
-    if((szTemp = strrchr(szFileName, '\\')) != NULL)
-        szFileName = szTemp + 1;
-    return szFileName;
+void strToLower(char* str)
+{
+    while(*str)
+    {
+        *str=tolower(*str);
+        ++str;
+    }
 }
 
 // copied from contrib/extractor/System.cpp
@@ -122,124 +134,130 @@ void ReadLiquidTypeTableDBC()
 		}break;
 	default:
 		{
-			printf("Read LiquidType.dbc file...");
-			DBCFile* dbc = new DBCFile("DBFilesClient\\LiquidType.dbc");
-			dbc->open();
+            printf("Read LiquidType.dbc file...");
+            DBCFile dbc("DBFilesClient\\LiquidType.dbc");
+            if(!dbc.open())
+            {
+                printf("Fatal error: Invalid LiquidType.dbc file format!\n");
+                exit(1);
+            }
 
-			size_t LiqType_count = dbc->getRecordCount();
-			size_t LiqType_maxid = dbc->getRecord(LiqType_count - 1).getUInt(0);
-			LiqType = new uint16[LiqType_maxid + 1];
-			memset(LiqType, 0xff, (LiqType_maxid + 1) * sizeof(uint16));
+            size_t LiqType_count = dbc.getRecordCount();
+            size_t LiqType_maxid = dbc.getRecord(LiqType_count - 1).getUInt(0);
+            LiqType = new uint16[LiqType_maxid + 1];
+            memset(LiqType, 0xff, (LiqType_maxid + 1) * sizeof(uint16));
 
-			for(uint32 x = 0; x < LiqType_count; ++x)
-				LiqType[dbc->getRecord(x).getUInt(0)] = dbc->getRecord(x).getUInt(3);
+            for(uint32 x = 0; x < LiqType_count; ++x)
+                LiqType[dbc.getRecord(x).getUInt(0)] = dbc.getRecord(x).getUInt(3);
 
-			printf("Done! (%u LiqTypes loaded)\n", LiqType_count);
+                printf("Done! (%u LiqTypes loaded)\n", (unsigned int)LiqType_count);
 		}break;
 	}
 }
 
-int ExtractWmo()
+bool ExtractWmo()
 {
-    char   szLocalFile[1024] = "";
-    bool success=true;
+    bool success = true;
 
     //const char* ParsArchiveNames[] = {"patch-2.MPQ", "patch.MPQ", "common.MPQ", "expansion.MPQ"};
 
-    printf("Extracting WMOs...\n");
     for (ArchiveSet::const_iterator ar_itr = gOpenArchives.begin(); ar_itr != gOpenArchives.end() && success; ++ar_itr)
     {
         vector<string> filelist;
 
         (*ar_itr)->GetFileListTo(filelist);
-        for (vector<string>::iterator fname=filelist.begin(); fname != filelist.end() && success; ++fname)
+        for (vector<string>::iterator fname = filelist.begin(); fname != filelist.end() && success; ++fname)
         {
-            bool file_ok=true;
             if (fname->find(".wmo") != string::npos)
-            {
-                // Copy files from archive
-                //std::cout << "found *.wmo file " << *fname << std::endl;
-                sprintf(szLocalFile, "%s/%s", szWorkDirWmo, GetPlainName(fname->c_str()));
-                fixnamen(szLocalFile,strlen(szLocalFile));
-                FILE * n;
-                if ((n = fopen(szLocalFile, "rb"))== NULL)
-                {
-                    int p = 0;
-                    //Select root wmo files
-                    const char * rchr = strrchr(GetPlainName(fname->c_str()),0x5f);
-                    if(rchr != NULL)
-                    {
-                        char cpy[4];
-                        strncpy((char*)cpy,rchr,4);
-                        for (int i=0;i<4; ++i)
-                        {
-                            int m = cpy[i];
-                            if(isdigit(m))
-                                p++;
-                        }
-                    }
-                    if(p != 3)
-                    {
-                        WMORoot * froot = new WMORoot(*fname);
-                        if(!froot->open())
-                        {
-                            printf("Couldn't open RootWmo!!!\n");
-                            delete froot;
-                            continue;
-                        }
-                        FILE *output=fopen(szLocalFile,"wb");
-                        if(!output)
-                        {
-                            printf("couldn't open %s for writing!\n", szLocalFile);
-                            success=false;
-                        }
-                        froot->ConvertToVMAPRootWmo(output);
-                        int Wmo_nVertices = 0;
-                        //printf("root has %d groups\n", froot->nGroups);
-                        if(froot->nGroups !=0)
-                        {
-                            for (uint32 i=0; i<froot->nGroups; ++i)
-                            {
-                                char temp[1024];
-                                strcpy(temp, fname->c_str());
-                                temp[fname->length()-4] = 0;
-                                char groupFileName[1024];
-                                sprintf(groupFileName,"%s_%03d.wmo",temp, i);
-                                //printf("Trying to open groupfile %s\n",groupFileName);
-                                string s = groupFileName;
-                                WMOGroup * fgroup = new WMOGroup(s);
-                                if(!fgroup->open())
-                                {
-                                    printf("Could not open all Group file for: %s\n",GetPlainName(fname->c_str()));
-                                    file_ok=false;
-                                    break;
-                                }
-
-                                Wmo_nVertices += fgroup->ConvertToVMAPGroupWmo(output, froot, preciseVectorData);
-                                delete fgroup;
-                            }
-                        }
-                        fseek(output, 8, SEEK_SET); // store the correct no of vertices
-                        fwrite(&Wmo_nVertices,sizeof(int),1,output);
-                        fclose(output);
-                        delete froot;
-                    }
-                }
-                else
-                {
-                    fclose(n);
-                }
-            }
-            // Delete the extracted file in the case of an error
-            if(!file_ok)
-                remove(szLocalFile);
+                success = ExtractSingleWmo(*fname);
         }
     }
 
-    if(success)
+    if (success)
         printf("\nExtract wmo complete (No (fatal) errors)\n");
 
     return success;
+}
+
+bool ExtractSingleWmo(std::string& fname)
+{
+    // Copy files from archive
+
+    char szLocalFile[1024];
+    const char * plain_name = GetPlainName(fname.c_str());
+    sprintf(szLocalFile, "%s/%s", szWorkDirWmo, plain_name);
+    fixnamen(szLocalFile,strlen(szLocalFile));
+
+    if (FileExists(szLocalFile))
+        return true;
+
+    int p = 0;
+    //Select root wmo files
+    char const* rchr = strrchr(plain_name, '_');
+    if(rchr != NULL)
+    {
+        char cpy[4];
+        strncpy((char*)cpy, rchr, 4);
+        for (int i = 0; i < 4; ++i)
+        {
+            int m = cpy[i];
+            if(isdigit(m))
+                p++;
+        }
+    }
+
+    if (p == 3)
+        return true;
+
+    bool file_ok = true;
+    std::cout << "Extracting " << fname << std::endl;
+    WMORoot froot(fname);
+    if(!froot.open())
+    {
+        printf("Couldn't open RootWmo!!!\n");
+        return true;
+    }
+    FILE *output = fopen(szLocalFile,"wb");
+    if(!output)
+    {
+        printf("couldn't open %s for writing!\n", szLocalFile);
+        return false;
+    }
+    froot.ConvertToVMAPRootWmo(output);
+    int Wmo_nVertices = 0;
+    //printf("root has %d groups\n", froot->nGroups);
+    if (froot.nGroups !=0)
+    {
+        for (uint32 i = 0; i < froot.nGroups; ++i)
+        {
+            char temp[1024];
+            strcpy(temp, fname.c_str());
+            temp[fname.length()-4] = 0;
+            char groupFileName[1024];
+            sprintf(groupFileName, "%s_%03u.wmo", temp, i);
+            //printf("Trying to open groupfile %s\n",groupFileName);
+
+            string s = groupFileName;
+            WMOGroup fgroup(s);
+            if(!fgroup.open())
+            {
+                printf("Could not open all Group file for: %s\n", plain_name);
+                file_ok = false;
+                break;
+            }
+
+            Wmo_nVertices += fgroup.ConvertToVMAPGroupWmo(output, &froot, preciseVectorData);
+        }
+    }
+
+    fseek(output, 8, SEEK_SET); // store the correct no of vertices
+    fwrite(&Wmo_nVertices,sizeof(int),1,output);
+    fclose(output);
+
+    // Delete the extracted file in the case of an error
+    if (!file_ok)
+        remove(szLocalFile);
+    return true;
 }
 
 void ParsMapFiles()
@@ -276,7 +294,11 @@ void ParsMapFiles()
 
 void getGamePath()
 {
+#ifdef _WIN32
+    strcpy(input_path,"Data\\");
+#else
     strcpy(input_path,"Data/");
+#endif
 }
 
 bool scan_patches(char* scanmatch, std::vector<std::string>& pArchiveNames)
@@ -424,7 +446,6 @@ bool fillArchiveNameVector(std::vector<std::string>& pArchiveNames)
 		pArchiveNames.push_back(input_path + string("terrain.MPQ"));
 		pArchiveNames.push_back(input_path + string("texture.MPQ"));
 	}
-
     return true;
 }
 
@@ -432,9 +453,9 @@ bool processArgv(int argc, char ** argv, const char *versionString)
 {
     bool result = true;
     hasInputPathParam = false;
-    bool preciseVectorData = false;
+    preciseVectorData = false;
 
-    for(int i=1; i< argc; ++i)
+    for(int i = 1; i < argc; ++i)
     {
         if(strcmp("-s",argv[i]) == 0)
         {
@@ -481,6 +502,7 @@ bool processArgv(int argc, char ** argv, const char *versionString)
     return result;
 }
 
+
 //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 // Main
 //
@@ -493,10 +515,10 @@ bool processArgv(int argc, char ** argv, const char *versionString)
 int main(int argc, char ** argv)
 {
     bool success=true;
-    const char *versionString = "V3.00 2010_07";
+    const char *versionString = "V4.00 2012_02";
 
     // Use command line arguments, when some
-    if(!processArgv(argc, argv, versionString))
+    if (!processArgv(argc, argv, versionString))
         return 1;
 
     // some simple check if working dir is dirty
@@ -510,21 +532,19 @@ int main(int argc, char ** argv)
             printf("Your output directory seems to be polluted, please use an empty directory!\n");
             printf("<press return to exit>");
             char garbage[2];
-            scanf("%c", garbage);
-            return 1;
+            return scanf("%c", garbage);
         }
     }
 
     printf("Extract %s. Beginning work ....\n",versionString);
     //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     // Create the working directory
-#ifdef __linux__
-    if(mkdir(szWorkDirWmo, 0711))
-		success = (errno == EEXIST);
-#else
-    if(mkdir(szWorkDirWmo))
-		success = (errno == EEXIST);
+    if (mkdir(szWorkDirWmo
+#if defined(__linux__) || defined(__APPLE__)
+                    , 0711
 #endif
+                    ))
+            success = (errno == EEXIST);
 
     // prepare archive name list
     std::vector<std::string> archiveNames;
@@ -532,11 +552,11 @@ int main(int argc, char ** argv)
     for (size_t i=0; i < archiveNames.size(); ++i)
     {
         MPQArchive *archive = new MPQArchive(archiveNames[i].c_str());
-        if(!gOpenArchives.size() || gOpenArchives.front() != archive)
+        if (gOpenArchives.empty() || gOpenArchives.front() != archive)
             delete archive;
     }
 
-    if(gOpenArchives.empty())
+    if (gOpenArchives.empty())
     {
         printf("FATAL ERROR: None MPQ archive found by path '%s'. Use -d option with proper path.\n",input_path);
         return 1;
@@ -544,15 +564,15 @@ int main(int argc, char ** argv)
     ReadLiquidTypeTableDBC();
 
     // extract data
-    if(success)
-        success = ((ExtractWmo() > 0) ? true : false);
+    if (success)
+        success = ExtractWmo();
 
     //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     //map.dbc
-    if(success)
+    if (success)
     {
         DBCFile * dbc = new DBCFile("DBFilesClient\\Map.dbc");
-        if(!dbc->open())
+        if (!dbc->open())
         {
             delete dbc;
             printf("FATAL ERROR: Map.dbc not found in data file.\n");
@@ -560,7 +580,7 @@ int main(int argc, char ** argv)
         }
         map_count=dbc->getRecordCount ();
         map_ids=new map_id[map_count];
-        for(unsigned int x=0;x<map_count;++x)
+        for (unsigned int x=0;x<map_count;++x)
         {
             map_ids[x].id=dbc->getRecord (x).getUInt(0);
             strcpy(map_ids[x].name,dbc->getRecord(x).getString(1));
@@ -572,14 +592,18 @@ int main(int argc, char ** argv)
         ParsMapFiles();
         delete [] map_ids;
         //nError = ERROR_SUCCESS;
+        // Extract models, listed in DameObjectDisplayInfo.dbc
+        ExtractGameobjectModels();
     }
 
     printf("\n");
-    if(!success)
-        printf("ERROR: Extract %s. Work NOT complete.\n   Precise vector data=%d.\n",versionString, preciseVectorData);
+    if (!success)
+    {
+        printf("ERROR: Extract %s. Work NOT complete.\n   Precise vector data=%d.\nPress any key.\n",versionString, preciseVectorData);
+        getchar();
+    }
 
     printf("Extract %s. Work complete. No errors.\n",versionString);
     delete [] LiqType;
-	WaitForInput();
     return 0;
 }

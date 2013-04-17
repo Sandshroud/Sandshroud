@@ -97,20 +97,20 @@ MMapManager::MMapManager(uint32 mapid)
 	fread(&params, sizeof(dtNavMeshParams), 1, file);
 	fclose(file);
 
-	dtNavMesh* mesh = mallocNavMesh();
+	dtNavMesh* mesh = dtAllocNavMesh();
 	ASSERT(mesh);
 	if(mesh->init(&params) != DT_SUCCESS)
 	{
-		freeNavMesh(mesh);
+		dtFreeNavMesh(mesh);
 		Log.Debug("NavMeshInterface", "Failed to initialize dtNavMesh for mmap %03u from file %s", mapid, fileName);
 		delete [] fileName;
 		return;
 	}
 
-	m_navMeshQuery = mallocNavMeshQuery();
+	m_navMeshQuery = dtAllocNavMeshQuery();
 	if(m_navMeshQuery->init(mesh, 1024) != DT_SUCCESS)
 	{
-		freeNavMesh(mesh);
+		dtFreeNavMesh(mesh);
 		Log.Debug("NavMeshInterface", "Failed to initialize dtNavMeshQuery for mmap %03u from file %s", mapid, fileName);
 		delete [] fileName;
 		return;
@@ -129,8 +129,8 @@ MMapManager::~MMapManager()
 	for(uint32 x = 0; x < 64; x++)
 		for(uint32 y = 0; y < 64; y++)
 			UnloadNavMesh(x, y);
-	freeNavMesh(m_navMesh);
-	freeNavMeshQuery(m_navMeshQuery);
+	dtFreeNavMesh(m_navMesh);
+	dtFreeNavMeshQuery(m_navMeshQuery);
 }
 
 float MMapManager::calcAngle( float Position1X, float Position1Y, float Position2X, float Position2Y )

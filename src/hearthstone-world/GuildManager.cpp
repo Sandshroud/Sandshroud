@@ -999,6 +999,43 @@ void GuildMgr::CreateGuildFromCharter(Charter* charter)
 	m_GuildLocks.Release();
 }
 
+void GuildMgr::CreateGuildFromCommand(string name, uint32 gLeader)
+{
+	m_GuildLocks.Acquire();
+	GuildInfo* gInfo = new GuildInfo();
+	gInfo->m_GuildLock.Acquire();
+	gInfo->m_guildId = guildmgr.GenerateGuildId();
+	gInfo->m_guildName = name;
+	gInfo->m_guildLeader = gLeader;
+	gInfo->m_creationTimeStamp = (uint32)UNIXTIME;
+	gInfo->m_emblemStyle = 0;
+	gInfo->m_emblemColor = 0;
+	gInfo->m_borderStyle = 0;
+	gInfo->m_borderColor = 0;
+	gInfo->m_backgroundColor = 0;
+	gInfo->m_bankBalance = 0;
+	gInfo->m_guildInfo = "";
+	gInfo->m_motd = "";
+	gInfo->m_commandLogging = true;
+	gInfo->m_GuildStatus = GUILD_STATUS_NEW;
+	m_Guilds.insert(make_pair(gInfo->m_guildId, gInfo));
+	m_GuildNames.insert(make_pair(gInfo->m_guildName, gInfo));
+	gInfo->m_GuildLock.Release();
+
+	// rest of the fields have been nulled out, create some default ranks.
+	ConstructRankStorage(gInfo->m_guildId);
+	m_GuildMemberMaps.insert(make_pair(gInfo->m_guildId, new GuildMemberMapStorage(gInfo->m_guildId)));
+	m_GuildLogs.insert(make_pair(gInfo->m_guildId, new GuildLogStorage(gInfo->m_guildId)));
+	m_GuildTabs.insert(make_pair(gInfo->m_guildId, new GuildBankTabStorage(gInfo->m_guildId)));
+
+	// add the leader to the guild
+	PlayerInfo* pi = objmgr.GetPlayerInfo(gLeader);
+	AddGuildMember(gInfo, pi, NULL, 0);
+
+	SaveGuild(NULL, gInfo);
+	m_GuildLocks.Release();
+}
+
 void GuildMgr::DestroyGuild(GuildInfo* guildInfo)
 {
 	uint32 GuildId = guildInfo->m_guildId;

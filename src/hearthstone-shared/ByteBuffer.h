@@ -5,8 +5,8 @@
 #pragma once
 
 #include "Common.h"
+#include "LocationVector.h"
 #include "WoWGuid.h"
-#include "Collision\LocationVector.h"
 #include "Log.h"
 #include "int24.h"
 

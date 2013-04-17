@@ -3,7 +3,7 @@ cls
 echo.
 echo                    Welcome to the vmaps extractor and assembler
 echo.
-echo You need 2GB of free space in disk, CTRL+C to stop process
+echo You need 4GB of free space in disk, CTRL+C to stop process
 echo Hit Enter to start . . .
 pause>nul
 cls
@@ -14,7 +14,7 @@ IF EXIST buildings\dir (ECHO The buildings folder already exist do you want to d
 echo If YES hit Enter to continue if no CLOSE the program now! . . .
 pause>nul
 DEL /S /Q buildings)
-vmapExtractor3.exe
+vmapExtractor4.exe
 cls
 echo.
 echo.

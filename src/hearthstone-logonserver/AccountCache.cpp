@@ -459,7 +459,7 @@ void InformationCore::UpdateRealmPop(uint32 realm_id, uint32 population)
 	{
 		uint8 temp;
 		uint32 color;
-		float pop = population/itr->second->RealmCap;
+		float pop = float(population)/float(itr->second->RealmCap);
 		if(pop == 1)
 		{
 			color = REALM_POP_FULL;

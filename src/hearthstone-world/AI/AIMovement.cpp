@@ -461,11 +461,11 @@ void AI_Movement::Update(uint32 p_time)
 
 		if (m_Unit->GetMapMgr() && m_Unit->GetMapMgr()->CanUseCollision(m_Unit))
 		{
-			if( !CollideInterface.GetFirstPoint( m_Unit->GetMapId(), m_Unit->GetPositionX(), m_Unit->GetPositionY(), m_Unit->GetPositionZ(),
+			if( !CollideInterface.GetFirstPoint( m_Unit->GetMapId(), m_Unit->GetPhaseMask(), m_Unit->GetPositionX(), m_Unit->GetPositionY(), m_Unit->GetPositionZ(),
 				Fx, Fy, m_Unit->GetPositionZ() + 1.5f, Fx, Fy, Fz, -3.5f ) )
 			{
 				// clear path?
-				Fz = CollideInterface.GetHeight( m_Unit->GetMapId(), Fx, Fy, m_Unit->GetPositionZ() );
+				Fz = CollideInterface.GetHeight( m_Unit->GetMapId(), m_Unit->GetPhaseMask(), Fx, Fy, m_Unit->GetPositionZ() );
 				if( Fz == NO_WMO_HEIGHT )
 					Fz = m_Unit->GetMapMgr()->GetLandHeight(Fx, Fy);
 			}
@@ -473,7 +473,7 @@ void AI_Movement::Update(uint32 p_time)
 			{
 				// obstruction in the way.
 				// the distmod will fuck up the Z, so get a new height.
-				float fz2 = CollideInterface.GetHeight(m_Unit->GetMapId(), Fx, Fy, Fz);
+				float fz2 = CollideInterface.GetHeight(m_Unit->GetMapId(), m_Unit->GetPhaseMask(), Fx, Fy, Fz);
 				if( fz2 != NO_WMO_HEIGHT )
 					Fz = fz2;
 			}
