@@ -19,6 +19,7 @@
 #include <string>
 #include <iostream>
 
+#include "G3DAll.h"
 #include "TileAssembler.h"
 
 #define WaitForInput() { char cmd[300]; memset( cmd, 0, sizeof( cmd ) ); fgets( cmd, 300, stdin ); }

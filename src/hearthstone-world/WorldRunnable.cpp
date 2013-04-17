@@ -46,7 +46,6 @@ bool WorldRunnable::run()
 
 		LastWorldUpdate = now;
 		sWorld.Update( diff );
-
 		if(GetThreadState() == THREADSTATE_TERMINATE)
 			break;
 
@@ -60,7 +59,6 @@ bool WorldRunnable::run()
 
 		// Update any events.
 		eventHolder->Update(diff);
-
 		if(GetThreadState() == THREADSTATE_TERMINATE)
 			break;
 

@@ -1,19 +1,19 @@
 /*
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "IntermediateValues.h"
@@ -22,14 +22,14 @@ namespace MMAP
 {
     IntermediateValues::~IntermediateValues()
     {
-        freeCompactHeightfield(compactHeightfield);
-        freeHeightField(heightfield);
-        freeContourSet(contours);
-        freePolyMesh(polyMesh);
-        freePolyMeshDetail(polyMeshDetail);
+        rcFreeCompactHeightfield(compactHeightfield);
+        rcFreeHeightField(heightfield);
+        rcFreeContourSet(contours);
+        rcFreePolyMesh(polyMesh);
+        rcFreePolyMeshDetail(polyMeshDetail);
     }
 
-    void IntermediateValues::writeIV(uint32 mapID, uint32 tileX, uint32 tileY)
+    void IntermediateValues::writeIV(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY)
     {
         char fileName[255];
         char tileString[25];
@@ -37,36 +37,36 @@ namespace MMAP
 
         printf("%sWriting debug output...                       \r", tileString);
 
-        string name("meshes/%03u%02i%02i.");
+        std::string name("meshes/%03u%02i%02i.");
 
-        #define DEBUG_WRITE(fileExtension,data) \
-        do { \
-            sprintf(fileName, (name + fileExtension).c_str(), mapID, tileY, tileX); \
-            FILE* file = fopen(fileName, "wb"); \
-            if (!file) \
-            { \
-                char message[1024]; \
-                sprintf(message, "%sFailed to open %s for writing!\n",  tileString, fileName); \
-                perror(message); \
-            } \
+#define DEBUG_WRITE(fileExtension,data) \
+    do { \
+    sprintf(fileName, (name + fileExtension).c_str(), mapID, tileY, tileX); \
+    FILE* file = fopen(fileName, "wb"); \
+    if (!file) \
+        { \
+        char message[1024]; \
+        sprintf(message, "%sFailed to open %s for writing!\n",  tileString, fileName); \
+        perror(message); \
+        } \
             else \
-                debugWrite(file, data); \
-            if(file) fclose(file); \
+            debugWrite(file, data); \
+            if (file) fclose(file); \
             printf("%sWriting debug output...                       \r", tileString); \
-        } while (false)
+    } while (false)
 
-        if(heightfield)
+        if (heightfield)
             DEBUG_WRITE("hf", heightfield);
-        if(compactHeightfield)
+        if (compactHeightfield)
             DEBUG_WRITE("chf", compactHeightfield);
-        if(contours)
+        if (contours)
             DEBUG_WRITE("cs", contours);
-        if(polyMesh)
+        if (polyMesh)
             DEBUG_WRITE("pmesh", polyMesh);
-        if(polyMeshDetail)
+        if (polyMeshDetail)
             DEBUG_WRITE("dmesh", polyMeshDetail);
 
-        #undef DEBUG_WRITE
+#undef DEBUG_WRITE
     }
 
     void IntermediateValues::debugWrite(FILE* file, const rcHeightfield* mesh)
@@ -199,10 +199,10 @@ namespace MMAP
         fwrite(mesh->meshes, sizeof(int), mesh->nmeshes*4, file);
     }
 
-    void IntermediateValues::generateObjFile(uint32 mapID, uint32 tileX, uint32 tileY, MeshData &meshData)
+    void IntermediateValues::generateObjFile(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, MeshData &meshData)
     {
         char objFileName[255];
-        sprintf(objFileName, "meshes/map%03u.obj", mapID);
+        sprintf(objFileName, "meshes/map%03u%02u%02u.obj", mapID, tileY, tileX);
 
         FILE* objFile = fopen(objFileName, "wb");
         if (!objFile)

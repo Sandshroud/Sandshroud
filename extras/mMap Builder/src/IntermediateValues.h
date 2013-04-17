@@ -1,27 +1,26 @@
 /*
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _INTERMEDIATE_VALUES_H
 #define _INTERMEDIATE_VALUES_H
 
-#include "MMapCommon.h"
+#include "PathCommon.h"
 #include "TerrainBuilder.h"
-
 #include "Recast.h"
 #include "DetourNavMesh.h"
 
@@ -36,11 +35,11 @@ namespace MMAP
         rcPolyMesh* polyMesh;
         rcPolyMeshDetail* polyMeshDetail;
 
-        IntermediateValues() :  compactHeightfield(NULL), heightfield(NULL),
+        IntermediateValues() :  heightfield(NULL), compactHeightfield(NULL),
                                 contours(NULL), polyMesh(NULL), polyMeshDetail(NULL) {}
         ~IntermediateValues();
 
-        void writeIV(uint32 mapID, uint32 tileX, uint32 tileY);
+        void writeIV(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY);
 
         void debugWrite(FILE* file, const rcHeightfield* mesh);
         void debugWrite(FILE* file, const rcCompactHeightfield* chf);
@@ -48,7 +47,7 @@ namespace MMAP
         void debugWrite(FILE* file, const rcPolyMesh* mesh);
         void debugWrite(FILE* file, const rcPolyMeshDetail* mesh);
 
-        void generateObjFile(uint32 mapID, uint32 tileX, uint32 tileY, MeshData &meshData);
+        void generateObjFile(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, MeshData &meshData);
     };
 }
 #endif

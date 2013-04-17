@@ -19,9 +19,26 @@ Mutex m_mapCreateLock;
 void CCollideInterface::Init()
 {
 	Log.Notice("CollideInterface", "Init");
-	CollisionMgr = new VMAP::VMapManager2;
+	CollisionMgr = new VMAP::VMapManager2(sWorld.vMapPath);
 	for(uint32 i = 0; i < NUM_MAPS; i++)
 		m_mapLocks[i] = NULL;
+	CollisionMgr->LoadGameObjectModelList();
+}
+
+void CCollideInterface::UpdateAllMaps(uint32 p_time)
+{
+	if( !CollisionMgr )
+		return;
+
+	CollisionMgr->updateDynamicMapTrees(p_time);
+}
+
+void CCollideInterface::UpdateSingleMap(uint32 mapId, uint32 p_time)
+{
+	if( !CollisionMgr )
+		return;
+
+	CollisionMgr->updateDynamicMapTree(mapId, p_time);
 }
 
 void CCollideInterface::ActivateMap(uint32 mapId)
@@ -70,7 +87,7 @@ bool CCollideInterface::ActivateTile(uint32 mapId, uint32 tileX, uint32 tileY)
 	m_mapLocks[mapId]->m_lock.AcquireWriteLock();
 	if( m_mapLocks[mapId]->m_tileLoadCount[tileX][tileY] == 0 )
 	{
-		if(CollisionMgr->loadMap(sWorld.vMapPath.c_str(), mapId, tileX, tileY))
+		if(CollisionMgr->loadMap(mapId, tileX, tileY))
 			OUT_DEBUG("Loading VMap [%u/%u] successful", tileX, tileY);
 		else
 		{
@@ -120,7 +137,7 @@ bool CCollideInterface::IsActiveTile(uint32 mapId, uint32 tileX, uint32 tileY)
 	return isactive;
 }
 
-bool CCollideInterface::CheckLOS(uint32 mapId, float x1, float y1, float z1, float x2, float y2, float z2)
+bool CCollideInterface::CheckLOS(uint32 mapId, int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2)
 {
 	ASSERT(m_mapLocks[mapId] != NULL);
 	if( !CollisionMgr )
@@ -130,7 +147,7 @@ bool CCollideInterface::CheckLOS(uint32 mapId, float x1, float y1, float z1, flo
 	m_mapLocks[mapId]->m_lock.AcquireReadLock();
 
 	// get data
-	bool res = CollisionMgr ? CollisionMgr->isInLineOfSight(mapId, x1, y1, z1, x2, y2, z2) : true;
+	bool res = CollisionMgr ? CollisionMgr->isInLineOfSight(mapId, m_phase, x1, y1, z1, x2, y2, z2) : true;
 
 	// release write lock
 	m_mapLocks[mapId]->m_lock.ReleaseReadLock();
@@ -139,7 +156,7 @@ bool CCollideInterface::CheckLOS(uint32 mapId, float x1, float y1, float z1, flo
 	return res;
 }
 
-bool CCollideInterface::GetFirstPoint(uint32 mapId, float x1, float y1, float z1, float x2, float y2, float z2, float & outx, float & outy, float & outz, float distmod)
+bool CCollideInterface::GetFirstPoint(uint32 mapId, int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2, float & outx, float & outy, float & outz, float distmod)
 {
 	ASSERT(m_mapLocks[mapId] != NULL);
 	if( !CollisionMgr )
@@ -149,7 +166,7 @@ bool CCollideInterface::GetFirstPoint(uint32 mapId, float x1, float y1, float z1
 	m_mapLocks[mapId]->m_lock.AcquireReadLock();
 
 	// get data
-	bool res = (CollisionMgr ? CollisionMgr->getObjectHitPos(mapId, x1, y1, z1, x2, y2, z2, outx, outy, outz, distmod) : false);
+	bool res = (CollisionMgr ? CollisionMgr->getObjectHitPos(mapId, m_phase, x1, y1, z1, x2, y2, z2, outx, outy, outz, distmod) : false);
 
 	// release write lock
 	m_mapLocks[mapId]->m_lock.ReleaseReadLock();
@@ -158,7 +175,7 @@ bool CCollideInterface::GetFirstPoint(uint32 mapId, float x1, float y1, float z1
 	return res;
 }
 
-float CCollideInterface::GetHeight(uint32 mapId, float x, float y, float z)
+float CCollideInterface::GetHeight(uint32 mapId, int32 m_phase, float x, float y, float z)
 {
 	ASSERT(m_mapLocks[mapId] != NULL);
 	if( !CollisionMgr )
@@ -168,7 +185,7 @@ float CCollideInterface::GetHeight(uint32 mapId, float x, float y, float z)
 	m_mapLocks[mapId]->m_lock.AcquireReadLock();
 
 	// get data
-	float res = CollisionMgr ? CollisionMgr->getHeight(mapId, x, y, z) : NO_WMO_HEIGHT;
+	float res = CollisionMgr ? CollisionMgr->getHeight(mapId, m_phase, x, y, z, 10.0f) : NO_WMO_HEIGHT;
 
 	// release write lock
 	m_mapLocks[mapId]->m_lock.ReleaseReadLock();
@@ -268,6 +285,30 @@ uint32 CCollideInterface::GetVmapAreaFlags(uint32 mapId, float x, float y, float
 
 	// return
 	return flags;
+}
+
+void CCollideInterface::LoadGameobjectModel(uint64 Guid, uint32 mapId, uint32 displayID, float scale, float posX, float posY, float posZ, float orientation, int32 phasemask)
+{
+	if( !CollisionMgr )
+		return;
+
+	CollisionMgr->loadObject(Guid, mapId, displayID, scale, posX, posY, posZ, orientation, phasemask);
+}
+
+void CCollideInterface::UpdateObjectModel(uint64 Guid, uint32 mapId, uint32 displayID)
+{
+	if( !CollisionMgr )
+		return;
+
+	CollisionMgr->changeObjectModel(Guid, mapId, displayID);
+}
+
+void CCollideInterface::UnLoadGameobjectModel(uint64 Guid, uint32 mapId)
+{
+	if( !CollisionMgr )
+		return;
+
+	CollisionMgr->unloadObject(mapId, Guid);
 }
 
 void CCollideInterface::DeInit()
