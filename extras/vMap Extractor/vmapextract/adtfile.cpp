@@ -18,6 +18,7 @@
 
 #include "vmapexport.h"
 #include "adtfile.h"
+#include "format.h"
 
 #include <algorithm>
 #include <cstdio>
@@ -26,7 +27,16 @@
 #define snprintf _snprintf
 #endif
 
-char * GetPlainName(char * FileName)
+char const* GetPlainName(char const* FileName)
+{
+    const char * szTemp;
+
+    if((szTemp = strrchr(FileName, '\\')) != NULL)
+        FileName = szTemp + 1;
+    return FileName;
+}
+
+char* GetPlainName(char* FileName)
 {
     char * szTemp;
 
@@ -35,24 +45,21 @@ char * GetPlainName(char * FileName)
     return FileName;
 }
 
-void fixnamen(char *name, size_t len)
+void fixnamen(char* name, size_t len)
 {
-    for (size_t i=0; i<len-3; i++)
+    for (size_t i = 0; i < len-3; i++)
     {
-        if (i>0 && name[i]>='A' && name[i]<='Z' && isalpha(name[i-1]))
-        {
+        if (i > 0 && name[i] >= 'A' && name[i] <= 'Z' && isalpha(name[i-1]))
             name[i] |= 0x20;
-        } else if ((i==0 || !isalpha(name[i-1])) && name[i]>='a' && name[i]<='z')
-        {
+        else if ((i == 0 || !isalpha(name[i-1])) && name[i]>='a' && name[i]<='z')
             name[i] &= ~0x20;
-        }
     }
     //extension in lowercase
-    for(size_t i=len-3; i<len; i++)
+    for (size_t i = len - 3; i < len; i++)
         name[i] |= 0x20;
 }
 
-void fixname2(char *name, size_t len)
+void fixname2(char* name, size_t len)
 {
     for (size_t i=0; i<len-3; i++)
     {
@@ -61,7 +68,14 @@ void fixname2(char *name, size_t len)
     }
 }
 
-ADTFile::ADTFile(char* filename): ADT(filename)
+char* GetExtension(char* FileName)
+{
+    if (char* szTemp = strrchr(FileName, '.'))
+        return szTemp;
+    return NULL;
+}
+
+ADTFile::ADTFile(char* filename): ADT(filename), nWMO(0), nMDX(0), WmoInstansName(NULL), ModelInstansName(NULL)
 {
     Adtfilename.append(filename);
 }
@@ -76,9 +90,9 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
     string xMap;
     string yMap;
 
-	MH20_Header mh2oheader[256];
-	memset(&mh2oheader,0, sizeof(MH20_Header)*256);
-	uint32 mh2o_base = 0;
+    MH20_Header mh2oheader[256];
+    memset(&mh2oheader,0, sizeof(MH20_Header)*256);
+    uint32 mh2o_base = 0;
 
     Adtfilename.erase(Adtfilename.find(".adt"),4);
     string TempMapNumber;
@@ -86,7 +100,11 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
     xMap = TempMapNumber.substr(TempMapNumber.find("_")+1,(TempMapNumber.find_last_of("_")-1) - (TempMapNumber.find("_")));
     yMap = TempMapNumber.substr(TempMapNumber.find_last_of("_")+1,(TempMapNumber.length()) - (TempMapNumber.find_last_of("_")));
     Adtfilename.erase((Adtfilename.length()-xMap.length()-yMap.length()-2), (xMap.length()+yMap.length()+2));
-    string AdtMapNumber = xMap + ' ' + yMap + ' ' + GetPlainName((char*)Adtfilename.c_str());
+    //string AdtMapNumber = xMap + ' ' + yMap + ' ' + GetPlainName((char*)Adtfilename.c_str());
+    //printf("Processing map %s...\n", AdtMapNumber.c_str());
+    //printf("MapNumber = %s\n", TempMapNumber.c_str());
+    //printf("xMap = %s\n", xMap.c_str());
+    //printf("yMap = %s\n", yMap.c_str());
 
     std::string dirname = std::string(szWorkDirWmo) + "/dir_bin";
     FILE *dirfile = fopen(dirname.c_str(), "ab");
@@ -145,35 +163,15 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
                 while (p<buf+size)
                 {
                     fixnamen(p,strlen(p));
-                    string path(p);
-                    char* s=GetPlainName(p);
+                    char* s = GetPlainName(p);
                     fixname2(s,strlen(s));
-                    p=p+strlen(p)+1;
+
                     ModelInstansName[t++] = s;
 
-                    // < 3.1.0 ADT MMDX section store filename.mdx filenames for corresponded .m2 file
-                    std::string ext3 = path.size() >= 4 ? path.substr(path.size()-4,4) : "";
-                    std::transform( ext3.begin(), ext3.end(), ext3.begin(), ::tolower );
-                    if(ext3 == ".mdx")
-                    {
-                        // replace .mdx -> .m2
-                        path.erase(path.length()-2,2);
-                        path.append("2");
-                    }
-                    // >= 3.1.0 ADT MMDX section store filename.m2 filenames for corresponded .m2 file
-                    // nothing do
+                    string path(p);
+                    ExtractSingleModel(path);
 
-                    char szLocalFile[1024];
-                    snprintf(szLocalFile, 1024, "%s/%s", szWorkDirWmo, s);
-                    FILE * output = fopen(szLocalFile,"rb");
-                    if(!output)
-                    {
-                        Model m2(path);
-                        if(m2.open())
-                            m2.ConvertToVMAPModel(szLocalFile);
-                    }
-                    else
-                        fclose(output);
+                    p = p+strlen(p)+1;
                 }
                 delete[] buf;
             }
@@ -182,18 +180,17 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
         {
             if (size)
             {
-                char *buf = new char[size];
+                char* buf = new char[size];
                 ADT.read(buf, size);
-                char *p=buf;
+                char* p=buf;
                 int q = 0;
                 WmoInstansName = new string[size];
                 while (p<buf+size)
                 {
-                    string path(p);
-                    char* s=GetPlainName(p);
-                    fixnamen(s,strlen(s));
-                    fixname2(s,strlen(s));
-                    p=p+strlen(p)+1;
+                    char* s = GetPlainName(p);
+                    fixnamen(s, strlen(s));
+                    fixname2(s, strlen(s));
+                    p += strlen(p) + 1;
                     WmoInstansName[q++] = s;
                 }
                 delete[] buf;
@@ -209,7 +206,7 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
                 {
                     uint32 id;
                     ADT.read(&id, 4);
-                    ModelInstance inst(ADT, ModelInstansName[id].c_str(), map_num, tileX, tileY, dirfile);
+                    ModelInstance inst(ADT,ModelInstansName[id].c_str(), map_num, tileX, tileY, dirfile);
                 }
                 delete[] ModelInstansName;
             }
@@ -223,7 +220,7 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
                 {
                     uint32 id;
                     ADT.read(&id, 4);
-                    WMOInstance inst(ADT, WmoInstansName[id].c_str(), map_num, tileX, tileY, dirfile);
+                    WMOInstance inst(ADT,WmoInstansName[id].c_str(), map_num, tileX, tileY, dirfile);
                 }
                 delete[] WmoInstansName;
             }
@@ -274,7 +271,6 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
 	fclose(input);
 
     ADT.close();
-
     fclose(dirfile);
     return true;
 }

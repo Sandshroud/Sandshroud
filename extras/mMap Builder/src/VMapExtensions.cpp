@@ -1,29 +1,27 @@
 /*
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <vector>
-
+#include "PathCommon.h"
 #include "MapTree.h"
 #include "VMapManager2.h"
 #include "WorldModel.h"
 #include "ModelInstance.h"
-
-using namespace std;
 
 namespace VMAP
 {
@@ -31,7 +29,7 @@ namespace VMAP
     // maybe add MapBuilder as friend to all of the below classes would be better?
 
     // declared in src/shared/vmap/MapTree.h
-    void StaticMapTree::getModelInstances(ModelInstance* &models, uint32 &count)
+    void StaticMapTree::getModelInstances(ModelInstance* &models, G3D::g3d_uint32 &count)
     {
         models = iTreeValues;
         count = iNTreeValues;
@@ -44,13 +42,13 @@ namespace VMAP
     }
 
     // declared in src/shared/vmap/WorldModel.h
-    void WorldModel::getGroupModels(vector<GroupModel> &groupModels)
+    void WorldModel::getGroupModels(std::vector<GroupModel> &groupModels)
     {
         groupModels = this->groupModels;
     }
 
     // declared in src/shared/vmap/WorldModel.h
-    void GroupModel::getMeshData(vector<Vector3> &vertices, vector<MeshTriangle> &triangles, WmoLiquid* &liquid)
+    void GroupModel::getMeshData(std::vector<G3D::Vector3> &vertices, std::vector<MeshTriangle> &triangles, WmoLiquid* &liquid)
     {
         vertices = this->vertices;
         triangles = this->triangles;
@@ -58,13 +56,13 @@ namespace VMAP
     }
 
     // declared in src/shared/vmap/ModelInstance.h
-    WorldModel* const ModelInstance::getWorldModel()
+    WorldModel* ModelInstance::getWorldModel()
     {
         return iModel;
     }
 
     // declared in src/shared/vmap/WorldModel.h
-    void WmoLiquid::getPosInfo(uint32 &tilesX, uint32 &tilesY, Vector3 &corner) const
+    void WmoLiquid::getPosInfo(G3D::g3d_uint32 &tilesX, G3D::g3d_uint32 &tilesY, G3D::Vector3 &corner) const
     {
         tilesX = iTilesX;
         tilesY = iTilesY;
