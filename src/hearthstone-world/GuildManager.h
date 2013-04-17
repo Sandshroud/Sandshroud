@@ -235,12 +235,14 @@ public:
 	void SaveAllGuilds();
 	void DestroyGuild(GuildInfo* guildInfo);
 	void AddDestructionQueries(uint32 guildid);
-	void CreateGuildFromCharter(Charter* charter);
 	void SaveGuild(QueryBuffer* qb, GuildInfo* guildInfo);
 	void SetNote(PlayerInfo* pInfo, std::string Note, bool Officer);
 	void LogGuildBankAction(uint64 GuildId, uint8 iAction, uint32 uGuid, uint32 uEntry, uint8 iStack, uint32 tabId);
 	void AddGuildLogEntry(uint32 GuildId, uint8 iEvent, uint32 arguement1, uint32 arguement2 = 0, uint32 arguement3 = 0);
 	void LogGuildEvent(Player* plr, uint32 GuildId, uint8 iEvent, const char* arguement1, const char* arguement2 = NULL, const char* arguement3 = NULL, const char* arguement4 = NULL);
+
+	void CreateGuildFromCharter(Charter* charter);
+	void CreateGuildFromCommand(string name, uint32 gLeader);
 
 	GuildRank* FindLowestRank(GuildRankStorage* Ranks);
 	GuildRank* FindHighestRank(GuildRankStorage* Ranks);

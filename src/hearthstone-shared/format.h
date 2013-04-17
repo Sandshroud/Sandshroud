@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include "Collision/g3dlite/platform.h"
-
 #if !defined(WIN32) && !defined(_WIN64)
 #include "Errors.h"
 #include <assert.h>

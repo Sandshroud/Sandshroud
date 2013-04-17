@@ -82,7 +82,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\src\hearthstone-shared\Collision\g3dlite;..\..\..\src\hearthstone-shared\Collision\vmap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\dependencies\SRC\g3dlite;..\..\..\dependencies\SRC\g3dlite\vmap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;NO_CORE_FUNCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -104,18 +104,17 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalDependencies>zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>zlib.lib;g3dlite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\..\..\dependencies\VC\libVC110;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\dependencies\VC\libVC110</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\src\hearthstone-shared\Collision\g3dlite;..\..\..\src\hearthstone-shared\Collision\vmap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\dependencies\SRC\g3dlite;..\..\..\dependencies\SRC\g3dlite\vmap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;NO_CORE_FUNCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -135,7 +134,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <AdditionalDependencies>zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>zlib.lib;g3dlite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\..\..\dependencies\VC\libVC110\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -143,7 +142,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\..\..\src\hearthstone-shared\Collision\g3dlite;..\..\..\src\hearthstone-shared\Collision\vmap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\dependencies\SRC\g3dlite;..\..\..\dependencies\SRC\g3dlite\vmap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;NO_CORE_FUNCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
@@ -162,13 +161,13 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalDependencies>zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\..\dependencies\VC\libVC110;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>zlib.lib;g3dlite.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\..\dependencies\VC\libVC110</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\..\..\src\hearthstone-shared\Collision\g3dlite;..\..\..\src\hearthstone-shared\Collision\vmap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\dependencies\SRC\g3dlite;..\..\..\dependencies\SRC\g3dlite\vmap;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;NO_CORE_FUNCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
@@ -186,62 +185,12 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <AdditionalDependencies>zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>zlib.lib;g3dlite.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\..\..\dependencies\VC\libVC110\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\AABox.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Box.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Capsule.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\CollisionDetection.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\CoordinateFrame.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Crypto.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Cylinder.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\fileutils.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\g3dfnmatch.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\g3dmath.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Line.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\LineSegment.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Matrix.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Matrix3.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Matrix4.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\MemoryManager.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Plane.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Quat.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Random.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Ray.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\ReferenceCount.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\RegistryUtil.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Sphere.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\stringutils.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\System.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Triangle.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\uint128.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\UprightFrame.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Vector2.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Vector2int16.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Vector3.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Vector3int16.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Vector3int32.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Vector4.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\g3dlite\Vector4int8.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\vmap\BIH.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\vmap\MapTree.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\vmap\ModelInstance.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\vmap\TileAssembler.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\vmap\VMapManager2.cpp" />
-    <ClCompile Include="..\..\..\src\hearthstone-shared\Collision\vmap\WorldModel.cpp" />
     <ClCompile Include="..\vmap_assembler.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\src\hearthstone-shared\Collision\vmap\BIH.h" />
-    <ClInclude Include="..\..\..\src\hearthstone-shared\Collision\vmap\MapTree.h" />
-    <ClInclude Include="..\..\..\src\hearthstone-shared\Collision\vmap\ModelInstance.h" />
-    <ClInclude Include="..\..\..\src\hearthstone-shared\Collision\vmap\TileAssembler.h" />
-    <ClInclude Include="..\..\..\src\hearthstone-shared\Collision\vmap\VMapManager2.h" />
-    <ClInclude Include="..\..\..\src\hearthstone-shared\Collision\vmap\VMapTools.h" />
-    <ClInclude Include="..\..\..\src\hearthstone-shared\Collision\vmap\WorldModel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
