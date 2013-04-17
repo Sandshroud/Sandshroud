@@ -83,11 +83,7 @@ bool ChatHandler::CreateGuildCommand(const char* args, WorldSession *m_session)
 		return true;
 	}
 
-	Charter tempCharter(0, ptarget->GetLowGUID(), CHARTER_TYPE_GUILD);
-	tempCharter.SignatureCount = 0;
-	tempCharter.GuildName = string(args);
-
-	guildmgr.CreateGuildFromCharter(&tempCharter);
+	guildmgr.CreateGuildFromCommand(string(args), ptarget->GetLowGUID());
 	SystemMessage(m_session, "Guild created");
 	return true;
 }

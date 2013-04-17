@@ -182,8 +182,8 @@ typedef struct Realm
 	uint8 Flag;
 	uint8 Icon;
 	uint8 WorldRegion;
-	float RealPopulation;
-	float Population;
+	uint32 RealPopulation;
+	uint32 Population;
 	uint32 RealmCap;
 
 	uint8 RequiredCV[3];

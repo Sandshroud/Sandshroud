@@ -23,6 +23,12 @@
 #pragma warning(disable:4706)
 #endif
 
+#ifdef _MSC_VER
+	#define isnan(x) _isnan(x)
+#else
+	#define isnan(x) std::isnan(x)
+#endif
+
 #include <list>
 #include <vector>
 #include <map>
@@ -34,9 +40,18 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <bitset>
+#include <iomanip>
+#include <limits>
+#include <sys/types.h>
+#include <stdexcept>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+#include <cstring>
+
+#include <zlib/zlib.h>
 
 #include "../hearthstone-shared/svn_revision.h"
-#include "../../dependencies/VC/include/zlib.h"
 #include "../hearthstone-shared/Common.h"
 #include "../hearthstone-shared/MersenneTwister.h"
 #include "../hearthstone-shared/WorldPacket.h"
@@ -45,15 +60,9 @@
 #include "../hearthstone-shared/ByteBuffer.h"
 #include "../hearthstone-shared/Config/ConfigEnv.h"
 #include "../hearthstone-shared/crc32.h"
-#include "../hearthstone-shared/Collision/LocationVector.h"
+#include "../hearthstone-shared/LocationVector.h"
 #include "../hearthstone-shared/hashmap.h"
 #include "../hearthstone-shared/hearthstoneConfig.h"
-#include "../hearthstone-shared/Collision/vmap/VMapManager2.h"
-#include "../hearthstone-shared/Collision/vmap/MapTree.h"
-#include "../hearthstone-shared/Pathfinding/Recast/Recast.h"
-#include "../hearthstone-shared/Pathfinding/Detour/DetourNavMesh.h"
-#include "../hearthstone-shared/Pathfinding/Detour/DetourNavMeshQuery.h"
-#include "../hearthstone-shared/Pathfinding/Detour/DetourNavMeshBuilder.h"
 #include "../hearthstone-shared/RC4Engine.h"
 #include "../hearthstone-shared/DataStorage/DatabaseEnv.h"
 #include "../hearthstone-shared/DataStorage/DBC/DBCStores.h"
@@ -77,6 +86,13 @@
 #include "../hearthstone-shared/Storage.h"
 #include "../hearthstone-shared/PerfCounters.h"
 #include "../hearthstone-logonserver/LogonOpcodes.h"
+
+#include "g3dlite/G3D.h"
+
+#include "recast/Recast.h"
+#include "detour/DetourNavMesh.h"
+#include "detour/DetourNavMeshQuery.h"
+#include "detour/DetourNavMeshBuilder.h"
 
 #include "NameTables.h"
 #include "UpdateFields.h"
@@ -198,5 +214,5 @@
 #endif
 
 extern "C" {
-#include "../../dependencies/VC/include/pcre.h"
+#include "../../dependencies/SRC/pcre/pcre.h"
 };

@@ -1,6 +1,3 @@
-#define _CRT_SECURE_NO_DEPRECATE
-#define _CRT_SECURE_NO_WARNINGS
-
 #ifndef MPQ_H
 #define MPQ_H
 
@@ -24,14 +21,14 @@ public:
     void close();
 
     void GetFileListTo(vector<string>& filelist) {
-    	uint32 filenum;
-    	if(libmpq__file_number(mpq_a, "(listfile)", &filenum)) return;
-    	libmpq__off_t size, transferred;
-		libmpq__file_unpacked_size(mpq_a, filenum, &size);
+        uint32_t filenum;
+        if(libmpq__file_number(mpq_a, "(listfile)", &filenum)) return;
+        libmpq__off_t size, transferred;
+        libmpq__file_unpacked_size(mpq_a, filenum, &size);
 
-        char *buffer = new char[(unsigned int)size];
+        char *buffer = new char[size];
 
-		libmpq__file_read(mpq_a, filenum, (unsigned char*)buffer, size, &transferred);
+        libmpq__file_read(mpq_a, filenum, (unsigned char*)buffer, size, &transferred);
 
         char seps[] = "\n";
         char *token;
@@ -60,16 +57,16 @@ class MPQFile
     libmpq__off_t pointer,size;
 
     // disable copying
-    MPQFile(const MPQFile &f) {}
-    void operator=(const MPQFile &f) {}
+    MPQFile(const MPQFile& /*f*/) {}
+    void operator=(const MPQFile& /*f*/) {}
 
 public:
 	const char* getfilename() { return f_name; };
     MPQFile(const char* filename);    // filenames are not case sensitive
     ~MPQFile() { close(); }
     size_t read(void* dest, size_t bytes);
-    size_t getSize() { return (size_t)size; }
-    size_t getPos() { return (size_t)pointer; }
+    size_t getSize() { return size; }
+    size_t getPos() { return pointer; }
     char* getBuffer() { return buffer; }
     char* getPointer() { return buffer + pointer; }
     bool isEof() { return eof; }
