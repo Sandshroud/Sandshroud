@@ -1,63 +1,30 @@
 /*
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _MMAP_TERRAIN_BUILDER_H
 #define _MMAP_TERRAIN_BUILDER_H
 
-#include "MMapCommon.h"
-#include "MangosMap.h"
-
-#define MMAP_MAGIC 0x4d4d4150   // 'MMAP'
-#define MMAP_VERSION 3
-
-struct MmapTileHeader
-{
-    uint32 mmapMagic;
-    uint32 dtVersion;
-    uint32 mmapVersion;
-    uint32 size;
-    bool usesLiquids : 1;
-
-    MmapTileHeader() : mmapMagic(MMAP_MAGIC), dtVersion(DT_NAVMESH_VERSION),
-                       mmapVersion(MMAP_VERSION), size(0), usesLiquids(true) {}
-};
-
-enum NavTerrain
-{
-    NAV_EMPTY   = 0x00,
-    NAV_GROUND  = 0x01,
-    NAV_MAGMA   = 0x02,
-    NAV_SLIME   = 0x04,
-    NAV_WATER   = 0x08,
-    NAV_UNUSED1 = 0x10,
-    NAV_UNUSED2 = 0x20,
-    NAV_UNUSED3 = 0x40,
-    NAV_UNUSED4 = 0x80
-    // we only have 8 bits
-};
-
+#include "PathCommon.h"
 #include "WorldModel.h"
 
 #include "Array.h"
 #include "Vector3.h"
 #include "Matrix3.h"
-
-using namespace MaNGOS;
 
 namespace MMAP
 {
@@ -89,8 +56,7 @@ namespace MMAP
 
     // see following files:
     // contrib/extractor/system.cpp
-    // src/game/GridMap.cpp
-    static char const* MAP_VERSION_MAGIC = "v1.2";
+    // src/game/Map.cpp
 
     struct MeshData
     {
@@ -99,7 +65,7 @@ namespace MMAP
 
         G3D::Array<float> liquidVerts;
         G3D::Array<int> liquidTris;
-        G3D::Array<uint8> liquidType;
+        G3D::Array<G3D::g3d_uint8> liquidType;
 
         // offmesh connection data
         G3D::Array<float> offMeshConnections;   // [p0y,p0z,p0x,p1y,p1z,p1x] - per connection
@@ -115,22 +81,22 @@ namespace MMAP
             TerrainBuilder(bool skipLiquid);
             ~TerrainBuilder();
 
-            void loadMap(uint32 mapID, uint32 tileX, uint32 tileY, MeshData &meshData);
-            bool loadVMap(uint32 mapID, uint32 tileX, uint32 tileY, MeshData &meshData);
-            void loadOffMeshConnections(uint32 mapID, uint32 tileX, uint32 tileY, MeshData &meshData, const char* offMeshFilePath);
+            void loadMap(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, MeshData &meshData);
+            bool loadVMap(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, MeshData &meshData);
+            void loadOffMeshConnections(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, MeshData &meshData, const char* offMeshFilePath);
 
             bool usesLiquids() { return !m_skipLiquid; }
 
             // vert and triangle methods
-            static void transform(vector<G3D::Vector3> &original, vector<G3D::Vector3> &transformed,
-                                    float scale, G3D::Matrix3 &rotation, G3D::Vector3 &position);
-            static void copyVertices(vector<G3D::Vector3> &source, G3D::Array<float> &dest);
-            static void copyIndices(vector<VMAP::MeshTriangle> &source, G3D::Array<int> &dest, int offest, bool flip);
+            static void transform(std::vector<G3D::Vector3> &original, std::vector<G3D::Vector3> &transformed,
+                float scale, G3D::Matrix3 &rotation, G3D::Vector3 &position);
+            static void copyVertices(std::vector<G3D::Vector3> &source, G3D::Array<float> &dest);
+            static void copyIndices(std::vector<VMAP::MeshTriangle> &source, G3D::Array<int> &dest, int offest, bool flip);
             static void copyIndices(G3D::Array<int> &src, G3D::Array<int> &dest, int offset);
             static void cleanVertices(G3D::Array<float> &verts, G3D::Array<int> &tris);
         private:
             /// Loads a portion of a map's terrain
-            bool loadMap(uint32 mapID, uint32 tileX, uint32 tileY, MeshData &meshData, Spot portion);
+            bool loadMap(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, MeshData &meshData, Spot portion);
 
             /// Sets loop variables for selecting only certain parts of a map's terrain
             void getLoopVars(Spot portion, int &loopStart, int &loopEnd, int &loopInc);
@@ -139,7 +105,7 @@ namespace MMAP
             bool m_skipLiquid;
 
             /// Load the map terrain from file
-            bool loadHeightMap(uint32 mapID, uint32 tileX, uint32 tileY, G3D::Array<float> &vertices, G3D::Array<int> &triangles, Spot portion);
+            bool loadHeightMap(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, G3D::Array<float> &vertices, G3D::Array<int> &triangles, Spot portion);
 
             /// Get the vector coordinate for a specific position
             void getHeightCoord(int index, Grid grid, float xOffset, float yOffset, float* coord, float* v);
@@ -148,13 +114,13 @@ namespace MMAP
             void getHeightTriangle(int square, Spot triangle, int* indices, bool liquid = false);
 
             /// Determines if the specific position's triangles should be rendered
-            bool isHole(int square, const uint16 holes[16][16]);
+            bool isHole(int square, const G3D::g3d_uint16 holes[16][16]);
 
             /// Get the liquid vector coordinate for a specific position
             void getLiquidCoord(int index, int index2, float xOffset, float yOffset, float* coord, float* v);
 
             /// Get the liquid type for a specific position
-            uint8 getLiquidType(int square, const uint8 liquid_type[16][16]);
+            G3D::g3d_uint8 getLiquidType(int square, const G3D::g3d_uint8 liquid_type[16][16]);
 
             // hide parameterless and copy constructor
             TerrainBuilder();
@@ -163,3 +129,4 @@ namespace MMAP
 }
 
 #endif
+
