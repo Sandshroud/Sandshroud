@@ -63,7 +63,7 @@ class WintergraspScript : public MapManagerScript
 	ADD_MAPMANAGER_FACTORY_FUNCTION(WintergraspScript);
 private:
 	MapMgr* mgr;
-	bool m_started;
+	bool m_started, m_Initialized;
 	int32 ControllingTeam;
 	uint32 m_NextTime, m_FinishTime;
 	uint32 m_clock[2];
