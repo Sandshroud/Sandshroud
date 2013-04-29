@@ -39,8 +39,7 @@ WintergraspScript::WintergraspScript(MapMgr* Thismgr) : MapManagerScript(Thismgr
 	mgr = Thismgr;
 	m_started = false;
 	ControllingTeam = HORDE;
-	Log.Notice("Wintergrasp", "Server is loading wintergrasp tiles, it might take some time..");
-	mgr->UpdateAllCells(true, ZONE_WINTERGRASP);
+	m_Initialized = false;
 
 	m_NextTime = UNIXTIME+10800; // 3 hour
 	uint32 value = 10800%10;
@@ -61,6 +60,14 @@ WintergraspScript::~WintergraspScript()
 
 void WintergraspScript::OnUpdate(uint32 p_time)
 {
+	if(!m_Initialized)
+	{
+		m_Initialized = true;
+		Log.Notice("Wintergrasp", "Server is loading wintergrasp tiles, it might take some time..");
+		mgr->UpdateAllCells(true, ZONE_WINTERGRASP);
+		Log.Notice("Wintergrasp", "Finished loading tiles...");
+	}
+
 	UpdateClockDigit(m_NextTime-UNIXTIME, m_started ? 0 : 1, 10);
 	if(UNIXTIME >= m_NextTime)
 	{
