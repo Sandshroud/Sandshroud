@@ -198,7 +198,7 @@ void AuraInterface::UpdateDuelAuras()
 
 void AuraInterface::BuildAllAuraUpdates()
 {
-	for( uint32 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; ++x )
+	for( uint32 x = 0; x < MAX_AURAS; ++x )
 		if( m_auras.find(x) != m_auras.end() )
 			m_auras.at(x)->BuildAuraUpdate();
 }
