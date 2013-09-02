@@ -83,7 +83,7 @@ namespace VMAP
     }
 
     // load one tile (internal use only)
-    int VMapManager2::loadObject(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_int32 m_phase)
+    int VMapManager2::loadObject(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_uint32 instanceId, G3D::g3d_int32 m_phase)
     {
         int result = VMAP_LOAD_RESULT_IGNORED;
         DynamicTreeMap::iterator DIT = iDynamicMapTrees.find(mapId);
@@ -95,7 +95,7 @@ namespace VMAP
         if(DIT->second == NULL)
             return result; // Shouldn't happen.
 
-        if(_loadObject(DIT->second, guid, mapId, DisplayID, scale, x, y, z, o, m_phase))
+        if(_loadObject(DIT->second, guid, mapId, DisplayID, scale, x, y, z, o, instanceId, m_phase))
             result = VMAP_LOAD_RESULT_OK;
         else
             result = VMAP_LOAD_RESULT_ERROR;
@@ -103,7 +103,7 @@ namespace VMAP
     }
 
     // Load our object into our dynamic tree(Internal only please!)
-    bool VMapManager2::_loadObject(DynamicMapTree* tree, G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_int32 m_phase)
+    bool VMapManager2::_loadObject(DynamicMapTree* tree, G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_uint32 instanceId, G3D::g3d_int32 m_phase)
     {
         GOModelSpawnList::const_iterator it = GOModelList.find(DisplayID);
         if (it == GOModelList.end())
@@ -122,7 +122,7 @@ namespace VMAP
         WorldModel* model = acquireModelInstance(it->second.name);
         if(model == NULL)
             return false; // Shouldn't happen.
-        GameobjectModelInstance* Instance = new GameobjectModelInstance(it->second, model, m_phase);
+        GameobjectModelInstance* Instance = new GameobjectModelInstance(it->second, model, instanceId, m_phase);
         if(Instance == NULL)
         {
             releaseModelInstance(it->second.name);
@@ -140,12 +140,12 @@ namespace VMAP
         else
             guides = GOModelTracker.at(mapId);
 
-        guides->ModelsByGuid.insert(ModelGUIDEs::value_type(guid, Instance));
+        guides->ModelsByGuid.insert(ModelGUIDEs::value_type(std::make_pair(instanceId, guid), Instance));
         tree->insert(*Instance);
         return true;
     }
 
-    void VMapManager2::changeObjectModel(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID)
+    void VMapManager2::changeObjectModel(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 instanceId, G3D::g3d_uint32 DisplayID)
     {
         DynamicTreeMap::iterator DIT = iDynamicMapTrees.find(mapId);
         if (DIT == iDynamicMapTrees.end())
@@ -155,7 +155,7 @@ namespace VMAP
             return;
 
         GOMapGuides* guides = GOModelTracker.at(mapId);
-        ModelGUIDEs::iterator itr2 = guides->ModelsByGuid.find(guid);
+        ModelGUIDEs::iterator itr2 = guides->ModelsByGuid.find(std::make_pair(instanceId, guid));
         if(itr2 != guides->ModelsByGuid.end())
         {
             GameobjectModelInstance *Instance = itr2->second;
@@ -196,7 +196,7 @@ namespace VMAP
         }
     }
 
-    void VMapManager2::unloadObject(unsigned int mapId, G3D::g3d_uint64 guid)
+    void VMapManager2::unloadObject(unsigned int mapId, G3D::g3d_uint32 m_instance, G3D::g3d_uint64 guid)
     {
         GOModelInstanceByGUID::iterator itr = GOModelTracker.find(mapId);
         if(itr == GOModelTracker.end())
@@ -205,15 +205,17 @@ namespace VMAP
         DynamicTreeMap::iterator DynamicTree = iDynamicMapTrees.find(mapId);
         if (DynamicTree != iDynamicMapTrees.end())
         {
-            if(guides->ModelsByGuid.find(guid) != guides->ModelsByGuid.end())
+            std::pair<G3D::g3d_uint32, G3D::g3d_uint64> instanceGuid = std::make_pair(m_instance, guid);
+            if(guides->ModelsByGuid.find(instanceGuid) != guides->ModelsByGuid.end())
             {
-                GameobjectModelInstance* Instance = guides->ModelsByGuid.at(guid);
+                GameobjectModelInstance* Instance = guides->ModelsByGuid.at(instanceGuid);
                 DynamicTree->second->remove(*Instance);
                 releaseModelInstance(Instance->name);
-                guides->ModelsByGuid.erase(guid);
+                guides->ModelsByGuid.erase(instanceGuid);
                 delete Instance;
             }
         }
+
         if(guides->ModelsByGuid.size() == 0)
         {
             GOModelTracker.erase(mapId);
@@ -249,7 +251,7 @@ namespace VMAP
         }
     }
 
-    bool VMapManager2::isInLineOfSight(unsigned int mapId, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2)
+    bool VMapManager2::isInLineOfSight(unsigned int mapId, G3D::g3d_uint32 instanceId, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2)
     {
 		bool result = true;
         if(x1 == x2 && y1 == y2 && z1 == z2)
@@ -266,7 +268,7 @@ namespace VMAP
         {
             DynamicTreeMap::iterator DynamicTree = iDynamicMapTrees.find(mapId);
             if (DynamicTree != iDynamicMapTrees.end())
-                result = DynamicTree->second->isInLineOfSight(x1, y1, z1, x2, y2, z2, m_phase);
+                result = DynamicTree->second->isInLineOfSight(x1, y1, z1, x2, y2, z2, instanceId, m_phase);
         }
 
         return result;
@@ -288,7 +290,7 @@ namespace VMAP
     get the hit position and return true if we hit something
     otherwise the result pos will be the dest pos
     */
-    bool VMapManager2::getObjectHitPos(unsigned int mapId, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist)
+    bool VMapManager2::getObjectHitPos(unsigned int mapId, G3D::g3d_uint32 instanceId, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist)
     {
         bool result = false;
         rx = x2;
@@ -318,7 +320,7 @@ namespace VMAP
                 Vector3 pos1 = Vector3(x1, y1, z1);
                 Vector3 pos2 = Vector3(x2, y2, z2);
                 Vector3 resultPos;
-                bool result = DynamicTree->second->getObjectHitPos(m_phase, pos1, pos2, resultPos, modifyDist);
+                bool result = DynamicTree->second->getObjectHitPos(instanceId, m_phase, pos1, pos2, resultPos, modifyDist);
                 resultPos = convertPositionToInternalRep(resultPos.x, resultPos.y, resultPos.z);
                 rx = resultPos.x;
                 ry = resultPos.y;
@@ -333,7 +335,7 @@ namespace VMAP
     get height or INVALID_HEIGHT if no height available
     */
 
-    float VMapManager2::getHeight(unsigned int mapId, G3D::g3d_int32 m_phase, float x, float y, float z, float maxSearchDist)
+    float VMapManager2::getHeight(unsigned int mapId, G3D::g3d_uint32 instanceId, G3D::g3d_int32 m_phase, float x, float y, float z, float maxSearchDist)
     {
         float height = VMAP_INVALID_HEIGHT;
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
@@ -348,7 +350,7 @@ namespace VMAP
         DynamicTreeMap::iterator DynamicTree = iDynamicMapTrees.find(mapId);
         if (DynamicTree != iDynamicMapTrees.end())
         {
-            float height2 = DynamicTree->second->getHeight(x, y, z, maxSearchDist, m_phase);
+            float height2 = DynamicTree->second->getHeight(x, y, z, maxSearchDist, instanceId, m_phase);
             if (!G3D::fuzzyEq(height2, G3D::inf()))
                 height = height2; // No height
         }

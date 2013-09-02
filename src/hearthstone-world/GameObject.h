@@ -84,7 +84,8 @@ enum GoUInt32Types
 	GO_UINT32_MAX
 };
 
-#pragma pack(push,1)
+#pragma pack(PRAGMA_PACK)
+
 struct GameObjectInfo
 {
 	uint32 ID;
@@ -334,7 +335,7 @@ struct GameObjectInfo
 	}
 };
 
-#pragma pack(pop)
+#pragma pack(PRAGMA_POP)
 
 #define CALL_GO_SCRIPT_EVENT(obj, func) if(obj->GetTypeId() == TYPEID_GAMEOBJECT && obj->GetScript() != NULL) obj->GetScript()->func
 

@@ -203,7 +203,7 @@ namespace VMAP
         return true;
     }
 
-    GameobjectModelInstance::GameobjectModelInstance(const GameobjectModelSpawn &spawn, WorldModel* model, G3D::g3d_uint32 m_phase) : iModel(model), m_PhaseMask(m_phase)
+    GameobjectModelInstance::GameobjectModelInstance(const GameobjectModelSpawn &spawn, WorldModel* model, G3D::g3d_uint32 instanceId, G3D::g3d_int32 m_phase) : iModel(model), m_Instance(instanceId), m_PhaseMask(m_phase)
     {
         iBound = BoundBase = spawn.BoundBase;
         name = spawn.name;
@@ -230,10 +230,13 @@ namespace VMAP
         iBound = rotated_bounds + iPos;
     }
 
-    bool GameobjectModelInstance::intersectRay(const G3D::Ray& ray, float& MaxDist, bool StopAtFirstHit, G3D::g3d_int32 ph_mask) const
+    bool GameobjectModelInstance::intersectRay(const G3D::Ray& ray, float& MaxDist, bool StopAtFirstHit, G3D::g3d_uint32 instanceid, G3D::g3d_int32 ph_mask) const
     {
         if(m_PhaseMask != -1 && ph_mask != -1)
             if (!(m_PhaseMask & ph_mask))
+                return false;
+        if(m_Instance > 0) // All instances
+            if(instanceid != m_Instance)
                 return false;
 
         float time = ray.intersectionTime(iBound);

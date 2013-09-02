@@ -1315,7 +1315,7 @@ void Spell::SpellEffectLeap(uint32 i) // Leap
 		float posY = m_caster->GetPositionY()+(radius*(sinf(ori)));
 		float posZ;
 
-		if( CollideInterface.GetFirstPoint(p_caster->GetMapId(), p_caster->GetPhaseMask(), p_caster->GetPositionX(), p_caster->GetPositionY(), p_caster->GetPositionZ() + p_caster->m_noseLevel, posX, posY, p_caster->GetPositionZ(), posX, posY, posZ, -1.5f) )
+		if( CollideInterface.GetFirstPoint(p_caster->GetMapId(), p_caster->GetInstanceID(), p_caster->GetPhaseMask(), p_caster->GetPositionX(), p_caster->GetPositionY(), p_caster->GetPositionZ() + p_caster->m_noseLevel, posX, posY, p_caster->GetPositionZ(), posX, posY, posZ, -1.5f) )
 		{
 			posZ = p_caster->GetCHeightForPosition(true, posX, posY, posZ);
 			float diff = fabs(fabs(posZ) - fabs(m_caster->GetPositionZ()));

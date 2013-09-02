@@ -161,4 +161,4 @@ struct packetSMSG_PLAY_SPELL_VISUAL
 	uint32 visualid;
 };
 
-#pragma pack(pop)
+#pragma pack(PRAGMA_POP)
