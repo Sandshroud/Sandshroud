@@ -25,7 +25,7 @@ struct ServerPktHeader
 	uint16 cmd;
 };
 
-#pragma pack(pop)
+#pragma pack(PRAGMA_POP)
 
 WorldSocket::WorldSocket(SOCKET fd, const sockaddr_in * peer) : TcpSocket(fd, WORLDSOCKET_SENDBUF_SIZE, WORLDSOCKET_RECVBUF_SIZE, false, peer)
 {

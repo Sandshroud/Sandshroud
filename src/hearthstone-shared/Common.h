@@ -240,6 +240,16 @@ enum MsTimeVariables
 #endif
 #endif
 
+#if COMPILER == COMPILER_GNU
+// Packing allignment GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
+#define PRAGMA_PACK 1
+#define PRAGMA_POP
+#else
+// Packing allignment
+#define PRAGMA_PACK push,1
+#define PRAGMA_POP pop
+#endif
+
 #if COMPILER == COMPILER_INTEL
 
 #include <ext/hash_map>
@@ -450,16 +460,16 @@ Scripting system exports/imports
 */
 
 #ifdef WIN32
-	#ifndef SCRIPTLIB
-		#define SERVER_DECL __declspec(dllexport)
-		#define SCRIPT_DECL __declspec(dllimport)
-	#else
-		#define SERVER_DECL __declspec(dllimport)
-		#define SCRIPT_DECL __declspec(dllexport)
-	#endif
+ #ifndef SCRIPTLIB
+  #define SERVER_DECL __declspec(dllexport)
+  #define SCRIPT_DECL __declspec(dllimport)
+ #else
+  #define SERVER_DECL __declspec(dllimport)
+  #define SCRIPT_DECL __declspec(dllexport)
+ #endif
 #else
-	#define SERVER_DECL
-	#define SCRIPT_DECL
+ #define SERVER_DECL
+ #define SCRIPT_DECL
 #endif
 
 

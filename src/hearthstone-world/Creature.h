@@ -24,7 +24,7 @@ struct CreatureItem
 	bool IsDependent;
 };
 
-#pragma pack(push,1)
+#pragma pack(PRAGMA_PACK)
 struct CreatureInfo
 {
 	uint32 Id;
@@ -208,7 +208,7 @@ struct CreatureInfoExtra
 	bool   no_xp;
 };
 
-#pragma pack(pop)
+#pragma pack(PRAGMA_POP)
 
 struct Formation{
 	uint32 fol;

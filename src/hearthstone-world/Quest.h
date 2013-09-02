@@ -82,7 +82,7 @@ enum QUEST_SHARE
 	QUEST_SHARE_MSG_QUEST_TIMER_FINISHED	= 9,
 	QUEST_SHARE_MSG_NOT_IN_PARTY			= 10,
 };
-#pragma pack(push,1)
+#pragma pack(PRAGMA_PACK)
 
 struct QuestObjectives
 {
@@ -196,7 +196,7 @@ struct Quest
 	QuestRequirements* requirements;
 };
 
-#pragma pack(pop)
+#pragma pack(PRAGMA_POP)
 
 enum QUEST_MOB_TYPES
 {

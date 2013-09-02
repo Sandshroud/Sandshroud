@@ -41,7 +41,7 @@ enum
 	GM_TICKET_CHAT_OPCODE_ONLINESTATE		= 11
 };
 
-#pragma pack(push,1)
+#pragma pack(PRAGMA_PACK)
 struct FishingZoneEntry
 {
 	uint32 ZoneID;
@@ -111,7 +111,7 @@ struct ItemQuestRelation
 	uint32 itemcount;
 };
 
-#pragma pack(pop)
+#pragma pack(PRAGMA_POP)
 
 struct SpellReplacement
 {

@@ -744,7 +744,7 @@ void GameObject::SetDisplayId(uint32 id)
 	SetUInt32Value( GAMEOBJECT_DISPLAYID, id );
 	if(IsInWorld())
 	{
-		CollideInterface.UpdateObjectModel(GetGUID(), GetMapId(), id);
+        CollideInterface.UpdateObjectModel(GetGUID(), GetMapId(), GetInstanceID(), id);
 	}
 }
 

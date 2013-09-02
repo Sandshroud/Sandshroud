@@ -157,7 +157,7 @@ float Object::GetCHeightForPosition(bool checkwater, float x, float y, float z)
 		return mapheight+offset;
 	}
 
-	float vmapheight = CollideInterface.GetHeight(GetMapId(), GetPhaseMask(), x, y, z);
+    float vmapheight = CollideInterface.GetHeight(GetMapId(), GetInstanceID(), GetPhaseMask(), x, y, z);
 	if(IS_INSTANCE(mgr->GetMapId()) || !sWorld.CalculatedHeightChecks)
 	{
 		if(vmapheight != NO_WMO_HEIGHT)
@@ -178,7 +178,7 @@ float Object::GetCHeightForPosition(bool checkwater, float x, float y, float z)
 	float phy = 0.0f;
 	float phz = 0.0f;
 	float CMapHeight = NO_LAND_HEIGHT;
-	CollideInterface.GetFirstPoint(GetMapId(), GetPhaseMask(), x, y, z-10.0f, x, y, z+10.0f, phx, phy, CMapHeight, 0.0f);
+	CollideInterface.GetFirstPoint(GetMapId(), GetInstanceID(), GetPhaseMask(), x, y, z-10.0f, x, y, z+10.0f, phx, phy, CMapHeight, 0.0f);
 
 	// Mapheight first.
 	if(mapheight != NO_LAND_HEIGHT)
@@ -193,7 +193,7 @@ float Object::GetCHeightForPosition(bool checkwater, float x, float y, float z)
 				return mapheight+offset;
 			}
 
-			if(!CollideInterface.GetFirstPoint(GetMapId(), GetPhaseMask(), x, y, mapheight, x, y, z, phx, phy, phz, 0.0f))
+			if(!CollideInterface.GetFirstPoint(GetMapId(), GetInstanceID(), GetPhaseMask(), x, y, mapheight, x, y, z, phx, phy, phz, 0.0f))
 			{
 				if(checkwater && waterheight != NO_WATER_HEIGHT)
 					if(waterheight > mapheight)
@@ -222,7 +222,7 @@ float Object::GetCHeightForPosition(bool checkwater, float x, float y, float z)
 				return vmapheight+offset;
 			}
 
-			if(!CollideInterface.GetFirstPoint(GetMapId(), GetPhaseMask(), x, y, vmapheight, x, y, z, phx, phy, phz, 0.0f))
+			if(!CollideInterface.GetFirstPoint(GetMapId(), GetInstanceID(), GetPhaseMask(), x, y, vmapheight, x, y, z, phx, phy, phz, 0.0f))
 			{
 				if(checkwater && waterheight != NO_WATER_HEIGHT)
 					if(waterheight > vmapheight)
@@ -3570,7 +3570,7 @@ bool Object::IsInLineOfSight(Object* pObj)
 		Tnoselevel = TO_PLAYER(pObj)->m_noseLevel;
 
 	if (GetMapMgr() && GetMapMgr()->CanUseCollision(this) && GetMapMgr()->CanUseCollision(pObj))
-		return (CollideInterface.CheckLOS( GetMapId(), GetPhaseMask(), GetPositionX(), GetPositionY(), GetPositionZ() + Onoselevel + GetFloatValue(UNIT_FIELD_HOVERHEIGHT), pObj->GetPositionX(), pObj->GetPositionY(), pObj->GetPositionZ() + Tnoselevel + pObj->GetFloatValue(UNIT_FIELD_HOVERHEIGHT)) );
+		return (CollideInterface.CheckLOS( GetMapId(), GetInstanceID(), GetPhaseMask(), GetPositionX(), GetPositionY(), GetPositionZ() + Onoselevel + GetFloatValue(UNIT_FIELD_HOVERHEIGHT), pObj->GetPositionX(), pObj->GetPositionY(), pObj->GetPositionZ() + Tnoselevel + pObj->GetFloatValue(UNIT_FIELD_HOVERHEIGHT)) );
 	else
 		return true;
 }
@@ -3582,7 +3582,7 @@ bool Object::IsInLineOfSight(float x, float y, float z)
 		Onoselevel = TO_PLAYER(this)->m_noseLevel;
 
 	if (GetMapMgr() && GetMapMgr()->CanUseCollision(this))
-		return (CollideInterface.CheckLOS( GetMapId(), GetPhaseMask(), GetPositionX(), GetPositionY(), GetPositionZ() + Onoselevel + GetFloatValue(UNIT_FIELD_HOVERHEIGHT), x, y, z) );
+		return (CollideInterface.CheckLOS( GetMapId(), GetInstanceID(), GetPhaseMask(), GetPositionX(), GetPositionY(), GetPositionZ() + Onoselevel + GetFloatValue(UNIT_FIELD_HOVERHEIGHT), x, y, z) );
 	else
 		return true;
 }

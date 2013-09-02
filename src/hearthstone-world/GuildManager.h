@@ -4,6 +4,8 @@
 
 #pragma once
 
+#pragma pack(PRAGMA_PACK)
+
 struct GuildInfo
 {
 	uint32 m_GuildStatus;
@@ -190,6 +192,8 @@ struct GuildMemberMapStorage
 	Mutex MemberMapLock;
 	std::map<uint32, GuildMember*> MemberMap;
 };
+
+#pragma pack(PRAGMA_POP)
 
 typedef std::vector<GuildLogEvent*> GuildLogList;
 typedef std::map<uint32, GuildInfo*> GuildInfoMap;
@@ -461,11 +465,11 @@ public:
 	void RemoveCharter(Charter *);
 	void LoadGuildCharters();
 
-	Charter * CreateCharter(uint32 LeaderGuid, CharterTypes Type);
-	Charter * GetCharter(uint32 CharterId, CharterTypes Type);
-	Charter * GetCharterByName(string &charter_name, CharterTypes Type);
-	Charter * GetCharterByItemGuid(uint32 guid);
-	Charter * GetCharterByGuid(uint64 playerguid, CharterTypes type);
+	Charter *CreateCharter(uint32 LeaderGuid, CharterTypes Type);
+	Charter *GetCharter(uint32 CharterId, CharterTypes Type);
+	Charter *GetCharterByName(string &charter_name, CharterTypes Type);
+	Charter *GetCharterByItemGuid(uint32 guid);
+	Charter *GetCharterByGuid(uint64 playerguid, CharterTypes type);
 
 private:
 	RWLock m_charterLock;

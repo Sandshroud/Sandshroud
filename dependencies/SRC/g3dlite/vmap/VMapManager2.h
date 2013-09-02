@@ -47,7 +47,7 @@ namespace VMAP
             int iRefCount;
     };
 
-    typedef std::map<G3D::g3d_uint64, GameobjectModelInstance*> ModelGUIDEs;
+    typedef std::map< std::pair<G3D::g3d_uint64, G3D::g3d_uint32>, GameobjectModelInstance*> ModelGUIDEs;
     struct GOMapGuides
     {
         ModelGUIDEs ModelsByGuid;
@@ -75,7 +75,7 @@ namespace VMAP
             G3D::GMutex LoadedModelFilesLock;
 
             bool _loadMap(G3D::g3d_uint32 mapId, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY);
-            bool _loadObject(DynamicMapTree* tree, G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_int32 m_phase);
+            bool _loadObject(DynamicMapTree* tree, G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_uint32 m_instance, G3D::g3d_int32 m_phase);
             /* void _unloadMap(G3D::g3d_uint32 pMapId, G3D::g3d_uint32 x, G3D::g3d_uint32 y); */
 
         public:
@@ -91,20 +91,20 @@ namespace VMAP
             void LoadGameObjectModelList();
 
             int loadMap(unsigned int mapId, int x, int y);
-            int loadObject(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_int32 m_phase);
+            int loadObject(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_uint32 m_instance, G3D::g3d_int32 m_phase);
 
-            void changeObjectModel(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID);
+            void changeObjectModel(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 m_instance, G3D::g3d_uint32 DisplayID);
 
             void unloadMap(unsigned int mapId, int x, int y);
             void unloadMap(unsigned int mapId);
-            void unloadObject(unsigned int mapId, G3D::g3d_uint64 guid);
+            void unloadObject(unsigned int mapId, G3D::g3d_uint32 m_instance, G3D::g3d_uint64 guid);
 
-            bool isInLineOfSight(unsigned int mapId, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2) ;
+            bool isInLineOfSight(unsigned int mapId, G3D::g3d_uint32 m_instance, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2) ;
             /**
             fill the hit pos and return true, if an object was hit
             */
-            bool getObjectHitPos(unsigned int mapId, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float& ry, float& rz, float modifyDist);
-            float getHeight(unsigned int mapId, G3D::g3d_int32 m_phase, float x, float y, float z, float maxSearchDist);
+            bool getObjectHitPos(unsigned int mapId, G3D::g3d_uint32 m_instance, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float& ry, float& rz, float modifyDist);
+            float getHeight(unsigned int mapId, G3D::g3d_uint32 m_instance, G3D::g3d_int32 m_phase, float x, float y, float z, float maxSearchDist);
             G3D::g3d_uint32 GetVmapFlags(unsigned int mapid, float x, float y, float z);
 
             bool processCommand(char *) { return false; } // for debug and extensions

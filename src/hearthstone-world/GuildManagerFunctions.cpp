@@ -1125,8 +1125,8 @@ void GuildMgr::Packet_SendGuildBankLog(WorldSession* m_session, uint32 slotid)
 			data << uint8((*itr)->iAction);
 			data << uint32((*itr)->uPlayer);
 			data << uint32(0);
-			data << (*itr)->uEntry;
-			data << (*itr)->iStack;
+			data << uint32((*itr)->uEntry);
+			data << uint8((*itr)->iStack);
 			data << uint32(lt - (*itr)->uTimeStamp);
 		}
 	}
