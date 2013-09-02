@@ -24,16 +24,16 @@ public:
 	void ActivateMap(uint32 mapId);
 	void DeactivateMap(uint32 mapId);
 
-	bool CheckLOS(uint32 mapId, int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2);
-	bool GetFirstPoint(uint32 mapId, int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2, float & outx, float & outy, float & outz, float distmod);
+	bool CheckLOS(uint32 mapId, uint32 instanceId, int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2);
+	bool GetFirstPoint(uint32 mapId, uint32 instanceId, int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2, float & outx, float & outy, float & outz, float distmod);
 	bool IsIndoor(uint32 mapId, float x, float y, float z);
 	bool IsIncity(uint32 mapid, float x, float y, float z);
 	uint32 GetVmapAreaFlags(uint32 mapId, float x, float y, float z);
-	float GetHeight(uint32 mapId, int32 m_phase, float x, float y, float z);
+	float GetHeight(uint32 mapId, uint32 instanceId, int32 m_phase, float x, float y, float z);
 
-	void LoadGameobjectModel(uint64 Guid, uint32 mapId, uint32 displayID, float scale, float posX, float posY, float posZ, float orientation, int32 phasemask);
-	void UpdateObjectModel(uint64 Guid, uint32 mapId, uint32 displayID);
-	void UnLoadGameobjectModel(uint64 Guid, uint32 mapId);
+	void LoadGameobjectModel(uint64 Guid, uint32 mapId, uint32 displayID, float scale, float posX, float posY, float posZ, float orientation, uint32 instanceId, int32 phasemask);
+	void UpdateObjectModel(uint64 Guid, uint32 mapId, uint32 instanceId, uint32 displayID);
+	void UnLoadGameobjectModel(uint64 Guid, uint32 mapId, uint32 instanceId);
 };
 
 extern SERVER_DECL CCollideInterface CollideInterface;

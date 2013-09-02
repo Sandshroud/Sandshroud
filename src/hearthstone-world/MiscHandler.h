@@ -4,7 +4,7 @@
 
 #pragma once
 
-#pragma pack(push,1)
+#pragma pack(PRAGMA_PACK)
 struct GraveyardTeleport
 {
     uint32 ID;
@@ -17,4 +17,4 @@ struct GraveyardTeleport
 	uint32 MapId;
     uint32 FactionID;
 };
-#pragma pack(pop)
+#pragma pack(PRAGMA_POP)

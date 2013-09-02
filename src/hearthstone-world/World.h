@@ -211,7 +211,7 @@ enum HolidayMasks
 	HOLIDAY_PILGRIM_BOUNTY
 };
 
-#pragma pack(push,1)
+#pragma pack(PRAGMA_PACK)
 struct MapInfo
 {
 	uint32 mapid;
@@ -239,7 +239,7 @@ struct MapInfo
 	}
 };
 
-#pragma pack(pop)
+#pragma pack(PRAGMA_POP)
 
 struct AreaTable;
 

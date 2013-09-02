@@ -379,7 +379,7 @@ struct spells
 	uint16  slotId;
 };
 
-#pragma pack(push,1)
+#pragma pack(PRAGMA_PACK)
 
 struct ActionButton
 {
@@ -388,7 +388,7 @@ struct ActionButton
 	uint32 GetAction() { return ACTION_BUTTON_ACTION(PackedData); };
 };
 
-#pragma pack(pop)
+#pragma pack(PRAGMA_POP)
 
 struct CreateInfo_ItemStruct
 {

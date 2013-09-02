@@ -869,7 +869,7 @@ void Aura::EventRelocateRandomTarget()
 
 		if (m_caster->GetMapMgr() && m_caster->GetMapMgr()->CanUseCollision(m_caster))
 		{
-			if( !CollideInterface.CheckLOS( m_caster->GetMapId(), m_caster->GetPhaseMask(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ() + 2.0f, (*itr)->GetPositionX(), (*itr)->GetPositionY(), (*itr)->GetPositionZ() + 2.0f) )
+			if( !CollideInterface.CheckLOS( m_caster->GetMapId(), m_caster->GetInstanceID(), m_caster->GetPhaseMask(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ() + 2.0f, (*itr)->GetPositionX(), (*itr)->GetPositionY(), (*itr)->GetPositionZ() + 2.0f) )
 				continue;
 		}
 

@@ -306,11 +306,12 @@ void DynamicMapTree::update(G3D::g3d_uint32 t_diff)
 struct DynamicTreeIntersectionCallback
 {
     bool did_hit;
-    G3D::g3d_uint32 phase_mask;
-    DynamicTreeIntersectionCallback(G3D::g3d_uint32 phasemask) : did_hit(false), phase_mask(phasemask) {}
+    G3D::g3d_int32 phase_mask;
+    G3D::g3d_uint32 instanceId;
+    DynamicTreeIntersectionCallback(G3D::g3d_int32 instanceid, G3D::g3d_int32 phasemask) : did_hit(false), instanceId(instanceid), phase_mask(phasemask) {}
     bool operator()(const G3D::Ray& r, const VMAP::GameobjectModelInstance& obj, float& distance)
     {
-        did_hit = obj.intersectRay(r, distance, true, phase_mask);
+        did_hit = obj.intersectRay(r, distance, true, instanceId, phase_mask);
         return did_hit;
     }
     bool didHit() const { return did_hit;}
@@ -319,8 +320,9 @@ struct DynamicTreeIntersectionCallback
 struct DynamicTreeIntersectionCallback_WithLogger
 {
     bool did_hit;
-    G3D::g3d_uint32 phase_mask;
-    DynamicTreeIntersectionCallback_WithLogger(G3D::g3d_uint32 phasemask) : did_hit(false), phase_mask(phasemask)
+    G3D::g3d_int32 phase_mask;
+    G3D::g3d_uint32 instanceId;
+    DynamicTreeIntersectionCallback_WithLogger(G3D::g3d_int32 instanceid, G3D::g3d_uint32 phasemask) : did_hit(false), instanceId(instanceid), phase_mask(phasemask)
     {
 #ifdef _DEBUG
         printf("Dynamic Intersection log\n");
@@ -331,7 +333,7 @@ struct DynamicTreeIntersectionCallback_WithLogger
 #ifdef _DEBUG
         printf("testing intersection with %s\n", obj.name.c_str());
 #endif
-        bool hit = obj.intersectRay(r, distance, true, phase_mask);
+        bool hit = obj.intersectRay(r, distance, true, instanceId, phase_mask);
         if (hit)
         {
             did_hit = true;
@@ -344,18 +346,18 @@ struct DynamicTreeIntersectionCallback_WithLogger
     bool didHit() const { return did_hit;}
 };
 
-bool DynamicMapTree::getIntersectionTime(const G3D::g3d_uint32 phasemask, const G3D::Ray& ray,
+bool DynamicMapTree::getIntersectionTime(G3D::g3d_uint32 instanceId, G3D::g3d_int32 phasemask, const G3D::Ray& ray,
                                          const G3D::Vector3& endPos, float& maxDist) const
 {
     float distance = maxDist;
-    DynamicTreeIntersectionCallback callback(phasemask);
+    DynamicTreeIntersectionCallback callback(instanceId, phasemask);
     impl->intersectRay(ray, callback, distance, endPos);
     if (callback.didHit())
         maxDist = distance;
     return callback.didHit();
 }
 
-bool DynamicMapTree::getObjectHitPos(const G3D::g3d_uint32 phasemask, const G3D::Vector3& startPos,
+bool DynamicMapTree::getObjectHitPos(G3D::g3d_uint32 instanceId, G3D::g3d_int32 phasemask, const G3D::Vector3& startPos,
                                      const G3D::Vector3& endPos, G3D::Vector3& resultHit,
                                      float modifyDist) const
 {
@@ -372,7 +374,7 @@ bool DynamicMapTree::getObjectHitPos(const G3D::g3d_uint32 phasemask, const G3D:
     G3D::Vector3 dir = (endPos - startPos)/maxDist;              // direction with length of 1
     G3D::Ray ray(startPos, dir);
     float dist = maxDist;
-    if (getIntersectionTime(phasemask, ray, endPos, dist))
+    if (getIntersectionTime(instanceId, phasemask, ray, endPos, dist))
     {
         resultHit = startPos + dir * dist;
         if (modifyDist < 0)
@@ -395,7 +397,7 @@ bool DynamicMapTree::getObjectHitPos(const G3D::g3d_uint32 phasemask, const G3D:
     return result;
 }
 
-bool DynamicMapTree::isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, G3D::g3d_uint32 phasemask) const
+bool DynamicMapTree::isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, G3D::g3d_uint32 instanceId, G3D::g3d_int32 phasemask) const
 {
     G3D::Vector3 v1(x1, y1, z1), v2(x2, y2, z2);
 
@@ -405,17 +407,17 @@ bool DynamicMapTree::isInLineOfSight(float x1, float y1, float z1, float x2, flo
         return true;
 
     G3D::Ray r(v1, (v2-v1) / maxDist);
-    DynamicTreeIntersectionCallback callback(phasemask);
+    DynamicTreeIntersectionCallback callback(instanceId, phasemask);
     impl->intersectRay(r, callback, maxDist, v2);
 
     return !callback.did_hit;
 }
 
-float DynamicMapTree::getHeight(float x, float y, float z, float maxSearchDist, G3D::g3d_uint32 phasemask) const
+float DynamicMapTree::getHeight(float x, float y, float z, float maxSearchDist, G3D::g3d_uint32 instanceId, G3D::g3d_int32 phasemask) const
 {
     G3D::Vector3 v(x, y, z);
     G3D::Ray r(v, G3D::Vector3(0, 0, -1));
-    DynamicTreeIntersectionCallback callback(phasemask);
+    DynamicTreeIntersectionCallback callback(instanceId, phasemask);
     impl->intersectZAllignedRay(r, callback, maxSearchDist);
 
     if (callback.didHit())

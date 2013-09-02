@@ -15,7 +15,7 @@ enum AreaTriggerType
 	ATTYPE_BATTLEGROUND		= 6,
 };
 
-#pragma pack(push,1)
+#pragma pack(PRAGMA_PACK)
 
 typedef struct AreaTrigger
 {
@@ -30,4 +30,4 @@ typedef struct AreaTrigger
 	uint32 required_level;
 }AreaTrigger;
 
-#pragma pack(pop)
+#pragma pack(PRAGMA_POP)

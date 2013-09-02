@@ -9,7 +9,7 @@ typedef struct
 	uint16 opcode;
 	uint32 size;
 }logonpacket;
-#pragma pack(pop)
+#pragma pack(PRAGMA_POP)
 
 LogonCommClientSocket::LogonCommClientSocket(SOCKET fd, const sockaddr_in * peer) : TcpSocket(fd, 524288, 65536, false, peer)
 {
