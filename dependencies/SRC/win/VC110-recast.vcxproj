@@ -24,6 +24,7 @@
     <ClCompile Include="..\recast\RecastArea.cpp" />
     <ClCompile Include="..\recast\RecastContour.cpp" />
     <ClCompile Include="..\recast\RecastFilter.cpp" />
+    <ClCompile Include="..\recast\RecastLayers.cpp" />
     <ClCompile Include="..\recast\RecastMesh.cpp" />
     <ClCompile Include="..\recast\RecastMeshDetail.cpp" />
     <ClCompile Include="..\recast\RecastRasterization.cpp" />
