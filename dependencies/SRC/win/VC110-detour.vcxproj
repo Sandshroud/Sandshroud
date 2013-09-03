@@ -36,6 +36,7 @@
     <ClInclude Include="..\detour\DetourNavMeshQuery.h" />
     <ClInclude Include="..\detour\DetourNode.h" />
     <ClInclude Include="..\detour\DetourObstacleAvoidance.h" />
+    <ClInclude Include="..\detour\DetourStatus.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>detour</ProjectName>
