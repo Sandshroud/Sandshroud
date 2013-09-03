@@ -461,5 +461,6 @@ void WintergraspScript::OnChangeArea(Player* pPlayer, uint32 ZoneID, uint32 NewA
 
 void Lacrimi::SetupWintergrasp()
 {
-	RegisterMapManagerScript(571, WintergraspScript);
+    if(sWorld.wg_enabled)
+        RegisterMapManagerScript(571, WintergraspScript);
 }
