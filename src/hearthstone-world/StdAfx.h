@@ -90,6 +90,7 @@
 #include "g3dlite/G3D.h"
 
 #include "recast/Recast.h"
+#include "detour/DetourCommon.h"
 #include "detour/DetourNavMesh.h"
 #include "detour/DetourNavMeshQuery.h"
 #include "detour/DetourNavMeshBuilder.h"

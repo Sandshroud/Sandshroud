@@ -141,7 +141,7 @@ bool CCollideInterface::CheckLOS(uint32 mapId, uint32 instanceId, int32 m_phase,
 {
 	ASSERT(m_mapLocks[mapId] != NULL);
 	if( !CollisionMgr )
-		return false;
+		return true;
 
 	// get read lock
 	m_mapLocks[mapId]->m_lock.AcquireReadLock();
@@ -179,7 +179,7 @@ float CCollideInterface::GetHeight(uint32 mapId, uint32 instanceId, int32 m_phas
 {
 	ASSERT(m_mapLocks[mapId] != NULL);
 	if( !CollisionMgr )
-		return false;
+		return NO_WMO_HEIGHT;
 
 	// get read lock
 	m_mapLocks[mapId]->m_lock.AcquireReadLock();
