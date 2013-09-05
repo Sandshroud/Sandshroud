@@ -127,7 +127,6 @@ namespace MMAP
         const char *p = dirpath.c_str();
         DIR * dirp = opendir(p);
         struct dirent * dp;
-        dirp = opendir(p);
 
         while (dirp)
         {

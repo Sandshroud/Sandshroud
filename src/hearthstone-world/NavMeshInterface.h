@@ -6,7 +6,7 @@
 
 #define MMAP_UNAVAILABLE 424242.42f // 'MMAP'
 #define MMAP_MAGIC 0x4d4d4150	// 'MMAP'
-#define MMAP_VERSION 3
+#define MMAP_VERSION 4
 
 struct MmapTileHeader
 {
@@ -67,10 +67,14 @@ public:
 	LocationVector getBestPositionOnPathToLocation(float startx, float starty, float startz, float endx, float endy, float endz);
 	LocationVectorMapContainer* BuildFullPath(Unit* m_Unit, float startx, float starty, float startz, float endx, float endy, float endz, bool straight);
 
+    // Poly locating
+    dtPolyRef GetPathPolyByPosition(dtPolyRef const* polyPath, uint32 polyPathSize, float const* Point, float* Distance = NULL) const;
+    dtPolyRef GetPolyByLocation(dtQueryFilter* m_filter, dtPolyRef const* polyPath, uint32 polyPathSize, float const* Point, float* Distance) const;
+
 	// Smooth pathing
 	uint32 fixupCorridor(dtPolyRef* path, uint32 npath, uint32 maxPath, dtPolyRef* visited, uint32 nvisited);
 	bool getSteerTarget(float* startPos, float* endPos, float minTargetDist, dtPolyRef* path, uint32 pathSize, float* steerPos, unsigned char& steerPosFlag, dtPolyRef& steerPosRef);
-	dtStatus findSmoothPath(dtQueryFilter* m_filter, float* startPos, float* endPos, dtPolyRef* polyPath, uint32 polyPathSize, float* smoothPath, int* smoothPathSize, bool &usedOffmesh, uint32 smoothPathMaxSize);
+	dtStatus findSmoothPath(dtQueryFilter* m_filter, float* startPos, float* endPos, dtPolyRef* polyPath, uint32 polyPathSize, float* smoothPath, int* smoothPathSize, uint32 smoothPathMaxSize);
 
 	bool GetWalkingHeightInternal(float startx, float starty, float startz, float endz, LocationVector& out);
 	bool getNextPositionOnPathToLocation(float startx, float starty, float startz, float endx, float endy, float endz, LocationVector& out);
