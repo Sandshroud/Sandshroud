@@ -29,7 +29,7 @@
 G3D::g3d_uint32 GetLiquidFlags(G3D::g3d_uint32 /*liquidType*/) { return 0; }
 
 #define MMAP_MAGIC 0x4d4d4150   // 'MMAP'
-#define MMAP_VERSION 3
+#define MMAP_VERSION 4
 
 struct MmapTileHeader
 {
@@ -176,7 +176,10 @@ namespace MMAP
         minX = INT_MIN;
         minY = INT_MIN;
 
-        float bmin[3], bmax[3], lmin[3], lmax[3];
+        float bmin[3] = { 0, 0, 0 };
+        float bmax[3] = { 0, 0, 0 };
+        float lmin[3] = { 0, 0, 0 };
+        float lmax[3] = { 0, 0, 0 };
         MeshData meshData;
 
         // make sure we process maps which don't have tiles
@@ -217,11 +220,20 @@ namespace MMAP
         printf("Building mesh from file\n");
         int tileX, tileY, mapId;
         if (fread(&mapId, sizeof(int), 1, file) != 1)
+        {
+            fclose(file);
             return;
+        }
         if (fread(&tileX, sizeof(int), 1, file) != 1)
+        {
+            fclose(file);
             return;
+        }
         if (fread(&tileY, sizeof(int), 1, file) != 1)
+        {
+            fclose(file);
             return;
+        }
 
         dtNavMesh* navMesh = NULL;
         buildNavMesh(mapId, navMesh);
@@ -234,25 +246,45 @@ namespace MMAP
 
         G3D::g3d_uint32 verticesCount, indicesCount;
         if (fread(&verticesCount, sizeof(G3D::g3d_uint32), 1, file) != 1)
+        {
+            fclose(file);
             return;
+        }
+
         if (fread(&indicesCount, sizeof(G3D::g3d_uint32), 1, file) != 1)
+        {
+            fclose(file);
             return;
+        }
 
         float* verts = new float[verticesCount];
         int* inds = new int[indicesCount];
 
         if (fread(verts, sizeof(float), verticesCount, file) != verticesCount)
+        {
+            fclose(file);
+            delete[] verts;
+            delete[] inds;
             return;
+        }
+
         if (fread(inds, sizeof(int), indicesCount, file) != indicesCount)
+        {
+            fclose(file);
+            delete[] verts;
+            delete[] inds;
             return;
+        }
 
         MeshData data;
 
         for (G3D::g3d_uint32 i = 0; i < verticesCount; ++i)
             data.solidVerts.append(verts[i]);
+        delete[] verts;
 
         for (G3D::g3d_uint32 i = 0; i < indicesCount; ++i)
             data.solidTris.append(inds[i]);
+        delete[] inds;
 
         TerrainBuilder::cleanVertices(data.solidVerts, data.solidTris);
         // get bounds of current tile
@@ -633,6 +665,9 @@ namespace MMAP
         if (!iv.polyMesh)
         {
             printf("%s alloc iv.polyMesh FIALED!\n", tileString);
+            delete[] pmmerge;
+            delete[] dmmerge;
+            delete[] tiles;
             return;
         }
         rcMergePolyMeshes(m_rcContext, pmmerge, nmerge, *iv.polyMesh);
@@ -641,6 +676,9 @@ namespace MMAP
         if (!iv.polyMeshDetail)
         {
             printf("%s alloc m_dmesh FIALED!\n", tileString);
+            delete[] pmmerge;
+            delete[] dmmerge;
+            delete[] tiles;
             return;
         }
         rcMergePolyMeshDetails(m_rcContext, dmmerge, nmerge, *iv.polyMeshDetail);
@@ -648,16 +686,15 @@ namespace MMAP
         // free things up
         delete[] pmmerge;
         delete[] dmmerge;
-
         delete[] tiles;
 
-        // remove padding for extraction
+/*      // remove padding for extraction
         for (int i = 0; i < iv.polyMesh->nverts; ++i)
         {
             unsigned short* v = &iv.polyMesh->verts[i*3];
             v[0] -= (unsigned short)config.borderSize;
             v[2] -= (unsigned short)config.borderSize;
-        }
+        }*/
 
         // set polygons as walkable
         // TODO: special flags for DYNAMIC polygons, ie surfaces that can be turned on and off
@@ -697,7 +734,8 @@ namespace MMAP
         rcVcopy(params.bmax, bmax);
         params.cs = config.cs;
         params.ch = config.ch;
-        params.tileSize = VERTEX_PER_MAP;
+        params.tileLayer = 0;
+        params.buildBvTree = true;
 
         // will hold final navmesh
         unsigned char* navData = NULL;

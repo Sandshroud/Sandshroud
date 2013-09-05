@@ -6,10 +6,6 @@
 
 SERVER_DECL CNavMeshInterface NavMeshInterface;
 
-#ifndef DT_STATUS_FAILED
-#define dtStatusFailed(x) (x != DT_SUCCESS)
-#endif
-
 void CNavMeshInterface::Init()
 {
 	Log.Notice("NavMeshInterface", "Init");
@@ -206,14 +202,14 @@ bool MMapManager::LoadNavMesh(uint32 x, uint32 y)
 		fread(&fileHeader, sizeof(MmapTileHeader), 1, file);
 		if (fileHeader.mmapMagic != MMAP_MAGIC)
 		{
-			Log.Debug("NavMeshInterface", "Bad header in mmap %03u%02i%02i.mmtile", ManagerMapId, x, y);
+			Log.Error("NavMeshInterface", "Bad header in mmap %03u%02i%02i.mmtile", ManagerMapId, x, y);
 			fclose(file);
 			return false;
 		}
 
 		if (fileHeader.mmapVersion != MMAP_VERSION)
 		{
-			Log.Debug("NavMeshInterface", "%03u%02i%02i.mmtile was built with generator v%i, expected v%i", ManagerMapId, x, y, fileHeader.mmapVersion, MMAP_VERSION);
+			Log.Error("NavMeshInterface", "%03u%02i%02i.mmtile was built with generator v%i, expected v%i", ManagerMapId, x, y, fileHeader.mmapVersion, MMAP_VERSION);
 			fclose(file);
 			return false;
 		}
@@ -224,7 +220,7 @@ bool MMapManager::LoadNavMesh(uint32 x, uint32 y)
 		size_t result = fread(data, fileHeader.size, 1, file);
 		if(!result)
 		{
-			Log.Debug("NavMeshInterface", "Bad header or data in mmap %03u%02u%02u.mmtile", ManagerMapId, x, y);
+			Log.Error("NavMeshInterface", "Bad header or data in mmap %03u%02u%02u.mmtile", ManagerMapId, x, y);
 			fclose(file);
 			return false;
 		}
@@ -235,7 +231,7 @@ bool MMapManager::LoadNavMesh(uint32 x, uint32 y)
 
 		// memory allocated for data is now managed by detour, and will be deallocated when the tile is removed
 		dtresult = m_navMesh->addTile(data, fileHeader.size, DT_TILE_FREE_DATA, 0, &reference);
-		if(dtresult == DT_IN_PROGRESS) // We already have it loaded, oops.
+		if(dtStatusInProgress(dtresult)) // We already have it loaded, oops.
 			free(data);
 		else if(dtStatusFailed(dtresult))
 		{
@@ -243,9 +239,11 @@ bool MMapManager::LoadNavMesh(uint32 x, uint32 y)
 			Log.Debug("NavMeshInterface", "Could not load %03u%02u%02u.mmtile into navmesh", ManagerMapId, x, y);
 			return false;
 		}
-		else Log.Debug("NavMeshInterface", "Loaded mmtile %03u[%04u] into %03u[%02u,%02u]", ManagerMapId, reference, ManagerMapId, x, y);
-
-		TileReferences.insert(make_pair(PackedTileID, new TileReferenceC(reference)));
+		else
+		{
+			Log.Debug("NavMeshInterface", "Loaded mmtile %03u[%I64ld] into %03u[%02u,%02u]", ManagerMapId, reference, ManagerMapId, x, y);
+			TileReferences.insert(make_pair(PackedTileID, new TileReferenceC(reference)));
+		}
 	}
 	else reference = itr->second->ID;
 
@@ -269,12 +267,12 @@ void MMapManager::UnloadNavMesh(uint32 x, uint32 y)
 		dtStatus status = m_navMesh->removeTile(reference, NULL, NULL);
 		if(dtStatusFailed(status))
 		{
-			Log.Debug("NavMeshInterface", "Failed to unload mmtile %03u[%04u] from %03u[%02u,%02u]", ManagerMapId, reference, ManagerMapId, x, y);
+			Log.Debug("NavMeshInterface", "Failed to unload mmtile %03u[%I64ld] from %03u[%02u,%02u]", ManagerMapId, reference, ManagerMapId, x, y);
 			return;
 		}
 		delete itr->second;
 		TileReferences.erase(itr);
-		Log.Debug("NavMeshInterface", "Unloaded mmtile %03u[%04i] from %03u[%02u,%02u]", ManagerMapId, reference, ManagerMapId, x, y);
+		Log.Debug("NavMeshInterface", "Unloaded mmtile %03u[%I64ld] from %03u[%02u,%02u]", ManagerMapId, reference, ManagerMapId, x, y);
 	}
 
 	TileLoadCount[reference]--;
@@ -458,6 +456,72 @@ LocationVector MMapManager::getBestPositionOnPathToLocation(float startx, float 
 	return returnpos;
 }
 
+dtPolyRef MMapManager::GetPathPolyByPosition(dtPolyRef const* polyPath, uint32 polyPathSize, float const* point, float* distance) const
+{
+	if (!polyPath || !polyPathSize)
+		return 0;
+
+	dtPolyRef nearestPoly = 0;
+	float minDist2d = FLT_MAX;
+	float minDist3d = 0.0f;
+
+	for (uint32 i = 0; i < polyPathSize; ++i)
+	{
+		float closestPoint[3];
+		if (dtStatusFailed(m_navMeshQuery->closestPointOnPoly(polyPath[i], point, closestPoint)))
+			continue;
+
+		float d = dtVdist2DSqr(point, closestPoint);
+		if (d < minDist2d)
+		{
+			minDist2d = d;
+			nearestPoly = polyPath[i];
+			minDist3d = dtVdistSqr(point, closestPoint);
+		}
+
+		if (minDist2d < 1.0f) // shortcut out - close enough for us
+			break;
+	}
+
+	if (distance)
+		*distance = dtSqrt(minDist3d);
+
+	return (minDist2d < 3.0f) ? nearestPoly : 0;
+}
+
+dtPolyRef MMapManager::GetPolyByLocation(dtQueryFilter* m_filter, dtPolyRef const* polyPath, uint32 polyPathSize, float const* point, float* distance) const
+{
+	// first we check the current path
+	// if the current path doesn't contain the current poly,
+	// we need to use the expensive navMesh.findNearestPoly
+	dtPolyRef polyRef = GetPathPolyByPosition(polyPath, polyPathSize, point, distance);
+	if (polyRef != 0)
+		return polyRef;
+
+	// we don't have it in our old path
+	// try to get it by findNearestPoly()
+	// first try with low search box
+	float extents[3] = {3.0f, 5.0f, 3.0f};    // bounds of poly search area
+	float closestPoint[3] = {0.0f, 0.0f, 0.0f};
+	if (dtStatusSucceed(m_navMeshQuery->findNearestPoly(point, extents, m_filter, &polyRef, closestPoint)) && polyRef != 0)
+	{
+		*distance = dtVdist(closestPoint, point);
+		return polyRef;
+	}
+
+	// still nothing ..
+	// try with bigger search box
+	// Note that the extent should not overlap more than 128 polygons in the navmesh (see dtNavMeshQuery::findNearestPoly)
+	extents[1] = 50.0f;
+	if (dtStatusSucceed(m_navMeshQuery->findNearestPoly(point, extents, m_filter, &polyRef, closestPoint)) && polyRef != 0)
+	{
+		*distance = dtVdist(closestPoint, point);
+		return polyRef;
+	}
+
+	return 0;
+}
+
 uint32 MMapManager::fixupCorridor(dtPolyRef* path, uint32 npath, uint32 maxPath, dtPolyRef* visited, uint32 nvisited)
 {
 	int32 furthestPath = -1;
@@ -538,126 +602,124 @@ bool MMapManager::getSteerTarget(float* startPos, float* endPos, float minTarget
 	return true;
 }
 
-dtStatus MMapManager::findSmoothPath(dtQueryFilter* m_filter, float* startPos, float* endPos, dtPolyRef* polyPath, uint32 polyPathSize, float* smoothPath, int* smoothPathSize, bool &usedOffmesh, const uint32 maxSmoothPathSize)
+dtStatus MMapManager::findSmoothPath(dtQueryFilter* m_filter, float* startPos, float* endPos, dtPolyRef* polyPath, uint32 polyPathSize, float* smoothPath, int* smoothPathSize, const uint32 maxSmoothPathSize)
 {
-	ASSERT(polyPathSize <= 64);
-	*smoothPathSize = 0;
-	uint32 nsmoothPath = 0;
+	ASSERT(polyPathSize <= 74);
+    *smoothPathSize = 0;
+    uint32 nsmoothPath = 0;
 
-	dtPolyRef polys[64];
-	memcpy(polys, polyPath, sizeof(dtPolyRef)*polyPathSize);
-	uint32 npolys = polyPathSize;
+    dtPolyRef polys[74];
+    memcpy(polys, polyPath, sizeof(dtPolyRef)*polyPathSize);
+    uint32 npolys = polyPathSize;
 
-	float iterPos[3], targetPos[3];
-	if (dtStatusFailed(m_navMeshQuery->closestPointOnPolyBoundary(polys[0], startPos, iterPos)))
-		return DT_FAILURE;
+    float iterPos[3], targetPos[3];
+    if (dtStatusFailed(m_navMeshQuery->closestPointOnPolyBoundary(polys[0], startPos, iterPos)))
+        return DT_FAILURE;
+    if (dtStatusFailed(m_navMeshQuery->closestPointOnPolyBoundary(polys[npolys-1], endPos, targetPos)))
+        return DT_FAILURE;
 
-	if (dtStatusFailed(m_navMeshQuery->closestPointOnPolyBoundary(polys[npolys - 1], endPos, targetPos)))
-		return DT_FAILURE;
+    dtVcopy(&smoothPath[nsmoothPath*3], iterPos);
+    nsmoothPath++;
 
-	dtcopy(&smoothPath[nsmoothPath * 3], iterPos);
-	++nsmoothPath;
+    // Move towards target a small advancement at a time until target reached or
+    // when ran out of memory to store the path.
+    while (npolys && nsmoothPath < maxSmoothPathSize)
+    {
+        // Find location to steer towards.
+        float steerPos[3];
+        unsigned char steerPosFlag;
+        dtPolyRef steerPosRef = 0;
 
-	// Move towards target a small advancement at a time until target reached or
-	// when ran out of memory to store the path.
-	while (npolys && nsmoothPath < maxSmoothPathSize)
-	{
-		// Find location to steer towards.
-		float steerPos[3];
-		unsigned char steerPosFlag;
-		dtPolyRef steerPosRef = 0;
+        if (!getSteerTarget(iterPos, targetPos, 0.3f, polys, npolys, steerPos, steerPosFlag, steerPosRef))
+            break;
 
-		if (!getSteerTarget(iterPos, targetPos, 0.3f, polys, npolys, steerPos, steerPosFlag, steerPosRef))
-			break;
+        bool endOfPath = (steerPosFlag & DT_STRAIGHTPATH_END);
+        bool offMeshConnection = (steerPosFlag & DT_STRAIGHTPATH_OFFMESH_CONNECTION);
 
-		bool endOfPath = (steerPosFlag & DT_STRAIGHTPATH_END) == 0;
-		bool offMeshConnection = (steerPosFlag & DT_STRAIGHTPATH_OFFMESH_CONNECTION) == 0;
+        // Find movement delta.
+        float delta[3];
+        dtVsub(delta, steerPos, iterPos);
+        float len = dtSqrt(dtVdot(delta, delta));
+        // If the steer target is end of path or off-mesh link, do not move past the location.
+        if ((endOfPath || offMeshConnection) && len < 4.0f)
+            len = 1.0f;
+        else
+            len = 4.0f / len;
 
-		// Find movement delta.
-		float delta[3];
-		dtsub(delta, steerPos, iterPos);
-		float len = sqrtf(dtdot(delta, delta));
-		// If the steer target is end of path or off-mesh link, do not move past the location.
-		if ((endOfPath || offMeshConnection) && len < 4.0f)
-			len = 1.0f;
-		else
-			len = 4.0f / len;
+        float moveTgt[3];
+        dtVmad(moveTgt, iterPos, delta, len);
 
-		float moveTgt[3];
-		dtmad(moveTgt, iterPos, delta, len);
+        // Move
+        float result[3];
+        const static uint32 MAX_VISIT_POLY = 16;
+        dtPolyRef visited[MAX_VISIT_POLY];
 
-		// Move
-		float result[3];
-		const static uint32 MAX_VISIT_POLY = 16;
-		dtPolyRef visited[MAX_VISIT_POLY];
+        uint32 nvisited = 0;
+        m_navMeshQuery->moveAlongSurface(polys[0], iterPos, moveTgt, m_filter, result, visited, (int*)&nvisited, MAX_VISIT_POLY);
+        npolys = fixupCorridor(polys, npolys, 74, visited, nvisited);
 
-		uint32 nvisited = 0;
-		m_navMeshQuery->moveAlongSurface(polys[0], iterPos, moveTgt, m_filter, result, visited, (int*)&nvisited, MAX_VISIT_POLY);
-		npolys = fixupCorridor(polys, npolys, 64, visited, nvisited);
+        m_navMeshQuery->getPolyHeight(polys[0], result, &result[1]);
+        result[1] += 0.5f;
+        dtVcopy(iterPos, result);
 
-		m_navMeshQuery->getPolyHeight(polys[0], result, &result[1]);
-		result[1] += 0.5f;
-		dtcopy(iterPos, result);
+        // Handle end of path and off-mesh links when close enough.
+        if (endOfPath && inRangeYZX(iterPos, steerPos, 0.3f, 1.0f))
+        {
+            // Reached end of path.
+            dtVcopy(iterPos, targetPos);
+            if (nsmoothPath < maxSmoothPathSize)
+            {
+                dtVcopy(&smoothPath[nsmoothPath*3], iterPos);
+                nsmoothPath++;
+            }
+            break;
+        }
+        else if (offMeshConnection && inRangeYZX(iterPos, steerPos, 0.3f, 1.0f))
+        {
+            // Advance the path up to and over the off-mesh connection.
+            dtPolyRef prevRef = 0;
+            dtPolyRef polyRef = polys[0];
+            uint32 npos = 0;
+            while (npos < npolys && polyRef != steerPosRef)
+            {
+                prevRef = polyRef;
+                polyRef = polys[npos];
+                npos++;
+            }
 
-		// Handle end of path and off-mesh links when close enough.
-		if (endOfPath && inRangeYZX(iterPos, steerPos, 0.3f, 1.0f))
-		{
-			// Reached end of path.
-			dtcopy(iterPos, targetPos);
-			if (nsmoothPath < maxSmoothPathSize)
-			{
-				dtcopy(&smoothPath[nsmoothPath * 3], iterPos);
-				++nsmoothPath;
-			}
-			break;
-		}
-		else if (offMeshConnection && inRangeYZX(iterPos, steerPos, 0.3f, 1.0f))
-		{
-			// Advance the path up to and over the off-mesh connection.
-			dtPolyRef prevRef = 0;
-			dtPolyRef polyRef = polys[0];
-			uint32 npos = 0;
-			while (npos < npolys && polyRef != steerPosRef)
-			{
-				prevRef = polyRef;
-				polyRef = polys[npos];
-				++npos;
-			}
+            for (uint32 i = npos; i < npolys; ++i)
+                polys[i-npos] = polys[i];
 
-			for (uint32 i = npos; i < npolys; ++i)
-				polys[i - npos] = polys[i];
+            npolys -= npos;
 
-			npolys -= npos;
+            // Handle the connection.
+            float startPos[3], endPos[3];
+            if (dtStatusSucceed(m_navMesh->getOffMeshConnectionPolyEndPoints(prevRef, polyRef, startPos, endPos)))
+            {
+                if (nsmoothPath < maxSmoothPathSize)
+                {
+                    dtVcopy(&smoothPath[nsmoothPath*3], startPos);
+                    nsmoothPath++;
+                }
+                // Move position at the other side of the off-mesh link.
+                dtVcopy(iterPos, endPos);
+                m_navMeshQuery->getPolyHeight(polys[0], iterPos, &iterPos[1]);
+                iterPos[1] += 0.5f;
+            }
+        }
 
-			// Handle the connection.
-			float startPos[3], endPos[3];
-			if (!dtStatusFailed(m_navMesh->getOffMeshConnectionPolyEndPoints(prevRef, polyRef, startPos, endPos)))
-			{
-				if (nsmoothPath < maxSmoothPathSize)
-				{
-					dtcopy(&smoothPath[nsmoothPath * 3], startPos);
-					++nsmoothPath;
-				}
-				// Move position at the other side of the off-mesh link.
-				dtcopy(iterPos, endPos);
+        // Store results.
+        if (nsmoothPath < maxSmoothPathSize)
+        {
+            dtVcopy(&smoothPath[nsmoothPath*3], iterPos);
+            nsmoothPath++;
+        }
+    }
 
-				m_navMeshQuery->getPolyHeight(polys[0], iterPos, &iterPos[1]);
-				iterPos[1] += 0.5f;
-			}
-		}
+    *smoothPathSize = nsmoothPath;
 
-		// Store results.
-		if (nsmoothPath < maxSmoothPathSize)
-		{
-			dtcopy(&smoothPath[nsmoothPath * 3], iterPos);
-			++nsmoothPath;
-		}
-	}
-
-	*smoothPathSize = nsmoothPath;
-
-	// this is most likely a loop
-	return nsmoothPath < 64 ? DT_SUCCESS : DT_FAILURE;
+    // this is most likely a loop
+    return nsmoothPath < 74 ? DT_SUCCESS : DT_FAILURE;
 }
 
 LocationVectorMapContainer* MMapManager::BuildFullPath(Unit* m_Unit, float startx, float starty, float startz, float endx, float endy, float endz, bool straight)
@@ -682,53 +744,40 @@ LocationVectorMapContainer* MMapManager::BuildFullPath(Unit* m_Unit, float start
 	}
 	mPathFilter->setIncludeFlags(includeFlags);
 
-	uint32 m_polyLength = 0, m_maxLength = 64;
-	dtPolyRef m_pathPolyRefs[64]; // array of detour polygon references
+	uint32 m_polyLength = 0, m_maxLength = 74;
+	dtPolyRef m_pathPolyRefs[74]; // array of detour polygon references
 
-	float startPoint[3] = { starty, startz, startx };
-	float endPoint[3] = { endy, endz, endx };
-	float mPolyPickingExtents[3] = { 2.00f, 2.00f, 4.00f };
-	float closestPoint[3] = {0.0f, 0.0f, 0.0f};
-	float pathPoints[64*3];
+    float distToStartPoly, distToEndPoly;
+	float endPoint[3] = { endy, endz, endx }, startPoint[3] = { starty, startz, startx };
+    dtPolyRef mStartRef = GetPolyByLocation(mPathFilter, m_pathPolyRefs, m_maxLength, startPoint, &distToStartPoly);
+    dtPolyRef mEndRef = GetPolyByLocation(mPathFilter, m_pathPolyRefs, m_maxLength, endPoint, &distToEndPoly);
+	if(mStartRef == 0 || mEndRef == 0 || mStartRef == mEndRef)
+	{
+		delete mPathFilter;
+		mPathFilter = NULL;
+		return NULL;
+	}
+
+    dtStatus dtResult = m_navMeshQuery->findPath(
+            mStartRef,          // start polygon
+            mEndRef,            // end polygon
+            startPoint,         // start position
+            endPoint,           // end position
+            mPathFilter,        // polygon search filter
+            m_pathPolyRefs,     // [out] path
+            (int*)&m_polyLength,
+            m_maxLength);       // max number of polygons in output path
+	if(dtStatusFailed(dtResult) || !m_polyLength)
+	{
+		delete mPathFilter;
+		mPathFilter = NULL;
+		return NULL;
+	}
+
+    bool farFromPoly = (distToStartPoly > 7.0f || distToEndPoly > 7.0f);
+
+	float pathPoints[74*3];
 	uint32 pointCount = 0;
-	dtStatus dtResult = DT_FAILURE;
-	bool usedOffmesh = false;
-
-	dtPolyRef mStartRef;
-	dtStatus result = m_navMeshQuery->findNearestPoly(startPoint, mPolyPickingExtents, mPathFilter, &mStartRef, closestPoint);
-	if(dtStatusFailed(result) || !mStartRef)
-	{
-		delete mPathFilter;
-		mPathFilter = NULL;
-		return NULL;
-	}
-
-	dtPolyRef mEndRef;
-	result = m_navMeshQuery->findNearestPoly(endPoint, mPolyPickingExtents, mPathFilter, &mEndRef, closestPoint);
-	if(dtStatusFailed(result) || !mEndRef)
-	{
-		delete mPathFilter;
-		mPathFilter = NULL;
-		return NULL;
-	}
-
-	result = m_navMeshQuery->findPath(
-		mStartRef,			// start polygon
-		mEndRef,			// end polygon
-		startPoint,			// start position
-		endPoint,			// end position
-		mPathFilter,		// polygon search filter
-		m_pathPolyRefs,		// [out] path
-		(int*)&m_polyLength,
-		m_maxLength);   // max number of polygons in output path
-
-	if(dtStatusFailed(result) || !m_polyLength)
-	{
-		delete mPathFilter;
-		mPathFilter = NULL;
-		return NULL;
-	}
-
 	if (straight)
 	{
 		dtResult = m_navMeshQuery->findStraightPath(
@@ -751,11 +800,10 @@ LocationVectorMapContainer* MMapManager::BuildFullPath(Unit* m_Unit, float start
 				m_polyLength,		// length of current path
 				pathPoints,			// [out] path corner points
 				(int*)&pointCount,
-				usedOffmesh,
 				m_maxLength);				// maximum number of points
 	}
 
-	if (pointCount < 2 || dtStatusFailed(result))
+	if (pointCount < 2 || dtStatusFailed(dtResult))
 	{
 		// only happens if pass bad data to findStraightPath or navmesh is broken
 		// single point paths can be generated here

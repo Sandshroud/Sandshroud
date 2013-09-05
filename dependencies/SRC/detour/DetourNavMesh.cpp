@@ -811,11 +811,16 @@ dtStatus dtNavMesh::addTile(unsigned char* data, int dataSize, int flags,
 		return DT_FAILURE | DT_WRONG_MAGIC;
 	if (header->version != DT_NAVMESH_VERSION)
 		return DT_FAILURE | DT_WRONG_VERSION;
-		
 	// Make sure the location is free.
-	if (getTileAt(header->x, header->y, header->layer))
-		return DT_FAILURE;
-		
+	const dtMeshTile* prevTile = 0;
+	if (prevTile = getTileAt(header->x, header->y, header->layer))
+	{
+		if(result)
+			*result = getTileRef(prevTile);
+
+		return DT_FAILURE | DT_IN_PROGRESS;
+	}
+
 	// Allocate a tile.
 	dtMeshTile* tile = 0;
 	if (!lastRef)

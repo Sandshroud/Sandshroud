@@ -485,7 +485,7 @@ void MapMgr::RemoveObject(Object* obj, bool free_guid)
 			if(TO_GAMEOBJECT(obj)->m_spawn != NULL)
 				_sqlids_gameobjects.erase(TO_GAMEOBJECT(obj)->m_spawn->id);
 			CALL_INSTANCE_SCRIPT_EVENT( this, OnGameObjectRemoveFromWorld )( TO_GAMEOBJECT(obj) );
-			CollideInterface.UnLoadGameobjectModel(obj->GetGUID(), _mapId, m_instanceID);
+			CollideInterface.UnLoadGameobjectModel(obj->GetGUID(), m_instanceID, _mapId);
 		}break;
 
 	case HIGHGUID_TYPE_PLAYER:
