@@ -29,7 +29,7 @@ namespace VMAP
 {
     class ModelInstance;
     class GroupModel;
-    class VMapManager2;
+    class VMapManager;
 
     struct LocationInfo
     {
@@ -77,10 +77,10 @@ namespace VMAP
             bool getAreaInfo(G3D::Vector3 &pos, G3D::g3d_uint32 &flags, G3D::g3d_int32 &adtId, G3D::g3d_int32 &rootId, G3D::g3d_int32 &groupId) const;
             bool GetLocationInfo(const G3D::Vector3 &pos, LocationInfo &info) const;
 
-            bool InitMap(const std::string &fname, VMapManager2* vm);
-            void UnloadMap(VMapManager2* vm);
-            bool LoadMapTile(G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, VMapManager2* vm);
-            void UnloadMapTile(G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, VMapManager2* vm);
+            bool InitMap(const std::string &fname, VMapManager* vm);
+            void UnloadMap(VMapManager* vm);
+            bool LoadMapTile(G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, VMapManager* vm);
+            void UnloadMapTile(G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, VMapManager* vm);
             bool isTiled() const { return iIsTiled; }
             G3D::g3d_uint32 numLoadedTiles() const { return iLoadedTiles.size(); }
             void getModelInstances(ModelInstance* &models, G3D::g3d_uint32 &count);

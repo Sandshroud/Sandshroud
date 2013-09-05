@@ -103,8 +103,7 @@
     <ClCompile Include="..\g3dlite\vmap\MapTree.cpp" />
     <ClCompile Include="..\g3dlite\vmap\ModelInstance.cpp" />
     <ClCompile Include="..\g3dlite\vmap\TileAssembler.cpp" />
-    <ClCompile Include="..\g3dlite\vmap\VMapFactory.cpp" />
-    <ClCompile Include="..\g3dlite\vmap\VMapManager2.cpp" />
+    <ClCompile Include="..\g3dlite\vmap\VMapManager.cpp" />
     <ClCompile Include="..\g3dlite\vmap\WorldModel.cpp" />
     <ClCompile Include="..\g3dlite\Welder.cpp" />
     <ClCompile Include="..\g3dlite\WinMain.cpp" />
@@ -224,8 +223,7 @@
     <ClInclude Include="..\g3dlite\vmap\ModelInstance.h" />
     <ClInclude Include="..\g3dlite\vmap\TileAssembler.h" />
     <ClInclude Include="..\g3dlite\vmap\VMapDefinitions.h" />
-    <ClInclude Include="..\g3dlite\vmap\VMapFactory.h" />
-    <ClInclude Include="..\g3dlite\vmap\VMapManager2.h" />
+    <ClInclude Include="..\g3dlite\vmap\VMapManager.h" />
     <ClInclude Include="..\g3dlite\vmap\VMapTools.h" />
     <ClInclude Include="..\g3dlite\vmap\WorldModel.h" />
     <ClInclude Include="..\g3dlite\WeakCache.h" />
