@@ -95,16 +95,13 @@
     <ClCompile Include="..\g3dlite\vmap\TileAssembler.cpp">
       <Filter>vmap</Filter>
     </ClCompile>
-    <ClCompile Include="..\g3dlite\vmap\VMapFactory.cpp">
-      <Filter>vmap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\g3dlite\vmap\VMapManager2.cpp">
-      <Filter>vmap</Filter>
-    </ClCompile>
     <ClCompile Include="..\g3dlite\vmap\WorldModel.cpp">
       <Filter>vmap</Filter>
     </ClCompile>
     <ClCompile Include="..\g3dlite\vmap\DynamicTree.cpp">
+      <Filter>vmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\g3dlite\vmap\VMapManager.cpp">
       <Filter>vmap</Filter>
     </ClCompile>
   </ItemGroup>
@@ -234,12 +231,6 @@
     <ClInclude Include="..\g3dlite\vmap\VMapDefinitions.h">
       <Filter>vmap</Filter>
     </ClInclude>
-    <ClInclude Include="..\g3dlite\vmap\VMapFactory.h">
-      <Filter>vmap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\g3dlite\vmap\VMapManager2.h">
-      <Filter>vmap</Filter>
-    </ClInclude>
     <ClInclude Include="..\g3dlite\vmap\VMapTools.h">
       <Filter>vmap</Filter>
     </ClInclude>
@@ -250,6 +241,9 @@
       <Filter>vmap</Filter>
     </ClInclude>
     <ClInclude Include="..\g3dlite\vmap\DynamicTree.h">
+      <Filter>vmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\g3dlite\vmap\VMapManager.h">
       <Filter>vmap</Filter>
     </ClInclude>
   </ItemGroup>
