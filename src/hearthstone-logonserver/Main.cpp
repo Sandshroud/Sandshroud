@@ -88,19 +88,18 @@ bool startdb()
 	int ltype = 1;
 	// Configure Main Database
 
-	bool result;
+	uint8 result = 0;
 
 	// Configure Logon Database...
-	result = Config.MainConfig.GetString("LogonDatabase", "Username", &lusername);
-	result = !result ? result : Config.MainConfig.GetString("LogonDatabase", "Password", &lpassword);
-	result = !result ? result : Config.MainConfig.GetString("LogonDatabase", "Hostname", &lhostname);
-	result = !result ? result : Config.MainConfig.GetString("LogonDatabase", "Name", &ldatabase);
-	result = !result ? result : Config.MainConfig.GetInt("LogonDatabase", "Port", &lport);
-	result = !result ? result : Config.MainConfig.GetInt("LogonDatabase", "Type", &ltype);
-
-	if(result == false)
+	result |= Config.MainConfig.GetString("LogonDatabase", "Username", &lusername) ? 0x01 : 0x00;
+	result |= Config.MainConfig.GetString("LogonDatabase", "Password", &lpassword) ? 0x02 : 0x00;
+	result |= Config.MainConfig.GetString("LogonDatabase", "Hostname", &lhostname) ? 0x04 : 0x00;
+	result |= Config.MainConfig.GetString("LogonDatabase", "Name", &ldatabase) ? 0x08 : 0x00;
+	result |= Config.MainConfig.GetInt("LogonDatabase", "Port", &lport) ? 0x10 : 0x00;
+	result |= Config.MainConfig.GetInt("LogonDatabase", "Type", &ltype) ? 0x20 : 0x00;
+	if(result != 63)
 	{
-		sLog.outString("sql: Logon database parameters not found.");
+		sLog.outString("sql: Logon database parameters not found %u.", result);
 		return false;
 	}
 
