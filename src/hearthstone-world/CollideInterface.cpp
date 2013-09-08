@@ -12,14 +12,14 @@ struct CollisionMap
 };
 
 SERVER_DECL CCollideInterface CollideInterface;
-VMAP::VMapManager2* CollisionMgr;
+VMAP::VMapManager* CollisionMgr;
 CollisionMap *m_mapLocks[NUM_MAPS];
 Mutex m_mapCreateLock;
 
 void CCollideInterface::Init()
 {
 	Log.Notice("CollideInterface", "Init");
-	CollisionMgr = new VMAP::VMapManager2(sWorld.vMapPath);
+	CollisionMgr = new VMAP::VMapManager(sWorld.vMapPath);
 	for(uint32 i = 0; i < NUM_MAPS; i++)
 		m_mapLocks[i] = NULL;
 	CollisionMgr->LoadGameObjectModelList();
