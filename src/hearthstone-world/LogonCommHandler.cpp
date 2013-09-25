@@ -328,6 +328,7 @@ void LogonCommHandler::LoadRealmConfiguration()
 	std::string adress = string(Config.RealmConfig.GetStringDefault( "ServerSettings", "Adress", "SomeRealm" ).c_str())
 		+ ":" + string(port);
 
+	delete[] port;
 	realm = new Realm();
 	ZeroMemory(realm, sizeof(Realm*));
 	realm->Address = adress;
