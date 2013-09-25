@@ -918,7 +918,7 @@ bool AuraInterface::HasCombatStatusAffectingAuras(uint64 checkGuid)
 
 bool AuraInterface::HasAurasOfNameHashWithCaster(uint32 namehash, uint64 casterguid)
 {
-	for(uint32 i = MAX_POSITIVE_AURAS; i < MAX_AURAS; i++)
+	for(uint32 i = 0; i < MAX_AURAS; i++)
 	{
 		if(m_auras.find(i) != m_auras.end())
 		{
@@ -1705,14 +1705,14 @@ void AuraInterface::RemoveAllAurasByBuffType(uint32 buff_type, const uint64 &gui
 uint32 AuraInterface::GetAuraCountWithFamilyNameAndSkillLine(uint32 spellFamily, uint32 SkillLine)
 {
 	uint32 count = 0;
-	for(uint32 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; x++)
+	for(uint32 x = 0; x < MAX_AURAS; x++)
 	{
 		if(m_auras.find(x) != m_auras.end())
 		{
-			if (m_auras.at(x)->m_spellProto->SpellFamilyName == SPELLFAMILY_WARLOCK)
+			if (m_auras.at(x)->m_spellProto->SpellFamilyName == spellFamily)
 			{
 				skilllinespell *sk = objmgr.GetSpellSkill(m_auras.at(x)->GetSpellId());
-				if(sk && sk->skilline == SKILL_AFFLICTION)
+				if(sk && sk->skilline == SkillLine)
 				{
 					count++;
 				}

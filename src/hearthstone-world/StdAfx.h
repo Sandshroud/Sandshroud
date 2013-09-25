@@ -192,8 +192,7 @@
 #include "Master.h"
 #include "ConsoleCommands.h"
 
-//#include <vld.h>
-#ifndef WIN32
+#if PLATFORM != PLATFORM_WIN
 
 #include <termios.h>
 #include <sys/resource.h>
@@ -205,12 +204,6 @@
 #include <sys/stat.h>
 #include <cstdlib>
 #include <cstring>
-
-#else
-
-#include <mmsystem.h>
-#pragma comment(lib, "winmm.lib")
-#define DELTA_EPOCH_IN_USEC  11644473600000000ULL
 
 #endif
 

@@ -85,8 +85,9 @@ bool WorldRunnable::run()
 		/* This is execution time compensating system
 		if execution took more than default delay
 		no need to make this sleep*/
-		if(diff < WORLD_UPDATE_DELAY)
-			Delay(WORLD_UPDATE_DELAY-diff);
+		int32 sleepTime = WORLD_UPDATE_DELAY-diff;
+		if(sleepTime > 0)
+			Delay(sleepTime);
 	}
 
 	return true;
