@@ -7,8 +7,6 @@
 
 ConfigMgr Config;
 
-//#define _CONFIG_DEBUG
-
 ConfigFile::ConfigFile()
 {
 }
@@ -163,211 +161,218 @@ bool ConfigFile::SetSource(const char *file, bool ignorecase)
 		ConfigSetting current_setting_struct;
 
 		/* oh god this is awful */
-		try {
-
-		for(;;)
+		try
 		{
-			/* grab a line. */
-			end = buffer.find(EOL);
-			if(end == string::npos)
-				break;
-
-			line = buffer.substr(0, end);
-			buffer.erase(0, end+EOL_SIZE);
-			goto parse;
-
-parse:
-			if(!line.size())
-				continue;
-
-			/* are we a comment? */
-			if(!in_multiline_comment && is_comment(line, &in_multiline_comment))
+			for(;;)
 			{
-				/* our line is a comment. */
-				if(!in_multiline_comment)
+				/* grab a line. */
+				end = buffer.find(EOL);
+				if(end == string::npos)
 				{
-					/* the entire line is a comment, skip it. */
-					continue;
-				}
-			}
-
-			/* handle our cases */
-			if(in_multiline_comment)
-			{
-				// we need to find a "*/".
-				offset = line.find("*/", 0);
-				
-				/* skip this entire line, eh? */
-				if(offset == string::npos)
-					continue;
-
-				/* remove up to the end of the comment block. */
-				line.erase(0, offset + 2);
-				in_multiline_comment = false;
-			}
-
-			if(in_block)
-			{
-				/* handle settings across multiple lines */
-				if(in_multiline_quote)
-				{
-					/* attempt to find the end of the quote block. */
-					offset = line.find("\"");
-
-					if(offset == string::npos)
-					{
-						/* append the whole line to the quote. */
-						current_setting += line;
-						current_setting += "\n";
-						continue;
-					}
-
-					/* only append part of the line to the setting. */
-					current_setting.append(line.c_str(), offset+1);
-					line.erase(0, offset + 1);
-				
-					/* append the setting to the config block. */
-					if(current_block == "" || current_variable == "")
-					{
-						Log.Error("ConfigFile", "Quote without variable.");
-						return false;
-					}
-
-					/* apply the setting */
-					apply_setting(current_setting, current_setting_struct);
-
-					/* the setting is done, append it to the current block. */
-					current_block_map[ahash(current_variable)] = current_setting_struct;
-#ifdef _CONFIG_DEBUG
-					printf("Block: '%s', Setting: '%s', Value: '%s'\n", current_block.c_str(), current_variable.c_str(), current_setting_struct.AsString.c_str());
-#endif
-					/* no longer doing this setting, or in a quote. */
-					current_setting = "";
-					current_variable = "";
-					in_multiline_quote = false;
+					if(buffer.size() == 0)
+						break;
+					line = buffer;
+					buffer.clear();
+					goto parse;
 				}
 
-				/* remove any leading spaces */
-				remove_spaces(line);
+				line = buffer.substr(0, end);
+				buffer.erase(0, end+EOL_SIZE);
+				goto parse;
 
+				//Parse
+			parse:
 				if(!line.size())
 					continue;
 
-				/* our target is a *setting*. look for an '=' sign, this is our seperator. */
-				offset = line.find("=");
-				if(offset != string::npos)
+				/* are we a comment? */
+				if(!in_multiline_comment && is_comment(line, &in_multiline_comment))
 				{
-					ASSERT(current_variable == "");
-					current_variable = line.substr(0, offset);
-
-					/* remove any spaces from the end of the setting */
-					remove_all_spaces(current_variable);
-
-					/* remove the directive *and* the = from the line */
-					line.erase(0, offset + 1);
+					/* our line is a comment. */
+					if(!in_multiline_comment)
+					{
+						/* the entire line is a comment, skip it. */
+						continue;
+					}
 				}
 
-				/* look for the opening quote. this signifies the start of a setting. */
-				offset = line.find("\"");
-				if(offset != string::npos)
+				/* handle our cases */
+				if(in_multiline_comment)
 				{
-					ASSERT(current_setting == "");
-					ASSERT(current_variable != "");
+					// we need to find a "*/".
+					offset = line.find("*/", 0);
 
-					/* try and find the ending quote */
-					end = line.find("\"", offset + 1);
-					if(end != string::npos)
+					/* skip this entire line, eh? */
+					if(offset == string::npos)
+						continue;
+
+					/* remove up to the end of the comment block. */
+					line.erase(0, offset + 2);
+					in_multiline_comment = false;
+				}
+
+				if(in_block)
+				{
+					/* handle settings across multiple lines */
+					if(in_multiline_quote)
 					{
-						/* the closing quote is on the same line, oh goody. */
-						current_setting = line.substr(offset+1, end-offset-1);
+						/* attempt to find the end of the quote block. */
+						offset = line.find("\"");
 
-						/* erase up to the end */
-						line.erase(0, end + 1);
-						
+						if(offset == string::npos)
+						{
+							/* append the whole line to the quote. */
+							current_setting += line;
+							current_setting += "\n";
+							continue;
+						}
+
+						/* only append part of the line to the setting. */
+						current_setting.append(line.c_str(), offset+1);
+						line.erase(0, offset + 1);
+
+						/* append the setting to the config block. */
+						if(current_block == "" || current_variable == "")
+						{
+							Log.Error("ConfigFile", "Quote without variable.");
+							return false;
+						}
+
 						/* apply the setting */
 						apply_setting(current_setting, current_setting_struct);
 
 						/* the setting is done, append it to the current block. */
 						current_block_map[ahash(current_variable)] = current_setting_struct;
-
-#ifdef _CONFIG_DEBUG
+#ifdef _DEBUG
 						printf("Block: '%s', Setting: '%s', Value: '%s'\n", current_block.c_str(), current_variable.c_str(), current_setting_struct.AsString.c_str());
 #endif
 						/* no longer doing this setting, or in a quote. */
 						current_setting = "";
 						current_variable = "";
-						in_multiline_quote = false;		
-
-						/* attempt to grab more settings from the same line. */
-						goto parse;
+						in_multiline_quote = false;
 					}
-					else
-					{
-						/* the closing quote is not on the same line. means we'll try and find it on
-						   the next. */
-						current_setting.append(line.c_str(), offset);
 
-						/* skip to the next line. (after setting our condition first, of course :P */
-						in_multiline_quote = true;
+					/* remove any leading spaces */
+					remove_spaces(line);
+
+					if(!line.size())
 						continue;
-					}
-				}
 
-				/* are we at the end of the block yet? */
-				offset = line.find(">");
-				if(offset != string::npos)
-				{
-					line.erase(0, offset+1);
-
-					// freeeee!
-					in_block = false;
-					
-					/* assign this block to the main "big" map. */
-					m_settings[ahash(current_block)] = current_block_map;
-
-					/* erase all data for this so it doesn't seep through */
-					current_block_map.clear();
-					current_setting = "";
-					current_variable = "";
-					current_block = "";
-				}
-			}
-			else
-			{
-				/* we're not in a block. look for the start of one. */
-				offset = line.find("<");
-
-				if(offset != string::npos)
-				{
-					in_block = true;
-
-					/* whee, a block! let's cut the string and re-parse. */
-					line.erase(0, offset + 1);
-
-					/* find the name of the block first, though. */
-					offset = line.find(" ");
+					/* our target is a *setting*. look for an '=' sign, this is our seperator. */
+					offset = line.find("=");
 					if(offset != string::npos)
 					{
-						current_block = line.substr(0, offset);
+						ASSERT(current_variable == "");
+						current_variable = line.substr(0, offset);
+
+						/* remove any spaces from the end of the setting */
+						remove_all_spaces(current_variable);
+
+						/* remove the directive *and* the = from the line */
 						line.erase(0, offset + 1);
 					}
-					else
+
+					/* look for the opening quote. this signifies the start of a setting. */
+					offset = line.find("\"");
+					if(offset != string::npos)
 					{
-						Log.Error("ConfigFile", "Block without name.");
-						return false;
+						ASSERT(current_setting == "");
+						ASSERT(current_variable != "");
+
+						/* try and find the ending quote */
+						end = line.find("\"", offset + 1);
+						if(end != string::npos)
+						{
+							/* the closing quote is on the same line, oh goody. */
+							current_setting = line.substr(offset+1, end-offset-1);
+
+							/* erase up to the end */
+							line.erase(0, end + 1);
+
+							/* apply the setting */
+							apply_setting(current_setting, current_setting_struct);
+
+							/* the setting is done, append it to the current block. */
+							current_block_map[ahash(current_variable)] = current_setting_struct;
+
+#ifdef _DEBUG
+							printf("Block: '%s', Setting: '%s', Value: '%s'\n", current_block.c_str(), current_variable.c_str(), current_setting_struct.AsString.c_str());
+#endif
+							/* no longer doing this setting, or in a quote. */
+							current_setting = "";
+							current_variable = "";
+							in_multiline_quote = false;
+
+							/* attempt to grab more settings from the same line. */
+							goto parse;
+						}
+						else
+						{
+							/* the closing quote is not on the same line. means we'll try and find it on
+								the next. */
+							current_setting.append(line.c_str(), offset);
+
+							/* skip to the next line. (after setting our condition first, of course :P */
+							in_multiline_quote = true;
+							continue;
+						}
 					}
 
-					/* skip back */
-					goto parse;
+					/* are we at the end of the block yet? */
+					offset = line.find(">");
+					if(offset != string::npos)
+					{
+						line.erase(0, offset+1);
+
+						// freeeee!
+						in_block = false;
+
+						/* assign this block to the main "big" map. */
+						m_settings[ahash(current_block)] = current_block_map;
+
+						/* erase all data for this so it doesn't seep through */
+						current_block_map.clear();
+						current_setting = "";
+						current_variable = "";
+						current_block = "";
+					}
+				}
+				else
+				{
+					/* we're not in a block. look for the start of one. */
+					offset = line.find("<");
+
+					if(offset != string::npos)
+					{
+						in_block = true;
+
+						/* whee, a block! let's cut the string and re-parse. */
+						line.erase(0, offset + 1);
+
+						/* find the name of the block first, though. */
+						offset = line.find(" ");
+						if(offset != string::npos)
+						{
+							current_block = line.substr(0, offset);
+							line.erase(0, offset + 1);
+						}
+						else
+						{
+							Log.Error("ConfigFile", "Block without name.");
+							return false;
+						}
+
+						/* skip back */
+						goto parse;
+					}
 				}
 			}
 		}
-
-		}catch(...)
-			{
-				Log.Error("ConfigFile", "Exception in config parsing.");
-				return false;
-			}
+		catch(...)
+		{
+			Log.Error("ConfigFile", "Exception in config parsing.");
+			return false;
+		}
 
 		/* handle any errors */
 		if(in_block)

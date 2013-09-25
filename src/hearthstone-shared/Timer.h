@@ -5,12 +5,16 @@
 #pragma once
 
 #if PLATFORM == PLATFORM_WIN
-HEARTHSTONE_INLINE uint32 getMSTime() { return GetTickCount(); }
+// gettimeofday is in mmsystem
+#include <Mmsystem.h>
+#pragma comment(lib, "winmm.lib")
 #else
-HEARTHSTONE_INLINE uint32 getMSTime()
+uint32 timeGetTime()
 {
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	return uint32((now.tv_sec * 1000) + (now.tv_usec / 1000));
 }
 #endif
+
+HEARTHSTONE_INLINE uint32 getMSTime() { return timeGetTime(); }

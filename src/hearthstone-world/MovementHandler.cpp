@@ -3,49 +3,8 @@
  */
 
 #include "StdAfx.h"
-#define SWIMMING_TOLERANCE_LEVEL -0.08f
+
 #define MOVEMENT_PACKET_TIME_DELAY 500
-
-#ifdef WIN32
-
-uint32 TimeStamp()
-{
-	//return timeGetTime();
-
-	FILETIME ft;
-	uint64 t;
-	GetSystemTimeAsFileTime(&ft);
-
-	t = (uint64)ft.dwHighDateTime << 32;
-	t |= ft.dwLowDateTime;
-	t /= 10;
-	t -= DELTA_EPOCH_IN_USEC;
-
-	return uint32(((t / 1000000L) * 1000) + ((t % 1000000L) / 1000));
-}
-
-HEARTHSTONE_INLINE uint32 mTimeStamp()
-{
-	return timeGetTime();
-}
-
-#else
-
-uint32 TimeStamp()
-{
-	struct timeval tp;
-	gettimeofday(&tp, NULL);
-	return (tp.tv_sec * 1000) + (tp.tv_usec / 1000);
-}
-
-HEARTHSTONE_INLINE uint32 mTimeStamp()
-{
-	struct timeval tp;
-	gettimeofday(&tp, NULL);
-	return (tp.tv_sec * 1000) + (tp.tv_usec / 1000);
-}
-
-#endif
 
 void WorldSession::HandleMoveWorldportAckOpcode( WorldPacket & recv_data )
 {
@@ -187,7 +146,7 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
 			TO_GAMEOBJECT(t_go)->EndFishing(GetPlayer(),true);
 	}
 
-	uint32 mstime = mTimeStamp();
+    uint32 mstime = getMSTime();
 
 	/************************************************************************/
 	/* Make sure the packet is the correct size range. 77 is real number    */
