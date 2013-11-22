@@ -318,7 +318,7 @@ struct ConsoleCommand
 void HandleConsoleInput(BaseConsole * pConsole, const char * szInput)
 {
 	static ConsoleCommand Commands[] = {
-		{ &HandleAnnounceCommand, "a", "<announce string>", "Shows the message in all client chat boxes." },
+		{ &HandleAnnounceCommand,	"a", "<announce string>", "Shows the message in all client chat boxes." },
 		{ &HandleAnnounceCommand, "announce", "<announce string>", "Shows the message in all client chat boxes." },
 		{ &HandleBanAccountCommand, "ban", "<account> <timeperiod>", "Bans account x for time y." },
 		{ &HandleBanAccountCommand, "banaccount", "<account> <timeperiod>", "Bans account x for time y." },
@@ -343,11 +343,11 @@ void HandleConsoleInput(BaseConsole * pConsole, const char * szInput)
 		{ &HandleWAnnounceCommand, "w", "<wannounce string>", "Shows the message in all client title areas." },
 		{ &HandleWAnnounceCommand, "wannounce", "<wannounce string>", "Shows the message in all client title areas." },
 		{ &HandleWhisperCommand, "whisper","<player> <message>", "Whispers a message to someone from the console." },
-		{ &HandleReloadAllScriptsCommand, "reloadallscripts", "Reloads all scripts. No Arguements required." },
-		{ &HandleUnloadSingleScriptCommand, "unloadscript", "<name> Unloads a single script" },
-		{ &HandleUnloadAllScriptsCommand, "unloadallscripts", "Unloads all scripts" },
-		{ &HandleLoadNewScriptsCommand, "loadnewscripts", "Loads all new scripts" },
-		{ &HandleLoadSingleScriptCommand, "loadscript", "<name> Loads a single script" },
+		{ &HandleReloadAllScriptsCommand, "reloadallscripts","none", "Reloads all scripts. No Arguements required." },
+		{ &HandleUnloadSingleScriptCommand, "unloadscript", "<name>", "Unloads a single script" },
+		{ &HandleUnloadAllScriptsCommand, "unloadallscripts", "none", "Unloads all scripts" },
+		{ &HandleLoadNewScriptsCommand, "loadnewscripts", "none","Loads all new scripts" },
+		{ &HandleLoadSingleScriptCommand, "loadscript", "<name>", "Loads a single script" },
 		{ &HandleSuicideCommand, "suicide", "none", "Makes the server divide by 0, crashing and creating a dump." },
 
 		{ NULL, NULL, NULL, NULL },
@@ -378,16 +378,16 @@ void HandleConsoleInput(BaseConsole * pConsole, const char * szInput)
 
 	if( !stricmp(tokens[0], "help") || tokens[0][0] == '?' )
 	{
-		pConsole->Write("=========================================================================================================\r\n");
-		pConsole->Write("| %15s | %30s | %50s |\r\n", "Name", "Arguments", "Description");
-		pConsole->Write("=========================================================================================================\r\n");
+		pConsole->Write("==================================================================================================================\r\n");
+		pConsole->Write("| %16s | %29s | %59s |\r\n", "Name", "Arguments", "Description");
+		pConsole->Write("==================================================================================================================\r\n");
 		for(i = 0; Commands[i].Name != NULL; i++)
 		{
-			pConsole->Write("| %15s | %30s | %50s |\r\n", Commands[i].Name, Commands[i].ArgumentFormat, Commands[i].Description);
+			pConsole->Write("| %16s | %29s | %59s |\r\n", Commands[i].Name, Commands[i].ArgumentFormat, Commands[i].Description);
 		}
-		pConsole->Write("=========================================================================================================\r\n");
-		pConsole->Write("| type 'quit' to terminate a Remote Console Session                                                     |\r\n");
-		pConsole->Write("=========================================================================================================\r\n");
+		pConsole->Write("==================================================================================================================\r\n");
+		pConsole->Write("| type 'quit' to terminate a Remote Console Session                                                              |\r\n");
+		pConsole->Write("==================================================================================================================\r\n");
 	}
 	else
 	{
