@@ -300,30 +300,24 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\g3dlite___Win32_Release\</OutDir>
     <IntDir>.\g3dlite___Win32_Release\</IntDir>
-    <IncludePath>..\g3dlite;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>.\g3dlite___x64_Release\</OutDir>
     <IntDir>.\g3dlite___x64_Release\</IntDir>
-    <IncludePath>..\g3dlite;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MinimalRebuild>true</MinimalRebuild>
+      <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <PrecompiledHeader />
+      <ExceptionHandling>Sync</ExceptionHandling>
       <WarningLevel>Level2</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <OmitFramePointers />
     </ClCompile>
-    <Lib>
-      <OutputFile>..\..\VC\libVC110\g3dlite.lib</OutputFile>
-    </Lib>
     <PostBuildEvent>
-      <Command />
+      <Command>copy $(OutDir)\g3dlite.lib ..\..\VC\libVC110</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -333,18 +327,15 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MinimalRebuild>true</MinimalRebuild>
+      <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PrecompiledHeader />
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <ExceptionHandling>Sync</ExceptionHandling>
       <WarningLevel>Level2</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
-    <Lib>
-      <OutputFile>..\..\VC\libVC110\amd64\g3dlite.lib</OutputFile>
-    </Lib>
     <PostBuildEvent>
-      <Command />
+      <Command>copy $(OutDir)\$(ProjectName).lib ..\..\VC\libVC110\amd64</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -353,8 +344,6 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <OmitFramePointers>
-      </OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
@@ -364,15 +353,10 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <PrecompiledHeader />
       <WarningLevel>Level2</WarningLevel>
-      <DebugInformationFormat />
     </ClCompile>
-    <Lib>
-      <OutputFile>..\..\VC\libVC110\g3dlite.lib</OutputFile>
-    </Lib>
     <PostBuildEvent>
-      <Command />
+      <Command>copy $(OutDir)\g3dlite.lib ..\..\VC\libVC110</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -384,21 +368,16 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <MinimalRebuild>true</MinimalRebuild>
+      <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <PrecompiledHeader />
       <WarningLevel>Level2</WarningLevel>
-      <DebugInformationFormat />
     </ClCompile>
-    <Lib>
-      <OutputFile>..\..\VC\libVC110\amd64\g3dlite.lib</OutputFile>
-    </Lib>
     <PostBuildEvent>
-      <Command />
+      <Command>copy $(OutDir)\g3dlite.lib ..\..\VC\libVC110\amd64</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
