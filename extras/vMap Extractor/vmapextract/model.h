@@ -53,15 +53,15 @@ public:
 
 class ModelInstance
 {
+public: // MDDF Chunk Data
+    uint32 AdtId;
+    Vec3D pos, rot;
+    uint16 scale, flags;
+
 public:
     Model* model;
 
-    uint32 id;
-    Vec3D pos, rot;
-    unsigned int d1, scale;
-    float w, sc;
-
-    ModelInstance() : model(NULL), id(0), d1(0), scale(0), w(0.0f), sc(0.0f) {}
+    ModelInstance() : model(NULL), AdtId(0), scale(0), flags(0) {}
     ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE* pDirfile);
 
 };

@@ -32,14 +32,10 @@ namespace VMAP
         }
     }
 
-    Vector3 VMapManager::convertPositionToInternalRep(float x, float y, float z) const
+    Vector3 VMapManager::convertPositionToInternalRep(float x, float y, float z)
     {
-        Vector3 pos;
-        const float mid = 0.5f * 64.0f * 533.33333333f;
-        pos.x = mid - x;
-        pos.y = mid - y;
-        pos.z = z;
-
+        static float mid = 0.5f * 64.0f * 533.33333333f;
+        Vector3 pos(mid - x, mid - y, z);
         return pos;
     }
 
@@ -294,10 +290,8 @@ namespace VMAP
     bool VMapManager::getObjectHitPos(unsigned int mapId, G3D::g3d_uint32 instanceId, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist)
     {
         bool result = false;
-        rx = x2;
-        ry = y2;
-        rz = z2;
-        if(x1 == x2 && y1 == y2 && z1 == z2)
+        rx = x2; ry = y2; rz = z2;
+        if(fuzzyEq(x1, x2) && fuzzyEq(y1, y2) && fuzzyEq(z1, z2))
             return result; // Save us some time.
 
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
@@ -313,16 +307,16 @@ namespace VMAP
             rz = resultPos.z;
         }
 
-        if(!result)
+        DynamicTreeMap::iterator DynamicTree = iDynamicMapTrees.find(mapId);
+        if (DynamicTree != iDynamicMapTrees.end())
         {
-            DynamicTreeMap::iterator DynamicTree = iDynamicMapTrees.find(mapId);
-            if (DynamicTree != iDynamicMapTrees.end())
+            Vector3 pos1 = Vector3(x1, y1, z1);
+            Vector3 pos2 = Vector3(rx, ry, rz);
+            Vector3 resultPos;
+            bool result = DynamicTree->second->getObjectHitPos(instanceId, m_phase, pos1, pos2, resultPos, modifyDist);
+            if(result)
             {
-                Vector3 pos1 = Vector3(x1, y1, z1);
-                Vector3 pos2 = Vector3(x2, y2, z2);
-                Vector3 resultPos;
-                bool result = DynamicTree->second->getObjectHitPos(instanceId, m_phase, pos1, pos2, resultPos, modifyDist);
-                resultPos = convertPositionToInternalRep(resultPos.x, resultPos.y, resultPos.z);
+                printf("%f %f %f\n", resultPos.x, resultPos.y, resultPos.z);
                 rx = resultPos.x;
                 ry = resultPos.y;
                 rz = resultPos.z;

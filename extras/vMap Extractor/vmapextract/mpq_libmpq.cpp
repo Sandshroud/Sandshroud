@@ -53,19 +53,23 @@ MPQFile::MPQFile(const char* filename):
 
         uint32 filenum;
         if(libmpq__file_number(mpq_a, filename, &filenum)) continue;
-        libmpq__off_t transferred;
-        libmpq__file_unpacked_size(mpq_a, filenum, &size);
+        libmpq__off_t transferred = 0;
+        libmpq__file_unpacked_size(mpq_a, filenum, &transferred);
 
         // HACK: in patch.mpq some files don't want to open and give 1 for filesize
-        if (size<=1) {
+        if (transferred <= 1 || transferred > 0x7FFFFFFF)
+        {
             // printf("info: file %s has size %d; considered dummy file.\n", filename, size);
             eof = true;
             buffer = 0;
             return;
         }
+        // Force a positive number here
+        size = 0x7FFFFFFF&transferred;
         buffer = new char[size];
 
         //libmpq_file_getdata
+        transferred = 0;
         libmpq__file_read(mpq_a, filenum, (unsigned char*)buffer, size, &transferred);
         /*libmpq_file_getdata(&mpq_a, hash, fileno, (unsigned char*)buffer);*/
         return;
