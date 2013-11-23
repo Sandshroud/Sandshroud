@@ -18,6 +18,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "recast", "..\dependencies\S
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "..\dependencies\SRC\win\VC110-zlib.vcxproj", "{8F1DEA42-6A5B-4B62-839D-C141A7BFACF2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{84A6A410-2865-4459-B230-5EDB39F6C0BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -99,6 +101,13 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{91AA6D21-AC88-4937-9A54-37B30C2C720A} = {84A6A410-2865-4459-B230-5EDB39F6C0BF}
+		{398253D6-B2D3-4D4B-B912-1CE61CA412B0} = {84A6A410-2865-4459-B230-5EDB39F6C0BF}
+		{311F016D-F785-47EF-B032-5350397F16B6} = {84A6A410-2865-4459-B230-5EDB39F6C0BF}
+		{C8264691-AFEC-4D27-9E3E-E9DA3D173B73} = {84A6A410-2865-4459-B230-5EDB39F6C0BF}
+		{8F1DEA42-6A5B-4B62-839D-C141A7BFACF2} = {84A6A410-2865-4459-B230-5EDB39F6C0BF}
 	EndGlobalSection
 	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
 		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
