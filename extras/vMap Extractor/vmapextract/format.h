@@ -38,13 +38,13 @@ std::string vformat(const char *fmt, va_list argPtr)
 		if (actualSize < maxSize)
 		{
 			heapBuffer = (char*)malloc(maxSize + 1);
-			_vsnprintf(heapBuffer, maxSize, fmt, argPtr);
+			_vsnprintf_s(heapBuffer, maxSize+1, maxSize, fmt, argPtr);
 			heapBuffer[maxSize] = '\0';
 		}
 		else
 		{
 			heapBuffer = (char*)malloc(actualSize);
-			vsprintf(heapBuffer, fmt, argPtr);
+			vsprintf_s(heapBuffer, actualSize, fmt, argPtr);
 		}
 
 		std::string formattedString(heapBuffer);
@@ -53,7 +53,7 @@ std::string vformat(const char *fmt, va_list argPtr)
 	}
 	else
 	{
-		vsprintf(stackBuffer, fmt, argPtr);
+		vsprintf_s(stackBuffer, bufSize, fmt, argPtr);
 		return std::string(stackBuffer);
 	}
 }

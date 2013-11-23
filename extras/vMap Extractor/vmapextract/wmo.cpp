@@ -19,11 +19,13 @@
 #include "vmapexport.h"
 #include "wmo.h"
 #include "vec3d.h"
+#include "wdtfile.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
 #include <map>
 #include <fstream>
+
 #undef min
 #undef max
 #include "mpq_libmpq04.h"
@@ -487,32 +489,32 @@ WMOGroup::~WMOGroup()
     delete [] LiquBytes;
 }
 
-WMOInstance::WMOInstance(MPQFile& f, char const* WmoInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE* pDirfile)
-    : currx(0), curry(0), wmo(NULL), doodadset(0), pos(), indx(0), d3(0)
+WMOInstance::WMOInstance(uint32 mapID, MPQFile&f, char const* WmoInstName, WDT_MODF modfChunk)
+    : mapId(mapID), MapName(WmoInstName), wmo(NULL), pos(), rot(), lowerBound(), upperBound()
 {
+    FILE *input = NULL;
+
     float ff[3];
-    f.read(&id, 4);
+    f.read(&AdtId, 4);
     f.read(ff,12);
     pos = Vec3D(ff[0],ff[1],ff[2]);
     f.read(ff,12);
     rot = Vec3D(ff[0],ff[1],ff[2]);
     f.read(ff,12);
-    pos2 = Vec3D(ff[0],ff[1],ff[2]);
+    lowerBound = Vec3D(ff[0],ff[1],ff[2]);
     f.read(ff,12);
-    pos3 = Vec3D(ff[0],ff[1],ff[2]);
-    f.read(&d2,4);
+    upperBound = Vec3D(ff[0],ff[1],ff[2]);
 
-    uint16 trash,adtId;
-    f.read(&adtId,2);
-    f.read(&trash,2);
+    f.read(&MODFFlags,2);
+    f.read(&DoodadSetId,2);
+    f.read(&WmoSetId,2);
+    f.seek(2); // Padding
 
     //-----------add_in _dir_file----------------
-
     char tempname[512];
-    sprintf(tempname, "%s/%s", szWorkDirWmo, WmoInstName);
-    FILE *input;
-    input = fopen(tempname, "r+b");
-
+    sprintf_s(tempname, 512, "%s/%s", szWorkDirWmo, WmoInstName);
+    fopen_s(&input, tempname, "r+b");
+    printf("%s\n", tempname);
     if(!input)
     {
         printf("WMOInstance::WMOInstance: couldn't open %s\n", tempname);
@@ -523,50 +525,44 @@ WMOInstance::WMOInstance(MPQFile& f, char const* WmoInstName, uint32 mapID, uint
     int nVertices;
     int count = fread(&nVertices, sizeof (int), 1, input);
     fclose(input);
-
     if (count != 1 || nVertices == 0)
         return;
 
-    float x,z;
-    x = pos.x;
-    z = pos.z;
-    if(x==0 && z == 0)
+    float x = pos.x, z = pos.y;
+    printf("Position %f and %f\n", x, z);
+    if(x == 0 && z == 0)
     {
         pos.x = 533.33333f*32;
         pos.z = 533.33333f*32;
     }
-    pos = fixCoords(pos);
-    pos2 = fixCoords(pos2);
-    pos3 = fixCoords(pos3);
 
+    pos = fixCoords(pos);
+    lowerBound = fixCoords(lowerBound);
+    upperBound = fixCoords(upperBound);
+
+}
+
+void WMOInstance::Write(FILE *pDirfile)
+{
     float scale = 1.0f;
     uint32 flags = MOD_HAS_BOUND;
-    if(tileX == 65 && tileY == 65) flags |= MOD_WORLDSPAWN;
+    if(MODFFlags & 0x01)
+        flags |= MOD_IS_DESTRUCTABLE;
+
     //write mapID, tileX, tileY, Flags, ID, Pos, Rot, Scale, Bound_lo, Bound_hi, name
-    fwrite(&mapID, sizeof(uint32), 1, pDirfile);
-    fwrite(&tileX, sizeof(uint32), 1, pDirfile);
-    fwrite(&tileY, sizeof(uint32), 1, pDirfile);
+    fwrite(&mapId, sizeof(uint32), 1, pDirfile);
     fwrite(&flags, sizeof(uint32), 1, pDirfile);
-    fwrite(&adtId, sizeof(uint16), 1, pDirfile);
-    fwrite(&id, sizeof(uint32), 1, pDirfile);
+    fwrite(&AdtId, sizeof(uint32), 1, pDirfile);
+    fwrite(&WmoSetId, sizeof(uint16), 1, pDirfile);
+    fwrite(&DoodadSetId, sizeof(uint16), 1, pDirfile);
+    fwrite(&WmoSetId, sizeof(uint16), 1, pDirfile);
     fwrite(&pos, sizeof(float), 3, pDirfile);
     fwrite(&rot, sizeof(float), 3, pDirfile);
     fwrite(&scale, sizeof(float), 1, pDirfile);
-    fwrite(&pos2, sizeof(float), 3, pDirfile);
-    fwrite(&pos3, sizeof(float), 3, pDirfile);
-    uint32 nlen=strlen(WmoInstName);
+    fwrite(&lowerBound, sizeof(float), 3, pDirfile);
+    fwrite(&upperBound, sizeof(float), 3, pDirfile);
+
+    uint32 nlen = MapName.length();
     fwrite(&nlen, sizeof(uint32), 1, pDirfile);
-    fwrite(WmoInstName, sizeof(char), nlen, pDirfile);
-
-    /* fprintf(pDirfile,"%s/%s %f,%f,%f_%f,%f,%f 1.0 %d %d %d,%d %d\n",
-        MapName,
-        WmoInstName,
-        (float) x, (float) pos.y, (float) z,
-        (float) rot.x, (float) rot.y, (float) rot.z,
-        nVertices,
-        realx1, realy1,
-        realx2, realy2
-        ); */
-
-    // fclose(dirfile);
+    fwrite(MapName.c_str(), sizeof(char), nlen, pDirfile);
 }

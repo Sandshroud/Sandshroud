@@ -111,27 +111,17 @@ struct MapChunkHeader
 class ADTFile
 {
 private:
-    //size_t mcnk_offsets[256], mcnk_sizes[256];
     MPQFile ADT;
-    //mcell Mcell;
     string Adtfilename;
-public:
-    ADTFile(char* filename);
-    ~ADTFile();
-    int nWMO;
-    int nMDX;
-    string* WmoInstansName;
-    string* ModelInstansName;
-    bool init(uint32 map_num, uint32 tileX, uint32 tileY);
-    //void LoadMapChunks();
 
-    //uint32 wmo_count;
-/*
-    const mcell& Getmcell() const
-    {
-        return Mcell;
-    }
-*/
+public:
+    uint32 MapId, TileX, TileY;
+
+public:
+    ADTFile(char* filename, uint32 mapid, uint32 tilex, uint32 tiley);
+    ~ADTFile();
+
+    bool init();
 };
 
 const char * GetPlainName(const char * FileName);

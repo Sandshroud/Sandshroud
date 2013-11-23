@@ -161,13 +161,15 @@ bool Model::open()
 
 bool Model::ConvertToVMAPModel(const char * outfilename)
 {
+    FILE *output = NULL;
     int N[12] = {0,0,0,0,0,0,0,0,0,0,0,0};
-    FILE* output=fopen(outfilename, "wb");
+    fopen_s(&output, outfilename, "wb");
     if (!output)
     {
         printf("Can't create the output file '%s'\n",outfilename);
         return false;
     }
+
     fwrite(szRawVMAPMagic, 8, 1, output);
     uint32 nVertices = header.nBoundingVertices;
     fwrite(&nVertices, sizeof(int), 1, output);
@@ -219,22 +221,25 @@ Vec3D fixCoordSystem2(Vec3D v)
 }
 
 ModelInstance::ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE *pDirfile)
-    : model(NULL), d1(0), w(0.0f)
+    : model(NULL), AdtId(0), scale(0), flags(0)
 {
+    f.read(&AdtId, 4);
+
     float ff[3];
-    f.read(&id, 4);
     f.read(ff, 12);
     pos = fixCoords(Vec3D(ff[0], ff[1], ff[2]));
     f.read(ff, 12);
     rot = Vec3D(ff[0], ff[1], ff[2]);
-    f.read(&scale, 4);
+
     // scale factor - divide by 1024. blizzard devs must be on crack, why not just use a float?
-    sc = scale / 1024.0f;
+    f.read(&scale, 2);
+    // 0x01 - biom | 0x02 - shrub
+    f.read(&flags, 2);
 
+    FILE* input = NULL;
     char tempname[512];
-    sprintf(tempname, "%s/%s", szWorkDirWmo, ModelInstName);
-    FILE* input = fopen(tempname, "r+b");
-
+    sprintf_s(tempname, 512, "%s/%s", szWorkDirWmo, ModelInstName);
+    fopen_s(&input, tempname, "r+b");
     if (!input)
     {
         //printf("ModelInstance::ModelInstance couldn't open %s\n", tempname);
@@ -245,42 +250,25 @@ ModelInstance::ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID
     int nVertices;
     int count = fread(&nVertices, sizeof (int), 1, input);
     fclose(input);
-
     if (count != 1 || nVertices == 0)
         return;
 
-    uint16 adtId = 0;// not used for models
-    uint32 flags = MOD_M2;
+    uint32 mod_flags = MOD_M2;
     if (tileX == 65 && tileY == 65)
-        flags |= MOD_WORLDSPAWN;
+        mod_flags |= MOD_WORLDSPAWN;
 
     //write mapID, tileX, tileY, Flags, ID, Pos, Rot, Scale, name
     fwrite(&mapID, sizeof(uint32), 1, pDirfile);
     fwrite(&tileX, sizeof(uint32), 1, pDirfile);
     fwrite(&tileY, sizeof(uint32), 1, pDirfile);
-    fwrite(&flags, sizeof(uint32), 1, pDirfile);
-    fwrite(&adtId, sizeof(uint16), 1, pDirfile);
-    fwrite(&id, sizeof(uint32), 1, pDirfile);
+    fwrite(&mod_flags, sizeof(uint32), 1, pDirfile);
+    fwrite(&AdtId, sizeof(uint32), 1, pDirfile);
     fwrite(&pos, sizeof(float), 3, pDirfile);
     fwrite(&rot, sizeof(float), 3, pDirfile);
-    fwrite(&sc, sizeof(float), 1, pDirfile);
-    uint32 nlen=strlen(ModelInstName);
+    fwrite(&scale, sizeof(uint16), 1, pDirfile);
+    fwrite(&flags, sizeof(uint16), 1, pDirfile);
+
+    uint32 nlen = strlen(ModelInstName);
     fwrite(&nlen, sizeof(uint32), 1, pDirfile);
     fwrite(ModelInstName, sizeof(char), nlen, pDirfile);
-
-    /* int realx1 = (int) ((float) pos.x / 533.333333f);
-    int realy1 = (int) ((float) pos.z / 533.333333f);
-    int realx2 = (int) ((float) pos.x / 533.333333f);
-    int realy2 = (int) ((float) pos.z / 533.333333f);
-
-    fprintf(pDirfile,"%s/%s %f,%f,%f_%f,%f,%f %f %d %d %d,%d %d\n",
-        MapName,
-        ModelInstName,
-        (float) pos.x, (float) pos.y, (float) pos.z,
-        (float) rot.x, (float) rot.y, (float) rot.z,
-        sc,
-        nVertices,
-        realx1, realy1,
-        realx2, realy2
-        ); */
 }

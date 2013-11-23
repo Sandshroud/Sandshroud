@@ -161,6 +161,8 @@ bool ExtractWmo()
 
     //const char* ParsArchiveNames[] = {"patch-2.MPQ", "patch.MPQ", "common.MPQ", "expansion.MPQ"};
 
+    printf("Extracting WMO [");
+    uint32 count = 0;
     for (ArchiveSet::const_iterator ar_itr = gOpenArchives.begin(); ar_itr != gOpenArchives.end() && success; ++ar_itr)
     {
         vector<string> filelist;
@@ -169,12 +171,16 @@ bool ExtractWmo()
         for (vector<string>::iterator fname = filelist.begin(); fname != filelist.end() && success; ++fname)
         {
             if (fname->find(".wmo") != string::npos)
-                success = ExtractSingleWmo(*fname);
+                if(success = ExtractSingleWmo(*fname))
+                    count++;
+            if(count%500 == 1)
+                printf("#");
         }
     }
+    printf("]\n");
 
     if (success)
-        printf("\nExtract wmo complete (No (fatal) errors)\n");
+        printf("Extract wmo complete (No (fatal) errors)\n\n");
 
     return success;
 }
@@ -210,19 +216,20 @@ bool ExtractSingleWmo(std::string& fname)
         return true;
 
     bool file_ok = true;
-    std::cout << "Extracting " << fname << std::endl;
     WMORoot froot(fname);
     if(!froot.open())
     {
-        printf("Couldn't open RootWmo!!!\n");
+        printf("Couldn't open RootWmo %s!!!\n", fname);
         return true;
     }
+
     FILE *output = fopen(szLocalFile,"wb");
     if(!output)
     {
         printf("couldn't open %s for writing!\n", szLocalFile);
         return false;
     }
+
     froot.ConvertToVMAPRootWmo(output);
     int Wmo_nVertices = 0;
     //printf("root has %d groups\n", froot->nGroups);
@@ -265,29 +272,43 @@ void ParsMapFiles()
     char fn[512];
     //char id_filename[64];
     char id[10];
-    for (unsigned int i=0; i<map_count; ++i)
+    for (uint32 i = 0; i < map_count; ++i)
     {
-        sprintf(id,"%03u",map_ids[i].id);
+        sprintf(id,"%03u", map_ids[i].id);
         sprintf(fn,"World\\Maps\\%s\\%s.wdt", map_ids[i].name, map_ids[i].name);
-        WDTFile WDT(fn,map_ids[i].name);
-        if(WDT.init(id, map_ids[i].id))
+        WDTFile WDT(fn, map_ids[i].name, id, map_ids[i].id);
+        if(WDT.init())
         {
-            printf("Processing Map %u\n[", map_ids[i].id);
-            for (int x=0; x<64; ++x)
+            printf("Processing Map %s(%u)\n", map_ids[i].name, map_ids[i].id);
+            // Read our source data from the WDT file
+            WDT.readandprocess();
+            WDT.close();
+            // Pull our ADT data from the WDT file
+            uint32 ADTCount = WDT.getADTCount();
+            if(ADTCount)
             {
-                for (int y=0; y<64; ++y)
+                printf("[");
+                uint32 count = 1;
+                while(ADTFile *ADT = WDT.GetADT())
                 {
-                    if (ADTFile *ADT = WDT.GetMap(x,y))
-                    {
-                        //sprintf(id_filename,"%02u %02u %03u",x,y,map_ids[i].id);//!!!!!!!!!
-                        ADT->init(map_ids[i].id, x, y);
-                        delete ADT;
-                    }
+                    ADT->init();
+                    delete ADT;
+                    if(ADTCount%count++ == 10)
+                        printf("#");
                 }
-                printf("#");
-                fflush(stdout);
+
+                if(WDT.hasWMO())
+                {
+
+                }
+                printf("]\n\n");
             }
-            printf("]\n");
+            else if(WDT.hasWMO())
+            {
+                printf("[####################]\n\n");
+            }
+            else
+                printf("No data found!\n\n");
         }
     }
 }
@@ -584,9 +605,7 @@ int main(int argc, char ** argv)
         {
             map_ids[x].id=dbc->getRecord (x).getUInt(0);
             strcpy(map_ids[x].name,dbc->getRecord(x).getString(1));
-            printf("Map - %s\n",map_ids[x].name);
         }
-
 
         delete dbc;
         ParsMapFiles();

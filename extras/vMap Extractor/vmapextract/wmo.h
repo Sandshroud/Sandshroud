@@ -35,6 +35,7 @@
 #define WMO_MATERIAL_COLLIDE_HIT     0x20
 #define WMO_MATERIAL_WALL_SURFACE    0x40
 
+struct WDT_MODF;
 class WMOInstance;
 class WMOManager;
 class MPQFile;
@@ -117,17 +118,22 @@ public:
 class WMOInstance
 {
     static std::set<int> ids;
-public:
-    std::string MapName;
-    int currx;
-    int curry;
-    WMOGroup* wmo;
-    int doodadset;
-    Vec3D pos;
-    Vec3D pos2, pos3, rot;
-    uint32 indx, id, d2, d3;
 
-    WMOInstance(MPQFile&f , char const* WmoInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE* pDirfile);
+public: // MODF Chunk Data
+    uint32 AdtId;
+    //     p    r   p+wmoBound  B:collis+rendr
+    Vec3D pos, rot, lowerBound, upperBound;
+    uint16 MODFFlags, DoodadSetId, WmoSetId;
+public:
+    uint32 mapId;
+    std::string WMOName;
+
+public:
+    WMOGroup* wmo;
+    std::string MapName;
+
+    WMOInstance(uint32 mapID, MPQFile&f, char const* WmoInstName, WDT_MODF modfChunk);
+    void Write(FILE* pDirfile);
 
     static void reset();
 };

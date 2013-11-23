@@ -82,7 +82,7 @@ namespace VMAP
 
         public:
             // public for debug
-            G3D::Vector3 convertPositionToInternalRep(float x, float y, float z) const;
+            static G3D::Vector3 convertPositionToInternalRep(float x, float y, float z);
             static std::string getMapFileName(unsigned int mapId);
 
             VMapManager(std::string vMapDirectory);

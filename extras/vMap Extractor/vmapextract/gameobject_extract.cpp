@@ -37,6 +37,7 @@ bool ExtractSingleModel(std::string& fname)
 
 void ExtractGameobjectModels()
 {
+    FILE * model_list = NULL;
     printf("Extracting GameObject models...");
     DBCFile dbc("DBFilesClient\\GameObjectDisplayInfo.dbc");
     if(!dbc.open())
@@ -49,7 +50,9 @@ void ExtractGameobjectModels()
     basepath += "/";
     std::string path;
 
-    FILE * model_list = fopen((basepath + "temp_gameobject_models").c_str(), "wb");
+    fopen_s(&model_list, (basepath + "temp_gameobject_models").c_str(), "wb");
+    if(model_list == NULL)
+        return;
 
     for (DBCFile::Iterator it = dbc.begin(); it != dbc.end(); ++it)
     {
