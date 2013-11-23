@@ -23,25 +23,30 @@ public:
     void GetFileListTo(vector<string>& filelist) {
         uint32_t filenum;
         if(libmpq__file_number(mpq_a, "(listfile)", &filenum)) return;
-        libmpq__off_t size, transferred;
-        libmpq__file_unpacked_size(mpq_a, filenum, &size);
+        libmpq__off_t libSize;
+        libmpq__file_unpacked_size(mpq_a, filenum, &libSize);
+        // Limit size to positive value and less than signed int max
+        if(libSize < 0 || libSize > 0x7FFFFFFF)
+            return;
 
-        char *buffer = new char[size];
+        size_t buffSize = 0x7FFFFFFF&libSize;
+        char *buffer = new char[buffSize];
 
-        libmpq__file_read(mpq_a, filenum, (unsigned char*)buffer, size, &transferred);
+        libmpq__file_read(mpq_a, filenum, (unsigned char*)buffer, buffSize, &libSize);
 
         char seps[] = "\n";
-        char *token;
+        char *token = NULL, *nextToken = NULL;
 
-        token = strtok( buffer, seps );
+        token = strtok_s(buffer, seps, &nextToken);
         uint32 counter = 0;
-        while ((token != NULL) && (counter < size)) {
+        while ((token != NULL) && (counter < buffSize))
+        {
             //cout << token << endl;
             token[strlen(token) - 1] = 0;
             string s = token;
             filelist.push_back(s);
             counter += strlen(token) + 2;
-            token = strtok(NULL, seps);
+            token = strtok_s(NULL, seps, &nextToken);
         }
 
         delete[] buffer;
@@ -54,7 +59,7 @@ class MPQFile
     //MPQHANDLE handle;
     bool eof;
     char *buffer;
-    libmpq__off_t pointer,size;
+    size_t pointer, size;
 
     // disable copying
     MPQFile(const MPQFile& /*f*/) {}

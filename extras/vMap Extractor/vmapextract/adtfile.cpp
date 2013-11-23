@@ -75,45 +75,32 @@ char* GetExtension(char* FileName)
     return NULL;
 }
 
-ADTFile::ADTFile(char* filename): ADT(filename), nWMO(0), nMDX(0), WmoInstansName(NULL), ModelInstansName(NULL)
+ADTFile::ADTFile(char* filename, uint32 mapid, uint32 tilex, uint32 tiley): ADT(filename), MapId(mapid), TileX(tilex), TileY(tiley)
 {
     Adtfilename.append(filename);
 }
 
-bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
+ADTFile::~ADTFile()
 {
+    ADT.close();
+}
+
+bool ADTFile::init()
+{
+    FILE *dirfile = NULL;
     if(ADT.isEof ())
         return false;
 
-    uint32 size;
-
-    string xMap;
-    string yMap;
-
-    MH20_Header mh2oheader[256];
-    memset(&mh2oheader,0, sizeof(MH20_Header)*256);
-    uint32 mh2o_base = 0;
-
-    Adtfilename.erase(Adtfilename.find(".adt"),4);
-    string TempMapNumber;
-    TempMapNumber = Adtfilename.substr(Adtfilename.length()-6,6);
-    xMap = TempMapNumber.substr(TempMapNumber.find("_")+1,(TempMapNumber.find_last_of("_")-1) - (TempMapNumber.find("_")));
-    yMap = TempMapNumber.substr(TempMapNumber.find_last_of("_")+1,(TempMapNumber.length()) - (TempMapNumber.find_last_of("_")));
-    Adtfilename.erase((Adtfilename.length()-xMap.length()-yMap.length()-2), (xMap.length()+yMap.length()+2));
-    //string AdtMapNumber = xMap + ' ' + yMap + ' ' + GetPlainName((char*)Adtfilename.c_str());
-    //printf("Processing map %s...\n", AdtMapNumber.c_str());
-    //printf("MapNumber = %s\n", TempMapNumber.c_str());
-    //printf("xMap = %s\n", xMap.c_str());
-    //printf("yMap = %s\n", yMap.c_str());
-
     std::string dirname = std::string(szWorkDirWmo) + "/dir_bin";
-    FILE *dirfile = fopen(dirname.c_str(), "ab");
-    if(!dirfile)
+    fopen_s(&dirfile, dirname.c_str(), "ab");
+    if(dirfile == NULL)
     {
         printf("Can't open dirfile!'%s'\n", dirname.c_str());
         return false;
     }
 
+    uint32 size;
+    string *WmoInstansName = NULL, *ModelInstansName = NULL;
     while (!ADT.isEof())
     {
         char fourcc[5];
@@ -123,14 +110,13 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
         fourcc[4] = 0;
 
         size_t nextpos = ADT.getPos() + size;
-
-        if (!strcmp(fourcc,"MCIN"))
+        if (!strcmp(fourcc,"MHDR"))
         {
         }
         else if (!strcmp(fourcc,"MVER"))
         {
         }
-        else if (!strcmp(fourcc,"MHDR"))
+        else if (!strcmp(fourcc,"MCIN"))
         {
         }
         else if (!strcmp(fourcc,"MTEX"))
@@ -153,129 +139,33 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
         }
         else if (!strcmp(fourcc,"MMDX"))
         {
-            if (size)
-            {
-                char *buf = new char[size];
-                ADT.read(buf, size);
-                char *p=buf;
-                int t=0;
-                ModelInstansName = new string[size];
-                while (p<buf+size)
-                {
-                    fixnamen(p,strlen(p));
-                    char* s = GetPlainName(p);
-                    fixname2(s,strlen(s));
-
-                    ModelInstansName[t++] = s;
-
-                    string path(p);
-                    ExtractSingleModel(path);
-
-                    p = p+strlen(p)+1;
-                }
-                delete[] buf;
-            }
         }
         else if (!strcmp(fourcc,"MWMO"))
         {
-            if (size)
-            {
-                char* buf = new char[size];
-                ADT.read(buf, size);
-                char* p=buf;
-                int q = 0;
-                WmoInstansName = new string[size];
-                while (p<buf+size)
-                {
-                    char* s = GetPlainName(p);
-                    fixnamen(s, strlen(s));
-                    fixname2(s, strlen(s));
-                    p += strlen(p) + 1;
-                    WmoInstansName[q++] = s;
-                }
-                delete[] buf;
-            }
         }
-        //======================
         else if (!strcmp(fourcc,"MDDF"))
         {
-            if (size)
-            {
-                nMDX = (int)size / 36;
-                for (int i=0; i<nMDX; ++i)
-                {
-                    uint32 id;
-                    ADT.read(&id, 4);
-                    ModelInstance inst(ADT,ModelInstansName[id].c_str(), map_num, tileX, tileY, dirfile);
-                }
-                delete[] ModelInstansName;
-            }
         }
         else if (!strcmp(fourcc,"MODF"))
         {
-            if (size)
-            {
-                nWMO = (int)size / 64;
-                for (int i=0; i<nWMO; ++i)
-                {
-                    uint32 id;
-                    ADT.read(&id, 4);
-                    WMOInstance inst(ADT,WmoInstansName[id].c_str(), map_num, tileX, tileY, dirfile);
-                }
-                delete[] WmoInstansName;
-            }
         }
         else if (!strcmp(fourcc,"MCNK"))
         {
         }
         else if (!strcmp(fourcc,"MH2O"))
         {
-            if (size)
-            {
-				mh2o_base = ADT.getPos();
-				for (int i = 0; i < 256; i++)
-					ADT.read(&mh2oheader[i], sizeof(MH20_Header));
-            }
         }
         else
         {
             printf("Unknown Chunk type: %s\n", (char*)fourcc);
         }
-        //======================
         ADT.seek(nextpos);
     }
 
-    FILE *input = NULL;
-	uint32 Offsets[256];
-	string output = format("%s/Liquid_%03u_%02u_%02u.L2", szWorkDirWmo, map_num, tileX, tileY);
-	fopen_s(&input, output.c_str(), "w");
-	for (int j=0; j<16; j++)
-		for (int i=0; i<16; i++)
-			Offsets[j*16+i] = 0;
+    //======================
 
-	fwrite(&Offsets, sizeof(uint32)*256, 1, input);
-	for (int j=0; j<16; j++)
-	{
-		for (int i=0; i<16; i++)
-		{
-			if (mh2oheader[j*16+i].layerCount > 0)
-			{
-				uint32 Offset = ftell(input);
-				LiquidModelInstance Liq(ADT, mh2o_base, j*16+i, &mh2oheader[j*16+i], map_num, tileX, tileY, input);
-				if(Liq.ShouldWrite())
-					Offsets[j*16+i] = Offset;
-			}
-		}
-	}
-	fwrite(&Offsets, sizeof(uint32)*256, 1, input);
-	fclose(input);
-
+    //======================
     ADT.close();
     fclose(dirfile);
     return true;
-}
-
-ADTFile::~ADTFile()
-{
-    ADT.close();
 }
