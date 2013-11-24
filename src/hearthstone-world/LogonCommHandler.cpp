@@ -15,8 +15,8 @@ LogonCommHandler::LogonCommHandler()
 	server = NULL;
 	next_request = 1;
 	ReConCounter = 0;
-	pings = !Config.RealmConfig.GetBoolDefault("LogonServer", "DisablePings", false);
-	string logon_pass = Config.RealmConfig.GetStringDefault("LogonServer", "RemotePassword", "r3m0t3");
+	pings = !mainIni->ReadBoolean("LogonServer", "DisablePings", false);
+	string logon_pass = mainIni->ReadString("LogonServer", "RemotePassword", "r3m0t3");
 
 	// sha1 hash it
 	Sha1Hash hash;
@@ -117,7 +117,7 @@ void LogonCommHandler::Connect()
 
 	Log.Notice("LogonCommClient", "Connecting to logonserver on `%s:%u, attempt %u`", server->Address.c_str(), server->Port, ReConCounter );
 
-	server->RetryTime = (uint32)UNIXTIME + 10;
+	server->RetryTime = getMSTime()+10000;
 	server->Registered = false;
 
 	mapLock.Acquire();
@@ -130,11 +130,11 @@ void LogonCommHandler::Connect()
 	}
 
 	Log.Notice("LogonCommClient", "Authenticating...");
-	uint32 tt = (uint32)UNIXTIME + 10;
+	uint32 tt = getMSTime()+10000;
 	logon->SendChallenge();
 	while(!logon->authenticated)
 	{
-		if((uint32)UNIXTIME >= tt || bServerShutdown)
+		if(getMSTime() >= tt || bServerShutdown)
 		{
 			Log.Notice("LogonCommClient", "Authentication timed out.");
 			logon->Disconnect();
@@ -157,21 +157,17 @@ void LogonCommHandler::Connect()
 	else
 		Log.Success("LogonCommClient","Authentication succeeded.");
 
-	// Send the initial ping
-	logon->SendPing();
-
 	Log.Notice("LogonCommClient", "Registering Realms...");
 	logon->_id = server->ID;
 
 	RequestAddition(logon);
 
-	uint32 st = (uint32)UNIXTIME + 15;
+	uint32 st = getMSTime()+15000;
 
 	// Wait for register ACK
 	while(server->Registered == false)
-	{
-		// Don't wait more than.. like 15 seconds for a registration, thats our ping timeout
-		if((uint32)UNIXTIME >= st)
+	{	// Don't wait more than 15 seconds for a registration, thats our ping timeout
+		if(getMSTime() >= st || bServerShutdown)
 		{
 			Log.Notice("LogonCommClient", "Realm registration timed out.");
 			logon->Disconnect();
@@ -209,7 +205,7 @@ void LogonCommHandler::UpdateSockets(uint32 diff)
 		return;
 
 	mapLock.Acquire();
-	uint32 t = (uint32)UNIXTIME;
+	uint32 t = getMSTime();
 	if(logon != NULL)
 	{
 		if(logon->IsDeleted() || !logon->IsConnected())
@@ -225,9 +221,9 @@ void LogonCommHandler::UpdateSockets(uint32 diff)
 
 		if(pings)
 		{
-			if(logon->last_pong < t && ((t - logon->last_pong) > 60))
+			if(t - logon->last_ping > 15000)
 			{
-				// no pong for 60 seconds -> remove the socket
+				// no ping for 15 seconds -> remove the socket
 				Log.Error("LogonCommClient","Realm id %u connection dropped due to pong timeout.", (unsigned int)server->ID);
 				logon->_id = 0;
 				logon->Disconnect();
@@ -235,11 +231,6 @@ void LogonCommHandler::UpdateSockets(uint32 diff)
 				mapLock.Release();
 				return;
 			}
-
-			// Thread reduction means we just ping every call.
-//			if( (t - logon->last_ping) > 15 )//ping every 15 seconds when connected
-//				logon->SendPing();
-			logon->SendPing(diff);
 		}
 
 		mapLock.Release();
@@ -319,22 +310,24 @@ void LogonCommHandler::LoadRealmConfiguration()
 {
 	server = new LogonServer();
 	server->ID = idhigh++;
-	server->Name = Config.RealmConfig.GetStringDefault("LogonServer", "Name", "UnkLogon");
-	server->Address = Config.RealmConfig.GetStringDefault("LogonServer", "Address", "127.0.0.1");
-	server->Port = Config.RealmConfig.GetIntDefault("LogonServer", "Port", 8093);
+	server->Name = mainIni->ReadString("LogonServer", "Name", "UnkLogon");
+	server->Address = mainIni->ReadString("LogonServer", "Address", "127.0.0.1");
+	server->Port = mainIni->ReadInteger("LogonServer", "Port", 8093);
 
-	char* port = new char[10];
-	itoa(Config.RealmConfig.GetIntDefault( "ServerSettings", "WorldServerPort", 8129), port, 10);
-	std::string adress = string(Config.RealmConfig.GetStringDefault( "ServerSettings", "Adress", "SomeRealm" ).c_str())
-		+ ":" + string(port);
-
-	delete[] port;
 	realm = new Realm();
 	ZeroMemory(realm, sizeof(Realm*));
-	realm->Address = adress;
-	realm->Icon = Config.RealmConfig.GetIntDefault("ServerSettings", "RealmType", 1);
-	realm->WorldRegion = Config.RealmConfig.GetIntDefault("ServerSettings", "WorldRegion", 1);
-	realm->Name = Config.RealmConfig.GetStringDefault("ServerSettings", "RealmName", "SomeRealm");
+
+	char* port = new char[10];
+	itoa(mainIni->ReadInteger( "RealmData", "WorldServerPort", 8129), port, 10);
+	std::string address = mainIni->ReadString( "RealmData", "Address", "127.0.0.1" );
+	address.append(":");
+	address.append(port);
+	delete[] port;
+
+	realm->Address = address;
+	realm->Icon = mainIni->ReadInteger("RealmData", "RealmType", 1);
+	realm->WorldRegion = mainIni->ReadInteger("RealmData", "WorldRegion", 1);
+	realm->Name = mainIni->ReadString("RealmData", "RealmName", "SomeRealm");
 	sWorld.IsPvPRealm = ((realm->Icon == REALMTYPE_RPPVP || realm->Icon == REALMTYPE_PVP) ? true : false);
 }
 

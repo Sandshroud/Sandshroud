@@ -160,11 +160,6 @@ bool IsServerAllowedMod(unsigned int IP)
 
 bool Rehash()
 {
-#ifdef WIN32
-	char * config_file = "configs/hearthstone-logonserver.ini";
-#else
-	char * config_file = (char*)CONFDIR "/hearthstone-logonserver.ini";
-#endif
 	mainIni->Reload();
 	if(mainIni->ParseError())
 	{
@@ -246,16 +241,17 @@ bool Rehash()
 	return true;
 }
 
+#ifdef WIN32
+static const char * default_config_file = "./hearthstone-logonserver.ini";
+#else
+static const char * default_config_file = (char*)CONFDIR "/hearthstone-logonserver.ini";
+#endif
 
 void LogonServer::Run(int argc, char ** argv)
 {
 	UNIXTIME = time(NULL);
 	g_localTime = *localtime(&UNIXTIME);
-#ifdef WIN32
-	char * config_file = "configs/hearthstone-logonserver.ini";
-#else
-	char * config_file = (char*)CONFDIR "/configs/hearthstone-logonserver.ini";
-#endif
+	char *config_file = (char*)default_config_file;
 	int file_log_level = DEF_VALUE_NOT_SET;
 	int screen_log_level = DEF_VALUE_NOT_SET;
 	int do_check_conf = 0;
@@ -297,13 +293,11 @@ void LogonServer::Run(int argc, char ** argv)
 		return;
 
 	mainIni = new CIniFile(config_file);
-	if(do_check_conf)
+	if(!mainIni->ParseError())
+		Log.Success("Config", "Passed without errors.");
+	else
 	{
-		Log.Notice("Config", "Checking config file: %s", config_file);
-		if(!mainIni->ParseError())
-			Log.Success("Config", "Passed without errors.");
-		else
-			Log.Warning("Config", "Encountered one or more errors.");
+		Log.Warning("Config", "Encountered one or more errors.");
 		return;
 	}
 

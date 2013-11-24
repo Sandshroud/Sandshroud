@@ -64,13 +64,9 @@ struct Addr
 #define DEF_VALUE_NOT_SET 0xDEADBEEF
 
 #ifdef WIN32
-static const char* default_config_file = "configs/hearthstone-world.conf";
-static const char* default_realm_config_file = "configs/hearthstone-realms.conf";
-static const char* default_options_config_file = "configs/hearthstone-options.conf";
+static const char* default_config_file = "./hearthstone-world.ini";
 #else
-static const char* default_config_file = CONFDIR "/hearthstone-world.conf";
-static const char* default_realm_config_file = CONFDIR "/hearthstone-realms.conf";
-static const char* default_options_config_file = CONFDIR "/hearthstone-options.conf";
+static const char* default_config_file = (char*)CONFDIR "/hearthstone-world.ini";
 #endif
 
 bool bServerShutdown = false;
@@ -82,8 +78,6 @@ bool Master::Run(int argc, char ** argv)
 {
 	m_stopEvent = false;
 	char * config_file = (char*)default_config_file;
-	char * realm_config_file = (char*)default_realm_config_file;
-	char * options_config_file = (char*)default_options_config_file;
 	int screen_log_level = DEF_VALUE_NOT_SET;
 	int do_check_conf = 0;
 	int do_version = 0;
@@ -112,17 +106,6 @@ bool Master::Run(int argc, char ** argv)
 			config_file = new char[strlen(hearthstone_optarg)];
 			strcpy(config_file, hearthstone_optarg);
 			break;
-
-		case 'r':
-			realm_config_file = new char[strlen(hearthstone_optarg)];
-			strcpy(realm_config_file, hearthstone_optarg);
-			break;
-
-		case 'o':
-			options_config_file = new char[strlen(hearthstone_optarg)];
-			strcpy(options_config_file, hearthstone_optarg);
-			break;
-
 		case 0:
 			break;
 		default:
@@ -143,28 +126,6 @@ bool Master::Run(int argc, char ** argv)
 	printf(BANNER, BUILD_REVISION, CONFIG, PLATFORM_TEXT, ARCH);
 	Log.Line();
 
-	if( do_check_conf )
-	{
-		Log.Notice( "Config", "Checking config file: %s", config_file );
-		if( Config.MainConfig.SetSource(config_file, true ) )
-			Log.Success( "Config", "Passed without errors." );
-		else
-			Log.Warning( "Config", "Encountered one or more errors." );
-
-		Log.Notice( "Config", "Checking config file: %s\n", realm_config_file );
-		if( Config.RealmConfig.SetSource( realm_config_file, true ) )
-			Log.Success( "Config", "Passed without errors.\n" );
-		else
-			Log.Warning( "Config", "Encountered one or more errors.\n" );
-
-		Log.Notice( "Config", "Checking config file: %s\n", options_config_file );
-		if( Config.OptionalConfig.SetSource( options_config_file, true ) )
-			Log.Success( "Config", "Passed without errors.\n" );
-		else
-			Log.Warning( "Config", "Encountered one or more errors.\n" );
-		return true;
-	}
-
 	printf( "The key combination <Ctrl-C> will safely shut down the server at any time.\n" );
 	Log.Line();
 
@@ -176,9 +137,10 @@ bool Master::Run(int argc, char ** argv)
 	InitRandomNumberGenerators();
 	Log.Success( "Rnd", "Initialized Random Number Generators." );
 
+	mainIni = new CIniFile(config_file);
 	uint32 LoadingTime = getMSTime();
 	Log.Notice( "Config", "Loading Config Files..." );
-	if( Config.MainConfig.SetSource( config_file ) )
+	if( !mainIni->ParseError() )
 		Log.Success( "Config", ">> hearthstone-world.conf" );
 	else
 	{
@@ -186,24 +148,8 @@ bool Master::Run(int argc, char ** argv)
 		return false;
 	}
 
-	if(Config.RealmConfig.SetSource(realm_config_file))
-		Log.Success( "Config", ">> hearthstone-realms.conf" );
-	else
-	{
-		Log.Error( "Config", ">> hearthstone-realms.conf" );
-		return false;
-	}
-
-	if(Config.OptionalConfig.SetSource(options_config_file))
-		Log.Success( "Config", ">> hearthstone-options.conf" );
-	else
-	{
-		Log.Error( "Config", ">> hearthstone-options.conf" );
-		return false;
-	}
-
 	//use these log_level until we are fully started up.
-	if(Config.MainConfig.GetIntDefault("LogLevel", "Screen", 1) == -1)
+	if(mainIni->ReadInteger("LogLevel", "Screen", 1) == -1)
 	{
 		Log.Notice("Master", "Running silent mode...");
 		sLog.Init(-1);
@@ -235,19 +181,19 @@ bool Master::Run(int argc, char ** argv)
 	sWorld.Rehash(true);
 
 	// Because of our log DB system, these have to be initialized different then rehash.
-	sWorld.LogCheaters = Config.MainConfig.GetBoolDefault("Log", "Cheaters", false);
-	sWorld.LogCommands = Config.MainConfig.GetBoolDefault("Log", "GMCommands", false);
-	sWorld.LogPlayers = Config.MainConfig.GetBoolDefault("Log", "Player", false);
-	sWorld.LogChats = Config.MainConfig.GetBoolDefault("Log", "Chat", false);
+	sWorld.LogCheaters = mainIni->ReadBoolean("Log", "Cheaters", false);
+	sWorld.LogCommands = mainIni->ReadBoolean("Log", "GMCommands", false);
+	sWorld.LogPlayers = mainIni->ReadBoolean("Log", "Player", false);
+	sWorld.LogChats = mainIni->ReadBoolean("Log", "Chat", false);
 
 	//Update sLog to obey config setting
-	sLog.Init(Config.MainConfig.GetIntDefault("LogLevel", "Screen", 1));
+	sLog.Init(mainIni->ReadInteger("LogLevel", "Screen", 1));
 
 	// Initialize Opcode Table
 	WorldSession::InitPacketHandlerTable();
 
-	string host = Config.RealmConfig.GetStringDefault( "Listen", "Host", DEFAULT_HOST );
-	int wsport = Config.RealmConfig.GetIntDefault( "ServerSettings", "WorldServerPort", DEFAULT_WORLDSERVER_PORT );
+	string host = mainIni->ReadString( "Listen", "Host", DEFAULT_HOST );
+	int wsport = mainIni->ReadInteger( "ServerSettings", "WorldServerPort", DEFAULT_WORLDSERVER_PORT );
 
 	new ScriptMgr();
 
@@ -271,7 +217,7 @@ bool Master::Run(int argc, char ** argv)
 	realCurrTime = realPrevTime = getMSTime();
 
 	// Socket loop!
-    uint32 start = 0, last_time = getMSTime(), etime = 0;
+	uint32 start = 0, last_time = getMSTime(), etime = 0;
 
 	// Start Network Subsystem
 	DEBUG_LOG("Server","Starting network subsystem..." );
@@ -279,7 +225,7 @@ bool Master::Run(int argc, char ** argv)
 	sSocketEngine.SpawnThreads();
 
 	if( StartConsoleListener() )
-		Log.Success("RemoteConsole", "Started and listening on port %i",Config.MainConfig.GetIntDefault("RemoteConsole", "Port", 8092));
+		Log.Success("RemoteConsole", "Started and listening on port %i", mainIni->ReadInteger("RemoteConsole", "Port", 8092));
 	else
 		DEBUG_LOG("RemoteConsole", "Not enabled or failed listen.");
 
@@ -304,7 +250,7 @@ bool Master::Run(int argc, char ** argv)
 #endif
 
 	uint32 loopcounter = 0, LastLogonUpdate = getMSTime();
-	if(Config.MainConfig.GetIntDefault("LogLevel", "Screen", 1) == -1)
+	if(mainIni->ReadInteger("LogLevel", "Screen", 1) == -1)
 	{
 		sLog.Init(1);
 		Log.Notice("Master", "Leaving Silent Mode...");
@@ -374,8 +320,7 @@ bool Master::Run(int argc, char ** argv)
 	CharacterDatabase.EndThreads();
 	WorldDatabase.EndThreads();
 
-	if(Config.MainConfig.GetBoolDefault("Log", "Cheaters", false) || Config.MainConfig.GetBoolDefault("Log", "GMCommands", false)
-		|| Config.MainConfig.GetBoolDefault("Log", "Player", false) || Config.MainConfig.GetBoolDefault("Log", "Chat", false))
+	if(Database_Log)
 		LogDatabase.EndThreads();
 
 	guildmgr.SaveAllGuilds();
@@ -453,71 +398,103 @@ bool Master::Run(int argc, char ** argv)
 
 bool Master::_StartDB()
 {
-	string hostname, username, password, database;
-	int port = 0;
-	// Configure Main Database
+	SYSTEM_INFO sysinfo;
+	GetSystemInfo( &sysinfo );
 
-	bool result = Config.MainConfig.GetString( "WorldDatabase", "Username", &username );
-	Config.MainConfig.GetString( "WorldDatabase", "Password", &password );
-	result = !result ? result : Config.MainConfig.GetString( "WorldDatabase", "Hostname", &hostname );
-	result = !result ? result : Config.MainConfig.GetString( "WorldDatabase", "Name", &database );
-	result = !result ? result : Config.MainConfig.GetInt( "WorldDatabase", "Port", &port );
-	Database_World = Database::Create();
-
-	if(result == false)
+	string error;
+	// Configure World Database...
+	string hostname = mainIni->ReadString("WorldDatabase", "Hostname", "ERROR");
+	string username = mainIni->ReadString("WorldDatabase", "Username", "ERROR");
+	string password = mainIni->ReadString("WorldDatabase", "Password", "ERROR");
+	string database = mainIni->ReadString("WorldDatabase", "Name", "ERROR");
+	int port = mainIni->ReadInteger("WorldDatabase", "Port", 0);
+	int type = mainIni->ReadInteger("WorldDatabase", "Type", 0);
+	if(strcmp(hostname.c_str(), "ERROR") == 0)
+		error.append("Hostname");
+	else if(strcmp(username.c_str(), "ERROR") == 0)
+		error.append("Username");
+	else if(strcmp(password.c_str(), "ERROR") == 0)
+		error.append("Password");
+	else if(strcmp(database.c_str(), "ERROR") == 0)
+		error.append("DatabaseName");
+	else if(port == 0 || type == 0)
+		error.append("Port/Type");
+	if(error.length())
 	{
-		OUT_DEBUG( "sql: One or more parameters were missing from WorldDatabase directive." );
+		sLog.outError("sql: World database parameter not found for %s.", error.c_str());
 		return false;
 	}
 
+	Database_World = Database::Create();
 	// Initialize it
 	if( !WorldDatabase.Initialize(hostname.c_str(), uint(port), username.c_str(),
-		password.c_str(), database.c_str(), Config.MainConfig.GetIntDefault( "WorldDatabase", "ConnectionCount", 3 ), 16384 ) )
+		password.c_str(), database.c_str(), mainIni->ReadInteger("WorldDatabase", "ConnectionCount", sysinfo.dwNumberOfProcessors), 16384 ) )
 	{
 		OUT_DEBUG( "sql: Main database initialization failed. Exiting." );
 		return false;
 	}
 
-	result = Config.MainConfig.GetString( "CharacterDatabase", "Username", &username );
-	Config.MainConfig.GetString( "CharacterDatabase", "Password", &password );
-	result = !result ? result : Config.MainConfig.GetString( "CharacterDatabase", "Hostname", &hostname );
-	result = !result ? result : Config.MainConfig.GetString( "CharacterDatabase", "Name", &database );
-	result = !result ? result : Config.MainConfig.GetInt( "CharacterDatabase", "Port", &port );
+	hostname = mainIni->ReadString("CharacterDatabase", "Hostname", "ERROR");
+	username = mainIni->ReadString("CharacterDatabase", "Username", "ERROR");
+	password = mainIni->ReadString("CharacterDatabase", "Password", "ERROR");
+	database = mainIni->ReadString("CharacterDatabase", "Name", "ERROR");
+	port = mainIni->ReadInteger("CharacterDatabase", "Port", 0);
+	type = mainIni->ReadInteger("CharacterDatabase", "Type", 0);
+	if(strcmp(hostname.c_str(), "ERROR") == 0)
+		error.append("Hostname");
+	else if(strcmp(username.c_str(), "ERROR") == 0)
+		error.append("Username");
+	else if(strcmp(password.c_str(), "ERROR") == 0)
+		error.append("Password");
+	else if(strcmp(database.c_str(), "ERROR") == 0)
+		error.append("DatabaseName");
+	else if(port == 0 || type == 0)
+		error.append("Port/Type");
+	if(error.length())
+	{
+		sLog.outError("sql: Character database parameter not found for %s.", error.c_str());
+		return false;
+	}
+
 	Database_Character = Database::Create();
-
-	if(result == false)
-	{
-		OUT_DEBUG( "sql: One or more parameters were missing from Database directive." );
-		return false;
-	}
-
 	// Initialize it
-	if( !CharacterDatabase.Initialize( hostname.c_str(), (uint)port, username.c_str(),
-		password.c_str(), database.c_str(), Config.MainConfig.GetIntDefault( "CharacterDatabase", "ConnectionCount", 5 ), 16384 ) )
+	if( !CharacterDatabase.Initialize( hostname.c_str(), uint(port), username.c_str(),
+		password.c_str(), database.c_str(), mainIni->ReadInteger( "CharacterDatabase", "ConnectionCount", sysinfo.dwNumberOfProcessors), 16384 ) )
 	{
 		OUT_DEBUG( "sql: Main database initialization failed. Exiting." );
 		return false;
 	}
 
-	if(Config.MainConfig.GetBoolDefault("Log", "Cheaters", false) || Config.MainConfig.GetBoolDefault("Log", "GMCommands", false)
-		|| Config.MainConfig.GetBoolDefault("Log", "Player", false) || Config.MainConfig.GetBoolDefault("Log", "Chat", false))
+	Database_Log = NULL;
+	if(mainIni->ReadBoolean("Log", "Cheaters", false) || mainIni->ReadBoolean("Log", "GMCommands", false)
+		|| mainIni->ReadBoolean("Log", "Player", false) || mainIni->ReadBoolean("Log", "Chat", false))
 	{
-		result = Config.MainConfig.GetString( "LogDatabase", "Username", &username );
-		Config.MainConfig.GetString( "LogDatabase", "Password", &password );
-		result = !result ? result : Config.MainConfig.GetString( "LogDatabase", "Hostname", &hostname );
-		result = !result ? result : Config.MainConfig.GetString( "LogDatabase", "Name", &database );
-		result = !result ? result : Config.MainConfig.GetInt( "LogDatabase", "Port", &port );
-		Database_Log = Database::Create();
-
-		if(result == false)
+		hostname = mainIni->ReadString("LogDatabase", "Hostname", "ERROR");
+		username = mainIni->ReadString("LogDatabase", "Username", "ERROR");
+		password = mainIni->ReadString("LogDatabase", "Password", "ERROR");
+		database = mainIni->ReadString("LogDatabase", "Name", "ERROR");
+		port = mainIni->ReadInteger("LogDatabase", "Port", 0);
+		type = mainIni->ReadInteger("LogDatabase", "Type", 0);
+		if(strcmp(hostname.c_str(), "ERROR") == 0)
+			error.append("Hostname");
+		else if(strcmp(username.c_str(), "ERROR") == 0)
+			error.append("Username");
+		else if(strcmp(password.c_str(), "ERROR") == 0)
+			error.append("Password");
+		else if(strcmp(database.c_str(), "ERROR") == 0)
+			error.append("DatabaseName");
+		else if(port == 0 || type == 0)
+			error.append("Port/Type");
+		if(error.length())
 		{
-			OUT_DEBUG( "sql: One or more parameters were missing from Database directive." );
+			sLog.outError("sql: Log database parameter not found for %s.", error.c_str());
 			return false;
 		}
 
+		Database_Log = Database::Create();
 		// Initialize it
-		if( !(LogDatabase.Initialize( hostname.c_str(), (uint)port, username.c_str(),
-			password.c_str(), database.c_str(), Config.MainConfig.GetIntDefault( "LogDatabase", "ConnectionCount", 5 ), 16384 )) )
+		if( !(LogDatabase.Initialize( hostname.c_str(), uint(port), username.c_str(),
+			password.c_str(), database.c_str(), mainIni->ReadInteger( "LogDatabase", "ConnectionCount", 2 ), 16384 )) )
 		{
 			OUT_DEBUG( "sql: Log database initialization failed. Exiting." );
 			return false;
@@ -532,8 +509,7 @@ void Master::_StopDB()
 	delete Database_World;
 	delete Database_Character;
 
-	if(Config.MainConfig.GetBoolDefault("Log", "Cheaters", false) || Config.MainConfig.GetBoolDefault("Log", "GMCommands", false)
-		|| Config.MainConfig.GetBoolDefault("Log", "Player", false) || Config.MainConfig.GetBoolDefault("Log", "Chat", false))
+	if(Database_Log)
 		delete Database_Log;
 }
 
@@ -556,8 +532,7 @@ void segfault_handler(int c)
 		if( World::getSingletonPtr() != 0 )
 		{
 			sLog.outString( "Waiting for all database queries to finish..." );
-			if(Config.MainConfig.GetBoolDefault("Log", "Cheaters", false) || Config.MainConfig.GetBoolDefault("Log", "GMCommands", false)
-				|| Config.MainConfig.GetBoolDefault("Log", "Player", false) || Config.MainConfig.GetBoolDefault("Log", "Chat", false))
+			if(Database_Log)
 				LogDatabase.EndThreads();
 			WorldDatabase.EndThreads();
 
@@ -628,8 +603,7 @@ void OnCrash( bool Terminate )
 		if( World::getSingletonPtr() != 0 )
 		{
 			sLog.outString( "Waiting for all database queries to finish..." );
-			if(Config.MainConfig.GetBoolDefault("Log", "Cheaters", false) || Config.MainConfig.GetBoolDefault("Log", "GMCommands", false)
-				|| Config.MainConfig.GetBoolDefault("Log", "Player", false) || Config.MainConfig.GetBoolDefault("Log", "Chat", false))
+			if(Database_Log)
 				LogDatabase.EndThreads();
 
 			WorldDatabase.EndThreads();

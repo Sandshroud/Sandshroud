@@ -395,7 +395,7 @@ void IPBanner::Reload()
 
 InformationCore::InformationCore() : realmhigh(0)
 {
-    usepings = mainIni->ReadBoolean("LogonServer", "DisablePings", false);
+    usepings = !mainIni->ReadBoolean("LogonServer", "DisablePings", false);
 }
 
 Realm * InformationCore::AddRealm(uint32 realm_id, Realm * rlm)
@@ -609,24 +609,28 @@ void InformationCore::SendRealms(AuthSocket * Socket)
 
 void InformationCore::TimeoutSockets()
 {
-	if(!usepings)
+	if(usepings == false)
 		return;
 
 	/* burlex: this is vulnerable to race conditions, adding a mutex to it. */
 	serverSocketLock.Acquire();
 
 	// check the ping time
-	uint32 t = uint32(time(NULL));
+	uint32 t = getMSTime();
 
 	set<LogonCommServerSocket*>::iterator itr, it2;
 	LogonCommServerSocket * s;
 	for(itr = m_serverSockets.begin(); itr != m_serverSockets.end();)
 	{
 		s = *itr;
-		it2 = itr;
-		++itr;
+		it2 = itr++;
+		if(s->removed)
+			continue;
 
-		if(!s->removed && (t - s->last_ping) > (40+s->latency))
+		// Ping every 2 seconds
+		if(t - s->last_ping > 2000)
+			s->SendPing();
+		if(t - s->last_pong > (10000+s->latency))
 		{
 			// ping timeout
 			s->removed = true;

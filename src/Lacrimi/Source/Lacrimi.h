@@ -66,7 +66,7 @@ class SCRIPT_DECL Lacrimi : public ThreadContext
 {
 private:
 	std::set<CleanupComponent*> CleanupComponents;
-	ConfigFile LacrimiConfig;
+	CIniFile *lacrimiIni;
 	Database* LacrimiDB;
 	ScriptMgr* sMgr;
 	bool dumpstats;
@@ -84,7 +84,7 @@ public:
 	void Cleanup();
 	void FinalCleanup();
 	ScriptMgr* GetScriptMgr() { return sMgr; };
-	char* GetConfigString(char* configfamily, char* configoption, char* cdefault = "");
+	std::string GetConfigString(char* configfamily, char* configoption, char* cdefault = "");
 	float GetConfigfloat(char* configfamily, char* configoption, float fdefault = 0.0f);
 	bool GetConfigBool(char* configfamily, char* configoption, bool bdefault = false);
 	int GetConfigInt(char* configfamily, char* configoption, int intdefault = 0);

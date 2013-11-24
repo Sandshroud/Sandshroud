@@ -19,7 +19,7 @@
 Lacrimi::Lacrimi(ScriptMgr* mgr) : ThreadContext()
 {
 	first = true;
-	config = false;
+	config = true;
 	LacrimiDB = NULL;
 	database = false;
 	dumpstats = false;
@@ -107,23 +107,27 @@ bool Lacrimi::_StartDB()
 	if(!config)
 		return false;
 
-	string hostname, username, password, database;
-	int port = 0;
-	// Configure Main Database
-	bool result = LacrimiConfig.GetString( "LacrimiDatabase", "Username", &username );
-	LacrimiConfig.GetString( "LacrimiDatabase", "Password", &password );
-	result = !result ? result : LacrimiConfig.GetString( "LacrimiDatabase", "Hostname", &hostname );
-	result = !result ? result : LacrimiConfig.GetString( "LacrimiDatabase", "Name", &database );
-	result = !result ? result : LacrimiConfig.GetInt( "LacrimiDatabase", "Port", &port );
-	if(result == false)
+	string error;
+	// Configure World Database...
+	string hostname = lacrimiIni->ReadString("LacrimiDatabase", "Hostname", "ERROR");
+	string username = lacrimiIni->ReadString("LacrimiDatabase", "Username", "ERROR");
+	string password = lacrimiIni->ReadString("LacrimiDatabase", "Password", "ERROR");
+	string database = lacrimiIni->ReadString("LacrimiDatabase", "Name", "ERROR");
+	int port = lacrimiIni->ReadInteger("LacrimiDatabase", "Port", 0);
+	int type = lacrimiIni->ReadInteger("LacrimiDatabase", "Type", 0);
+	if(strcmp(hostname.c_str(), "ERROR") == 0)
+		error.append("Hostname");
+	else if(strcmp(username.c_str(), "ERROR") == 0)
+		error.append("Username");
+	else if(strcmp(password.c_str(), "ERROR") == 0)
+		error.append("Password");
+	else if(strcmp(database.c_str(), "ERROR") == 0)
+		error.append("DatabaseName");
+	else if(port == 0 || type == 0)
+		error.append("Port/Type");
+	if(error.length() || username == "username" || password == "passwd" || hostname == "host")
 	{
-		OUT_DEBUG( "sql: One or more parameters were missing from LacrimiDatabase directive." );
-		return false;
-	}
-
-	if(username == "username" || password == "passwd" || hostname == "host")
-	{
-		OUT_DEBUG( "sql: One or more parameters were missing from LacrimiDatabase directive." );
+		sLog.outError("sql: Lacrimi database parameter not found for %s.", error.c_str());
 		return false;
 	}
 
@@ -132,7 +136,7 @@ bool Lacrimi::_StartDB()
 
 	// Initialize it
 	if( !LacrimiDB->Initialize(hostname.c_str(), uint(port), username.c_str(),
-		password.c_str(), database.c_str(), LacrimiConfig.GetIntDefault( "LacrimiDatabase", "ConnectionCount", 3 ), 16384 ) )
+		password.c_str(), database.c_str(), lacrimiIni->ReadInteger("LacrimiDatabase", "ConnectionCount", 2), 15000 ) )
 	{
 		OUT_DEBUG( "sql: Main database initialization failed. Exiting." );
 		_StopDB(); // Kekeke
@@ -150,13 +154,11 @@ void Lacrimi::_StopDB()
 	LacrimiDB = NULL;
 }
 
-char* Lacrimi::GetConfigString(char* configfamily, char* configoption, char* cdefault)
+std::string Lacrimi::GetConfigString(char* configfamily, char* configoption, char* cdefault)
 {
-	char* creturn = cdefault;
-	char Buffer[MAX_PATH];
+	std::string creturn = cdefault;
 	if(config) // Crow: Lets just use MAX_PATH for this, it's a reasonable number...
-		if( LacrimiConfig.GetString( configfamily, Buffer, configoption, cdefault, MAX_PATH ) )
-			creturn = (char*)Buffer;
+		creturn = lacrimiIni->ReadString(configfamily, configoption, cdefault);
 	return creturn;
 }
 
@@ -164,8 +166,7 @@ float Lacrimi::GetConfigfloat(char* configfamily, char* configoption, float fdef
 {
 	float freturn = fdefault;
 	if(config)
-		if(!LacrimiConfig.GetFloat(configfamily, configoption, &freturn))
-			freturn = fdefault;
+		freturn = lacrimiIni->ReadFloat(configfamily, configoption, fdefault);
 	return freturn;
 }
 
@@ -173,8 +174,7 @@ bool Lacrimi::GetConfigBool(char* configfamily, char* configoption, bool bdefaul
 {
 	bool breturn = bdefault;
 	if(config)
-		if(!LacrimiConfig.GetBool(configfamily, configoption, &breturn))
-			breturn = bdefault;
+		breturn = lacrimiIni->ReadBoolean(configfamily, configoption, bdefault);
 	return breturn;
 }
 
@@ -182,8 +182,7 @@ int Lacrimi::GetConfigInt(char* configfamily, char* configoption, int intdefault
 {
 	int ireturn = intdefault;
 	if(config)
-		if(!LacrimiConfig.GetInt(configfamily, configoption, &ireturn))
-			ireturn = intdefault;
+		ireturn = lacrimiIni->ReadInteger(configfamily, configoption, intdefault);
 	return ireturn;
 }
 
@@ -203,12 +202,9 @@ void Lacrimi::SetupScripts()
 	Log.Success("","############################################################");
 
 	// Load our configs
-#ifdef WIN32
-	if(LacrimiConfig.SetSource("configs/Lacrimi.conf", true))
-#else
-	if(LacrimiConfig.SetSource((char*)CONFDIR "/Lacrimi.conf", true))
-#endif
-		config = true;
+	lacrimiIni = new CIniFile("./Lacrimi.ini");
+	if(lacrimiIni->ParseError())
+		config = false;
 
 	// Load our DBs
 	if(_StartDB())
@@ -218,7 +214,7 @@ void Lacrimi::SetupScripts()
 	if(dumpstats)
 	{
 		Log.Success("Lacrimi", "Stat Dumper Initialized");
-		strcpy(Filename, GetConfigString("StatDumper", "Filename", "stats.xml"));
+		strcpy(Filename, GetConfigString("StatDumper", "Filename", "stats.xml").c_str());
 	}
 
 	Log.Notice("Lacrimi", "C++ Loading scripts...");
@@ -517,7 +513,7 @@ void Lacrimi::DumpStats()
 		AvgLat = count ? (float)((float)avg / (float)count) : 0;
 		GMCount = gm;
 
-		fprintf(f, "    <servername>%s</servername>\n", Config.RealmConfig.GetStringDefault("Realm1", "Name", "Test Realm").c_str());
+		fprintf(f, "    <servername>%s</servername>\n", mainIni->ReadString("RealmData", "RealmName", "Test Realm").c_str());
 		fprintf(f, "    <uptime>%s</uptime>\n", uptime);
 		fprintf(f, "    <oplayers>%u</oplayers>\n", (unsigned int)sWorld.GetSessionCount());
 		fprintf(f, "    <cpu>%2.2f</cpu>\n", sWorld.GetCPUUsage(true));

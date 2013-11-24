@@ -541,7 +541,7 @@ bool World::SetInitialWorldSettings()
 
 	ThreadPool.ExecuteTask("DayWatcherThread", new DayWatcherThread());
 
-	if(Config.MainConfig.GetBoolDefault("Startup", "BackgroundLootLoading", true))
+	if(mainIni->ReadBoolean("Startup", "BackgroundLootLoading", true))
 	{
 		Log.Notice("World", "Background loot loading...");
 
@@ -1141,7 +1141,7 @@ void TaskList::spawn()
 	thread_count = 0;
 
 	uint32 threadcount;
-	if(Config.MainConfig.GetBoolDefault("Startup", "EnableMultithreadedLoading", true))
+	if(mainIni->ReadBoolean("Startup", "EnableMultithreadedLoading", true))
 	{
 		// get processor count
 #ifndef WIN32
@@ -1249,199 +1249,163 @@ void World::DeleteObject(Object* obj)
 
 void World::Rehash(bool load)
 {
-	if(load)
-	{
-#ifdef WIN32
-		Config.MainConfig.SetSource("configs/hearthstone-world.conf", true);
-#else
-		Config.MainConfig.SetSource((char*)CONFDIR "/hearthstone-world.conf", true);
-#endif
-	}
-
+    mainIni->Reload();
 	if(!ChannelMgr::getSingletonPtr())
 		new ChannelMgr;
 
 	if(!MailSystem::getSingletonPtr())
 		new MailSystem;
 
-	sLog.Init(Config.MainConfig.GetIntDefault("LogLevel", "Screen", 1));
-	QueryLog = Config.MainConfig.GetBoolDefault("LogLevel", "Query", false);
+	sLog.Init(mainIni->ReadInteger("LogLevel", "Screen", 1));
+	QueryLog = mainIni->ReadBoolean("LogLevel", "Query", false);
 
 	// Script configs
-	LuaScriptPath = Config.MainConfig.GetStringDefault("Script", "LuaScriptsLocation", "scripts");
-	GameMonkeyScriptPath = Config.MainConfig.GetStringDefault("Script", "GameMonkeyScriptsLocation", "scripts");
+	LuaScriptPath = mainIni->ReadString("Script", "LuaScriptsLocation", "scripts");
+	GameMonkeyScriptPath = mainIni->ReadString("Script", "GameMonkeyScriptsLocation", "scripts");
 
 	// Data configs
-	DBCPath = Config.MainConfig.GetStringDefault("Data", "DBCPath", "dbc");
-	MapPath = Config.MainConfig.GetStringDefault("Data", "MapPath", "maps");
-	vMapPath = Config.MainConfig.GetStringDefault("Data", "vMapPath", "vmaps");
-	MMapPath = Config.MainConfig.GetStringDefault("Data", "MMapPath", "mmaps");
+	DBCPath = mainIni->ReadString("Data", "DBCPath", "dbc");
+	MapPath = mainIni->ReadString("Data", "MapPath", "maps");
+	vMapPath = mainIni->ReadString("Data", "vMapPath", "vmaps");
+	MMapPath = mainIni->ReadString("Data", "MMapPath", "mmaps");
 
 	// Server Configs
-	StartGold = Config.OptionalConfig.GetIntDefault("Server", "StartGold", 1);
-	StartLevel = Config.OptionalConfig.GetIntDefault("Server", "StartLevel", 1);
-	MaxLevelCalc = Config.OptionalConfig.GetIntDefault("Server", "MaxLevelCalc", MAXIMUM_ATTAINABLE_LEVEL);
-	m_useAccountData = Config.OptionalConfig.GetBoolDefault("Server", "UseAccountData", false);
-	SetMotd(Config.OptionalConfig.GetStringDefault("Server", "Motd", "Hearthstone Default MOTD").c_str());
-	cross_faction_world = Config.OptionalConfig.GetBoolDefault("Server", "CrossFactionInteraction", false);
-	Collision = Config.OptionalConfig.GetBoolDefault("Server", "Collision", false);
-	PathFinding = Config.OptionalConfig.GetBoolDefault("Server", "Pathfinding", false);
-	SendMovieOnJoin = Config.OptionalConfig.GetBoolDefault("Server", "SendMovieOnJoin", true);
-	m_blockgmachievements = Config.OptionalConfig.GetBoolDefault("Server", "DisableAchievementsForGM", true);
-	channelmgr.seperatechannels = Config.OptionalConfig.GetBoolDefault("Server", "SeperateChatChannels", true);
-	gm_force_robes = Config.OptionalConfig.GetBoolDefault("Server", "ForceRobesForGM", false);
-	CalculatedHeightChecks = Config.OptionalConfig.GetBoolDefault("Server", "CHeightChecks", false);
-	trade_world_chat = Config.OptionalConfig.GetBoolDefault("Server", "TradeWorldChat", false);
-	SetPlayerLimit(Config.OptionalConfig.GetIntDefault("Server", "PlayerLimit", 1000));
-	FunServerMall = Config.OptionalConfig.GetIntDefault("Server", "MallAreaID", -1);
-	LogoutDelay = Config.OptionalConfig.GetIntDefault("Server", "Logout_Delay", 20);
-	EnableFatigue = Config.OptionalConfig.GetBoolDefault("Server", "EnableFatigue", true);
-	ServerPreloading = Config.MainConfig.GetBoolDefault("Startup", "Preloading", false);
+	StartGold = mainIni->ReadInteger("ServerSettings", "StartGold", 1);
+	StartLevel = mainIni->ReadInteger("ServerSettings", "StartLevel", 1);
+	MaxLevelCalc = mainIni->ReadInteger("ServerSettings", "MaxLevelCalc", MAXIMUM_ATTAINABLE_LEVEL);
+	m_useAccountData = mainIni->ReadBoolean("ServerSettings", "UseAccountData", false);
+	SetMotd(mainIni->ReadString("ServerSettings", "Motd", "Hearthstone Default MOTD").c_str());
+	cross_faction_world = mainIni->ReadBoolean("ServerSettings", "CrossFactionInteraction", false);
+	Collision = mainIni->ReadBoolean("ServerSettings", "Collision", false);
+	PathFinding = mainIni->ReadBoolean("ServerSettings", "Pathfinding", false);
+	SendMovieOnJoin = mainIni->ReadBoolean("ServerSettings", "SendMovieOnJoin", true);
+	m_blockgmachievements = mainIni->ReadBoolean("ServerSettings", "DisableAchievementsForGM", true);
+	channelmgr.seperatechannels = mainIni->ReadBoolean("ServerSettings", "SeperateChatChannels", true);
+	gm_force_robes = mainIni->ReadBoolean("ServerSettings", "ForceRobesForGM", false);
+	CalculatedHeightChecks = mainIni->ReadBoolean("ServerSettings", "CHeightChecks", false);
+	trade_world_chat = mainIni->ReadBoolean("ServerSettings", "TradeWorldChat", false);
+	SetPlayerLimit(mainIni->ReadInteger("ServerSettings", "PlayerLimit", 1000));
+	FunServerMall = mainIni->ReadInteger("ServerSettings", "MallAreaID", -1);
+	LogoutDelay = mainIni->ReadInteger("ServerSettings", "Logout_Delay", 20);
+	EnableFatigue = mainIni->ReadBoolean("ServerSettings", "EnableFatigue", true);
+	ServerPreloading = mainIni->ReadBoolean("Startup", "Preloading", false);
 	if(LogoutDelay <= 0)
 		LogoutDelay = 1;
 	ApplyHolidayConfigMaskOverride();
 
 	// Battlegrounds
 	// Wintergrasp
-	wg_enabled = Config.MainConfig.GetBoolDefault("Battlegrounds", "EnableWG", false);
+	wg_enabled = mainIni->ReadBoolean("Battlegrounds", "EnableWG", false);
 	ForceStart = ForceEnd = false;
 
 	// Alterac Valley
-	av_enabled = Config.MainConfig.GetBoolDefault("Battlegrounds", "EnableAV", true);
-	av_minplrs = Config.MainConfig.GetIntDefault("Battlegrounds", "AVMinPlayers", 20);
+	av_enabled = mainIni->ReadBoolean("Battlegrounds", "EnableAV", true);
+	av_minplrs = mainIni->ReadInteger("Battlegrounds", "AVMinPlayers", 20);
 
 	// Warsong Gulch
-	wsg_enabled = Config.MainConfig.GetBoolDefault("Battlegrounds", "EnableWSG", true);
-	wsg_minplrs = Config.MainConfig.GetIntDefault("Battlegrounds", "WSGMinPlayers", 5);
+	wsg_enabled = mainIni->ReadBoolean("Battlegrounds", "EnableWSG", true);
+	wsg_minplrs = mainIni->ReadInteger("Battlegrounds", "WSGMinPlayers", 5);
 
 	// Arathi Basin
-	ab_enabled = Config.MainConfig.GetBoolDefault("Battlegrounds", "EnableAB", true);
-	ab_minplrs = Config.MainConfig.GetIntDefault("Battlegrounds", "ABMinPlayers", 7);
+	ab_enabled = mainIni->ReadBoolean("Battlegrounds", "EnableAB", true);
+	ab_minplrs = mainIni->ReadInteger("Battlegrounds", "ABMinPlayers", 7);
 
 	// Eye of the Storm
-	eots_enabled = Config.MainConfig.GetBoolDefault("Battlegrounds", "EnableEOTS", true);
-	eots_minplrs = Config.MainConfig.GetIntDefault("Battlegrounds", "EOTSMinPlayers", 7);
+	eots_enabled = mainIni->ReadBoolean("Battlegrounds", "EnableEOTS", true);
+	eots_minplrs = mainIni->ReadInteger("Battlegrounds", "EOTSMinPlayers", 7);
 
 	// Strand of the Ancients
-	sota_enabled = Config.MainConfig.GetBoolDefault("Battlegrounds", "EnableSOTA", true);
-	sota_minplrs = Config.MainConfig.GetIntDefault("Battlegrounds", "SOTAMinPlayers", 15);
+	sota_enabled = mainIni->ReadBoolean("Battlegrounds", "EnableSOTA", true);
+	sota_minplrs = mainIni->ReadInteger("Battlegrounds", "SOTAMinPlayers", 15);
 
 	// Isle of Conquest
-	ioc_enabled = Config.MainConfig.GetBoolDefault("Battlegrounds", "EnableIOC", true);
-	ioc_minplrs = Config.MainConfig.GetIntDefault("Battlegrounds", "IOCMinPlayers", 15);
+	ioc_enabled = mainIni->ReadBoolean("Battlegrounds", "EnableIOC", true);
+	ioc_minplrs = mainIni->ReadInteger("Battlegrounds", "IOCMinPlayers", 15);
 
 	// load regeneration rates.
-	setRate(RATE_HEALTH,Config.OptionalConfig.GetFloatDefault("Rates", "Health",1));
-	setRate(RATE_POWER1,Config.OptionalConfig.GetFloatDefault("Rates", "Mana",1));
-	setRate(RATE_POWER2,Config.OptionalConfig.GetFloatDefault("Rates", "Rage",1));
-	setRate(RATE_POWER3,Config.OptionalConfig.GetFloatDefault("Rates", "Energy",1));
-	setRate(RATE_DROP0,Config.OptionalConfig.GetFloatDefault("Rates", "DropGrey",1));
-	setRate(RATE_DROP1,Config.OptionalConfig.GetFloatDefault("Rates", "DropWhite",1));
-	setRate(RATE_DROP2,Config.OptionalConfig.GetFloatDefault("Rates", "DropGreen",1));
-	setRate(RATE_DROP3,Config.OptionalConfig.GetFloatDefault("Rates", "DropBlue",1));
-	setRate(RATE_DROP4,Config.OptionalConfig.GetFloatDefault("Rates", "DropPurple",1));
-	setRate(RATE_DROP5,Config.OptionalConfig.GetFloatDefault("Rates", "DropOrange",1));
-	setRate(RATE_DROP6,Config.OptionalConfig.GetFloatDefault("Rates", "DropArtifact",1));
-	setRate(RATE_XP,Config.OptionalConfig.GetFloatDefault("Rates", "XP",1));
-	setRate(RATE_RESTXP,Config.OptionalConfig.GetFloatDefault("Rates", "RestXP", 1));
-	setRate(RATE_QUESTXP,Config.OptionalConfig.GetFloatDefault("Rates", "QuestXP", 1));
-	setRate(RATE_MONEY, Config.OptionalConfig.GetFloatDefault("Rates", "DropMoney", 1.0f));
-	setRate(RATE_QUEST_MONEY, Config.OptionalConfig.GetFloatDefault("Rates", "QuestMoney", 1.0f));
-	setRate(RATE_QUESTREPUTATION, Config.OptionalConfig.GetFloatDefault("Rates", "QuestReputation", 1.0f));
-	setRate(RATE_KILLREPUTATION, Config.OptionalConfig.GetFloatDefault("Rates", "KillReputation", 1.0f));
-	setRate(RATE_HONOR, Config.OptionalConfig.GetFloatDefault("Rates", "Honor", 1.0f));
-	setRate(RATE_SKILLCHANCE, Config.OptionalConfig.GetFloatDefault("Rates", "SkillChance", 1.0f));
-	setRate(RATE_SKILLRATE, Config.OptionalConfig.GetFloatDefault("Rates", "SkillRate", 1.0f));
-	setRate(RATE_ARENAPOINTMULTIPLIER2X, Config.OptionalConfig.GetFloatDefault("Rates", "ArenaMultiplier2x", 1.0f));
-	setRate(RATE_ARENAPOINTMULTIPLIER3X, Config.OptionalConfig.GetFloatDefault("Rates", "ArenaMultiplier3x", 1.0f));
-	setRate(RATE_ARENAPOINTMULTIPLIER5X, Config.OptionalConfig.GetFloatDefault("Rates", "ArenaMultiplier5x", 1.0f));
-	setRate(RATE_EOTS_CAPTURERATE, Config.OptionalConfig.GetFloatDefault("Rates", "EOTSCaptureRate", 1.0f));
+	setRate(RATE_XP, mainIni->ReadFloat("Rates", "XP", 1.0f));
+	setRate(RATE_QUESTXP, mainIni->ReadFloat("Rates", "QuestXP", 1.0f));
+	setRate(RATE_RESTXP, mainIni->ReadFloat("Rates", "RestXP", 1.0f));
+	setRate(RATE_DROP0, mainIni->ReadFloat("Rates", "DropGrey", 1.0f));
+	setRate(RATE_DROP1, mainIni->ReadFloat("Rates", "DropWhite", 1.0f));
+	setRate(RATE_DROP2, mainIni->ReadFloat("Rates", "DropGreen", 1.0f));
+	setRate(RATE_DROP3, mainIni->ReadFloat("Rates", "DropBlue", 1.0f));
+	setRate(RATE_DROP4, mainIni->ReadFloat("Rates", "DropPurple", 1.0f));
+	setRate(RATE_DROP5, mainIni->ReadFloat("Rates", "DropOrange", 1.0f));
+	setRate(RATE_DROP6, mainIni->ReadFloat("Rates", "DropArtifact", 1.0f));
+	setRate(RATE_MONEY, mainIni->ReadFloat("Rates", "DropMoney", 1.0f));
+	setRate(RATE_QUESTMONEY, mainIni->ReadFloat("Rates", "QuestMoney", 1.0f));
+	setRate(RATE_HONOR, mainIni->ReadFloat("Rates", "Honor", 1.0f));
+	setRate(RATE_SKILLRATE, mainIni->ReadFloat("Rates", "SkillRate", 1.0f));
+	setRate(RATE_SKILLCHANCE, mainIni->ReadFloat("Rates", "SkillChance", 1.0f));
+	setRate(RATE_QUESTREPUTATION, mainIni->ReadFloat("Rates", "QuestReputation", 1.0f));
+	setRate(RATE_KILLREPUTATION, mainIni->ReadFloat("Rates", "KillReputation", 1.0f));
 
-#ifdef WIN32
-	DWORD current_priority_class = GetPriorityClass( GetCurrentProcess() );
-	bool high = Config.OptionalConfig.GetBoolDefault( "Server", "AdjustPriority", false );
-
-	if( high )
-	{
-		if( current_priority_class != HIGH_PRIORITY_CLASS )
-			SetPriorityClass( GetCurrentProcess(), HIGH_PRIORITY_CLASS );
-	}
-	else
-	{
-		if( current_priority_class != NORMAL_PRIORITY_CLASS )
-			SetPriorityClass( GetCurrentProcess(), NORMAL_PRIORITY_CLASS );
-	}
-#endif
-
-	if(!Config.MainConfig.GetString("GMClient", "GmClientChannel", &GmClientChannel))
-	{
-		GmClientChannel = "";
-	}
-
-	m_reqGmForCommands = !Config.OptionalConfig.GetBoolDefault("Server", "AllowPlayerCommands", false);
+	GmClientChannel = mainIni->ReadString("GMClient", "GmClientChannel", "");
+	m_reqGmForCommands = !mainIni->ReadBoolean("ServerSettings", "AllowPlayerCommands", false);
 
 	uint32 config_flags = 0;
-	if(Config.MainConfig.GetBoolDefault("Mail", "DisablePostageCostsForGM", true))
+	if(mainIni->ReadBoolean("Mail", "DisablePostageCostsForGM", true))
 		config_flags |= MAIL_FLAG_NO_COST_FOR_GM;
 
-	if(Config.MainConfig.GetBoolDefault("Mail", "DisablePostageCosts", false))
+	if(mainIni->ReadBoolean("Mail", "DisablePostageCosts", false))
 		config_flags |= MAIL_FLAG_DISABLE_POSTAGE_COSTS;
 
-	if(Config.MainConfig.GetBoolDefault("Mail", "DisablePostageDelayItems", true))
+	if(mainIni->ReadBoolean("Mail", "DisablePostageDelayItems", true))
 		config_flags |= MAIL_FLAG_DISABLE_HOUR_DELAY_FOR_ITEMS;
 
-	if(Config.MainConfig.GetBoolDefault("Mail", "DisableMessageExpiry", false))
+	if(mainIni->ReadBoolean("Mail", "DisableMessageExpiry", false))
 		config_flags |= MAIL_FLAG_NO_EXPIRY;
 
-	if(Config.MainConfig.GetBoolDefault("Mail", "EnableInterfactionMail", true))
+	if(mainIni->ReadBoolean("Mail", "EnableInterfactionMail", true))
 		config_flags |= MAIL_FLAG_CAN_SEND_TO_OPPOSITE_FACTION;
 
-	if(Config.MainConfig.GetBoolDefault("Mail", "EnableInterfactionForGM", true))
+	if(mainIni->ReadBoolean("Mail", "EnableInterfactionForGM", true))
 		config_flags |= MAIL_FLAG_CAN_SEND_TO_OPPOSITE_FACTION_GM;
 
 	sMailSystem.SetConfigFlags(config_flags);
-	flood_lines = Config.OptionalConfig.GetIntDefault("FloodProtection", "Lines", 0);
-	flood_seconds = Config.OptionalConfig.GetIntDefault("FloodProtection", "Seconds", 0);
-	flood_message = Config.OptionalConfig.GetBoolDefault("FloodProtection", "SendMessage", false);
-	flood_message_time = Config.OptionalConfig.GetIntDefault("FloodProtection", "FloodMessageTime", 0);
-	flood_mute_after_flood = Config.OptionalConfig.GetIntDefault("FloodProtection", "MuteAfterFlood", 0);
-	flood_caps_min_len = Config.OptionalConfig.GetIntDefault("FloodProtection", "CapsMinLen", 0);
-	flood_caps_pct = Config.OptionalConfig.GetFloatDefault("FloodProtection", "CapsPct", 0.0f);
+	flood_lines = mainIni->ReadInteger("FloodProtection", "Lines", 0);
+	flood_seconds = mainIni->ReadInteger("FloodProtection", "Seconds", 0);
+	flood_message = mainIni->ReadBoolean("FloodProtection", "SendMessage", false);
+	flood_message_time = mainIni->ReadInteger("FloodProtection", "FloodMessageTime", 0);
+	flood_mute_after_flood = mainIni->ReadInteger("FloodProtection", "MuteAfterFlood", 0);
+	flood_caps_min_len = mainIni->ReadInteger("FloodProtection", "CapsMinLen", 0);
+	flood_caps_pct = mainIni->ReadFloat("FloodProtection", "CapsPct", 0.0f);
 
 	if(!flood_lines || !flood_seconds)
 		flood_lines = flood_seconds = 0;
 
-	antihack_teleport = Config.MainConfig.GetBoolDefault("AntiHack", "Teleport", true);
-	antihack_speed = Config.MainConfig.GetBoolDefault("AntiHack", "Speed", true);
-	antihack_flight = Config.MainConfig.GetBoolDefault("AntiHack", "Flight", true);
-	no_antihack_on_gm = Config.MainConfig.GetBoolDefault("AntiHack", "DisableOnGM", false);
+	antihack_teleport = mainIni->ReadBoolean("AntiHack", "Teleport", true);
+	antihack_speed = mainIni->ReadBoolean("AntiHack", "Speed", true);
+	antihack_flight = mainIni->ReadBoolean("AntiHack", "Flight", true);
+	no_antihack_on_gm = mainIni->ReadBoolean("AntiHack", "DisableOnGM", false);
 	SpeedhackProtection = antihack_speed;
 
 	// ======================================
-	m_movementCompressInterval = Config.MainConfig.GetIntDefault("Movement", "FlushInterval", 1000);
-	m_movementCompressRate = Config.MainConfig.GetIntDefault("Movement", "CompressRate", 1);
+	m_movementCompressInterval = mainIni->ReadInteger("Movement", "FlushInterval", 1000);
+	m_movementCompressRate = mainIni->ReadInteger("Movement", "CompressRate", 1);
 
-	m_movementCompressThresholdCreatures = Config.MainConfig.GetFloatDefault("Movement", "CompressThresholdCreatures", 15.0f);
+	m_movementCompressThresholdCreatures = mainIni->ReadFloat("Movement", "CompressThresholdCreatures", 15.0f);
 	m_movementCompressThresholdCreatures *= m_movementCompressThresholdCreatures;
 
-	m_movementCompressThreshold = Config.MainConfig.GetFloatDefault("Movement", "CompressThreshold", 25.0f);
+	m_movementCompressThreshold = mainIni->ReadFloat("Movement", "CompressThreshold", 25.0f);
 	m_movementCompressThreshold *= m_movementCompressThreshold;		// square it to avoid sqrt() on checks
 
-	m_speedHackThreshold = Config.MainConfig.GetFloatDefault("AntiHack", "SpeedThreshold", -500.0f);
-	m_speedHackLatencyMultiplier = Config.MainConfig.GetFloatDefault("AntiHack", "SpeedLatencyCompensation", 0.25f);
-	m_speedHackResetInterval = Config.MainConfig.GetIntDefault("AntiHack", "SpeedResetPeriod", 5000);
-	antihack_cheatengine = Config.MainConfig.GetBoolDefault("AntiHack", "CheatEngine", false);
-	m_CEThreshold = Config.MainConfig.GetIntDefault("AntiHack", "CheatEngineTimeDiff", 10000);
+	m_speedHackThreshold = mainIni->ReadFloat("AntiHack", "SpeedThreshold", -500.0f);
+	m_speedHackLatencyMultiplier = mainIni->ReadFloat("AntiHack", "SpeedLatencyCompensation", 0.25f);
+	m_speedHackResetInterval = mainIni->ReadInteger("AntiHack", "SpeedResetPeriod", 5000);
+	antihack_cheatengine = mainIni->ReadBoolean("AntiHack", "CheatEngine", false);
+	m_CEThreshold = mainIni->ReadInteger("AntiHack", "CheatEngineTimeDiff", 10000);
 	// ======================================
 
-	m_deathKnightOnePerAccount = Config.OptionalConfig.GetBoolDefault("DeathKnight", "OnePerRealm", true);
-	m_deathKnightReqLevel = Config.OptionalConfig.GetIntDefault("DeathKnight", "RequiredLevel", 55);
+	m_deathKnightOnePerAccount = mainIni->ReadBoolean("DeathKnight", "OnePerRealm", true);
+	m_deathKnightReqLevel = mainIni->ReadInteger("DeathKnight", "RequiredLevel", 55);
 
-	NumericCommandGroups = Config.MainConfig.GetBoolDefault("Server", "NumericCommandGroups", false);
-	Start_With_All_Taximasks = Config.OptionalConfig.GetBoolDefault("Server", "StartWithAll_Taximasks", false);
+	NumericCommandGroups = mainIni->ReadBoolean("ServerSettings", "NumericCommandGroups", false);
+	Start_With_All_Taximasks = mainIni->ReadBoolean("ServerSettings", "StartWithAll_Taximasks", false);
 
 	// LevelCaps
-	LevelCap_Custom_All = Config.OptionalConfig.GetIntDefault("Server", "LevelCap_Custom_All", 80);
+	LevelCap_Custom_All = mainIni->ReadInteger("ServerSettings", "LevelCap_Custom_All", 80);
 	if(LevelCap_Custom_All < 1)
 		LevelCap_Custom_All = 80;
 
@@ -2263,10 +2227,10 @@ void World::BackupDB()
 	time_t t;
 	int i;
 
-	user = Config.MainConfig.GetStringDefault("CharacterDatabase", "Username", "");
-	pass = Config.MainConfig.GetStringDefault("CharacterDatabase", "Password", "");
-	host = Config.MainConfig.GetStringDefault("CharacterDatabase", "Hostname", "");
-	name = Config.MainConfig.GetStringDefault("CharacterDatabase", "Name", "");
+	user = mainIni->ReadString("CharacterDatabase", "Username", "");
+	pass = mainIni->ReadString("CharacterDatabase", "Password", "");
+	host = mainIni->ReadString("CharacterDatabase", "Hostname", "");
+	name = mainIni->ReadString("CharacterDatabase", "Name", "");
 	t = time(NULL);
 	localtime_r(&t, &tm);
 	strftime(datestr, 256, "%Y.%m.%d", &tm);

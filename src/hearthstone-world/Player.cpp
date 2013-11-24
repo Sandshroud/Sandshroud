@@ -5994,7 +5994,7 @@ void Player::UpdateStats()
 	if(modRegen > 100)
 		modRegen = 100;
 
-	float ManaIncreaseRate = sWorld.getRate(RATE_POWER1);
+	float ManaIncreaseRate = 1.0f;
 	if (lvl < 15)
 		ManaIncreaseRate *= (2.066f - (lvl * 0.066f));
 
@@ -8180,10 +8180,7 @@ void Player::PlayerRegeneratePower(bool is_interrupted)
 			{
 				if (!CombatStatus.IsInCombat() && !is_interrupted)
 				{
-					float WorldRate = sWorld.getRate(RATE_POWER2);
 					addvalue += -20/0.05f;	// 2 rage by tick (= 2 seconds => 1 rage/sec)
-					if(WorldRate)
-						addvalue /= WorldRate;
 					if(m_regenTimer)
 						addvalue /= m_regenTimer;
 				}
@@ -8191,7 +8188,7 @@ void Player::PlayerRegeneratePower(bool is_interrupted)
 
 		case POWER_ENERGY:
 			{
-				addvalue += 0.01f * m_regenTimer * sWorld.getRate(RATE_POWER3);
+				addvalue += 0.01f * m_regenTimer;
 			}break;
 
 		case POWER_RUNIC_POWER:
@@ -8277,7 +8274,7 @@ void Player::RegenerateHealth( bool inCombat )
 	// This has some bad naming. HPRegen* is actually out of combat base, while HPRegenBase* is mana per spirit.
 	float basespirit = ((Spirit > 50) ? 50 : Spirit);
 	float basespiritdiff = Spirit - basespirit;
-	float amt = ((basespirit *HPRegen->val) + (basespiritdiff*HPRegenBase->val))*sWorld.getRate(RATE_HEALTH);//Apply shit from conf file
+	float amt = ((basespirit *HPRegen->val) + (basespiritdiff*HPRegenBase->val));
 
 	if(PctRegenModifier)
 		amt += (amt * PctRegenModifier) / 100;

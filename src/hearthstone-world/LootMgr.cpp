@@ -337,7 +337,7 @@ void LootMgr::LoadLootTables(const char * szTableName, LootStore * LootTable, bo
 				if(!proto)
 				{
 					list->items[ind].item.itemproto = NULL;
-					if(Config.OptionalConfig.GetBoolDefault("Server", "CleanDatabase", false))
+					if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 						WorldDatabase.Query("DELETE FROM %s where entryid ='%u' AND itemid = '%u'", szTableName, entry_id, itemid);
 					Log.Warning("LootMgr", "Loot for %u contains non-existant item(%u). (%s)", entry_id, itemid, szTableName);
 				}

@@ -109,28 +109,28 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
 		if(!cn->MinHealth)
 		{
 			cn->MinHealth = 1;
-			if(Config.OptionalConfig.GetBoolDefault("Server", "CleanDatabase", false))
+			if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 				WorldDatabase.Execute("UPDATE creature_proto SET minhealth = 1 WHERE entry = '%u'", cn->MinHealth, cn->Id);
 		}
 
 		if(!cn->MaxHealth)
 		{
 			cn->MaxHealth = 1;
-			if(Config.OptionalConfig.GetBoolDefault("Server", "CleanDatabase", false))
+			if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 				WorldDatabase.Execute("UPDATE creature_proto SET maxhealth = 1 WHERE entry = '%u'", cn->MinHealth, cn->Id);
 		}
 
 		if(cn->MaxHealth < cn->MinHealth)
 		{
 			cn->MaxHealth = cn->MinHealth;
-			if(Config.OptionalConfig.GetBoolDefault("Server", "CleanDatabase", false))
+			if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 				WorldDatabase.Execute("UPDATE creature_proto SET maxhealth = '%u' WHERE entry = '%u'", cn->MinHealth, cn->Id);
 		}
 
 		if(cn->MaxPower < cn->MinPower)
 		{
 			cn->MaxPower = cn->MinPower;
-			if(Config.OptionalConfig.GetBoolDefault("Server", "CleanDatabase", false))
+			if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 				WorldDatabase.Execute("UPDATE creature_proto SET maxpower = '%u' WHERE entry = '%u'", cn->MinPower, cn->Id);
 		}
 
@@ -178,7 +178,7 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
 			SpellEntry* spe = dbcSpell.LookupEntryForced(spellID);
 			if( spe == NULL )
 			{
-				if(Config.OptionalConfig.GetBoolDefault("Server", "CleanDatabase", false))
+				if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 					WorldDatabase.Execute("DELETE FROM ai_agents where entry = '%u' AND spell = '%u'", entry, spellID);
 				Log.Warning("AIAgent", "Agent skipped, NPC %u tried to add non-existing Spell %u.", entry, spellID);
 				continue;
@@ -327,7 +327,7 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
 				{
 					Log.Warning("ObjectStorage","Incorrect instance mode %u for creature %u, instance mode 3 max.", mode, entry);
 
-					if(Config.OptionalConfig.GetBoolDefault("Server", "CleanDatabase", false))
+					if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 						WorldDatabase.Execute("DELETE FROM creature_proto_mode WHERE entry = %u AND mode = %u;", entry, mode);
 
 					continue;
@@ -956,7 +956,7 @@ void Storage_LoadAdditionalTables()
 	ExtraMapCreatureTables.insert(string("creature_spawns"));
 	ExtraMapGameObjectTables.insert(string("gameobject_spawns"));
 
-	string strData = Config.MainConfig.GetStringDefault("Startup", "LoadAdditionalTables", "");
+    string strData = mainIni->ReadString("Startup", "LoadAdditionalTables", "");
 	if(strData.empty())
 		return;
 

@@ -14,8 +14,8 @@ typedef struct
 LogonCommClientSocket::LogonCommClientSocket(SOCKET fd, const sockaddr_in * peer) : TcpSocket(fd, 524288, 65536, false, peer)
 {
 	// do nothing
-	last_ping = last_pong = uint32(time(NULL));
 	remaining = opcode = 0;
+	last_ping = getMSTime();
 	_id = 0;
 	latency = 0;
 	use_crypto = false;
@@ -77,8 +77,9 @@ void LogonCommClientSocket::HandlePacket(WorldPacket & recvData)
 		&LogonCommClientSocket::HandleRegister,				// RSMSG_REALM_REGISTERED
 		NULL,												// RCMSG_REQUEST_SESSION
 		&LogonCommClientSocket::HandleSessionInfo,			// RSMSG_SESSION_RESULT
-		NULL,												// RCMSG_PING
-		&LogonCommClientSocket::HandlePong,					// RSMSG_PONG
+		&LogonCommClientSocket::HandlePing,					// RCMSG_PING
+		NULL,												// RSMSG_PONG
+		&LogonCommClientSocket::HandleLatency,				// RSMSG_LATENCY
 		NULL,												// RCMSG_SQL_EXECUTE
 		NULL,												// RCMSG_RELOAD_ACCOUNTS
 		NULL,												// RCMSG_AUTH_CHALLENGE
@@ -111,7 +112,7 @@ void LogonCommClientSocket::HandleRegister(WorldPacket & recvData)
 	uint32 realmlid;
 	string realmname;
 	recvData >> error >> realmlid >> realmname;
-	if(error || realmlid == 0) // Adress already used, or realm is active on our slot/name
+	if(error || realmlid == 0) // Address already used, or realm is active on our slot/name
 	{
 		// FUUUUU
 		return;
@@ -138,23 +139,17 @@ void LogonCommClientSocket::HandleSessionInfo(WorldPacket & recvData)
 	sock->InformationRetreiveCallback(recvData, request_id);
 }
 
-void LogonCommClientSocket::HandlePong(WorldPacket & recvData)
+void LogonCommClientSocket::HandlePing(WorldPacket & recvData)
 {
-	uint32 MSTime;
-	recvData >> MSTime;
-	latency = getMSTime()-MSTime;
-
-	last_pong = uint32(time(NULL));
+	last_ping = getMSTime();
+	WorldPacket pong(RSMSG_PONG, 4);
+	pong << uint32(15);
+	SendPacket(&pong);
 }
 
-void LogonCommClientSocket::SendPing(uint32 diff)
+void LogonCommClientSocket::HandleLatency(WorldPacket & recvData)
 {
-	uint32 MSTime = getMSTime();
-	WorldPacket data(RCMSG_PING, 4);
-	data << MSTime-diff;
-	SendPacket(&data);
-
-	last_ping = uint32(time(NULL));
+	recvData >> latency;
 }
 
 void LogonCommClientSocket::SendPacket(WorldPacket * data, bool no_crypto)
