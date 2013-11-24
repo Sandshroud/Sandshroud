@@ -211,11 +211,7 @@ public:
 	HEARTHSTONE_INLINE Mutex & getServerSocketLock() { return serverSocketLock; }
 	HEARTHSTONE_INLINE Mutex & getRealmLock() { return realmLock; }
 
-	InformationCore()
-	{ 
-		realmhigh = 0;
-		usepings  = !Config.MainConfig.GetBoolDefault("LogonServer", "DisablePings", false);
-	}
+	InformationCore();
 
 	// Packets
 	void		  SendRealms(AuthSocket * Socket);

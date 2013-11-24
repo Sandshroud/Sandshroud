@@ -393,6 +393,11 @@ void IPBanner::Reload()
 	listBusy.Release();
 }
 
+InformationCore::InformationCore() : realmhigh(0)
+{
+    usepings = mainIni->ReadBoolean("LogonServer", "DisablePings", false);
+}
+
 Realm * InformationCore::AddRealm(uint32 realm_id, Realm * rlm)
 {
 	realmLock.Acquire();
