@@ -16,12 +16,12 @@ bool QThread::run()
 	{
 		if(!SetThreadState(THREADSTATE_BUSY))
 			break;
-		start = now();
+		start = getMSTime();
 		OrdinanceLock.Acquire();
 		for(set<QueryThread*>::iterator itr = m_Ordinances.begin(); itr != m_Ordinances.end(); itr++)
 			(*itr)->Update();
 		OrdinanceLock.Release();
-		curr = now();
+		curr = getMSTime();
 		if(!SetThreadState(THREADSTATE_SLEEPING))
 			break;
 		diff = curr-start;
@@ -52,12 +52,12 @@ bool DBThread::run()
 	{
 		if(!SetThreadState(THREADSTATE_BUSY))
 			break;
-		start = now();
+		start = getMSTime();
 		OrdinanceLock.Acquire();
 		for(set<Database*>::iterator itr = m_Ordinances.begin(); itr != m_Ordinances.end(); itr++)
 			(*itr)->Update();
 		OrdinanceLock.Release();
-		curr = now();
+		curr = getMSTime();
 		if(!SetThreadState(THREADSTATE_SLEEPING))
 			break;
 		diff = curr-start;

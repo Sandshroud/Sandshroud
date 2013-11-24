@@ -1037,26 +1037,35 @@ float World::GetCPUUsage(bool external)
 	a /= double(number_of_cpus);
 	return float(a * 100.0);
 #else
-
-	return 0.0f;
-
+    return 0.0f;
 #endif
 }
 
 float World::GetRAMUsage(bool external)
 {
+    float RAMUsage = 0.0f;
 #ifdef WIN32
 	PROCESS_MEMORY_COUNTERS pmc;
 	GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
-	float ram = (float)pmc.PagefileUsage;
-	ram /= 1024.0f;
-	ram /= 1024.0f;
-	return ram;
+	RAMUsage = (float)pmc.PagefileUsage;
+	RAMUsage /= 1024.0f;
+	RAMUsage /= 1024.0f;
 #else
-
-	return 0.0f;
-
+#ifdef UNTESTED_CODE
+    FILE* file = fopen("/proc/self/status", "r");
+    char line[128];
+    while (fgets(line, 128, file) != NULL)
+    {
+        if (strncmp(line, "VmSize:", 7) == 0)
+        {
+            RAMUsage = parseLine(line);
+            break;
+        }
+    }
+    fclose(file);
 #endif
+#endif
+	return RAMUsage;
 }
 
 WorldSession* World::FindSessionByName(const char * Name)//case insensetive
@@ -1497,11 +1506,10 @@ InsertQueueLoader::~InsertQueueLoader()
 
 void InsertQueueLoader::Update(uint32 timeDiff)
 {
-	if(m_UpdateTimer > timeDiff)
-		m_UpdateTimer -= timeDiff;
-	else
+	m_UpdateTimer += timeDiff;
+	if(m_UpdateTimer > 60000)
 	{
-		uint32 start = now();
+		m_UpdateTimer -= 60000;
 
 		// Get a single connection to maintain for the whole process.
 		DatabaseConnection * con = CharacterDatabase.GetFreeConnection();
@@ -1514,8 +1522,6 @@ void InsertQueueLoader::Update(uint32 timeDiff)
 
 		//release the lock obtained in GetFreeConnection
 		con->Busy.Release();
-
-		m_UpdateTimer = 60000-(now()-start);
 	}
 }
 

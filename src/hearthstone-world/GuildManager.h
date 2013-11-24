@@ -35,31 +35,26 @@ struct GuildRankTabPermissions
 	int32 iStacksPerDay;
 };
 
-struct GRank
+struct GuildRank
 {
+	GuildRank(uint32 RankId, uint32 RankRights, const char* RankName, bool FullPermissions)
+	{
+		iId = RankId;
+		iRights = RankRights;
+		szRankName = RankName;
+		iGoldLimitPerDay = FullPermissions ? -1 : 0;
+		for(uint32 j = 0; j < MAX_GUILD_BANK_TABS; ++j)
+		{
+			iTabPermissions[j].iFlags = FullPermissions ? GR_RIGHT_GUILD_BANK_ALL : 0;
+			iTabPermissions[j].iStacksPerDay = FullPermissions ? -1 : 0;
+		}
+	}
+
 	uint32 iId;
 	uint32 iRights;
 	string szRankName;
 	int32 iGoldLimitPerDay;
 	GuildRankTabPermissions iTabPermissions[MAX_GUILD_BANK_TABS];
-};
-
-struct GuildRank
-{
-	GuildRank(uint32 RankId, uint32 RankRights, const char* RankName, bool FullPermissions)
-	{
-		Rank.iId = RankId;
-		Rank.iRights = RankRights;
-		Rank.szRankName = RankName;
-		Rank.iGoldLimitPerDay = FullPermissions ? -1 : 0;
-		for(uint32 j = 0; j < MAX_GUILD_BANK_TABS; ++j)
-		{
-			Rank.iTabPermissions[j].iFlags = FullPermissions ? GR_RIGHT_GUILD_BANK_ALL : 0;
-			Rank.iTabPermissions[j].iStacksPerDay = FullPermissions ? -1 : 0;
-		}
-	}
-
-	GRank Rank;
 };
 
 struct GuildRankStorage
@@ -227,7 +222,7 @@ private:
 	// By player guid.
 	GuildMemberMap m_GuildMembers;
 
-	uint32 updateTimer;
+	uint32 m_updateTimer;
 public:
 	GuildMgr();
 	~GuildMgr();

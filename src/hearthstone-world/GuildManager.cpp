@@ -17,7 +17,7 @@ initialiseSingleton( GuildMgr );
 GuildMgr::GuildMgr()
 {
 	m_hiGuildId = 0;
-	updateTimer = 0;
+	m_updateTimer = 0;
 	m_GuildsLoading = true;
 
 	QueryResult *result = CharacterDatabase.Query("SELECT MAX(guildId) FROM guilds");
@@ -106,13 +106,11 @@ GuildMgr::~GuildMgr()
 
 void GuildMgr::Update(uint32 p_time)
 {
-	if(updateTimer > p_time)
-		updateTimer -= p_time;
-	else
+	m_updateTimer += p_time;
+	if(m_updateTimer > 10000)
 	{
-		uint32 start = now();
+		m_updateTimer -= 10000;
 		SaveAllGuilds();
-		updateTimer = 10000-(now()-start);
 	}
 }
 
@@ -215,11 +213,11 @@ void GuildMgr::LoadAllGuilds()
 				continue;
 
 			GuildRank* r = new GuildRank(f[1].GetUInt32(), f[3].GetUInt32(), string(strlen(temp = f[2].GetString()) ? strdup(temp) : "").c_str(), false);
-			r->Rank.iGoldLimitPerDay = f[4].GetInt32();
+			r->iGoldLimitPerDay = f[4].GetInt32();
 			for(uint32 j = 0; j < MAX_GUILD_BANK_TABS; ++j)
 			{
-				r->Rank.iTabPermissions[j].iFlags = f[5 + (j * 2)].GetUInt32();
-				r->Rank.iTabPermissions[j].iStacksPerDay = f[6 + (j * 2)].GetInt32();
+				r->iTabPermissions[j].iFlags = f[5 + (j * 2)].GetUInt32();
+				r->iTabPermissions[j].iStacksPerDay = f[6 + (j * 2)].GetInt32();
 			}
 
 			m_RankLocks.Acquire();
@@ -232,14 +230,14 @@ void GuildMgr::LoadAllGuilds()
 			}
 			else { m_RankLocks.Release(); storage = m_GuildRanks[GuildId]; }
 
-			if(r->Rank.iId != storage->ssid)
+			if(r->iId != storage->ssid)
 			{
-				Log.Notice("GuildMgr", "Renaming rank %u of guild %s to %u.", r->Rank.iId, gInfo->m_guildName.c_str(), storage->ssid);
-				r->Rank.iId = storage->ssid;
+				Log.Notice("GuildMgr", "Renaming rank %u of guild %s to %u.", r->iId, gInfo->m_guildName.c_str(), storage->ssid);
+				r->iId = storage->ssid;
 			}
 			storage->ssid++;
 
-			storage->m_ranks[r->Rank.iId] = r;
+			storage->m_ranks[r->iId] = r;
 			gInfo = NULL;
 		}
 		while(result->NextRow());
@@ -672,10 +670,10 @@ void GuildMgr::SaveGuild(QueryBuffer* qb, GuildInfo* guildInfo)
 					first = false;
 				else
 					GuildRanks << ", ";
-				GuildRanks << "('" << GuildId << "', '" << RankStorage->m_ranks[i]->Rank.iId << "', '" << CharacterDatabase.EscapeString(RankStorage->m_ranks[i]->Rank.szRankName).c_str();
-				GuildRanks << "', '" << RankStorage->m_ranks[i]->Rank.iRights << "', '" << RankStorage->m_ranks[i]->Rank.iGoldLimitPerDay << "'";
+				GuildRanks << "('" << GuildId << "', '" << RankStorage->m_ranks[i]->iId << "', '" << CharacterDatabase.EscapeString(RankStorage->m_ranks[i]->szRankName).c_str();
+				GuildRanks << "', '" << RankStorage->m_ranks[i]->iRights << "', '" << RankStorage->m_ranks[i]->iGoldLimitPerDay << "'";
 				for(uint32 j = 0; j < MAX_GUILD_BANK_TABS; j++)
-					GuildRanks << ", '" << RankStorage->m_ranks[i]->Rank.iTabPermissions[j].iFlags << "', '" << RankStorage->m_ranks[i]->Rank.iTabPermissions[j].iStacksPerDay << "'";
+					GuildRanks << ", '" << RankStorage->m_ranks[i]->iTabPermissions[j].iFlags << "', '" << RankStorage->m_ranks[i]->iTabPermissions[j].iStacksPerDay << "'";
 				GuildRanks << ")";
 				count++;
 			}
@@ -732,7 +730,7 @@ void GuildMgr::SaveGuild(QueryBuffer* qb, GuildInfo* guildInfo)
 				first = false;
 			else
 				guildData2 << ", ";
-			guildData2 << "('" << GuildId << "', '" << itr->first << "', '" << itr->second->pRank->Rank.iId << "', '" << CharacterDatabase.EscapeString(itr->second->szPublicNote).c_str();
+			guildData2 << "('" << GuildId << "', '" << itr->first << "', '" << itr->second->pRank->iId << "', '" << CharacterDatabase.EscapeString(itr->second->szPublicNote).c_str();
 			guildData2 << "', '" << CharacterDatabase.EscapeString(itr->second->szOfficerNote).c_str() << "', '" << itr->second->uLastWithdrawReset << "', '" << itr->second->uWithdrawlsSinceLastReset << "'";
 			for(uint32 j = 0; j < MAX_GUILD_BANK_TABS; j++)
 				guildData2 << ", '" << itr->second->uLastItemWithdrawReset[j] << "', '" << itr->second->uItemWithdrawlsSinceLastReset[j] << "'";
@@ -1214,34 +1212,34 @@ GuildRankStorage* GuildMgr::ConstructRankStorage(uint32 GuildId)
 
 uint32 GuildMgr::CalculateAllowedItemWithdraws(GuildMember* gMember, uint32 tab)
 {
-	if(gMember->pRank->Rank.iTabPermissions[tab].iStacksPerDay == -1)		// Unlimited
+	if(gMember->pRank->iTabPermissions[tab].iStacksPerDay == -1)		// Unlimited
 		return 0xFFFFFFFF;
-	if(gMember->pRank->Rank.iTabPermissions[tab].iStacksPerDay == 0)		// none
+	if(gMember->pRank->iTabPermissions[tab].iStacksPerDay == 0)		// none
 		return 0;
 
 	if((UNIXTIME - gMember->uLastItemWithdrawReset[tab]) >= TIME_DAY)
-		return gMember->pRank->Rank.iTabPermissions[tab].iStacksPerDay;
+		return gMember->pRank->iTabPermissions[tab].iStacksPerDay;
 	else
-		return (gMember->pRank->Rank.iTabPermissions[tab].iStacksPerDay - gMember->uItemWithdrawlsSinceLastReset[tab]);
+		return (gMember->pRank->iTabPermissions[tab].iStacksPerDay - gMember->uItemWithdrawlsSinceLastReset[tab]);
 }
 
 uint32 GuildMgr::CalculateAvailableAmount(GuildMember* gMember)
 {
-	if(gMember->pRank->Rank.iGoldLimitPerDay == -1)		// Unlimited
+	if(gMember->pRank->iGoldLimitPerDay == -1)		// Unlimited
 		return 0xFFFFFFFF;
 
-	if(gMember->pRank->Rank.iGoldLimitPerDay == 0)
+	if(gMember->pRank->iGoldLimitPerDay == 0)
 		return 0;
 
 	if((UNIXTIME - gMember->uLastWithdrawReset) >= TIME_DAY)
-		return gMember->pRank->Rank.iGoldLimitPerDay;
+		return gMember->pRank->iGoldLimitPerDay;
 	else
-		return (gMember->pRank->Rank.iGoldLimitPerDay - gMember->uWithdrawlsSinceLastReset);
+		return (gMember->pRank->iGoldLimitPerDay - gMember->uWithdrawlsSinceLastReset);
 }
 
 void GuildMgr::OnMoneyWithdraw(GuildMember* gMember, uint32 amount)
 {
-	if(gMember->pRank->Rank.iGoldLimitPerDay <= 0)		// Unlimited
+	if(gMember->pRank->iGoldLimitPerDay <= 0)		// Unlimited
 		return;
 
 	// reset the counter if a day has passed
@@ -1252,7 +1250,7 @@ void GuildMgr::OnMoneyWithdraw(GuildMember* gMember, uint32 amount)
 
 void GuildMgr::OnItemWithdraw(GuildMember* gMember, uint32 tab)
 {
-	if(gMember->pRank->Rank.iTabPermissions[tab].iStacksPerDay <= 0)		// Unlimited
+	if(gMember->pRank->iTabPermissions[tab].iStacksPerDay <= 0)		// Unlimited
 		return;
 
 	// reset the counter if a day has passed
@@ -1282,7 +1280,7 @@ bool GuildMgr::HasGuildRights(Player* plr, uint32 Rights)
 	if(rank >= MAX_GUILD_RANKS)
 		return false;
 
-	if(storage->m_ranks[rank]->Rank.iRights & Rights)
+	if(storage->m_ranks[rank]->iRights & Rights)
 		return true;
 	return false;
 }
@@ -1301,7 +1299,7 @@ bool GuildMgr::HasGuildBankRights(Player* plr, uint8 tabId, uint32 Rights)
 	if(rank >= MAX_GUILD_RANKS)
 		return false;
 
-	if(storage->m_ranks[rank]->Rank.iTabPermissions[tabId].iFlags & Rights)
+	if(storage->m_ranks[rank]->iTabPermissions[tabId].iFlags & Rights)
 		return true;
 	return false;
 }
@@ -1335,7 +1333,7 @@ uint32 GuildMgr::RemoveGuildRank(uint32 GuildId)
 	GuildRankStorage* storage = GetGuildRankStorage(GuildId);
 	storage->RankLock.Acquire();
 	GuildRank* pLowestRank = FindLowestRank(storage);
-	if(pLowestRank == NULL || pLowestRank->Rank.iId < 5)		// cannot delete default ranks.
+	if(pLowestRank == NULL || pLowestRank->iId < 5)		// cannot delete default ranks.
 	{
 		storage->RankLock.Release();
 		return 1;
@@ -1362,7 +1360,7 @@ uint32 GuildMgr::RemoveGuildRank(uint32 GuildId)
 	gInfo->m_GuildLock.Acquire();
 	gInfo->m_GuildStatus = GUILD_STATUS_DIRTY;
 	storage->ssid--; // Decremention.
-	storage->m_ranks[pLowestRank->Rank.iId] = NULL;
+	storage->m_ranks[pLowestRank->iId] = NULL;
 	delete pLowestRank;
 	gInfo->m_GuildLock.Release();
 	storage->RankLock.Release();
@@ -1590,7 +1588,7 @@ void GuildMgr::AddGuildMember(GuildInfo* gInfo, PlayerInfo* newmember, WorldSess
 
 	if(r == NULL) // shouldn't happen
 		return;
-	uint32 rank = r->Rank.iId;
+	uint32 rank = r->iId;
 
 	GuildMember* pm = new GuildMember(newmember->guid, newmember, r);
 	GuildMemberMapStorage* MemberList = GetGuildMemberMapStorage(gInfo->m_guildId);
@@ -1605,7 +1603,7 @@ void GuildMgr::AddGuildMember(GuildInfo* gInfo, PlayerInfo* newmember, WorldSess
 	if(newmember->m_loggedInPlayer)
 	{
 		newmember->m_loggedInPlayer->SetGuildId(gInfo->m_guildId);
-		newmember->m_loggedInPlayer->SetGuildRank(r->Rank.iId);
+		newmember->m_loggedInPlayer->SetGuildRank(r->iId);
 		SendMotd(newmember);
 	}
 

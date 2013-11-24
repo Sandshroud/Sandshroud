@@ -43,6 +43,8 @@ public:
 
 	// gets active thread count
 	HEARTHSTONE_INLINE uint32 GetActiveThreadCount() { return (uint32)m_activeThreads.size(); }
+
+	static void Suicide();
 };
 
 extern SERVER_DECL CThreadPool ThreadPool;

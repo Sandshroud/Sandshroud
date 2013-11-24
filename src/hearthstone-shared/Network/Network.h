@@ -19,6 +19,7 @@ using namespace std;
 #define TCP_NODELAY 0x6
 #define SD_BOTH SHUT_RDWR
 #define SOCKET int
+#define INVALID_SOCKET -1
 #endif
 
 #include "BaseSocket.h"

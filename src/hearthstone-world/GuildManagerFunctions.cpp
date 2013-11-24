@@ -259,26 +259,25 @@ void GuildMgr::Packet_SendGuildRoster(WorldSession* m_session)
 	uint32 count = 0;
 	GuildRank* r = NULL;
 	size_t pos = data.wpos();
-	data << uint32(MAX_GUILD_RANKS);
+	data << uint32(0);
 	for(uint8 i = 0; i < MAX_GUILD_RANKS; ++i)
 	{
 		r = RankStorage->m_ranks[i];
 		if(r != NULL)
 		{
-			data << r->Rank.iRights;
-			data << r->Rank.iGoldLimitPerDay;
-
+			data << r->iRights;
+			data << r->iGoldLimitPerDay;
 			for (uint8 j = 0; j < 6; j++)
 			{
-				data << r->Rank.iTabPermissions[j].iFlags;
-				data << r->Rank.iTabPermissions[j].iStacksPerDay;
+				data << r->iTabPermissions[j].iFlags;
+				data << r->iTabPermissions[j].iStacksPerDay;
 			}
 
 			++count;
 		}
 	}
 	RankStorage->RankLock.Release();
-	*(uint32*)&data.contents()[pos] = count;
+	data.put<uint32>(pos, count);
 
 	PlayerInfo* pPlayer = NULL;
 	MemberMapStorage->MemberMapLock.Acquire();
@@ -348,14 +347,14 @@ void GuildMgr::Packet_SendGuildPermissions(WorldSession* m_session)
 		return;
 
 	WorldPacket data(MSG_GUILD_PERMISSIONS, 61);
-	data << gMember->pRank->Rank.iId;
-	data << gMember->pRank->Rank.iRights;
-	data << gMember->pRank->Rank.iGoldLimitPerDay;
+	data << gMember->pRank->iId;
+	data << gMember->pRank->iRights;
+	data << gMember->pRank->iGoldLimitPerDay;
 	data << uint8(GetGuildBankTabCount(plr->GetGuildId()));
 	for( uint8 i = 0; i < MAX_GUILD_BANK_TABS; i++)
 	{
-		data << gMember->pRank->Rank.iTabPermissions[i].iFlags;
-		data << gMember->pRank->Rank.iTabPermissions[i].iStacksPerDay;
+		data << gMember->pRank->iTabPermissions[i].iFlags;
+		data << gMember->pRank->iTabPermissions[i].iStacksPerDay;
 	}
 
 	m_session->SendPacket(&data);
@@ -382,7 +381,7 @@ void GuildMgr::Packet_SendGuildQuery(WorldSession* m_session, uint32 GuildId)
 	{
 		r = RankStorage->m_ranks[i];
 		if(r != NULL)
-			data << r->Rank.szRankName.c_str();
+			data << r->szRankName.c_str();
 		else
 			data << uint8(0);
 	}
@@ -602,13 +601,13 @@ void GuildMgr::Packet_HandleEditRank(WorldSession* m_session, std::string name, 
 
 	GuildRank* rank = RankStorage->m_ranks[rankid];
 	if(name.length())
-		rank->Rank.szRankName = name;
-	rank->Rank.iRights = rankrights;
-	rank->Rank.iGoldLimitPerDay = DailyGoldLimit;
+		rank->szRankName = name;
+	rank->iRights = rankrights;
+	rank->iGoldLimitPerDay = DailyGoldLimit;
 	for(uint8 i = 0; i < MAX_GUILD_BANK_TABS; i++)
 	{
-		rank->Rank.iTabPermissions[i].iFlags = iflags[i];
-		rank->Rank.iTabPermissions[i].iStacksPerDay = istacksperday[i];
+		rank->iTabPermissions[i].iFlags = iflags[i];
+		rank->iTabPermissions[i].iStacksPerDay = istacksperday[i];
 	}
 	gInfo->m_GuildStatus = GUILD_STATUS_DIRTY;
 	RankStorage->RankLock.Release();
@@ -648,8 +647,8 @@ void GuildMgr::Packet_ChangeGuildLeader(WorldSession* m_session, PlayerInfo* new
 	gInfo->m_GuildLock.Acquire();
 	GuildRank* newRank = FindLowestRank(RankStorage);
 	GuildLeader->pRank = newRank;
-	plr->SetGuildRank(newRank->Rank.iId);
-	plr->getPlayerInfo()->GuildRank = newRank->Rank.iId;
+	plr->SetGuildRank(newRank->iId);
+	plr->getPlayerInfo()->GuildRank = newRank->iId;
 
 	newLeader->GuildRank = 0;
 	gInfo->m_guildLeader = newLeader->guid;
@@ -705,15 +704,15 @@ void GuildMgr::Packet_DemoteGuildMember(WorldSession* m_session, std::string dem
 		return;
 	}
 
-	if(DemotedMember->pRank->Rank.iId == MAX_GUILD_RANKS-1)
+	if(DemotedMember->pRank->iId == MAX_GUILD_RANKS-1)
 	{
 		m_session->SystemMessage("Could not find a rank to demote this member to.");
 		return;
 	}
 
 	RankStorage->RankLock.Acquire();
-	if(!HasGuildRights(plr, GR_RIGHT_DEMOTE) ||	DemotedMember->pRank->Rank.iId == 0
-		|| gMember->pRank->Rank.iId >= DemotedMember->pRank->Rank.iId)
+	if(!HasGuildRights(plr, GR_RIGHT_DEMOTE) ||	DemotedMember->pRank->iId == 0
+		|| gMember->pRank->iId >= DemotedMember->pRank->iId)
 	{
 		SendGuildCommandResult(m_session, GUILD_PROMOTE_S, "", GUILD_PERMISSIONS);
 		RankStorage->RankLock.Release();
@@ -721,7 +720,7 @@ void GuildMgr::Packet_DemoteGuildMember(WorldSession* m_session, std::string dem
 	}
 
 	// find the next highest rank
-	uint32 nh = DemotedMember->pRank->Rank.iId + 1;
+	uint32 nh = DemotedMember->pRank->iId + 1;
 	GuildRank* newRank = RankStorage->m_ranks[nh];
 	while(nh < 10 && newRank == NULL)
 	{
@@ -742,8 +741,8 @@ void GuildMgr::Packet_DemoteGuildMember(WorldSession* m_session, std::string dem
 	DemotedMember->pPlayer->GuildRank = nh;
 
 	// log it
-	LogGuildEvent(NULL, plr->GetGuildId(), GUILD_EVENT_DEMOTION, plr->GetName(), demoteeName.c_str(), newRank->Rank.szRankName.c_str());
-	AddGuildLogEntry(plr->GetGuildId(), GUILD_LOG_EVENT_DEMOTION, plr->GetLowGUID(), Demoted->guid, newRank->Rank.iId);
+	LogGuildEvent(NULL, plr->GetGuildId(), GUILD_EVENT_DEMOTION, plr->GetName(), demoteeName.c_str(), newRank->szRankName.c_str());
+	AddGuildLogEntry(plr->GetGuildId(), GUILD_LOG_EVENT_DEMOTION, plr->GetLowGUID(), Demoted->guid, newRank->iId);
 
 	// if the player is online, update his guildrank
 	if(Demoted->m_loggedInPlayer)
@@ -796,8 +795,8 @@ void GuildMgr::Packet_PromoteGuildMember(WorldSession* m_session, std::string pr
 	}
 
 	RankStorage->RankLock.Acquire();
-	if(!HasGuildRights(plr, GR_RIGHT_PROMOTE) || PromotedMember->pRank->Rank.iId == 0
-		|| gMember->pRank->Rank.iId >= PromotedMember->pRank->Rank.iId)
+	if(!HasGuildRights(plr, GR_RIGHT_PROMOTE) || PromotedMember->pRank->iId == 0
+		|| gMember->pRank->iId >= PromotedMember->pRank->iId)
 	{
 		SendGuildCommandResult(m_session, GUILD_PROMOTE_S, "", GUILD_PERMISSIONS);
 		RankStorage->RankLock.Release();
@@ -805,7 +804,7 @@ void GuildMgr::Packet_PromoteGuildMember(WorldSession* m_session, std::string pr
 	}
 
 	// find the lowest rank that isn't his rank
-	int32 nh = PromotedMember->pRank->Rank.iId - 1;
+	int32 nh = PromotedMember->pRank->iId - 1;
 	GuildRank* newRank = RankStorage->m_ranks[nh];
 
 	while(nh > 0 && newRank == NULL)
@@ -827,8 +826,8 @@ void GuildMgr::Packet_PromoteGuildMember(WorldSession* m_session, std::string pr
 	PromotedMember->pPlayer->GuildRank = nh;
 
 	// log it
-	LogGuildEvent(NULL, plr->GetGuildId(), GUILD_EVENT_PROMOTION, plr->GetName(), promoteeName.c_str(), newRank->Rank.szRankName.c_str());
-	AddGuildLogEntry(plr->GetGuildId(), GUILD_LOG_EVENT_PROMOTION, plr->GetLowGUID(), Promoted->guid, newRank->Rank.iId);
+	LogGuildEvent(NULL, plr->GetGuildId(), GUILD_EVENT_PROMOTION, plr->GetName(), promoteeName.c_str(), newRank->szRankName.c_str());
+	AddGuildLogEntry(plr->GetGuildId(), GUILD_LOG_EVENT_PROMOTION, plr->GetLowGUID(), Promoted->guid, newRank->iId);
 
 	// if the player is online, update his guildrank
 	if(Promoted->m_loggedInPlayer)
@@ -1461,14 +1460,14 @@ void GuildMgr::Packet_DepositItem(WorldSession* m_session, uint8 dest_bank, uint
 
 	if(pDestItem != NULL)
 	{
-		if(gMember->pRank->Rank.iTabPermissions[dest_bank].iStacksPerDay == 0)
+		if(gMember->pRank->iTabPermissions[dest_bank].iStacksPerDay == 0)
 		{
 			m_session->SystemMessage("You don't have permission to do that.");
 			gInfo->m_GuildLock.Release();
 			return;
 		}
 
-		if(gMember->pRank->Rank.iTabPermissions[dest_bank].iStacksPerDay > 0)
+		if(gMember->pRank->iTabPermissions[dest_bank].iStacksPerDay > 0)
 		{
 			if(CalculateAllowedItemWithdraws(gMember, dest_bank) == 0)
 			{
@@ -2008,16 +2007,16 @@ void GuildMgr::Packet_WithdrawMoney(WorldSession* m_session, uint64 BankGuid, ui
 		return;
 	}
 
-	if( gMember->pRank->Rank.iId !=0 )
+	if( gMember->pRank->iId !=0 )
 	{
-		if(gMember->pRank->Rank.iGoldLimitPerDay > 0 && CalculateAvailableAmount(gMember) < Amount )
+		if(gMember->pRank->iGoldLimitPerDay > 0 && CalculateAvailableAmount(gMember) < Amount )
 		{
 			gInfo->m_GuildLock.Release();
 			m_session->SystemMessage("You have already withdrawn too much today.");
 			return;
 		}
 
-		if(gMember->pRank->Rank.iGoldLimitPerDay == 0 )
+		if(gMember->pRank->iGoldLimitPerDay == 0 )
 		{
 			gInfo->m_GuildLock.Release();
 			m_session->SystemMessage("You don't have permission to withdraw money.");
