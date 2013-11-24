@@ -271,7 +271,7 @@ bool Master::Run(int argc, char ** argv)
 	realCurrTime = realPrevTime = getMSTime();
 
 	// Socket loop!
-	uint32 start = 0, last_time = now(), etime = 0;
+    uint32 start = 0, last_time = getMSTime(), etime = 0;
 
 	// Start Network Subsystem
 	DEBUG_LOG("Server","Starting network subsystem..." );
@@ -303,7 +303,7 @@ bool Master::Run(int argc, char ** argv)
 	HANDLE hThread = GetCurrentThread();
 #endif
 
-	uint32 loopcounter = 0, LastLogonUpdate = now();
+	uint32 loopcounter = 0, LastLogonUpdate = getMSTime();
 	if(Config.MainConfig.GetIntDefault("LogLevel", "Screen", 1) == -1)
 	{
 		sLog.Init(1);
@@ -319,7 +319,7 @@ bool Master::Run(int argc, char ** argv)
 
 	while( !m_stopEvent && listnersockcreate )
 	{
-		start = now();
+		start = getMSTime();
 
 		/* since time() is an expensive system call, we only update it once per server loop */
 		curTime = time(NULL);
@@ -330,12 +330,12 @@ bool Master::Run(int argc, char ** argv)
 			UpdateRandomNumberGenerators();
 		}
 
-		sLogonCommHandler.UpdateSockets(now()-LastLogonUpdate);
-		LastLogonUpdate = now();
+		sLogonCommHandler.UpdateSockets(getMSTime()-LastLogonUpdate);
+		LastLogonUpdate = getMSTime();
 		sSocketDeleter.Update();
 
 		/* UPDATE */
-		last_time = now();
+		last_time = getMSTime();
 		etime = last_time - start;
 		if( 25 > etime )
 		{

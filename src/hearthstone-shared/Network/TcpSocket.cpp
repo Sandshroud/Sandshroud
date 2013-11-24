@@ -4,7 +4,7 @@
 
 #include "Network.h"
 
-TcpSocket::TcpSocket(int fd, size_t readbuffersize, size_t writebuffersize, bool use_circular_buffer, const sockaddr_in * peer)
+TcpSocket::TcpSocket(SOCKET fd, size_t readbuffersize, size_t writebuffersize, bool use_circular_buffer, const sockaddr_in * peer)
 {
 	SetFd(fd);
 	if(use_circular_buffer)

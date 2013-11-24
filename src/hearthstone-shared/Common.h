@@ -587,17 +587,6 @@ static inline int long2int32(const double value)
 
 #endif
 
-HEARTHSTONE_INLINE uint32 now()
-{
-#ifdef WIN32
-	return GetTickCount();
-#else
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-#endif
-}
-
 #ifndef WIN32
 #define FALSE   0
 #define TRUE	1

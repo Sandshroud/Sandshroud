@@ -502,7 +502,7 @@ uint8 WorldSession::DeleteCharacter(uint32 guid)
 		if(inf->GuildId)
 		{
 			GuildMember* gMember = guildmgr.GetGuildMember(inf->guid);
-			if(gMember->pRank->Rank.iId == 0)
+			if(gMember->pRank->iId == 0)
 				return CHAR_DELETE_FAILED_GUILD_LEADER;
 			else
 				guildmgr.RemoveMember(NULL, inf);
