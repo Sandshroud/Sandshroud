@@ -1940,9 +1940,9 @@ uint32 QuestMgr::GenerateRewardMoney( Player* pl, Quest * qst )
 		return 0;
 
 	if ( pl && pl->getLevel() >= pl->GetUInt32Value(PLAYER_FIELD_MAX_LEVEL) && qst->qst_is_repeatable == 0 )
-		return float2int32(qst->rewards->reward_money * sWorld.getRate(RATE_QUEST_MONEY)) + float2int32( GenerateQuestXP( pl, qst ) * sWorld.getRate( RATE_QUESTXP ) * 6);
+		return float2int32(qst->rewards->reward_money) + float2int32( GenerateQuestXP( pl, qst ) * sWorld.getRate( RATE_QUESTXP ) * 6);
 	else
-		return float2int32(qst->rewards->reward_money * sWorld.getRate(RATE_QUEST_MONEY));
+		return float2int32(qst->rewards->reward_money);
 }
 
 uint32 QuestMgr::GenerateQuestXP(Player* plr, Quest *qst)
@@ -2340,7 +2340,7 @@ void QuestMgr::LoadExtraQuestStuff()
 			if(!qst)
 			{
 				Log.Warning("QuestMgr","Tried to add starter to npc %u for non-existant quest %u.", creature, quest);
-				if(Config.OptionalConfig.GetBoolDefault("Server", "CleanDatabase", false))
+				if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 				{
 					WorldDatabase.Execute("DELETE FROM creature_quest_starter where quest = '%u'", quest);
 				}
@@ -2369,7 +2369,7 @@ void QuestMgr::LoadExtraQuestStuff()
 			if(!qst)
 			{
 				Log.Warning("QuestMgr","Tried to add finisher to npc %d for non-existant quest %d.", creature, quest);
-				if(Config.OptionalConfig.GetBoolDefault("Server", "CleanDatabase", false))
+				if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 				{
 					WorldDatabase.Execute("DELETE FROM creature_quest_finisher where quest = '%u'", quest);
 				}
@@ -2398,7 +2398,7 @@ void QuestMgr::LoadExtraQuestStuff()
 			if(!qst)
 			{
 				Log.Warning("QuestMgr","Tried to add starter to go %d for non-existant quest %d.", creature, quest);
-				if(Config.OptionalConfig.GetBoolDefault("Server", "CleanDatabase", false))
+				if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 				{
 					WorldDatabase.Execute("DELETE FROM gameobject_quest_starter where quest = '%u'", quest);
 				}
@@ -2427,7 +2427,7 @@ void QuestMgr::LoadExtraQuestStuff()
 			if(!qst)
 			{
 				Log.Warning("QuestMgr","Tried to add finisher to go %d for non-existant quest %d.\n", creature, quest);
-				if(Config.OptionalConfig.GetBoolDefault("Server", "CleanDatabase", false))
+				if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 				{
 					WorldDatabase.Execute("DELETE FROM gameobject_quest_finisher where quest = '%u'", quest);
 				}
@@ -2460,7 +2460,7 @@ void QuestMgr::LoadExtraQuestStuff()
 			if(!qst)
 			{
 				Log.Warning("QuestMgr","Tried to add association to item %d for non-existant quest %d.", item, quest);
-				if(Config.OptionalConfig.GetBoolDefault("Server", "CleanDatabase", false))
+				if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 				{
 					WorldDatabase.Execute("DELETE FROM item_quest_association where quest = '%u'", quest);
 				}

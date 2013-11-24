@@ -108,9 +108,9 @@ bool StartConsoleListener( )
 #ifndef ENABLE_REMOTE_CONSOLE
 	return false;
 #else
-	string lhost = Config.MainConfig.GetStringDefault("RemoteConsole", "Host", "0.0.0.0");
-	uint32 lport = Config.MainConfig.GetIntDefault("RemoteConsole", "Port", 8092);
-	bool enabled = Config.MainConfig.GetBoolDefault("RemoteConsole", "Enabled", false);
+	string lhost = mainIni->ReadString("RemoteConsole", "Host", "0.0.0.0");
+	uint32 lport = mainIni->ReadInteger("RemoteConsole", "Port", 8092);
+	bool enabled = mainIni->ReadBoolean("RemoteConsole", "Enabled", false);
 
 	if( !enabled )
 		return false;

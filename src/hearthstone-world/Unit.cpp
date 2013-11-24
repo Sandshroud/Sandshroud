@@ -2561,7 +2561,7 @@ void Unit::RegenerateEnergy()
 	if( cur >= mp )
 		return;
 
-	cur += float2int32(floor(float(0.01f * m_P_regenTimer * PctPowerRegenModifier[POWER_TYPE_ENERGY] * sWorld.getRate(RATE_POWER3))));
+	cur += float2int32(floor(float(0.01f * m_P_regenTimer * PctPowerRegenModifier[POWER_TYPE_ENERGY])));
 	SetUInt32Value(UNIT_FIELD_POWER4, (cur >= mp) ? mp : cur);
 }
 
@@ -2626,7 +2626,7 @@ void Unit::RegeneratePower(bool isinterrupted)
 			{
 				m_P_regenTimer = 3000;
 				if(!CombatStatus.IsInCombat())
-					LosePower(UNIT_FIELD_POWER2, 30*sWorld.getRate(RATE_POWER2));
+					LosePower(UNIT_FIELD_POWER2, 30);
 			}break;
 		case POWER_TYPE_RUNE:
 			{

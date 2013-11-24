@@ -29,8 +29,6 @@ class SERVER_DECL DayWatcherThread : public Singleton<DayWatcherThread>, public 
 	time_t last_daily_reset_time;
 	tm local_last_daily_reset_time;
 
-	uint32 arena_period;
-
 public:
 	DayWatcherThread();
 	~DayWatcherThread();
@@ -41,7 +39,6 @@ public:
 	void load_settings();
 	void update_settings();
 	void set_tm_pointers();
-	uint32 get_timeout_from_string(const char * string, uint32 def);
 	bool has_timeout_expired(tm * now_time, tm * last_time, uint32 timeoutval);
 	void update_arena();
 	void update_daily();

@@ -26,11 +26,12 @@ extern "C" SCRIPT_DECL uint32 _exp_get_script_type()
 extern "C" SCRIPT_DECL void _exp_script_register(ScriptMgr* mgr)
 {
 	sWorld.LacrimiPtr = new Lacrimi(mgr);
-	sWorld.LacrimiThread = ((ThreadContext*)sWorld.LacrimiPtr);
-	ThreadPool.ExecuteTask("Lacrimi", sWorld.LacrimiPtr);
-
 	// Set up our scripts in this thread.
 	sWorld.LacrimiPtr->SetupScripts();
+
+	// Execute our run thread here
+	sWorld.LacrimiThread = ((ThreadContext*)sWorld.LacrimiPtr);
+	ThreadPool.ExecuteTask("Lacrimi", sWorld.LacrimiPtr);
 }
 
 #ifdef WIN32

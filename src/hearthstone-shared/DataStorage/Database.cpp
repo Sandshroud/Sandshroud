@@ -36,11 +36,11 @@ bool Database::Initialize(const char* Hostname, unsigned int port, const char* U
 	MYSQL *temp = NULL, *temp2 = NULL;
 	my_bool my_true = true;
 
-	mHostname = string(Hostname);
+	mHostname = strdup(Hostname);
 	mConnectionCount = ConnectionCount;
-	mUsername = string(Username);
-	mPassword = string(Password);
-	mDatabaseName = string(DatabaseName);
+	mUsername = strdup(Username);
+	mPassword = strdup(Password);
+	mDatabaseName = strdup(DatabaseName);
 
 	Log.Notice("MySQLDatabase", "Connecting to `%s`, database `%s`...", Hostname, DatabaseName);
 
