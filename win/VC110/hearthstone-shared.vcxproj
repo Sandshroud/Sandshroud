@@ -248,8 +248,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\hearthstone-shared\Auth\RSA.cpp" />
+    <ClCompile Include="..\..\src\hearthstone-shared\Config\IniFiles.cpp" />
     <ClCompile Include="..\..\src\hearthstone-shared\Console\CConsole.cpp" />
-    <ClCompile Include="..\..\src\hearthstone-shared\Config\Config.cpp" />
     <ClCompile Include="..\..\src\hearthstone-shared\Auth\BigNumber.cpp" />
     <ClCompile Include="..\..\src\hearthstone-shared\crc32.cpp" />
     <ClCompile Include="..\..\src\hearthstone-shared\DataStorage\Database.cpp" />
@@ -279,10 +279,9 @@
   <ItemGroup>
     <ClInclude Include="..\..\src\hearthstone-shared\Auth\RSA.h" />
     <ClInclude Include="..\..\src\hearthstone-shared\ByteConverter.h" />
+    <ClInclude Include="..\..\src\hearthstone-shared\Config\IniFiles.h" />
     <ClInclude Include="..\..\src\hearthstone-shared\Console\BaseConsole.h" />
     <ClInclude Include="..\..\src\hearthstone-shared\Console\CConsole.h" />
-    <ClInclude Include="..\..\src\hearthstone-shared\Config\Config.h" />
-    <ClInclude Include="..\..\src\hearthstone-shared\Config\ConfigEnv.h" />
     <ClInclude Include="..\..\src\hearthstone-shared\Auth\BigNumber.h" />
     <ClInclude Include="..\..\src\hearthstone-shared\crc32.h" />
     <ClInclude Include="..\..\src\hearthstone-shared\DataStorage\Database.h" />

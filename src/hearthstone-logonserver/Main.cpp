@@ -83,43 +83,36 @@ int main(int argc, char** argv)
 
 bool startdb()
 {
-	string lhostname, lusername, lpassword, ldatabase;
-	int lport = 0, ltype = 1, result = 0;
+	string error;
 	// Configure Logon Database...
-    if(Config.MainConfig.GetString("LogonDatabase", "Username", &lusername))
-    {
-        result++;
-        if(Config.MainConfig.GetString("LogonDatabase", "Password", &lpassword))
-        {
-            result++;
-            if(Config.MainConfig.GetString("LogonDatabase", "Hostname", &lhostname))
-            {
-                result++;
-                if(Config.MainConfig.GetString("LogonDatabase", "Name", &ldatabase))
-                {
-                    result++;
-                    if(Config.MainConfig.GetInt("LogonDatabase", "Port", &lport))
-                    {
-                        result++;
-                        if(Config.MainConfig.GetInt("LogonDatabase", "Type", &ltype))
-                            result++;
-                    }
-                }
-            }
-        }
-    }
-	if(result != 6)
+	string lhostname = mainIni->ReadString("LogonDatabase", "Hostname", "ERROR");
+	string lusername = mainIni->ReadString("LogonDatabase", "Username", "ERROR");
+	string lpassword = mainIni->ReadString("LogonDatabase", "Password", "ERROR");
+	string ldatabase = mainIni->ReadString("LogonDatabase", "Name", "ERROR");
+	int lport = mainIni->ReadInteger("LogonDatabase", "Port", 0);
+	int ltype = mainIni->ReadInteger("LogonDatabase", "Type", 0);
+	if(strcmp(lhostname.c_str(), "ERROR") == 0)
+		error.append("Hostname");
+	else if(strcmp(lusername.c_str(), "ERROR") == 0)
+		error.append("Username");
+	else if(strcmp(lpassword.c_str(), "ERROR") == 0)
+		error.append("Password");
+	else if(strcmp(ldatabase.c_str(), "ERROR") == 0)
+		error.append("DatabaseName");
+	else if(lport == 0 || ltype == 0)
+		error.append("Port/Type");
+	if(error.length())
 	{
-		sLog.outString("sql: Logon database parameters not found %u.", result);
+		sLog.outString("sql: Logon database parameter not found for %s.", error.c_str());
 		return false;
 	}
 
-	sLog.SetScreenLoggingLevel(Config.MainConfig.GetIntDefault("LogLevel", "Screen", 0));
+	sLog.SetScreenLoggingLevel(mainIni->ReadInteger("LogLevel", "Screen", 0));
 	sLogonSQL = Database::Create();
 
 	// Initialize it
 	if(!sLogonSQL->Initialize(lhostname.c_str(), (unsigned int)lport, lusername.c_str(),
-		lpassword.c_str(), ldatabase.c_str(), Config.MainConfig.GetIntDefault("LogonDatabase", "ConnectionCount", 5),
+		lpassword.c_str(), ldatabase.c_str(), mainIni->ReadInteger("LogonDatabase", "ConnectionCount", 5),
 		16384))
 	{
 		sLog.outError("sql: Logon database initialization failed. Exiting.");
@@ -168,22 +161,23 @@ bool IsServerAllowedMod(unsigned int IP)
 bool Rehash()
 {
 #ifdef WIN32
-	char * config_file = "configs/hearthstone-logonserver.conf";
+	char * config_file = "configs/hearthstone-logonserver.ini";
 #else
-	char * config_file = (char*)CONFDIR "/hearthstone-logonserver.conf";
+	char * config_file = (char*)CONFDIR "/hearthstone-logonserver.ini";
 #endif
-	if(!Config.MainConfig.SetSource(config_file))
+	mainIni->Reload();
+	if(mainIni->ParseError())
 	{
-		Log.Error( "Config", ">> hearthstone-logonserver.conf" );
+		Log.Error( "Config", ">> hearthstone-logonserver.ini" );
 		return false;
 	}
-	Log.Success( "Config", ">> hearthstone-logonserver.conf" );
+	Log.Success( "Config", ">> hearthstone-logonserver.ini" );
 
-	m_encryptedPasswords = Config.MainConfig.GetBoolDefault("LogonServer", "UseEncryptedPasswords", false);
+	m_encryptedPasswords = mainIni->ReadBoolean("LogonServer", "UseEncryptedPasswords", false);
 
 	// re-set the allowed server IP's
-	string ips = Config.MainConfig.GetStringDefault("LogonServer", "AllowedIPs", "");
-	string ipsmod = Config.MainConfig.GetStringDefault("LogonServer", "AllowedModIPs", "");
+	string ips = mainIni->ReadString("LogonServer", "AllowedIPs", "");
+	string ipsmod = mainIni->ReadString("LogonServer", "AllowedModIPs", "");
 
 	vector<string> vips = StrSplit(ips, " ");
 	vector<string> vipsmod = StrSplit(ips, " ");
@@ -258,9 +252,9 @@ void LogonServer::Run(int argc, char ** argv)
 	UNIXTIME = time(NULL);
 	g_localTime = *localtime(&UNIXTIME);
 #ifdef WIN32
-	char * config_file = "configs/hearthstone-logonserver.conf";
+	char * config_file = "configs/hearthstone-logonserver.ini";
 #else
-	char * config_file = (char*)CONFDIR "/configs/hearthstone-logonserver.conf";
+	char * config_file = (char*)CONFDIR "/configs/hearthstone-logonserver.ini";
 #endif
 	int file_log_level = DEF_VALUE_NOT_SET;
 	int screen_log_level = DEF_VALUE_NOT_SET;
@@ -302,10 +296,11 @@ void LogonServer::Run(int argc, char ** argv)
 	if(do_version)
 		return;
 
+	mainIni = new CIniFile(config_file);
 	if(do_check_conf)
 	{
 		Log.Notice("Config", "Checking config file: %s", config_file);
-		if(Config.MainConfig.SetSource(config_file, true))
+		if(!mainIni->ParseError())
 			Log.Success("Config", "Passed without errors.");
 		else
 			Log.Warning("Config", "Encountered one or more errors.");
@@ -323,7 +318,7 @@ void LogonServer::Run(int argc, char ** argv)
 		return;
 
 	//use these log_level until we are fully started up.
-	if(Config.MainConfig.GetIntDefault("LogLevel", "Screen", 1) == -1)
+	if(mainIni->ReadInteger("LogLevel", "Screen", 1) == -1)
 	{
 		Log.Notice("Main", "Running silent mode...");
 		sLog.Init(-1);
@@ -359,19 +354,19 @@ void LogonServer::Run(int argc, char ** argv)
 	Log.Line();
 
 	// Spawn periodic function caller thread for account reload every 10mins
-	int atime = Config.MainConfig.GetIntDefault("Rates", "AccountRefresh",600);
+	int atime = mainIni->ReadInteger("Rates", "AccountRefresh",600);
 	atime *= 1000;
 	PeriodicFunctionCaller<AccountMgr> * pfc = new PeriodicFunctionCaller<AccountMgr>(AccountMgr::getSingletonPtr(),&AccountMgr::ReloadAccountsCallback, atime);
 	ThreadPool.ExecuteTask("PeriodicFunctionCaller", pfc);
 
 	// Load conf settings..
-	uint32 cport = Config.MainConfig.GetIntDefault("Listen", "RealmListPort", 3724);
-	uint32 sport = Config.MainConfig.GetIntDefault("Listen", "ServerPort", 8093);
-	string host = Config.MainConfig.GetStringDefault("Listen", "Host", "0.0.0.0");
-	string shost = Config.MainConfig.GetStringDefault("Listen", "ISHost", host.c_str());
-	min_build = Config.MainConfig.GetIntDefault("Client", "MinBuild", 12340);
-	max_build = Config.MainConfig.GetIntDefault("Client", "MaxBuild", 12340);
-	string logon_pass = Config.MainConfig.GetStringDefault("LogonServer", "RemotePassword", "r3m0t3b4d");
+	uint32 cport = mainIni->ReadInteger("Listen", "RealmListPort", 3724);
+	uint32 sport = mainIni->ReadInteger("Listen", "ServerPort", 8093);
+	string host = mainIni->ReadString("Listen", "Host", "0.0.0.0");
+	string shost = mainIni->ReadString("Listen", "ISHost", host.c_str());
+	min_build = mainIni->ReadInteger("Client", "MinBuild", 12340);
+	max_build = mainIni->ReadInteger("Client", "MaxBuild", 12340);
+	string logon_pass = mainIni->ReadString("LogonServer", "RemotePassword", "r3m0t3b4d");
 	Sha1Hash hash;
 	hash.UpdateData(logon_pass);
 	hash.Finalize();

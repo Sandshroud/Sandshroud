@@ -846,70 +846,50 @@ public: // Events! :D
 			return;
 		m_current_holiday_mask &= mask;
 		ApplyHolidayConfigMaskOverride();
-	};
+	}
+
 	void RemoveHolidayMask(uint32 mask) 
 	{
 		if((GetCurrentHolidayMask() & mask) == 0)
 			return;
 		m_current_holiday_mask &= ~mask;
 		ApplyHolidayConfigMaskOverride();
-	};
+	}
+
 	void ApplyHolidayConfigMaskOverride()
 	{
-		uint32 config_holiday_mask = Config.OptionalConfig.GetIntDefault("Server", "HolidayMaskOverride", 4095);
+		uint32 config_holiday_mask = mainIni->ReadInteger("Server", "HolidayMaskOverride", 4095);
 		if(config_holiday_mask > 0)
 			m_current_holiday_mask = config_holiday_mask;
-	};
+	}
 
 	uint32 ConverHolidayIdToMask(uint32 id)
 	{
-		switch(id)
-		{
-			case 1:
-			{
-				return HOLIDAY_DARKMOON_FAIRE;
-			}break;
-			case 7:
-			case 19:
-			{
-				return HOLIDAY_BREWFEST;
-			}break;
-			case 9:
-			{
-				return HOLIDAY_LOVE_IS_IN_AIR;
-			}break;
-			case 11:
-			{
-				return HOLIDAY_MIDSUMMER;
-			}break;
-			case 13:
-			{
-				return HOLIDAY_CHILD_WEEK;
-			}break;
-			case 14:
-			{
-				return HOLIDAY_WINTER_VIEL;
-			}break;
-			case 15:
-			{
-				return HOLIDAY_NOBLEGARDEN;
-			}break;
-			case 16:
-			{
-				return HOLIDAY_LUNAR_FEST;
-			}break;
-			case 17:
-			{
-				return HOLIDAY_HARVEST_FEST;
-			}break;
-			case 81:
-			{
-				return HOLIDAY_DAY_OF_DEAD;
-			}break;
-			case 101:
-			{
-				return HOLIDAY_PILGRIM_BOUNTY;
-			}break;
+        switch(id)
+        {
+        case 1:
+            return HOLIDAY_DARKMOON_FAIRE;
+        case 7:
+        case 19:
+            return HOLIDAY_BREWFEST;
+        case 9:
+            return HOLIDAY_LOVE_IS_IN_AIR;
+        case 11:
+            return HOLIDAY_MIDSUMMER;
+        case 13:
+            return HOLIDAY_CHILD_WEEK;
+        case 14:
+            return HOLIDAY_WINTER_VIEL;
+        case 15:
+            return HOLIDAY_NOBLEGARDEN;
+        case 16:
+            return HOLIDAY_LUNAR_FEST;
+        case 17:
+            return HOLIDAY_HARVEST_FEST;
+        case 81:
+            return HOLIDAY_DAY_OF_DEAD;
+        case 101:
+            return HOLIDAY_PILGRIM_BOUNTY;
 		}
 		return 0;
 	};
