@@ -852,7 +852,6 @@ void EyeOfTheStorm::UpdateCPs()
 		if( plrcounts[0] > plrcounts[1] )
 		{
 			delta = plrcounts[0] - plrcounts[1];
-			delta *= (uint32)sWorld.getRate(RATE_EOTS_CAPTURERATE);
 
 			// cap it at 25 so the banner always gets removed.
 			if( delta > 25 )
@@ -865,7 +864,6 @@ void EyeOfTheStorm::UpdateCPs()
 		else if( plrcounts[1] > plrcounts[0] )
 		{
 			delta = plrcounts[1] - plrcounts[0];
-			delta *= (uint32)sWorld.getRate(RATE_EOTS_CAPTURERATE);
 
 			// cap it at 25 so the banner always gets removed.
 			if( delta > 25 )

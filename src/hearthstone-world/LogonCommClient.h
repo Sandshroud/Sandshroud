@@ -17,12 +17,12 @@ public:
 	void OnRecvData();
 	void SendPacket(WorldPacket * data, bool no_crypto = false);
 	void HandlePacket(WorldPacket & recvData);
-	void SendPing(uint32 diff = 0);
 	void SendChallenge();
 	void HandleAuthResponse(WorldPacket & recvData);
 
 	void HandleRegister(WorldPacket & recvData);
-	void HandlePong(WorldPacket & recvData);
+	void HandlePing(WorldPacket & recvData);
+	void HandleLatency(WorldPacket & recvData);
 	void HandleServerPing(WorldPacket &recvData);
 	void HandleSessionInfo(WorldPacket & recvData);
 	void HandleRequestAccountMapping(WorldPacket & recvData);
@@ -33,11 +33,10 @@ public:
 
 	void OnDisconnect();
 	void CompressAndSend(ByteBuffer & uncompressed);
-	uint32 last_ping;
-	uint32 last_pong;
 
-	uint32 latency;
 	uint32 _id;
+	uint32 latency;
+	uint32 last_ping;
 	uint32 authenticated;
 	bool use_crypto;
 	set<uint32> realm_ids;

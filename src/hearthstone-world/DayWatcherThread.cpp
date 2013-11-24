@@ -40,9 +40,6 @@ void DayWatcherThread::update_settings()
 
 void DayWatcherThread::load_settings()
 {
-	string arena_timeout = Config.OptionalConfig.GetStringDefault("WEEKLY", "ArenaUpdate", "weekly");
-	arena_period = get_timeout_from_string(arena_timeout.c_str(), WEEKLY);
-
 	QueryResult * result = CharacterDatabase.Query("SELECT setting_value FROM server_settings WHERE setting_id = \"last_arena_update_time\"");
 	if(result)
 	{
@@ -72,22 +69,6 @@ void DayWatcherThread::set_tm_pointers()
 {
 	dupe_tm_pointer(localtime(&last_arena_time), &local_last_arena_time);
 	dupe_tm_pointer(localtime(&last_daily_reset_time), &local_last_daily_reset_time);
-}
-
-uint32 DayWatcherThread::get_timeout_from_string(const char * string, uint32 def)
-{
-	if(!stricmp(string, "weekly"))
-		return WEEKLY;
-	else if(!stricmp(string, "monthly"))
-		return MONTHLY;
-	else if(!stricmp(string, "daily"))
-		return DAILY;
-	else if(!stricmp(string, "hourly"))
-		return HOURLY;
-	else if(!stricmp(string, "minutely"))
-		return MINUTELY;
-	else
-		return def;
 }
 
 bool DayWatcherThread::has_timeout_expired(tm * now_time, tm * last_time, uint32 timeoutval)
@@ -135,7 +116,7 @@ bool DayWatcherThread::run()
 		currenttime = UNIXTIME;
 		dupe_tm_pointer(localtime(&currenttime), &local_currenttime);
 
-		if(has_timeout_expired(&local_currenttime, &local_last_arena_time, arena_period))
+		if(has_timeout_expired(&local_currenttime, &local_last_arena_time, WEEKLY))
 			update_arena();
 
 		if(has_timeout_expired(&local_currenttime, &local_last_daily_reset_time, DAILY))
@@ -237,19 +218,9 @@ void DayWatcherThread::update_arena()
 					// 2v2 teams only earn 70% (Was 60% until 13th March 07) of the arena points, 3v3 teams get 80%, while 5v5 teams get 100% of the arena points.
 					// 2v2 - 76%, 3v3 - 88% as of patch 2.2
 					if(team->m_type == ARENA_TEAM_TYPE_2V2)
-					{
 						Y *= 0.76;
-						Y *= sWorld.getRate(RATE_ARENAPOINTMULTIPLIER2X);
-					}
 					else if(team->m_type == ARENA_TEAM_TYPE_3V3)
-					{
 						Y *= 0.88;
-						Y *= sWorld.getRate(RATE_ARENAPOINTMULTIPLIER3X);
-					}
-					else
-					{
-						Y *= sWorld.getRate(RATE_ARENAPOINTMULTIPLIER5X);
-					}
 
 					if(Y > 1.0)
 						arenapointsPerTeam[i] += long2int32(double(ceil(Y)));

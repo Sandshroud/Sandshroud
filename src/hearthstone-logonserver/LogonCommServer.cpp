@@ -14,8 +14,7 @@ typedef struct
 LogonCommServerSocket::LogonCommServerSocket(SOCKET fd, const sockaddr_in * peer) : TcpSocket(fd, 65536, 524288, false, peer)
 {
 	// do nothing
-	last_ping = (uint32)UNIXTIME;
-	next_server_ping = last_ping + 20;
+	last_pong = last_ping = getMSTime();
 	remaining = opcode = 0;
 	removed = true;
 
@@ -118,8 +117,9 @@ void LogonCommServerSocket::HandlePacket(WorldPacket & recvData)
 		NULL,												// RSMSG_REALM_REGISTERED
 		&LogonCommServerSocket::HandleSessionRequest,		// RCMSG_REQUEST_SESSION
 		NULL,												// RSMSG_SESSION_RESULT
-		&LogonCommServerSocket::HandlePing,					// RCMSG_PING
-		NULL,												// RSMSG_PONG
+		NULL,												// RCMSG_PING
+		&LogonCommServerSocket::HandlePong,					// RSMSG_PONG
+		NULL,												// RMSG_LATENCY
 		NULL,/*Deprecated*/									// RCMSG_SQL_EXECUTE
 		&LogonCommServerSocket::HandleReloadAccounts,		// RCMSG_RELOAD_ACCOUNTS
 		&LogonCommServerSocket::HandleAuthChallenge,		// RCMSG_AUTH_CHALLENGE
@@ -237,6 +237,8 @@ void LogonCommServerSocket::HandleRegister(WorldPacket & recvData)
 	data << tmp_RealmID;
 	SendPacket(&data);
 
+	SendPing();
+
 	Log.Notice("LogonCommServer", "Realm(%s) successfully added.", realm->Name.c_str());
 }
 
@@ -259,7 +261,7 @@ void LogonCommServerSocket::HandleSessionRequest(WorldPacket & recvData)
 	uint32 error = 0;
 	Account * acct = sAccountMgr.GetAccount(account_name);
 	if(acct == NULL || acct->SessionKey == NULL || acct == NULL )
-		error = 1;		  // Unauthorized user.
+		error = 1;		// Unauthorized user.
 
 	if(serverid)
 	{
@@ -291,16 +293,29 @@ void LogonCommServerSocket::HandleSessionRequest(WorldPacket & recvData)
 	SendPacket(&data);
 }
 
-void LogonCommServerSocket::HandlePing(WorldPacket & recvData)
+void LogonCommServerSocket::SendPing()
 {
-	uint32 MSTime;
-	recvData >> MSTime;
-	latency = getMSTime()-MSTime;
-
-	WorldPacket data(RSMSG_PONG, 4);
-	data << getMSTime();
+	WorldPacket data(RCMSG_PING, 4);
+	data << latency;
 	SendPacket(&data);
-	last_ping = (uint32)time(NULL);
+
+	last_ping = getMSTime();
+}
+
+void LogonCommServerSocket::HandlePong(WorldPacket & recvData)
+{
+	last_pong = getMSTime();
+
+	uint32 serverDiff;
+	recvData >> serverDiff;
+	latency = last_pong-last_ping;
+	if(latency > serverDiff)
+		latency -= serverDiff;
+	else latency = 0;
+
+	WorldPacket data(RMSG_LATENCY, 4);
+	data << latency;
+	SendPacket(&data);
 }
 
 void LogonCommServerSocket::SendPacket(WorldPacket * data)
@@ -606,11 +621,10 @@ void LogonCommServerSocket::HandleDatabaseModify(WorldPacket& recvData)
 	}
 }
 
-void LogonCommServerSocket::SendPing()
+void LogonCommServerSocket::SendRPing()
 {
-	next_server_ping = (uint32)UNIXTIME + 20;
 	WorldPacket data(RSMSG_SERVER_PING, 4);
-	data << uint32(0);
+	data << uint32(getMSTime());
 	SendPacket(&data);
 }
 

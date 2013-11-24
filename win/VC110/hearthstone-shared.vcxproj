@@ -126,8 +126,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>copy $(OutDir)\$(ProjectName).lib ..\..\bin\Release</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -169,8 +168,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>copy $(OutDir)\$(ProjectName).lib ..\..\bin\Release_x64</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -204,8 +202,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>copy $(OutDir)\$(ProjectName).lib ..\..\bin\Debug</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -242,8 +239,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>copy $(OutDir)\$(ProjectName).lib ..\..\bin\Debug_x64</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

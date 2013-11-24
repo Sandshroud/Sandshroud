@@ -28,7 +28,7 @@ public:
 	void HandlePacket(WorldPacket & recvData);
 
 	void HandleRegister(WorldPacket & recvData);
-	void HandlePing(WorldPacket & recvData);
+	void HandlePong(WorldPacket & recvData);
 	void HandleSessionRequest(WorldPacket & recvData);
 	void HandleSQLExecute(WorldPacket & recvData);
 	void HandleReloadAccounts(WorldPacket & recvData);
@@ -40,12 +40,13 @@ public:
 	void HandleDatabaseModify(WorldPacket& recvData);
 	void HandlePopulationRespond(WorldPacket& recvData);
 
-	void RefreshRealmsPop();
 	void SendPing();
+	void RefreshRealmsPop();
+	void SendRPing();
 
 	uint32 latency;
 	uint32 last_ping;
-	uint32 next_server_ping;
+	uint32 last_pong;
 	bool removed;
 	set<uint32> server_ids;
 };

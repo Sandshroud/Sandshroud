@@ -39,7 +39,8 @@ void ScriptMgr::LoadScripts()
 		new HookInterface;
 
 	Log.Notice("ScriptMgr","Loading External Script Libraries..." );
-	string start_path = string(Config.MainConfig.GetStringDefault( "Script", "BinaryLocation", "script_bin" ).c_str()) + "\\";
+	string start_path = mainIni->ReadString( "Script", "BinaryLocation", "script_bin" );
+	start_path.append("\\");
 	string search_path = start_path + "*.";
 
 	vector< ScriptingEngine > ScriptEngines;
@@ -125,7 +126,7 @@ void ScriptMgr::LoadScripts()
 			if( itr->Type & SCRIPT_TYPE_SCRIPT_ENGINE_LUA )
 			{
 				// lua :O
-				if( Config.MainConfig.GetBoolDefault("ScriptBackends", "LUA", false) )
+				if( mainIni->ReadBoolean("ScriptBackends", "LUA", false) )
 				{
 					Log.Notice("ScriptMgr","Initializing LUA script engine...");
 					itr->InitializeCall(this);
@@ -138,7 +139,7 @@ void ScriptMgr::LoadScripts()
 			}
 			else if( itr->Type & SCRIPT_TYPE_SCRIPT_ENGINE_GM )
 			{
-				if( Config.MainConfig.GetBoolDefault("ScriptBackends", "GM", false) )
+				if( mainIni->ReadBoolean("ScriptBackends", "GM", false) )
 				{
 					Log.Notice("ScriptMgr","Initializing GameMonkey script engine...");
 					itr->InitializeCall(this);
