@@ -87,7 +87,7 @@ void CThreadPool::Shutdown()
 					DEBUG_LOG("ActiveThreadPool", "%u(%s) thread...", (*itr)->ThreadId, (*itr)->name );
 
 			if(totallistcount > 2)
-				suicide();
+				Suicide();
 		}
 
 		if(m_activeThreads.size())
@@ -191,3 +191,11 @@ Thread * CThreadPool::StartThread(ThreadContext * ExecutionTarget)
 }
 
 #endif
+
+void CThreadPool::Suicide()
+{
+	uint i = 3;
+	uint t = 0;
+	for(uint b = 0; b < 6; b++)
+		t = b/--i;
+}

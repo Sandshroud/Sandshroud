@@ -12,7 +12,7 @@
 template<class T>
 class SERVER_DECL ListenSocket : public BaseSocket
 {
-	int new_fd;
+	SOCKET new_fd;
 	sockaddr_in new_peer;
 	sockaddr_in address;
 public:
@@ -22,7 +22,7 @@ public:
 		m_fd = socket(AF_INET, SOCK_STREAM, 0);
 		u_long arg = 1;
 		setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (const char*)&arg, sizeof(u_long));
-		if(m_fd < 0)
+		if(m_fd == INVALID_SOCKET)
 		{
 			printf("WARNING: ListenSocket constructor: could not create socket() %u (%s)\n", errno, strerror(errno));
 		}
@@ -54,7 +54,7 @@ public:
 	
 	bool Open(const char * hostname, u_short port)
 	{
-		if(m_fd < 0)
+		if(m_fd == INVALID_SOCKET)
 		{
 			printf("No fd in listensocket\n");
 			return false;
@@ -126,10 +126,12 @@ public:
 
 #include <mswsock.h>
 
+static int Length = sizeof(sockaddr_in)+16;
+
 template<class T>
 class SERVER_DECL ListenSocket : public BaseSocket
 {
-	int new_fd;
+	SOCKET new_fd;
 	sockaddr_in new_peer;
 	sockaddr_in address;
 public:
@@ -148,13 +150,12 @@ public:
 
 	void OnAccept(void * pointer)
 	{
-		int fd = *(int*)pointer;
-		char* cpointer = ((char*)pointer);
-#ifndef _WIN64
-		sockaddr_in * addr = (sockaddr_in*)&cpointer[42];
-#else
-		sockaddr_in * addr = (sockaddr_in*)&cpointer[36];
-#endif
+		sockaddr *local, *remote;
+		SOCKET fd = *(SOCKET*)pointer;
+		int localOut = 0, remoteOut = 0;
+		GetAcceptExSockaddrs(((char*)pointer)+sizeof(SOCKET), 0, Length, Length, &local, &localOut, &remote, &remoteOut);
+
+		sockaddr_in *addr = (sockaddr_in*)remote;
 		T * s = new T(fd, addr);
 		s->Finalize();
 		free(pointer);
@@ -194,13 +195,13 @@ public:
 		ov->m_op = IO_EVENT_ACCEPT;
 		ov->m_acceptBuffer = malloc(1024);
 		memset(ov->m_acceptBuffer, 0, 1024);
-		/*int s = socket(AF_INET, SOCK_STREAM, 0);*/
-		int s = WSASocket(AF_INET, SOCK_STREAM, 0, 0, 0, WSA_FLAG_OVERLAPPED);
-		int len = sizeof(sockaddr_in) + 16;
-		*(int*)&((char*)ov->m_acceptBuffer)[0] = s;
+
+		/*SOCKET s = socket(AF_INET, SOCK_STREAM, 0);*/
+		SOCKET s = WSASocket(AF_INET, SOCK_STREAM, 0, 0, 0, WSA_FLAG_OVERLAPPED);
+		*(SOCKET*)&((char*)ov->m_acceptBuffer)[0] = s;
 		DWORD bytes;
 
-		if(!AcceptEx(m_fd, s, ((char*)ov->m_acceptBuffer) + sizeof(int), 0, len, len, &bytes, &ov->m_ov))
+		if(!AcceptEx(m_fd, s, ((char*)ov->m_acceptBuffer) + sizeof(SOCKET), 0, Length, Length, &bytes, &ov->m_ov))
 		{
 			if(WSA_IO_PENDING != WSAGetLastError())
 				printf("AcceptEx error: %u\n", WSAGetLastError());
@@ -209,7 +210,7 @@ public:
 
 	bool Open(const char * hostname, u_short port)
 	{
-		if(m_fd < 0)
+		if(m_fd == INVALID_SOCKET)
 			return false;
 
 		if(!strcmp(hostname, "0.0.0.0"))

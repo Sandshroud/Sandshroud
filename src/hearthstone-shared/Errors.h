@@ -12,7 +12,7 @@ void suicide();
 // TODO: handle errors better
 
 #if PLATFORM == PLATFORM_WIN && defined(CRASHHANDLER_ENABLED)
-#define WPAssert2( assertion ) { if( !(assertion) ) { fprintf( stderr, "\n%s:%i ASSERTION FAILED:\n  %s\n", __FILE__, __LINE__, #assertion ); suicide(); } }
+#define WPAssert2( assertion ) { if( !(assertion) ) { fprintf( stderr, "\n%s:%i ASSERTION FAILED:\n  %s\n", __FILE__, __LINE__, #assertion ); CThreadPool::Suicide(); } }
 #endif
 
 #define WPAssert( assertion ) { if( !(assertion) ) { fprintf( stderr, "\n%s:%i ASSERTION FAILED:\n  %s\n", __FILE__, __LINE__, #assertion ); assert(assertion); } }

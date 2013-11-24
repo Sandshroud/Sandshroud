@@ -14,7 +14,7 @@ public:
 	 * @param use_circular_buffer Use a circular buffer or normal buffer?
 	 * @param peer Connection
 	 */
-	TcpSocket(int fd, size_t readbuffersize, size_t writebuffersize, bool use_circular_buffer, const sockaddr_in * peer);
+	TcpSocket(SOCKET fd, size_t readbuffersize, size_t writebuffersize, bool use_circular_buffer, const sockaddr_in * peer);
 
 	/** Destructor
 	 */
@@ -131,7 +131,9 @@ T* ConnectTCPSocket(const char * hostname, u_short port)
 	conn.sin_port = ntohs(port);
 
 	/* open socket */
-	int fd = socket(AF_INET, SOCK_STREAM, 0);
+	SOCKET fd = socket(AF_INET, SOCK_STREAM, 0);
+	if(fd == INVALID_SOCKET)
+		return 0;
 
 	/* set him to blocking mode */
 	u_long arg = 0;
