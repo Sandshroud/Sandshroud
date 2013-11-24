@@ -95,7 +95,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy $(OutDir)\$(ProjectName).lib ..\..\VC\libVC110</Command>
+      <Command>copy $(OutDir)\$(ProjectName).lib ..\..\LIBS</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -115,7 +115,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy $(OutDir)\$(ProjectName).lib ..\..\VC\libVC110\amd64</Command>
+      <Command>copy $(OutDir)\$(ProjectName).lib ..\..\LIBS\amd64</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -139,7 +139,7 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy $(OutDir)\$(ProjectName).lib ..\..\VC\libVC110</Command>
+      <Command>copy $(OutDir)\$(ProjectName).lib ..\..\LIBS</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -162,7 +162,7 @@
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <PostBuildEvent>
-      <Command>copy $(OutDir)\$(ProjectName).lib ..\..\VC\libVC110\amd64</Command>
+      <Command>copy $(OutDir)\$(ProjectName).lib ..\..\LIBS\amd64</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
