@@ -18,7 +18,7 @@
 #include "../hearthstone-shared/Log.h"
 #include "../hearthstone-shared/Util.h"
 #include "../hearthstone-shared/ByteBuffer.h"
-#include "../hearthstone-shared/Config/ConfigEnv.h"
+#include "../hearthstone-shared/Config/IniFiles.h"
 #include <zlib/zlib.h>
 
 #include "../hearthstone-shared/DataStorage/DatabaseEnv.h"

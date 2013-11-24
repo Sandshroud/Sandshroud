@@ -39,9 +39,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\hearthstone-shared\Config\Config.cpp">
-      <Filter>Config</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\hearthstone-shared\Auth\BigNumber.cpp">
       <Filter>Auth</Filter>
     </ClCompile>
@@ -123,14 +120,11 @@
     <ClCompile Include="..\..\src\hearthstone-shared\Auth\RSA.cpp">
       <Filter>Auth</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\hearthstone-shared\Config\IniFiles.cpp">
+      <Filter>Config</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\hearthstone-shared\Config\Config.h">
-      <Filter>Config</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\hearthstone-shared\Config\ConfigEnv.h">
-      <Filter>Config</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\hearthstone-shared\Auth\BigNumber.h">
       <Filter>Auth</Filter>
     </ClInclude>
@@ -307,5 +301,8 @@
       <Filter>Auth</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\hearthstone-shared\svn_revision.h" />
+    <ClInclude Include="..\..\src\hearthstone-shared\Config\IniFiles.h">
+      <Filter>Config</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

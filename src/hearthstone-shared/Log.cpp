@@ -3,12 +3,11 @@
  */
 
 #include "Common.h"
-#include "Config/ConfigEnv.h"
 #include "Log.h"
 #include "NGLog.h"
 #include <stdarg.h>
 
-string FormatOutputString(const char * Prefix, const char * Description, bool useTimeStamp)
+std::string FormatOutputString(const char * Prefix, const char * Description, bool useTimeStamp)
 {
 
 	char p[MAX_PATH];
@@ -26,7 +25,7 @@ string FormatOutputString(const char * Prefix, const char * Description, bool us
 	}
 
 	strcat(p, ".log");
-	return string(p);
+	return std::string(p);
 }
 
 createFileSingleton( oLog );
