@@ -1380,10 +1380,10 @@ void WorldSession::SendInventoryList(Creature* unit)
 				{
 					if(itr->second.IsDependent)
 					{
-						if(curItem->AllowableClass && !(_player->getClassMask() & curItem->AllowableClass))
+						if(curItem->AllowableClass && !(_player->getClassMask() & curItem->AllowableClass) && !_player->bGMTagOn || _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_DEVELOPER)) /* hampus : Eh , not sure if this has already been impl to Sandshroud...*/
 							continue;
 
-						if(curItem->AllowableRace && !(_player->getRaceMask() & curItem->AllowableRace))
+						if(curItem->AllowableRace && !(_player->getRaceMask() & curItem->AllowableRace) && !_player->bGMTagOn || _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_DEVELOPER))
 							continue;
 
 						if(!CheckItemFaction(curItem->Faction, _player->GetTeam()))
