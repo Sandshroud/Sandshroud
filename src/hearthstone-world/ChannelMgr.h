@@ -11,7 +11,7 @@ public:
 	~ChannelMgr();
 
 	Channel *GetCreateChannel(const char *name, Player* p, uint32 type_id);
-	Channel *GetChannel(const char *name, Player* p);
+	Channel *GetChannel(const char *name, Player* p, bool requiresIn = false);
 	Channel * GetChannel(const char * name, uint32 team);
 	Channel *GetChannel(uint32 id);
 	void RemoveChannel(Channel * chn);
