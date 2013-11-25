@@ -6,7 +6,7 @@
 
 #include <stdlib.h>
 #include "../Common.h"
-#include "../../../dependencies/VC/include/openssl/sha.h"
+#include <openssl/sha.h>
 #include "../Auth/BigNumber.h"
 
 class Sha1Hash
