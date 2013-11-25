@@ -880,6 +880,10 @@ public:
 
 	void EventTimeoutLfgInviter();
 
+
+public:
+	void EventChatUpdate(bool TradeCheck);
+
 protected:
 
 	void _UpdateSkillFields();
@@ -2135,6 +2139,7 @@ protected:
 	WorldSession *m_session;
 	// Channels
 	std::set<uint32> m_channels;
+	std::map<uint32, Channel*> m_channelsbyDBCID;
 	// Visible objects
 	unordered_set<Object* > m_visibleObjects;
 	// Groups/Raids

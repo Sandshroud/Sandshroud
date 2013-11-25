@@ -64,6 +64,30 @@ Channel::Channel(const char * name, uint32 team, uint32 type_id, uint32 id)
 		m_flags = 0x01;
 }
 
+void Channel::UserListJoinNotify(Player* plr)
+{
+	WorldPacket data(SMSG_USERLIST_ADD, 8+1+1+4+m_name.size()+1);
+	if(!m_general)
+		data.SetOpcode(SMSG_USERLIST_UPDATE);
+
+	data << plr->GetGUID();
+	data << uint8(plr->GetChatTag());
+	data << uint8(m_flags);
+	data << uint32(GetNumMembers());
+	data << m_name;
+	SendToAll(&data);
+}
+
+void Channel::UserListLeaveNotify(Player* plr)
+{
+	WorldPacket data(SMSG_USERLIST_REMOVE, 8+1+4+m_name.size()+1);
+	data << plr->GetGUID();
+	data << uint8(m_flags);
+	data << uint32(GetNumMembers());
+	data << m_name;
+	SendToAll(&data);
+}
+
 void Channel::AttemptJoin(Player* plr, const char * password)
 {
 	if(plr == NULL)
@@ -116,9 +140,11 @@ void Channel::AttemptJoin(Player* plr, const char * password)
 	MakeNotifyPacket(&data, CHANNEL_NOTIFY_FLAG_YOUJOINED);
 	data << m_flags << m_typeId << uint32(0);
 	plr->GetSession()->SendPacket(&data);
+
+	UserListJoinNotify(plr);
 }
 
-void Channel::Part(Player* plr, bool silent)
+void Channel::Part(Player* plr, bool silent, bool keepData)
 {
 	if(plr == NULL)
 		return;
@@ -151,7 +177,7 @@ void Channel::Part(Player* plr, bool silent)
 		if(!(plr->GetSession() && (plr->GetSession()->IsLoggingOut() || plr->m_TeleportState == 1)))
 		{
 			MakeNotifyPacket(&data, CHANNEL_NOTIFY_FLAG_YOULEFT);
-			data << m_typeId << uint32(0) << uint8(0);
+			data << m_typeId << uint8(keepData ? 0x1 : 0x0);
 			plr->GetSession()->SendPacket(&data);
 		}
 	}
@@ -163,17 +189,8 @@ void Channel::Part(Player* plr, bool silent)
 		SendToAll(&data);
 	}
 
-#ifndef WIN32
-	if(m_members.size() == 0 )
-	{
-		m_lock.Release();
-		channelmgr.RemoveChannel(this);
-	}
-	else
-		m_lock.Release();
-#else
+	UserListLeaveNotify(plr);
 	m_lock.Release();
-#endif
 }
 
 void Channel::SetOwner(Player* oldpl, Player* plr)
@@ -865,7 +882,7 @@ Channel * ChannelMgr::GetCreateChannel(const char *name, Player* p, uint32 type_
 	return chn;
 }
 
-Channel * ChannelMgr::GetChannel(const char *name, Player* p)
+Channel * ChannelMgr::GetChannel(const char *name, Player* p, bool requiresIn)
 {
 	ChannelList::iterator itr;
 	ChannelList * cl = &Channels[0];
@@ -877,6 +894,9 @@ Channel * ChannelMgr::GetChannel(const char *name, Player* p)
 	{
 		if(!stricmp(name, itr->first.c_str()))
 		{
+			if(requiresIn && !itr->second->HasMember(p))
+				continue;
+
 			lock.Release();
 			return itr->second;
 		}

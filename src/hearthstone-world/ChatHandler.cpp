@@ -399,7 +399,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 		} break;
 	case CHAT_MSG_CHANNEL:
 		{
-			Channel *chn = channelmgr.GetChannel(misc.c_str(),GetPlayer());
+			Channel *chn = channelmgr.GetChannel(misc.c_str(), GetPlayer(), true);
 			if(sWorld.trade_world_chat && chn != NULL && chn->m_general == true && chn->pDBC && chn->pDBC->id == 2 && chn->pDBC->flags == 59)
 			{
 				char Message[512];
@@ -427,6 +427,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 			{
 				if(chn != NULL)
 					chn->Say(GetPlayer(),msg.c_str(), NULL, false);
+
 				if(sWorld.LogChats && msg.c_str()[0] != '.')
 					sWorld.LogChat(this, "[%s] %s: %s", misc.c_str(), _player->GetName(), msg.c_str());
 			}
