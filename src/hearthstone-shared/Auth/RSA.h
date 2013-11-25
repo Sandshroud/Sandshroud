@@ -6,10 +6,10 @@
 
 #include <stdlib.h>
 #include "../Common.h"
-#include "../../../dependencies/VC/include/openssl/rsa.h"
-#include "../../../dependencies/VC/include/openssl/bio.h"
-#include "../../../dependencies/VC/include/openssl/evp.h"
-#include "../../../dependencies/VC/include/openssl/pem.h"
+#include <openssl/rsa.h>
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+#include <openssl/pem.h>
 
 class RSAHash
 {

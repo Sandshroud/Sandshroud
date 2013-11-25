@@ -26,11 +26,10 @@
 #define LUA_USE_APICHECK
 #endif
 
-extern "C"
-{
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
+extern "C" {
+ #include <lualib/lua.h>
+ #include <lualib/lauxlib.h>
+ #include <lualib/lualib.h>
 }
 
 class LuaEngine;

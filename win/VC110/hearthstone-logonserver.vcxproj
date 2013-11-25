@@ -123,7 +123,7 @@
     <Link>
       <AdditionalDependencies>ws2_32.lib;libmysql.lib;libeay32.lib;dbghelp.lib;zlib.lib;pcre.lib;Mswsock.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)hearthstone-logonserver.exe</OutputFile>
-      <AdditionalLibraryDirectories>..\..\dependencies\VC\libVC110;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\dependencies\LIBS;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)hearthstone-logonserver.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -163,7 +163,7 @@
     <Link>
       <AdditionalDependencies>ws2_32.lib;libmysql.lib;libeay32.lib;dbghelp.lib;zlib.lib;pcre.lib;Mswsock.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)hearthstone-logonserver.exe</OutputFile>
-      <AdditionalLibraryDirectories>..\..\dependencies\VC\libVC110\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\dependencies\LIBS\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)hearthstone-logonserver.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -207,7 +207,7 @@
     <Link>
       <AdditionalDependencies>ws2_32.lib;libmysql.lib;libeay32.lib;dbghelp.lib;zlib.lib;pcre.lib;Mswsock.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)hearthstone-logonserver.exe</OutputFile>
-      <AdditionalLibraryDirectories>..\..\dependencies\VC\libVC110;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\dependencies\LIBS;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)hearthstone-logonserver.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -251,7 +251,7 @@
     <Link>
       <AdditionalDependencies>ws2_32.lib;libmysql.lib;libeay32.lib;dbghelp.lib;zlib.lib;pcre.lib;Mswsock.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)hearthstone-logonserver.exe</OutputFile>
-      <AdditionalLibraryDirectories>..\..\dependencies\VC\libVC110\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\dependencies\LIBS\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)hearthstone-logonserver.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
