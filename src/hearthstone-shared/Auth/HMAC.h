@@ -6,7 +6,7 @@
 
 #include <stdlib.h>
 #include "Common.h"
-#include "../../../dependencies/VC/include/openssl/hmac.h"
+#include <openssl/hmac.h>
 #include "Auth/BigNumber.h"
 
 class HMACHash

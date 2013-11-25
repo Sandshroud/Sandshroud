@@ -91,15 +91,12 @@
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   </PropertyGroup>
-  <PropertyGroup>
-    <IncludePath>..\..\..\..\dependencies\SRC;$(IncludePath)</IncludePath>
-  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <AdditionalOptions>/Zm500 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\Source;..\..\Source\PrecompiledHeaders;..\..\..\hearthstone-shared;..\..\..\hearthstone-world;..\..\..\..\dependencies\VC\include\lualib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Source;..\..\Source\PrecompiledHeaders;..\..\..\hearthstone-shared;..\..\..\hearthstone-world;..\..\..\..\dependencies\SRC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SCRIPTLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
@@ -114,7 +111,7 @@
     <Link>
       <AdditionalDependencies>hearthstone-world.lib;lualib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>../../../../bin/debug/Lacrimi.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\..\bin\debug;..\..\..\..\dependencies\VC\libVC100;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\bin\debug;..\..\..\..\dependencies\LIBS;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>../../../../bin/debug/Lacrimi.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -133,7 +130,7 @@
       <AdditionalOptions>/Zm500 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\Source;..\..\Source\PrecompiledHeaders;..\..\..\hearthstone-shared;..\..\..\hearthstone-world;..\..\..\..\dependencies\VC\include\lualib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Source;..\..\Source\PrecompiledHeaders;..\..\..\hearthstone-shared;..\..\..\hearthstone-world;..\..\..\..\dependencies\SRC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SCRIPTLIB;X64;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
@@ -148,7 +145,7 @@
     <Link>
       <AdditionalDependencies>hearthstone-world.lib;lualib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>../../../../bin/debug_x64/Lacrimi.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\..\bin\debug_x64;..\..\..\..\dependencies\VC\libVC100\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\bin\debug_x64;..\..\..\..\dependencies\LIBS\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>../../../../bin/debug_x64/Lacrimi.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -168,7 +165,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\..\Source;..\..\Source\PrecompiledHeaders;..\..\..\hearthstone-shared;..\..\..\hearthstone-world;..\..\..\..\dependencies\VC\include\lualib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Source;..\..\Source\PrecompiledHeaders;..\..\..\hearthstone-shared;..\..\..\hearthstone-world;..\..\..\..\dependencies\SRC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SCRIPTLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
@@ -183,7 +180,7 @@
     <Link>
       <AdditionalDependencies>hearthstone-world.lib;lualib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>../../../../bin/release/Lacrimi.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\..\bin\release;..\..\..\..\dependencies\VC\libVC100;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\bin\release;..\..\..\..\dependencies\LIBS;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>../../../../bin/release/Lacrimi.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -204,7 +201,7 @@
     </Midl>
     <ClCompile>
       <AdditionalOptions>/Zm500 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>..\..\Source;..\..\Source\PrecompiledHeaders;..\..\..\hearthstone-shared;..\..\..\hearthstone-world;..\..\..\..\dependencies\VC\include\lualib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\Source;..\..\Source\PrecompiledHeaders;..\..\..\hearthstone-shared;..\..\..\hearthstone-world;..\..\..\..\dependencies\SRC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SCRIPTLIB;X64;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
@@ -218,7 +215,7 @@
     <Link>
       <AdditionalDependencies>hearthstone-world.lib;lualib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>../../../../bin/release_x64/Lacrimi.dll</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\..\bin\release_x64;..\..\..\..\dependencies\VC\libVC100\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\..\bin\release_x64;..\..\..\..\dependencies\LIBS\amd64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>../../../../bin/release_x64/Lacrimi.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
