@@ -86,6 +86,8 @@ public:
 	Channel(const char * name, uint32 team, uint32 type_id, uint32 id);
 	~Channel();
 
+	void UserListJoinNotify(Player* plr);
+	void UserListLeaveNotify(Player* plr);
 	void MakeNotifyPacket(WorldPacket *data, uint8 type)
 	{
 		data->Initialize(SMSG_CHANNEL_NOTIFY, 1+m_name.size()+1);
@@ -94,7 +96,7 @@ public:
 	}
 
 	void AttemptJoin(Player* plr, const char * password);
-	void Part(Player* plr, bool silent);
+	void Part(Player* plr, bool silent, bool keepData = false);
 	void Kick(Player* plr, Player* die_player, bool ban);
 	void Invite(Player* plr, Player* new_player);
 	void Moderate(Player* plr);

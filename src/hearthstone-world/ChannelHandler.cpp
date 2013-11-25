@@ -33,6 +33,12 @@ void WorldSession::HandleChannelJoin(WorldPacket& recvPacket)
 	if( sWorld.GmClientChannel.size() && !stricmp(sWorld.GmClientChannel.c_str(), channelname.c_str()) && !GetPermissionCount())
 		return;
 
+	if(dbc_id == 2)
+	{
+		_player->EventChatUpdate(true);
+		return;
+	}
+
 	chn = channelmgr.GetCreateChannel(channelname.c_str(), _player, dbc_id);
 	if(chn == NULL)
 		return;
@@ -278,7 +284,7 @@ void WorldSession::HandleChannelNumMembersQuery(WorldPacket & recvPacket)
 	WorldPacket data(SMSG_CHANNEL_MEMBER_COUNT, recvPacket.size() + 4);
 	Channel *chn;
 	recvPacket >> channel_name;
-	chn = channelmgr.GetChannel(channel_name.c_str(), _player);
+	chn = channelmgr.GetChannel(channel_name.c_str(), _player, true);
 	if( chn != NULL )
 	{
 		data << channel_name;
