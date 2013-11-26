@@ -31,6 +31,10 @@ foreach(src IN ITEMS ${headers} )
   SET( HEADERS ${HEADERS} ${prefix}/${src} )
 endforeach(src)
 
+set( SRCS ${SRCS}
+	${ROOT_PATH}/src/hearthstone-shared/resources.rc
+	${ROOT_PATH}/src/hearthstone-shared/Icon.ico)
+
 include_directories( ${GLOBAL_INCLUDE_DIRS} )
 link_directories( ${EXTRA_LIBS_PATH} ${DEPENDENCY_LIBS} )
 IF( IS_64BIT )
@@ -46,13 +50,13 @@ IF( CMAKE_GENERATOR MATCHES Visual*)
 ENDIF()
 
 #Link our hearthstone-shared lib.
-target_link_libraries( ${PROJECT_NAME} hearthstone-shared ${ZLIB_LIBRARIES} ${PCRE_LIBRARIES} )
+add_dependencies( ${PROJECT_NAME} hearthstone-shared g3dlite recast detour pcre zlib )
+target_link_libraries( ${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT} ${MYSQL_LIBRARY} ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES} ${PCRE_LIBRARIES} hearthstone-shared g3dlite recast detour pcre zlib ${EXTRA_LIBS} )
 
-target_link_libraries( ${PROJECT_NAME} ${ZLIB_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${MYSQL_LIBRARY} ${OPENSSL_LIBRARIES} ${EXTRA_LIBS} )
-
+#Set our resources
+set_source_files_properties(Icon.ico resources.rc PROPERTIES LANGUAGE RC)
 #Set our compile information
-set_property(TARGET ${PROJECT_NAME} PROPERTY COMPILE_DEFINITIONS _LOGON)
+set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_DEFINITIONS _LOGON)
 
 #Provide make install rules.
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION .)
-
