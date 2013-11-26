@@ -229,7 +229,7 @@ SET( headers
     WorldStateManager.h
     WordFilter.h
 )
-	
+
 foreach(src IN ITEMS ${sources} )
   SET( SRCS ${SRCS} ${prefix}/${src} )
 endforeach(src)
