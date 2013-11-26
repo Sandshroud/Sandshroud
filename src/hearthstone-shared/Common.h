@@ -35,10 +35,6 @@ enum MsTimeVariables
 #define HEARTHSTONE_INLINE inline
 #endif
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
 #if defined(SHARED_LIB_BUILDER) || defined(_LOGON) || defined(_REALM) || defined(_GAME) // Game the lost just you?
 #include "hearthstoneConfig.h"
 #endif
