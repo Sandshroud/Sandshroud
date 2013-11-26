@@ -215,7 +215,7 @@ ReferenceCountedPointer<class Image1uint8> Image4uint8::getChannel(int c) const 
 }
 
 
-const ImageFormat* Image4uint8::format() const {
+const ImageFormat* Image4uint8::G3D_format() const {
     return ImageFormat::RGBA8();
 }
 

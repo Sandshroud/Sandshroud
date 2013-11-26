@@ -1,5 +1,7 @@
 PROJECT(hearthstone-world)
+
 SET( prefix ${ROOT_PATH}/src/hearthstone-world )
+
 SET(sources
     AddonMgr.cpp
     AchievementInterface.cpp
@@ -121,8 +123,6 @@ SET(sources
     WarsongGulch.cpp
     WayPoints.cpp
     WeatherMgr.cpp
-    Wintergrasp.cpp
-    WintergraspInternal.cpp
     World.cpp
     WorldCreator.cpp
     WorldSession.cpp
@@ -130,6 +130,8 @@ SET(sources
     WorldRunnable.cpp
     WorldStateManager.cpp
     WordFilter.cpp
+	resources.rc
+	Icon.ico
 )
 
 SET( headers
@@ -218,8 +220,6 @@ SET( headers
     WarnSystem.h
     WarsongGulch.h
     WeatherMgr.h
-    Wintergrasp.h
-    WintergraspInternal.h
     World.h
     WorldCreator.h
     WorldSession.h
@@ -230,7 +230,6 @@ SET( headers
     WordFilter.h
 )
 	
-
 foreach(src IN ITEMS ${sources} )
   SET( SRCS ${SRCS} ${prefix}/${src} )
 endforeach(src)
@@ -248,14 +247,14 @@ IF( CMAKE_GENERATOR MATCHES Visual*)
 	ADD_NATIVE_PRECOMPILED_HEADER(${PROJECT_NAME} StdAfx.h ${prefix}/StdAfx.cpp)
 ENDIF()
 
-set_source_files_properties(icon.ico resources.rc PROPERTIES LANGUAGE RC)
+#Link our hearthstone-shared lib.
+add_dependencies( ${PROJECT_NAME} hearthstone-shared g3dlite recast detour pcre zlib )
+target_link_libraries( ${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT} ${MYSQL_LIBRARY} ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES} ${PCRE_LIBRARIES} hearthstone-shared g3dlite recast detour pcre zlib ${EXTRA_LIBS} )
+
+#Set our resources
+set_source_files_properties(Icon.ico resources.rc PROPERTIES LANGUAGE RC)
+#Set our compile information
 set_target_properties(${PROJECT_NAME} PROPERTIES ENABLE_EXPORTS TRUE)
 
-add_dependencies( ${PROJECT_NAME} hearthstone-shared )
-target_link_libraries( ${PROJECT_NAME} hearthstone-shared ${PCRE_LIBRARIES} )
+#Provide make install rules.
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION .)
-
-
-
-
-

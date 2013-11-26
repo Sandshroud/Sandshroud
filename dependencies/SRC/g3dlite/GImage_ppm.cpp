@@ -30,7 +30,7 @@ void GImage::encodePPMASCII(
             
             const Color1uint8* c = this->pixel1();
             // Insert newlines every 70 characters max
-            for (g3d_uint32 i = 0; i < (uint32)(m_width * m_height); ++i) {
+            for (g3d_uint32 i = 0; i < (G3D::g3d_uint32)(m_width * m_height); ++i) {
                 ppm.printf("%d%c", c[i].value, (i % (70/4) == 0) ? '\n' : ' '); 
             }
         }
@@ -42,7 +42,7 @@ void GImage::encodePPMASCII(
             
             const Color3uint8* c = this->pixel3();
             // Insert newlines every 70 characters max
-            for (g3d_uint32 i = 0; i < (uint32)(m_width * m_height); ++i) {
+            for (g3d_uint32 i = 0; i < (G3D::g3d_uint32)(m_width * m_height); ++i) {
                 ppm.printf("%d %d %d%c", c[i].r, c[i].g, c[i].b, 
                     (i % (70/12) == 0) ?
                     '\n' : ' '); 

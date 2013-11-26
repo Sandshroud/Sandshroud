@@ -1,6 +1,7 @@
 PROJECT(hearthstone-shared)
 
 SET( prefix ${ROOT_PATH}/src/hearthstone-shared )
+
 SET( sources
     CallBack.cpp
     CoreMemoryAllocator.cpp
@@ -21,7 +22,7 @@ SET( sources
     Auth/MD5.cpp
     Auth/Sha1.cpp
     Auth/WowCrypt.cpp
-    Config/Config.cpp
+    Config/IniFiles.cpp
     DataStorage/DBC/DBC.cpp
     DataStorage/Database.cpp
     DataStorage/DatabaseEngine.cpp
@@ -34,65 +35,9 @@ SET( sources
     Network/SocketEngine_poll.cpp
     Network/SocketEngine_select.cpp
     Network/TcpSocket.cpp
-    Collision/vmap/BIH.cpp
-    Collision/vmap/MapTree.cpp
-    Collision/vmap/ModelInstance.cpp
-    Collision/vmap/TileAssembler.cpp
-    Collision/vmap/VMapFactory.cpp
-    Collision/vmap/VMapManager2.cpp
-    Collision/vmap/WorldModel.cpp
-    Collision/g3dlite/AABox.cpp
-    Collision/g3dlite/Box.cpp
-    Collision/g3dlite/Capsule.cpp
-    Collision/g3dlite/CollisionDetection.cpp
-    Collision/g3dlite/CoordinateFrame.cpp
-    Collision/g3dlite/Crypto.cpp
-    Collision/g3dlite/Cylinder.cpp
-    Collision/g3dlite/fileutils.cpp
-    Collision/g3dlite/g3dfnmatch.cpp
-    Collision/g3dlite/g3dmath.cpp
-    Collision/g3dlite/Line.cpp
-    Collision/g3dlite/LineSegment.cpp
-    Collision/g3dlite/Matrix.cpp
-    Collision/g3dlite/Matrix3.cpp
-    Collision/g3dlite/Matrix4.cpp
-    Collision/g3dlite/MemoryManager.cpp
-    Collision/g3dlite/Plane.cpp
-    Collision/g3dlite/Quat.cpp
-    Collision/g3dlite/Random.cpp
-    Collision/g3dlite/Ray.cpp
-    Collision/g3dlite/ReferenceCount.cpp
-    Collision/g3dlite/RegistryUtil.cpp
-    Collision/g3dlite/Sphere.cpp
-    Collision/g3dlite/stringutils.cpp
-    Collision/g3dlite/System.cpp
-    Collision/g3dlite/Triangle.cpp
-    Collision/g3dlite/uint128.cpp
-    Collision/g3dlite/UprightFrame.cpp
-    Collision/g3dlite/Vector2.cpp
-    Collision/g3dlite/Vector2int16.cpp
-    Collision/g3dlite/Vector3.cpp
-    Collision/g3dlite/Vector3int16.cpp
-    Collision/g3dlite/Vector3int32.cpp
-    Collision/g3dlite/Vector4.cpp
-    Collision/g3dlite/Vector4int8.cpp
     Console/CConsole.cpp
-    Pathfinding/Recast/Recast.cpp
-    Pathfinding/Recast/RecastArea.cpp
-    Pathfinding/Recast/RecastContour.cpp
-    Pathfinding/Recast/RecastFilter.cpp
-    Pathfinding/Recast/RecastMesh.cpp
-    Pathfinding/Recast/RecastMeshDetail.cpp
-    Pathfinding/Recast/RecastRasterization.cpp
-    Pathfinding/Recast/RecastRegion.cpp
-    Pathfinding/Detour/DetourCommon.cpp
-    Pathfinding/Detour/DetourNavMesh.cpp
-    Pathfinding/Detour/DetourNavMeshBuilder.cpp
-    Pathfinding/Detour/DetourNavMeshQuery.cpp
-    Pathfinding/Detour/DetourNode.cpp
-    Pathfinding/Detour/DetourObstacleAvoidance.cpp
 )
-	
+
 set( headers 
     AuthCodes.h
     ByteBuffer.h
@@ -136,8 +81,7 @@ set( headers
     Auth/MD5.h
     Auth/Sha1.h
     Auth/WowCrypt.h
-    Config/Config.h
-    Config/ConfigEnv.h
+    Config/IniFiles.h
     DataStorage/DBC/DBC.h
     DataStorage/Database.h
     DataStorage/DatabaseEngine.h
@@ -159,79 +103,15 @@ set( headers
     Network/SocketEngine_select.h
     Network/StraightBuffer.h
     Network/TcpSocket.h
-    Collision/LocationVector.h
-    Collision/vmap/BIH.h
-    Collision/vmap/MapTree.h
-    Collision/vmap/ModelInstance.h
-    Collision/vmap/TileAssembler.h
-    Collision/vmap/VMapDefinitions.h
-    Collision/vmap/VMapFactory.h
-    Collision/vmap/VMapManager2.h
-    Collision/vmap/VMapTools.h
-    Collision/vmap/WorldModel.h
-    Collision/g3dlite/AABox.h
-    Collision/g3dlite/Array.h
-    Collision/g3dlite/AtomicInt32.h
-    Collision/g3dlite/BoundsTrait.h
-    Collision/g3dlite/Box.h
-    Collision/g3dlite/Capsule.h
-    Collision/g3dlite/CollisionDetection.h
-    Collision/g3dlite/CoordinateFrame.h
-    Collision/g3dlite/Crypto.h
-    Collision/g3dlite/Cylinder.h
-    Collision/g3dlite/EqualsTrait.h
-    Collision/g3dlite/fileutils.h
-    Collision/g3dlite/G3D.h
-    Collision/g3dlite/G3DAll.h
-    Collision/g3dlite/g3dfnmatch.h
-    Collision/g3dlite/G3DGameUnits.h
-    Collision/g3dlite/g3dmath.h
-    Collision/g3dlite/GCamera.h
-    Collision/g3dlite/HashTrait.h
-    Collision/g3dlite/Line.h
-    Collision/g3dlite/LineSegment.h
-    Collision/g3dlite/Matrix.h
-    Collision/g3dlite/Matrix2.h
-    Collision/g3dlite/Matrix3.h
-    Collision/g3dlite/Matrix4.h
-    Collision/g3dlite/MemoryManager.h
-    Collision/g3dlite/Plane.h
-    Collision/g3dlite/platform.h
-    Collision/g3dlite/PositionTrait.h
-    Collision/g3dlite/Quat.h
-    Collision/g3dlite/Random.h
-    Collision/g3dlite/Ray.h
-    Collision/g3dlite/Rect2D.h
-    Collision/g3dlite/ReferenceCount.h
-    Collision/g3dlite/RegistryUtil.h
-    Collision/g3dlite/Set.h
-    Collision/g3dlite/Sphere.h
-    Collision/g3dlite/Spline.h
-    Collision/g3dlite/stringutils.h
-    Collision/g3dlite/System.h
-    Collision/g3dlite/Table.h
-    Collision/g3dlite/Triangle.h
-    Collision/g3dlite/uint128.h
-    Collision/g3dlite/units.h
-    Collision/g3dlite/UprightFrame.h
-    Collision/g3dlite/Vector2.h
-    Collision/g3dlite/Vector2int16.h
-    Collision/g3dlite/Vector3.h
-    Collision/g3dlite/Vector3int16.h
-    Collision/g3dlite/Vector3int32.h
-    Collision/g3dlite/Vector4.h
-    Collision/g3dlite/Vector4int8.h
-    Collision/g3dlite/vectorMath.h
     Console/BaseConsole.h
     Console/CConsole.h
-    Pathfinding/Recast/Recast.h
-    Pathfinding/Detour/DetourCommon.h
-    Pathfinding/Detour/DetourNavMesh.h
-    Pathfinding/Detour/DetourNavMeshBuilder.h
-    Pathfinding/Detour/DetourNavMeshQuery.h
-    Pathfinding/Detour/DetourNode.h
-    Pathfinding/Detour/DetourObstacleAvoidance.h
 )
+
+IF(UNIX)
+  set( headers ${headers}
+	unix/ini.c
+	unix/ini.h )
+ENDIF()
 
 foreach(src IN ITEMS ${sources} )
   SET( SRCS ${SRCS} ${prefix}/${src} )
@@ -246,7 +126,8 @@ link_directories( ${DEPENDENCY_LIBS} )
 
 ADD_LIBRARY( ${PROJECT_NAME} STATIC ${SRCS} ${HEADERS} )
 
-target_link_libraries( ${PROJECT_NAME} ${ZLIB_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${MYSQL_LIBRARY} ${OPENSSL_LIBRARIES} ${EXTRA_LIBS} )
+add_dependencies( ${PROJECT_NAME} g3dlite recast detour pcre zlib )
+target_link_libraries( ${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT} ${MYSQL_LIBRARY} ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES} ${PCRE_LIBRARIES} g3dlite recast detour pcre zlib ${EXTRA_LIBS} )
 
 #Set our compile information
 set_property(TARGET ${PROJECT_NAME} PROPERTY COMPILE_DEFINITIONS SHARED_LIB_BUILDER)
