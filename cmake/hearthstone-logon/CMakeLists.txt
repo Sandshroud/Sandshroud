@@ -1,5 +1,7 @@
 PROJECT(hearthstone-logonserver)
+
 SET( prefix ${ROOT_PATH}/src/hearthstone-logonserver)
+
 SET( sources
     AccountCache.cpp
     AuthSocket.cpp
@@ -57,6 +59,3 @@ target_link_libraries( ${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT} ${MYSQL_LIBRARY
 set_source_files_properties(Icon.ico resources.rc PROPERTIES LANGUAGE RC)
 #Set our compile information
 set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_DEFINITIONS _LOGON)
-
-#Provide make install rules.
-install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION .)
