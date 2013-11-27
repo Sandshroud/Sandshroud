@@ -1,9 +1,12 @@
 project(Hearthstone)
 
-cmake_minimum_required(VERSION 2.8)
 #Do system checking.
+cmake_minimum_required(VERSION 2.8)
 
+#set our system paths
+SET(ROOT_PATH  ${CMAKE_SOURCE_DIR}/..)
 SET(GLOBAL_DEFINES "-DHAVE_CONFIG_H")
+SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${ROOT_PATH}/bin" )
 
 #check platform version.
 IF(CMAKE_SYSTEM_PROCESSOR MATCHES "[xX]64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "[xX]86_64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "[aA][mM][dD]64" OR CMAKE_GENERATOR MATCHES Win64*)
@@ -20,7 +23,7 @@ IF( CMAKE_GENERATOR MATCHES Visual*)
 ENDIF()
 
 #Set the visual studio precompiled header buffer
-SET(VISUALSTUDIO_COMPILERHEAPLIMIT 400 CACHE STRING "Visual Studio compiler heap limit. Ignore on darwin and unix platforms." )
+SET(VISUALSTUDIO_COMPILERHEAPLIMIT 450 CACHE STRING "Visual Studio compiler heap limit. Ignore on darwin and unix platforms." )
 
 IF(IS_64BIT AND CMAKE_GENERATOR MATCHES Visual*)
 SET(GLOBAL_DEFINES ${GLOBAL_DEFINES} "/bigobj")
@@ -46,8 +49,6 @@ IF(UNIX AND NOT IS_MAC)
 	ENDIF()
 ENDIF()
 
-SET(ROOT_PATH  ${CMAKE_SOURCE_DIR}/..)
-
 #We have our own custom modules that we use. This tells cmakes where to find them.
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ROOT_PATH}/cmake_modules )
 #Include the directories for our dependencies
@@ -66,11 +67,6 @@ ELSE()
 	SET(DEPENDENCY_DLLS ${DEPENDENCY_ROOT}"/DLL Files")
 ENDIF()
 
-#Install libmysql.dll required for our core to run.
-IF( WIN32)
-	SET(INSTALLED_DEPENDENCIES ${DEPENDENCY_DLLS}/libmysql.dll ${DEPENDENCY_DLLS}/libeay32.dll)
-ENDIF()
-
 SET(BUILD_INFORMATION "${CMAKE_SYSTEM_PROCESSOR} - ${CMAKE_GENERATOR}" CACHE PATH "What the cmake generator string is")
 
 #Grab our ini files
@@ -80,7 +76,7 @@ include(CompilerVersion)
 if( CMAKE_GENERATOR MATCHES Unix* )
 	add_definitions(-Wno-deprecated)
 	#Extract Revision
-	execute_process( WORKING_DIRECTORY ${ROOT_PATH} COMMAND sh extract_svn_revision.sh )
+	execute_process( WORKING_DIRECTORY ${ROOT_PATH} COMMAND sh extract_git_version.sh )
 
 	#Check support for unordered_map/set
 	GetCompilerVersion(gcc_version)
@@ -89,7 +85,7 @@ if( CMAKE_GENERATOR MATCHES Unix* )
 	ENDIF()
 ELSEIF( CMAKE_GENERATOR MATCHES Visual* )
 	#Extract revision
-	execute_process(WORKING_DIRECTORY ${ROOT_PATH}/dependencies/SH COMMAND extract_svn_revision.bat )
+	execute_process(WORKING_DIRECTORY ${ROOT_PATH}/dependencies/SH/ COMMAND extract_git_version.sh )
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS /EHa )
 
 	#Check support for unordered_map/set
@@ -99,16 +95,14 @@ ELSEIF( CMAKE_GENERATOR MATCHES Visual* )
 	ENDIF()
 
 	#This fixes PCH issues 'Inconsistent values for /Ym'
-	IF( CMAKE_GENERATOR MATCHES Visual* )
-		# 2 steps. First remove any /Zm option that may exist and then add our own one
-		STRING( REGEX REPLACE "(/Zm)([0-9]+)" "" CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS} )
-		SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Zm${VISUALSTUDIO_COMPILERHEAPLIMIT}" )
-		STRING( REGEX REPLACE "(/Zm)([0-9]+)" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} )
-		SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zm${VISUALSTUDIO_COMPILERHEAPLIMIT}" )
-		# put flags in cmake cache
-		SET( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} CACHE STRING "CMAKE_CXX_FLAGS" FORCE)
-		SET( CMAKE_C_FLAGS ${CMAKE_C_FLAGS} CACHE STRING "CMAKE_C_FLAGS" FORCE)
-	ENDIF( CMAKE_GENERATOR MATCHES Visual* )
+	# 2 steps. First remove any /Zm option that may exist and then add our own one
+	STRING( REGEX REPLACE "(/Zm)([0-9]+)" "" CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS} )
+	SET( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Zm${VISUALSTUDIO_COMPILERHEAPLIMIT}" )
+	STRING( REGEX REPLACE "(/Zm)([0-9]+)" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} )
+	SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zm${VISUALSTUDIO_COMPILERHEAPLIMIT}" )
+	# put flags in cmake cache
+	SET( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} CACHE STRING "CMAKE_CXX_FLAGS" FORCE)
+	SET( CMAKE_C_FLAGS ${CMAKE_C_FLAGS} CACHE STRING "CMAKE_C_FLAGS" FORCE)
 ENDIF()
 
 #Pass our configurable variables to the C++ preprocessor.
@@ -197,5 +191,3 @@ add_subdirectory(pcre)
 add_subdirectory(g3dlite)
 add_subdirectory(detour)
 add_subdirectory(recast)
-
-INSTALL(FILES ${INSTALLED_DEPENDENCIES} DESTINATION .)

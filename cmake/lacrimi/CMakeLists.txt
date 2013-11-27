@@ -114,13 +114,16 @@ source_group("Scripts\\Level 2\\Blackfathom Deeps" FILES ${scripts_blackfathom_d
 
 SET( SRCS ${SRCS} ${scripts_blackfathom_deeps} )
 
-include(PCHSupport)
-include_directories( ${GLOBAL_INCLUDE_DIRS} ${prefix} ${prefix}/PrecompiledHeaders )
+#Add our dependencies and our ScriptLib declaration
 link_directories( ${DEPENDENCY_LIBS} ${EXTRA_LIBS_PATH} )
 add_definitions(-DSCRIPTLIB)
 
-add_executable( ${PROJECT_NAME} ${SRCS} )
+#Add our source files
+add_library( ${PROJECT_NAME} SHARED ${SRCS} )
 
+#Set up our precompiled header system
+include(PCHSupport)
+include_directories( ${GLOBAL_INCLUDE_DIRS} ${prefix} ${prefix}/PrecompiledHeaders )
 IF( CMAKE_GENERATOR MATCHES Visual*)
 	ADD_NATIVE_PRECOMPILED_HEADER(${PROJECT_NAME} LacrimiStdAfx.h ${prefix}/PrecompiledHeaders/LacrimiStdAfx.cpp)
 ENDIF()
@@ -128,6 +131,3 @@ ENDIF()
 #Link our hearthstone-shared lib.
 add_dependencies( ${PROJECT_NAME} hearthstone-world )
 target_link_libraries( ${PROJECT_NAME} hearthstone-world ${EXTRA_LIBS} lualib.lib )
-
-#Provide make install rules.
-install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION .)
