@@ -397,6 +397,12 @@ int LuaGlobalFunctions_GetSandshroudRevision(lua_State * L)
 	return 1;
 }
 
+int LuaGlobalFunctions_GetSandshroudBuildHash(lua_State * L)
+{
+	lua_pushnumber(L,BUILD_HASH);
+	return 1;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // WORLD PVP NOT SUPPORTED!
 //////////////////////////////////////////////////////////////////////////

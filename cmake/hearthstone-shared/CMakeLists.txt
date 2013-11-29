@@ -2,129 +2,68 @@ PROJECT(hearthstone-shared)
 
 SET( prefix ${ROOT_PATH}/src/hearthstone-shared )
 
-SET( sources
-    CallBack.cpp
-    CoreMemoryAllocator.cpp
-    CoreMemoryAllocator_Core.cpp
-    CrashHandler.cpp
-    crc32.cpp
-    hashmap.cpp
-    hearthstone_getopt.cpp
-    Log.cpp
-    MemoryLeaks.cpp
-    MersenneTwister.cpp
-    StackWalker.cpp
-    Util.cpp
-    Threading/Mutex.cpp
-    Threading/ThreadPool.cpp
-    Auth/BigNumber.cpp
-    Auth/HMAC.cpp
-    Auth/MD5.cpp
-    Auth/Sha1.cpp
-    Auth/WowCrypt.cpp
-    Config/IniFiles.cpp
-    DataStorage/DBC/DBC.cpp
-    DataStorage/Database.cpp
-    DataStorage/DatabaseEngine.cpp
-    DataStorage/DBC/DBCStores.cpp
-    DataStorage/DBC/dbcfile.cpp
-    Network/SocketEngine.cpp
-    Network/SocketEngine_epoll.cpp
-    Network/SocketEngine_iocp.cpp
-    Network/SocketEngine_kqueue.cpp
-    Network/SocketEngine_poll.cpp
-    Network/SocketEngine_select.cpp
-    Network/TcpSocket.cpp
-    Console/CConsole.cpp
-)
+FILE(GLOB auth_files
+"${prefix}/Auth/*.h"
+"${prefix}/Auth/*.cpp")
+source_group("Auth" FILES ${auth_files})
 
-set( headers 
-    AuthCodes.h
-    ByteBuffer.h
-    ByteConverter.h
-    CallBack.h
-    CircularQueue.h
-    Common.h
-    CrashHandler.h
-    crc32.h
-    Errors.h
-    FastQueue.h
-    format.h
-    hashmap.h
-    hearthstone_getopt.h
-    hearthstoneConfig.h
-    int24.h
-    Log.h
-    MemoryLeaks.h
-    MersenneTwister.h
-    NGLog.h
-    PerfCounters.h
-    PreallocatedQueue.h
-    RC4Engine.h
-    Singleton.h
-    Storage.h
-    svn_revision.h
-    Timer.h
-    Util.h
-    WorldPacket.h
-    WoWGuid.h
-    Threading/Threading.h
-    Threading/Condition.h
-    Threading/Guard.h
-    Threading/LockedQueue.h
-    Threading/RWLock.h
-    Threading/Mutex.h
-    Threading/ThreadPool.h
-    Threading/ThreadStarter.h
-    Auth/BigNumber.h
-    Auth/HMAC.h
-    Auth/MD5.h
-    Auth/Sha1.h
-    Auth/WowCrypt.h
-    Config/IniFiles.h
-    DataStorage/DBC/DBC.h
-    DataStorage/Database.h
-    DataStorage/DatabaseEngine.h
-    DataStorage/DatabaseEnv.h
-    DataStorage/DBC/DBCStores.h
-    DataStorage/Field.h
-    DataStorage/DBC/DataStore.h
-    DataStorage/DBC/dbcfile.h
-    Network/BaseBuffer.h
-    Network/BaseSocket.h
-    Network/CircularBuffer.h
-    Network/ListenSocket.h
-    Network/Network.h
-    Network/SocketEngine.h
-    Network/SocketEngine_epoll.h
-    Network/SocketEngine_iocp.h
-    Network/SocketEngine_kqueue.h
-    Network/SocketEngine_poll.h
-    Network/SocketEngine_select.h
-    Network/StraightBuffer.h
-    Network/TcpSocket.h
-    Console/BaseConsole.h
-    Console/CConsole.h
-)
+SET(SRCS ${SRCS} ${auth_files})
 
-IF(UNIX)
-  set( headers ${headers}
-	unix/ini.c
-	unix/ini.h )
+FILE(GLOB config_files
+"${prefix}/Config/*.h"
+"${prefix}/Config/*.cpp")
+source_group("Config" FILES ${config_files})
+SET(SRCS ${SRCS} ${config_files} )
+
+IF(TRUE)
+FILE(GLOB unixconfig
+"${prefix}/Config/unix/*.c"
+"${prefix}/Config/unix/*.h")
+source_group("Config" FILES ${unixconfig})
+
+SET(SRCS ${SRCS} ${unixconfig} )
 ENDIF()
 
-foreach(src IN ITEMS ${sources} )
-  SET( SRCS ${SRCS} ${prefix}/${src} )
-endforeach(src)
-foreach(src IN ITEMS ${headers} )
-  SET(HEADERS ${HEADERS} ${prefix}/${src} )
-endforeach(src)
+FILE(GLOB console_files
+"${prefix}/Console/*.h"
+"${prefix}/Console/*.cpp")
+source_group("Console" FILES ${console_files})
+SET(SRCS ${SRCS} ${console_files} )
+
+FILE(GLOB datastore_files
+"${prefix}/DataStorage/*.h"
+"${prefix}/DataStorage/*.cpp")
+source_group("Database" FILES ${datastore_files})
+SET(SRCS ${SRCS} ${datastore_files} )
+
+FILE(GLOB datastore_dbc_files
+"${prefix}/DataStorage/DBC/*.h"
+"${prefix}/DataStorage/DBC/*.cpp")
+source_group("Database\\DBC" FILES ${datastore_dbc_files})
+SET(SRCS ${SRCS} ${datastore_dbc_files} )
+
+FILE(GLOB network_files
+"${prefix}/Network/*.h"
+"${prefix}/Network/*.cpp")
+source_group("Network" FILES ${network_files})
+SET(SRCS ${SRCS} ${network_files} )
+
+FILE(GLOB threading_files
+"${prefix}/Threading/*.h"
+"${prefix}/Threading/*.cpp")
+source_group("Threading" FILES ${threading_files})
+SET(SRCS ${SRCS} ${threading_files} )
+
+FILE(GLOB sources
+"${prefix}/*.h"
+"${prefix}/*.cpp")
+source_group("Util" FILES ${sources})
+SET(SRCS ${SRCS} ${sources})
 
 include_directories( ${GLOBAL_INCLUDE_DIRS} )
-link_directories( ${DEPENDENCY_DLLS} )
-link_directories( ${DEPENDENCY_LIBS} )
+link_directories( ${DEPENDENCY_DLLS} ${DEPENDENCY_LIBS} )
 
-ADD_LIBRARY( ${PROJECT_NAME} STATIC ${SRCS} ${HEADERS} )
+ADD_LIBRARY( ${PROJECT_NAME} STATIC ${SRCS} )
 
 add_dependencies( ${PROJECT_NAME} g3dlite recast detour pcre zlib )
 target_link_libraries( ${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT} ${MYSQL_LIBRARY} ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES} ${PCRE_LIBRARIES} g3dlite recast detour pcre zlib ${EXTRA_LIBS} )

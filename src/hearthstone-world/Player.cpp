@@ -8688,9 +8688,9 @@ void Player::sendMOTD()
 	delete datat;
 
 	// Send revision
-	BroadcastMessage("%sServer:|r%s Sandshroud Hearthstone|r %s Private-r%u-%s-%s", MSG_COLOR_GOLD,
-		MSG_COLOR_ORANGEY, MSG_COLOR_TORQUISEBLUE, BUILD_REVISION, ARCH, CONFIG);
-	BroadcastMessage("%sPlease report all bugs to |r%shttp://mantis.sandshroud.org|r", MSG_COLOR_GOLD, MSG_COLOR_TORQUISEBLUE);
+	BroadcastMessage("%sServer:|r%s Sandshroud Hearthstone %s|r %s r%u/%s-%s-%s", MSG_COLOR_GOLD,
+		MSG_COLOR_ORANGEY, MSG_COLOR_TORQUISEBLUE, BUILD_TAG, BUILD_REVISION, BUILD_HASH_STR, ARCH, CONFIG);
+	BroadcastMessage("%sPlease report all bugs to |r%shttps://github.com/Sandshroud|r", MSG_COLOR_GOLD, MSG_COLOR_TORQUISEBLUE);
 	BroadcastMessage("%sOnline Players:|r%s %u |r%sPeak:|r%s %u |r%sAccepted Connections:|r%s %u |r", MSG_COLOR_GOLD,
 		MSG_COLOR_TORQUISEBLUE, sWorld.GetSessionCount(), MSG_COLOR_GOLD, MSG_COLOR_TORQUISEBLUE,
 		sWorld.PeakSessionCount, MSG_COLOR_GOLD, MSG_COLOR_TORQUISEBLUE, sWorld.mAcceptedConnections);

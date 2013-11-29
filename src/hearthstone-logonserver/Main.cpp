@@ -286,7 +286,7 @@ void LogonServer::Run(int argc, char ** argv)
 		}
 	}
 
-	printf("Sandshroud Hearthstone r%u/%s-%s(%s)::Logon Server\n", BUILD_REVISION, CONFIG, PLATFORM_TEXT, ARCH);
+	printf("Sandshroud Hearthstone(%s::%s) r%u/%s-%s(%s)::Logon Server\n", BUILD_TAG, BUILD_HASH_STR, BUILD_REVISION, CONFIG, PLATFORM_TEXT, ARCH);
 	printf("==============================================================================\n");
 	Log.Line();
 	if(do_version)

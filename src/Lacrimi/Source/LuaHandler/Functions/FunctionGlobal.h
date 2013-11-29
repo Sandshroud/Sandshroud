@@ -36,6 +36,7 @@ int LuaGlobalFunctions_ReloadLuaEngine(lua_State * L);
 int LuaGlobalFunctions_GetPlayersInWorld(lua_State * L);
 int LuaGlobalFunctions_Rehash(lua_State * L);
 int LuaGlobalFunctions_GetSandshroudRevision(lua_State * L);
+int LuaGlobalFunctions_GetSandshroudBuildHash(lua_State * L);
 
 //////////////////////////////////////////////////////////////////////////
 // WORLD PVP NOT SUPPORTED!
