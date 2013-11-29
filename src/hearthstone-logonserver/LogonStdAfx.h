@@ -14,7 +14,7 @@
 #include "Common.h"
 #include <Network/Network.h>
 
-#include "../hearthstone-shared/svn_revision.h"
+#include "../hearthstone-shared/git_version.h"
 #include "../hearthstone-shared/Log.h"
 #include "../hearthstone-shared/Util.h"
 #include "../hearthstone-shared/ByteBuffer.h"

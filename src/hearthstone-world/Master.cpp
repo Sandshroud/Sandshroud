@@ -4,7 +4,7 @@
 
 #include "StdAfx.h"
 
-#define BANNER "Sandshroud Hearthstone r%u/%s-%s-%s :: World Server\n"
+#define BANNER "Sandshroud Hearthstone %s::%s r%u/%s-%s-%s :: World Server\n"
 
 createFileSingleton( Master );
 std::string LogFileName;
@@ -123,7 +123,7 @@ bool Master::Run(int argc, char ** argv)
 	UNIXTIME = time(NULL);
 	g_localTime = *localtime(&UNIXTIME);
 
-	printf(BANNER, BUILD_REVISION, CONFIG, PLATFORM_TEXT, ARCH);
+	printf(BANNER, BUILD_TAG, BUILD_HASH_STR, BUILD_REVISION, CONFIG, PLATFORM_TEXT, ARCH);
 	Log.Line();
 
 	printf( "The key combination <Ctrl-C> will safely shut down the server at any time.\n" );
