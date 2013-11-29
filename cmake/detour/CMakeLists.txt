@@ -2,34 +2,14 @@ project(detour)
 
 SET( prefix ${DEPENDENCY_SOURCES}/${PROJECT_NAME} )
 
-SET(sources
-DetourAlloc.cpp
-DetourCommon.cpp
-DetourNavMesh.cpp
-DetourNavMeshBuilder.cpp
-DetourNavMeshQuery.cpp
-DetourNode.cpp
-DetourObstacleAvoidance.cpp)
-
-SET(headers
-DetourAlloc.h
-DetourAssert.h
-DetourCommon.h
-DetourNavMesh.h
-DetourNavMeshBuilder.h
-DetourNavMeshQuery.h
-DetourNode.h
-DetourObstacleAvoidance.h
-DetourStatus.h)
-
-foreach(src IN ITEMS ${sources} )
-  SET( SRCS ${SRCS} ${prefix}/${src} )
-endforeach(src)
-foreach(src IN ITEMS ${headers} )
-  SET( HEADERS ${HEADERS} ${prefix}/${src} )
-endforeach(src)
+FILE(GLOB sources
+"${prefix}/*.h"
+"${prefix}/*.cpp")
+source_group("${PROJECT_NAME}" FILES ${sources})
+SET(SRCS ${SRCS} ${sources} )
 
 include_directories( ${prefix} )
-add_library(${PROJECT_NAME} STATIC ${SRCS} ${HEADERS} )
+add_library(${PROJECT_NAME} STATIC ${SRCS} )
+
 #Set it to the project name.
 set(DETOUR_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "detour Libraries")

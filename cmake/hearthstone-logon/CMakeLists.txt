@@ -2,47 +2,19 @@ PROJECT(hearthstone-logonserver)
 
 SET( prefix ${ROOT_PATH}/src/hearthstone-logonserver)
 
-SET( sources
-    AccountCache.cpp
-    AuthSocket.cpp
-    AutoPatcher.cpp
-    LogonCommServer.cpp
-    LogonConsole.cpp
-    LogonOpcodes.cpp
-    LogonStdAfx.cpp
-    Main.cpp
-)
+FILE(GLOB sources
+"${prefix}/*.h"
+"${prefix}/*.cpp")
 
- SET( headers
-    AccountCache.h
-    AuthSocket.h
-    AuthStructs.h
-    AutoPatcher.h
-    LogonCommServer.h
-    LogonConsole.h
-    LogonOpcodes.h
-    LogonStdAfx.h
-    Main.h
-    PeriodicFunctionCall_Thread.h
-)
+FILE(GLOB resources
+${ROOT_PATH}/src/hearthstone-shared/resources.rc
+${ROOT_PATH}/src/hearthstone-shared/Icon.ico)
+source_group("Resources" FILES ${resources})
 
-foreach(src IN ITEMS ${sources} )
-  SET( SRCS ${SRCS} ${prefix}/${src} )
-endforeach(src)
-foreach(src IN ITEMS ${headers} )
-  SET( HEADERS ${HEADERS} ${prefix}/${src} )
-endforeach(src)
-
-set( SRCS ${SRCS}
-	${ROOT_PATH}/src/hearthstone-shared/resources.rc
-	${ROOT_PATH}/src/hearthstone-shared/Icon.ico)
+SET( SRCS ${SRCS} ${sources} ${resources} )
 
 include_directories( ${GLOBAL_INCLUDE_DIRS} )
 link_directories( ${EXTRA_LIBS_PATH} ${DEPENDENCY_LIBS} )
-IF( IS_64BIT )
-	link_directories( ${DEPENDENCY_DLLS64} )
-ENDIF()
-
 include(PCHSupport)
 
 ADD_EXECUTABLE( ${PROJECT_NAME} ${SRCS} ${HEADERS} )

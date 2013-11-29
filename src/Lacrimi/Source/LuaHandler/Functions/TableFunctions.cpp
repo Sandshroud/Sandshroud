@@ -773,6 +773,7 @@ void Lua_RegisterGlobalFunctions(lua_State *L)
 	lua_register(L, "logcol", &LuaGlobalFunctions_logcol);
 	lua_register(L, "GetPlayersInWorld", &LuaGlobalFunctions_GetPlayersInWorld);
 	lua_register(L, "GetSandshroudRevision", &LuaGlobalFunctions_GetSandshroudRevision);
+	lua_register(L, "GetSandshroudBuildHash", &LuaGlobalFunctions_GetSandshroudBuildHash);
 	lua_register(L, "SendPvPCaptureMessage", &LuaGlobalFunctions_SendPvPCaptureMessage);
 	lua_register(L, "GetPlayersInMap", &LuaGlobalFunctions_GetPlayersInMap);
 	lua_register(L, "GetPlayersInZone", &LuaGlobalFunctions_GetPlayersInZone);

@@ -223,7 +223,7 @@ bool ChatHandler::HandleInfoCommand(const char* args, WorldSession *m_session)
 	}
 	objmgr._playerslock.ReleaseReadLock();
 
-	GreenSystemMessage(m_session, "Server Revision: SS Hearthstone r%u/%s-%s-%s", BUILD_REVISION, CONFIG, PLATFORM_TEXT, ARCH);
+	GreenSystemMessage(m_session, "Server Revision: SS Hearthstone(%s::%s) r%u/%s-%s-%s", BUILD_TAG, BUILD_HASH_STR, BUILD_REVISION, CONFIG, PLATFORM_TEXT, ARCH);
 	GreenSystemMessage(m_session, "Server Uptime: |r%s", sWorld.GetUptimeString().c_str());
 	if(m_session->CanUseCommand('z'))
 		GreenSystemMessage(m_session, "Useage(Win only): RAM:(%f), CPU:(%f)", sWorld.GetRAMUsage(), sWorld.GetCPUUsage());

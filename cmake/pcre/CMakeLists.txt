@@ -2,44 +2,14 @@ project(pcre)
 
 SET( prefix ${DEPENDENCY_SOURCES}/${PROJECT_NAME} )
 
-SET(sources
-pcre_chartables.c
-pcre_compile.c
-pcre_config.c
-pcre_dfa_exec.c
-pcre_exec.c
-pcre_fullinfo.c
-pcre_get.c
-pcre_globals.c
-pcre_info.c
-pcre_maketables.c
-pcre_newline.c
-pcre_ord2utf8.c
-pcre_refcount.c
-pcre_study.c
-pcre_tables.c
-pcre_try_flipped.c
-pcre_ucp_searchfuncs.c
-pcre_valid_utf8.c
-pcre_version.c
-pcre_xclass.c)
-
-SET(headers
-config.h
-pcre.h
-pcre_internal.h
-ucp.h
-ucpinternal.h
-ucptable.h)
-
-foreach(src IN ITEMS ${sources} )
-  SET( SRCS ${SRCS} ${prefix}/${src} )
-endforeach(src)
-foreach(src IN ITEMS ${headers} )
-  SET( HEADERS ${HEADERS} ${prefix}/${src} )
-endforeach(src)
+FILE(GLOB sources
+"${prefix}/*.h"
+"${prefix}/*.c")
+source_group("${PROJECT_NAME}" FILES ${sources})
+SET(SRCS ${SRCS} ${sources} )
 
 include_directories( ${prefix} )
-add_library(${PROJECT_NAME} STATIC ${SRCS} ${HEADERS} )
+add_library(${PROJECT_NAME} STATIC ${SRCS} )
+
 #Set it to the project name.
 set(RECAST_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "pcre Libraries")

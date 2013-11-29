@@ -51,7 +51,7 @@
 
 #include <zlib/zlib.h>
 
-#include "../hearthstone-shared/svn_revision.h"
+#include "../hearthstone-shared/git_version.h"
 #include "../hearthstone-shared/Common.h"
 #include "../hearthstone-shared/MersenneTwister.h"
 #include "../hearthstone-shared/WorldPacket.h"

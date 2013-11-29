@@ -2,31 +2,14 @@ project(recast)
 
 SET( prefix ${DEPENDENCY_SOURCES}/${PROJECT_NAME} )
 
-SET(sources
-Recast.cpp
-RecastAlloc.cpp
-RecastArea.cpp
-RecastContour.cpp
-RecastFilter.cpp
-RecastLayers.cpp
-RecastMesh.cpp
-RecastMeshDetail.cpp
-RecastRasterization.cpp
-RecastRegion.cpp)
-
-SET(headers
-Recast.h
-RecastAlloc.h
-RecastAssert.h)
-
-foreach(src IN ITEMS ${sources} )
-  SET( SRCS ${SRCS} ${prefix}/${src} )
-endforeach(src)
-foreach(src IN ITEMS ${headers} )
-  SET( HEADERS ${HEADERS} ${prefix}/${src} )
-endforeach(src)
+FILE(GLOB sources
+"${prefix}/*.h"
+"${prefix}/*.cpp")
+source_group("${PROJECT_NAME}" FILES ${sources})
+SET(SRCS ${SRCS} ${sources} )
 
 include_directories( ${prefix} )
-add_library(${PROJECT_NAME} STATIC ${SRCS} ${HEADERS} )
+add_library(${PROJECT_NAME} STATIC ${SRCS} )
+
 #Set it to the project name.
 set(RECAST_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "recast Libraries")
