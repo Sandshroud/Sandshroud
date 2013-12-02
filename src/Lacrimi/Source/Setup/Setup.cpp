@@ -16,7 +16,7 @@
 
 #include "LacrimiStdAfx.h"
 #define SKIP_ALLOCATOR_SHARING 1
-#include <ScriptSetup.h>
+#include <ScriptInterface/ScriptSetup.h>
 
 extern "C" SCRIPT_DECL uint32 _exp_get_script_type()
 {

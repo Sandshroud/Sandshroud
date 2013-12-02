@@ -2,11 +2,9 @@
  * Demonstrike Core
  */
 
-//
-// NameTables.h
-//
-
 #pragma once
+
+#include "Common.h"
 
 struct NameTableEntry
 {
@@ -24,7 +22,3 @@ static inline const char* LookupName(uint32 id, NameTableEntry *table)
 
 	return "UNKNOWN";
 }
-
-//extern NameTableEntry g_worldOpcodeNames[];
-extern NameTableEntry g_logonOpcodeNames[];
-extern NameTableEntry g_pluginOpcodeNames[];

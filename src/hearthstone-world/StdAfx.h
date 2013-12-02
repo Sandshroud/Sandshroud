@@ -50,6 +50,9 @@
 #include <cstring>
 
 #include <zlib/zlib.h>
+extern "C" {
+#include <pcre/pcre.h>
+};
 
 #include "../hearthstone-shared/git_version.h"
 #include "../hearthstone-shared/Common.h"
@@ -79,6 +82,7 @@
 #include "../hearthstone-shared/Threading/RWLock.h"
 #include "../hearthstone-shared/Threading/Condition.h"
 #include "../hearthstone-shared/hearthstone_getopt.h"
+#include "../hearthstone-shared/NameTables.h"
 #include "../hearthstone-shared/CallBack.h"
 
 #include "Const.h"
@@ -112,12 +116,15 @@
 #include "Unit.h"
 
 #include "AddonMgr.h"
-#include "AI/AI_Headers.h"
+#include "AI_Headers.h"
 #include "AreaTrigger.h"
 #include "BattlegroundMgr.h"
 #include "AlteracValley.h"
 #include "ArathiBasin.h"
+#include "WarsongGulch.h"
 #include "EyeOfTheStorm.h"
+#include "StrandOfTheAncients.h"
+#include "IsleOfConquest.h"
 #include "Arenas.h"
 #include "CellHandler.h"
 #include "SkillNameMgr.h"
@@ -161,7 +168,6 @@
 #include "ClassSpells.h"
 #include "TaxiMgr.h"
 #include "TransporterHandler.h"
-#include "WarsongGulch.h"
 #include "WeatherMgr.h"
 #include "ItemInterface.h"
 #include "Stats.h"
@@ -183,8 +189,6 @@
 #include "Tracker.h"
 #include "WarnSystem.h"
 #include "AchievementInterface.h"
-#include "StrandOfTheAncients.h"
-#include "IsleOfConquest.h"
 
 #include "CollideInterface.h"
 #include "NavMeshInterface.h"
@@ -206,7 +210,3 @@
 #include <cstring>
 
 #endif
-
-extern "C" {
-#include "../../dependencies/SRC/pcre/pcre.h"
-};

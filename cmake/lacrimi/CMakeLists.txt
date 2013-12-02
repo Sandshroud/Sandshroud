@@ -123,7 +123,7 @@ add_library( ${PROJECT_NAME} SHARED ${SRCS} )
 
 #Set up our precompiled header system
 include(PCHSupport)
-include_directories( ${GLOBAL_INCLUDE_DIRS} ${prefix} ${prefix}/PrecompiledHeaders )
+include_directories( ${GLOBAL_INCLUDE_DIRS} ${HEARTHSTONE_SOURCE_DIRECTORIES} ${prefix} ${prefix}/PrecompiledHeaders )
 IF( CMAKE_GENERATOR MATCHES Visual*)
 	ADD_NATIVE_PRECOMPILED_HEADER(${PROJECT_NAME} LacrimiStdAfx.h ${prefix}/PrecompiledHeaders/LacrimiStdAfx.cpp)
 ENDIF()
