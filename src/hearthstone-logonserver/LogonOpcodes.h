@@ -55,4 +55,6 @@ enum RealmListOpcodes
 	RMSG_COUNT									= 23,
 };
 
+SERVER_DECL extern NameTableEntry g_logonOpcodeNames[];
+
 #endif
