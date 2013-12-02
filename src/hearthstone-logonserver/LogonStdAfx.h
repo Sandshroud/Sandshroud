@@ -29,10 +29,10 @@
 #include "../hearthstone-shared/Auth/Sha1.h"
 #include "../hearthstone-shared/Auth/WowCrypt.h"
 #include "../hearthstone-shared/CrashHandler.h"
+#include "../hearthstone-shared/NameTables.h"
 
 #include "LogonOpcodes.h"
 #include "../hearthstone-logonserver/Main.h"
-#include "../hearthstone-world/NameTables.h"
 #include "AccountCache.h"
 #include "PeriodicFunctionCall_Thread.h"
 #include "../hearthstone-logonserver/AutoPatcher.h"

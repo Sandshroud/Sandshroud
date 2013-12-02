@@ -129,6 +129,35 @@ ${DEPENDENCY_SOURCES}/zlib
 ${DEPENDENCY_SOURCES}/recast
 ${DEPENDENCY_SOURCES}/detour )
 
+SET(HEARTHSTONE_SOURCE_DIRECTORIES
+"${ROOT_PATH}/src/hearthstone-world/AI"
+"${ROOT_PATH}/src/hearthstone-world/Battlegrounds"
+"${ROOT_PATH}/src/hearthstone-world/Battlegrounds/Expansion0"
+"${ROOT_PATH}/src/hearthstone-world/Battlegrounds/Expansion1"
+"${ROOT_PATH}/src/hearthstone-world/Battlegrounds/Expansion2"
+"${ROOT_PATH}/src/hearthstone-world/Chat"
+"${ROOT_PATH}/src/hearthstone-world/Chat/Commands"
+"${ROOT_PATH}/src/hearthstone-world/Client Communications"
+"${ROOT_PATH}/src/hearthstone-world/Client Communications/Packet Handlers"
+"${ROOT_PATH}/src/hearthstone-world/Intersystem"
+"${ROOT_PATH}/src/hearthstone-world/Intersystem/Logon"
+"${ROOT_PATH}/src/hearthstone-world/Intersystem/Management"
+"${ROOT_PATH}/src/hearthstone-world/Intersystem/Management/Guild"
+"${ROOT_PATH}/src/hearthstone-world/Intersystem/Voice"
+"${ROOT_PATH}/src/hearthstone-world/Mainframe"
+"${ROOT_PATH}/src/hearthstone-world/Map System"
+"${ROOT_PATH}/src/hearthstone-world/Map System/Environment"
+"${ROOT_PATH}/src/hearthstone-world/Map System/Map Interface"
+"${ROOT_PATH}/src/hearthstone-world/Map System/Map Managers"
+"${ROOT_PATH}/src/hearthstone-world/Map System/Map Tiles"
+"${ROOT_PATH}/src/hearthstone-world/Objects"
+"${ROOT_PATH}/src/hearthstone-world/Objects/Units"
+"${ROOT_PATH}/src/hearthstone-world/Mainframe"
+"${ROOT_PATH}/src/hearthstone-world/Player Systems"
+"${ROOT_PATH}/src/hearthstone-world/ScriptInterface"
+"${ROOT_PATH}/src/hearthstone-world/Spell"
+"${ROOT_PATH}/src/hearthstone-world/Spell/Spellfixes")
+
 #Find our needed libs
 IF( NOT WIN32 )
 	find_package(ZLIB REQUIRED)
