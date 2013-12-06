@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 2.8)
 #set our system paths
 SET(ROOT_PATH  ${CMAKE_SOURCE_DIR}/..)
 SET(GLOBAL_DEFINES "-DHAVE_CONFIG_H")
-SET( CMAKE_RUNTIME_OUTPUT_DIRECTORY "${ROOT_PATH}/bin" )
+SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${ROOT_PATH}/bin" )
 
 #check platform version.
 IF(CMAKE_SYSTEM_PROCESSOR MATCHES "[xX]64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "[xX]86_64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "[aA][mM][dD]64" OR CMAKE_GENERATOR MATCHES Win64*)
@@ -211,12 +211,19 @@ IF( APPLE )
 	ENDIF( NOT IS_64BIT )
 ENDIF( APPLE )
 
-add_subdirectory(hearthstone-shared)
-add_subdirectory(hearthstone-logon)
-add_subdirectory(hearthstone-world)
-add_subdirectory(lacrimi)
 add_subdirectory(zlib)
 add_subdirectory(pcre)
 add_subdirectory(g3dlite)
 add_subdirectory(detour)
 add_subdirectory(recast)
+add_subdirectory(hearthstone-shared)
+add_subdirectory(hearthstone-logon)
+add_subdirectory(hearthstone-world)
+add_subdirectory(lacrimi)
+
+SET(BUILD_TOOLS 0 CACHE STRING "Option to build tools and include the projects in SLN build" )
+
+if(BUILD_TOOLS)
+add_subdirectory(libmpq1)
+add_subdirectory(tools)
+endif()
