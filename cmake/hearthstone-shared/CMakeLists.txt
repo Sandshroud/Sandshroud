@@ -60,10 +60,10 @@ FILE(GLOB sources
 source_group("Util" FILES ${sources})
 SET(SRCS ${SRCS} ${sources})
 
-include_directories( ${GLOBAL_INCLUDE_DIRS} )
-link_directories( ${DEPENDENCY_DLLS} ${DEPENDENCY_LIBS} )
+include_directories(${GLOBAL_INCLUDE_DIRS})
+link_directories(${DEPENDENCY_DLLS} ${DEPENDENCY_LIBS})
 
-ADD_LIBRARY( ${PROJECT_NAME} STATIC ${SRCS} )
+ADD_LIBRARY(${PROJECT_NAME} STATIC ${SRCS})
 
 add_dependencies( ${PROJECT_NAME} g3dlite recast detour pcre zlib )
 target_link_libraries( ${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT} ${MYSQL_LIBRARY} ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES} ${PCRE_LIBRARIES} g3dlite recast detour pcre zlib ${EXTRA_LIBS} )
