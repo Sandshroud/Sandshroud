@@ -130,4 +130,4 @@ ENDIF()
 
 #Link our hearthstone-shared lib.
 add_dependencies( ${PROJECT_NAME} hearthstone-world )
-target_link_libraries( ${PROJECT_NAME} hearthstone-world ${EXTRA_LIBS} lualib.lib )
+target_link_libraries( ${PROJECT_NAME} hearthstone-world ${DEPENDENCY_ROOT}/LIBS/lualib.lib )

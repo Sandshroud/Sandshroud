@@ -171,16 +171,20 @@ source_group("System" FILES ${sources})
 
 #Remove already added files from our main source files
 list(REMOVE_ITEM sources ${group_sources})
+
 #Set the rest of our file sources
-SET(SRCS ${SRCS} ${sources} ${group_sources} )
+SET(SRCS ${SRCS} ${sources} ${group_sources})
+
 #Set our precompiled header data
 include(PCHSupport)
-#Set our directories for includes
-include_directories( ${GLOBAL_INCLUDE_DIRS} ${HEARTHSTONE_SOURCE_DIRECTORIES} )
 
-link_directories( ${DEPENDENCY_LIBS} ${EXTRA_LIBS_PATH} )
+#Set our directories for includes
+include_directories( ${GLOBAL_INCLUDE_DIRS} ${HEARTHSTONE_SOURCE_DIRECTORIES})
+link_directories( ${DEPENDENCY_LIBS} ${EXTRA_LIBS_PATH})
+
 #Add our sources to our project files
-add_executable( ${PROJECT_NAME} ${SRCS} )
+add_executable( ${PROJECT_NAME} ${SRCS})
+
 #Redefine our precompiled header inside our sources
 IF( CMAKE_GENERATOR MATCHES Visual*)
 	ADD_NATIVE_PRECOMPILED_HEADER(${PROJECT_NAME} StdAfx.h ${prefix}/StdAfx.cpp)
