@@ -12,4 +12,4 @@ include_directories( ${prefix} )
 add_library(${PROJECT_NAME} STATIC ${SRCS} )
 
 #Set it to the project name.
-set(RECAST_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "pcre Libraries")
+set(PCRE_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "pcre Libraries")
