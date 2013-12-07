@@ -1,19 +1,19 @@
 /*
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef WMO_H
@@ -35,7 +35,6 @@
 #define WMO_MATERIAL_COLLIDE_HIT     0x20
 #define WMO_MATERIAL_WALL_SURFACE    0x40
 
-struct WDT_MODF;
 class WMOInstance;
 class WMOManager;
 class MPQFile;
@@ -54,7 +53,6 @@ public:
     float bbcorn2[3];
 
     WMORoot(std::string& filename);
-    ~WMORoot();
 
     bool open();
     bool ConvertToVMAPRootWmo(FILE* output);
@@ -118,22 +116,17 @@ public:
 class WMOInstance
 {
     static std::set<int> ids;
-
-public: // MODF Chunk Data
-    uint32 AdtId;
-    //     p    r   p+wmoBound  B:collis+rendr
-    Vec3D pos, rot, lowerBound, upperBound;
-    uint16 MODFFlags, DoodadSetId, WmoSetId;
 public:
-    uint32 mapId;
-    std::string WMOName;
-
-public:
-    WMOGroup* wmo;
     std::string MapName;
+    int currx;
+    int curry;
+    WMOGroup* wmo;
+    int doodadset;
+    Vec3D pos;
+    Vec3D pos2, pos3, rot;
+    uint32 indx, id, d2, d3;
 
-    WMOInstance(uint32 mapID, MPQFile&f, char const* WmoInstName, WDT_MODF modfChunk);
-    void Write(FILE* pDirfile);
+    WMOInstance(MPQFile&f , char const* WmoInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE* pDirfile);
 
     static void reset();
 };

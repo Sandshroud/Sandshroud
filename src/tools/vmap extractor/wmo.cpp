@@ -1,31 +1,29 @@
 /*
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "vmapexport.h"
 #include "wmo.h"
 #include "vec3d.h"
-#include "wdtfile.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
 #include <map>
 #include <fstream>
-
 #undef min
 #undef max
 #include "mpq_libmpq04.h"
@@ -138,14 +136,12 @@ bool WMORoot::ConvertToVMAPRootWmo(FILE* pOutfile)
     return true;
 }
 
-WMORoot::~WMORoot()
-{
-}
-
 WMOGroup::WMOGroup(const std::string &filename) :
     filename(filename), MOPY(0), MOVI(0), MoviEx(0), MOVT(0), MOBA(0), MobaEx(0),
     hlq(0), LiquEx(0), LiquBytes(0), groupName(0), descGroupName(0), mogpFlags(0),
-    mopy_size(0), moba_size(0), LiquEx_size(0), nVertices(0), nTriangles(0)
+    moprIdx(0), moprNItems(0), nBatchA(0), nBatchB(0), nBatchC(0), fogIdx(0),
+    liquidType(0), groupWMOID(0), mopy_size(0), moba_size(0), LiquEx_size(0),
+    nVertices(0), nTriangles(0), liquflags(0)
 {
     memset(bbcorn1, 0, sizeof(bbcorn1));
     memset(bbcorn2, 0, sizeof(bbcorn2));
@@ -225,7 +221,7 @@ bool WMOGroup::open()
         else if (!strcmp(fourcc,"MLIQ"))
         {
             liquflags |= 1;
-            hlq = new WMOLiquidHeader;
+            hlq = new WMOLiquidHeader();
             f.read(hlq, 0x1E);
             LiquEx_size = sizeof(WMOLiquidVert) * hlq->xverts * hlq->yverts;
             LiquEx = new WMOLiquidVert[hlq->xverts * hlq->yverts];
@@ -390,7 +386,7 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
         fwrite(MoviEx,2,nColTriangles*3,output);
 
         // write vertices
-        int VERT[] = {0x54524556, nColVertices*3*sizeof(float)+4, nColVertices};// "VERT"
+        int VERT[] = {0x54524556, nColVertices*3*static_cast<int>(sizeof(float))+4, nColVertices};// "VERT"
         int check = 3*nColVertices;
         fwrite(VERT,4,3,output);
         for (uint32 i=0; i<nVertices; ++i)
@@ -404,9 +400,9 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
     }
 
     //------LIQU------------------------
-    if(LiquEx_size != 0)
+    if (LiquEx_size != 0)
     {
-        int LIQU_h[] = {0x5551494C, sizeof(WMOLiquidHeader) + LiquEx_size + hlq->xtiles*hlq->ytiles};// "LIQU"
+        int LIQU_h[] = {0x5551494C, static_cast<int>(sizeof(WMOLiquidHeader) + LiquEx_size) + hlq->xtiles*hlq->ytiles};// "LIQU"
         fwrite(LIQU_h, 4, 2, output);
 
         // according to WoW.Dev Wiki:
@@ -441,7 +437,7 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
 
         if (liquidEntry && liquidEntry < 21)
         {
-            switch (((uint8)liquidEntry - 1) & 3)
+            switch ((liquidEntry - 1) & 3)
             {
                 case 0:
                     liquidEntry = ((mogpFlags & 0x80000) != 0) + 13;
@@ -454,8 +450,6 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
                     break;
                 case 3:
                     liquidEntry = 20;
-                    break;
-                default:
                     break;
             }
         }
@@ -489,32 +483,32 @@ WMOGroup::~WMOGroup()
     delete [] LiquBytes;
 }
 
-WMOInstance::WMOInstance(uint32 mapID, MPQFile&f, char const* WmoInstName, WDT_MODF modfChunk)
-    : mapId(mapID), MapName(WmoInstName), wmo(NULL), pos(), rot(), lowerBound(), upperBound()
+WMOInstance::WMOInstance(MPQFile& f, char const* WmoInstName, uint32 mapID, uint32 tileX, uint32 tileY, FILE* pDirfile)
+    : currx(0), curry(0), wmo(NULL), doodadset(0), pos(), indx(0), id(0), d2(0), d3(0)
 {
-    FILE *input = NULL;
-
     float ff[3];
-    f.read(&AdtId, 4);
+    f.read(&id, 4);
     f.read(ff,12);
     pos = Vec3D(ff[0],ff[1],ff[2]);
     f.read(ff,12);
     rot = Vec3D(ff[0],ff[1],ff[2]);
     f.read(ff,12);
-    lowerBound = Vec3D(ff[0],ff[1],ff[2]);
+    pos2 = Vec3D(ff[0],ff[1],ff[2]);
     f.read(ff,12);
-    upperBound = Vec3D(ff[0],ff[1],ff[2]);
+    pos3 = Vec3D(ff[0],ff[1],ff[2]);
+    f.read(&d2,4);
 
-    f.read(&MODFFlags,2);
-    f.read(&DoodadSetId,2);
-    f.read(&WmoSetId,2);
-    f.seek(2); // Padding
+    uint16 trash,adtId;
+    f.read(&adtId,2);
+    f.read(&trash,2);
 
     //-----------add_in _dir_file----------------
+
     char tempname[512];
-    sprintf_s(tempname, 512, "%s/%s", szWorkDirWmo, WmoInstName);
-    fopen_s(&input, tempname, "r+b");
-    printf("%s\n", tempname);
+    sprintf(tempname, "%s/%s", szWorkDirWmo, WmoInstName);
+    FILE *input;
+    input = fopen(tempname, "r+b");
+
     if(!input)
     {
         printf("WMOInstance::WMOInstance: couldn't open %s\n", tempname);
@@ -525,44 +519,50 @@ WMOInstance::WMOInstance(uint32 mapID, MPQFile&f, char const* WmoInstName, WDT_M
     int nVertices;
     int count = fread(&nVertices, sizeof (int), 1, input);
     fclose(input);
+
     if (count != 1 || nVertices == 0)
         return;
 
-    float x = pos.x, z = pos.y;
-    printf("Position %f and %f\n", x, z);
-    if(x == 0 && z == 0)
+    float x,z;
+    x = pos.x;
+    z = pos.z;
+    if(x==0 && z == 0)
     {
         pos.x = 533.33333f*32;
         pos.z = 533.33333f*32;
     }
-
     pos = fixCoords(pos);
-    lowerBound = fixCoords(lowerBound);
-    upperBound = fixCoords(upperBound);
+    pos2 = fixCoords(pos2);
+    pos3 = fixCoords(pos3);
 
-}
-
-void WMOInstance::Write(FILE *pDirfile)
-{
     float scale = 1.0f;
     uint32 flags = MOD_HAS_BOUND;
-    if(MODFFlags & 0x01)
-        flags |= MOD_IS_DESTRUCTABLE;
-
+    if(tileX == 65 && tileY == 65) flags |= MOD_WORLDSPAWN;
     //write mapID, tileX, tileY, Flags, ID, Pos, Rot, Scale, Bound_lo, Bound_hi, name
-    fwrite(&mapId, sizeof(uint32), 1, pDirfile);
+    fwrite(&mapID, sizeof(uint32), 1, pDirfile);
+    fwrite(&tileX, sizeof(uint32), 1, pDirfile);
+    fwrite(&tileY, sizeof(uint32), 1, pDirfile);
     fwrite(&flags, sizeof(uint32), 1, pDirfile);
-    fwrite(&AdtId, sizeof(uint32), 1, pDirfile);
-    fwrite(&WmoSetId, sizeof(uint16), 1, pDirfile);
-    fwrite(&DoodadSetId, sizeof(uint16), 1, pDirfile);
-    fwrite(&WmoSetId, sizeof(uint16), 1, pDirfile);
+    fwrite(&adtId, sizeof(uint16), 1, pDirfile);
+    fwrite(&id, sizeof(uint32), 1, pDirfile);
     fwrite(&pos, sizeof(float), 3, pDirfile);
     fwrite(&rot, sizeof(float), 3, pDirfile);
     fwrite(&scale, sizeof(float), 1, pDirfile);
-    fwrite(&lowerBound, sizeof(float), 3, pDirfile);
-    fwrite(&upperBound, sizeof(float), 3, pDirfile);
-
-    uint32 nlen = MapName.length();
+    fwrite(&pos2, sizeof(float), 3, pDirfile);
+    fwrite(&pos3, sizeof(float), 3, pDirfile);
+    uint32 nlen=strlen(WmoInstName);
     fwrite(&nlen, sizeof(uint32), 1, pDirfile);
-    fwrite(MapName.c_str(), sizeof(char), nlen, pDirfile);
+    fwrite(WmoInstName, sizeof(char), nlen, pDirfile);
+
+    /* fprintf(pDirfile,"%s/%s %f,%f,%f_%f,%f,%f 1.0 %d %d %d,%d %d\n",
+        MapName,
+        WmoInstName,
+        (float) x, (float) pos.y, (float) z,
+        (float) rot.x, (float) rot.y, (float) rot.z,
+        nVertices,
+        realx1, realy1,
+        realx2, realy2
+        ); */
+
+    // fclose(dirfile);
 }
