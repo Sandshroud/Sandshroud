@@ -7,9 +7,13 @@ cmake_minimum_required(VERSION 2.8)
 SET(ROOT_PATH  ${CMAKE_SOURCE_DIR}/..)
 SET(GLOBAL_DEFINES "-DHAVE_CONFIG_H")
 #Our output directory is root/bin
-SET(OUTPUT_DIRECTORY "${ROOT_PATH}/bin/" )
+SET(OUTPUT_DIRECTORY "${ROOT_PATH}/bin" CACHE STRING "Output directory for built files")
 #Set our runtime(exes/dlls) to output into our bin/config
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIRECTORY})
+foreach(buildtype IN ITEMS ${CMAKE_CONFIGURATION_TYPES} )
+  string(TOUPPER "${buildtype}" BUILD_DATA)
+  SET( "CMAKE_RUNTIME_OUTPUT_DIRECTORY_${BUILD_DATA}"  ${OUTPUT_DIRECTORY})
+endforeach()
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -75,7 +79,7 @@ ENDIF()
 SET(BUILD_INFORMATION "${CMAKE_SYSTEM_PROCESSOR} - ${CMAKE_GENERATOR}" CACHE PATH "What the cmake generator string is")
 
 #Grab our ini files
-SET(INIFILE_PATH ${ROOT_PATH}/src CACHE PATH "Path where the hearthstone ini files are.")
+SET(INIFILE_PATH ${ROOT_PATH}/src)
 
 include(CompilerVersion)
 if( CMAKE_GENERATOR MATCHES Unix* )
@@ -218,6 +222,16 @@ IF( APPLE )
 		SET( CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -m32" )
 	ENDIF( NOT IS_64BIT )
 ENDIF( APPLE )
+
+#Copy world ini
+if(NOT EXISTS "${OUTPUT_DIRECTORY}/hearthstone-world.ini" AND EXISTS "${INIFILE_PATH}/hearthstone-world.ini")
+FILE(COPY "${INIFILE_PATH}/hearthstone-world.ini" DESTINATION "${OUTPUT_DIRECTORY}")
+endif()
+
+#Copy logonserver ini
+if(NOT EXISTS "${OUTPUT_DIRECTORY}/hearthstone-logonserver.ini" AND EXISTS "${INIFILE_PATH}/hearthstone-logonserver.ini")
+FILE(COPY "${INIFILE_PATH}/hearthstone-logonserver.ini" DESTINATION "${OUTPUT_DIRECTORY}")
+endif()
 
 SET(BUILD_TOOLS 0 CACHE STRING "Option to include tool cmakefiles, auto off" )
 

@@ -21,3 +21,7 @@ target_link_libraries( ${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT} ${MYSQL_LIBRARY
 SET_PROPERTY(TARGET ItemDBCGenerator PROPERTY FOLDER "Tools")
 #Set the output folder to bin/tools
 set_target_properties( ItemDBCGenerator PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIRECTORY}/Tools")
+foreach(buildtype IN ITEMS ${CMAKE_CONFIGURATION_TYPES} )
+  string(TOUPPER "${buildtype}" BUILD_DATA)
+  set_target_properties( ItemDBCGenerator PROPERTIES "RUNTIME_OUTPUT_DIRECTORY_${BUILD_DATA}" "${OUTPUT_DIRECTORY}/Tools")
+endforeach()
