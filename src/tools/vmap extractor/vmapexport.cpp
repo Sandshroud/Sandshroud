@@ -1,19 +1,19 @@
 /*
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #define _CRT_SECURE_NO_DEPRECATE
@@ -48,8 +48,6 @@
 #include "mpq_libmpq04.h"
 
 #include "vmapexport.h"
-
-int expansion;
 
 //------------------------------------------------------------------------------
 // Defines
@@ -104,55 +102,23 @@ void strToLower(char* str)
 // copied from contrib/extractor/System.cpp
 void ReadLiquidTypeTableDBC()
 {
-	switch(expansion)
-	{
-	case 0:
-		{
-			printf("Setting liquid types...");
-			LiqType = new uint16[21];
-			memset(LiqType, 0xff, (21)*sizeof(uint16));
-			LiqType[1] = 0;
-			LiqType[2] = 1;
-			LiqType[3] = 2;
-			LiqType[4] = 3;
-			LiqType[21] = 3;
-			printf("Done! (5 LiqTypes set)\n");
-		}break;
-	case 1:
-		{
-			printf("Setting liquid types...");
-			LiqType = new uint16[62];
-			memset(LiqType, 0xff, (62)*sizeof(uint16));
-			LiqType[1] = 0;
-			LiqType[2] = 1;
-			LiqType[3] = 2;
-			LiqType[4] = 3;
-			LiqType[21] = 3;
-			LiqType[41] = 0;
-			LiqType[61] = 0;
-			printf("Done! (7 LiqTypes set)\n");
-		}break;
-	default:
-		{
-            printf("Read LiquidType.dbc file...");
-            DBCFile dbc("DBFilesClient\\LiquidType.dbc");
-            if(!dbc.open())
-            {
-                printf("Fatal error: Invalid LiquidType.dbc file format!\n");
-                exit(1);
-            }
+    printf("Read LiquidType.dbc file...");
+    DBCFile dbc("DBFilesClient\\LiquidType.dbc");
+    if(!dbc.open())
+    {
+        printf("Fatal error: Invalid LiquidType.dbc file format!\n");
+        exit(1);
+    }
 
-            size_t LiqType_count = dbc.getRecordCount();
-            size_t LiqType_maxid = dbc.getRecord(LiqType_count - 1).getUInt(0);
-            LiqType = new uint16[LiqType_maxid + 1];
-            memset(LiqType, 0xff, (LiqType_maxid + 1) * sizeof(uint16));
+    size_t LiqType_count = dbc.getRecordCount();
+    size_t LiqType_maxid = dbc.getRecord(LiqType_count - 1).getUInt(0);
+    LiqType = new uint16[LiqType_maxid + 1];
+    memset(LiqType, 0xff, (LiqType_maxid + 1) * sizeof(uint16));
 
-            for(uint32 x = 0; x < LiqType_count; ++x)
-                LiqType[dbc.getRecord(x).getUInt(0)] = dbc.getRecord(x).getUInt(3);
+    for(uint32 x = 0; x < LiqType_count; ++x)
+        LiqType[dbc.getRecord(x).getUInt(0)] = dbc.getRecord(x).getUInt(3);
 
-                printf("Done! (%u LiqTypes loaded)\n", (unsigned int)LiqType_count);
-		}break;
-	}
+    printf("Done! (%u LiqTypes loaded)\n", (unsigned int)LiqType_count);
 }
 
 bool ExtractWmo()
@@ -161,8 +127,6 @@ bool ExtractWmo()
 
     //const char* ParsArchiveNames[] = {"patch-2.MPQ", "patch.MPQ", "common.MPQ", "expansion.MPQ"};
 
-    printf("Extracting WMO [");
-    uint32 count = 0;
     for (ArchiveSet::const_iterator ar_itr = gOpenArchives.begin(); ar_itr != gOpenArchives.end() && success; ++ar_itr)
     {
         vector<string> filelist;
@@ -171,16 +135,12 @@ bool ExtractWmo()
         for (vector<string>::iterator fname = filelist.begin(); fname != filelist.end() && success; ++fname)
         {
             if (fname->find(".wmo") != string::npos)
-                if(success = ExtractSingleWmo(*fname))
-                    count++;
-            if(count%500 == 1)
-                printf("#");
+                success = ExtractSingleWmo(*fname);
         }
     }
-    printf("]\n");
 
     if (success)
-        printf("Extract wmo complete (No (fatal) errors)\n\n");
+        printf("\nExtract wmo complete (No (fatal) errors)\n");
 
     return success;
 }
@@ -198,16 +158,16 @@ bool ExtractSingleWmo(std::string& fname)
         return true;
 
     int p = 0;
-    //Select root wmo files
+    // Select root wmo files
     char const* rchr = strrchr(plain_name, '_');
-    if(rchr != NULL)
+    if (rchr != NULL)
     {
         char cpy[4];
-        strncpy((char*)cpy, rchr, 4);
+        memcpy(cpy, rchr, 4);
         for (int i = 0; i < 4; ++i)
         {
             int m = cpy[i];
-            if(isdigit(m))
+            if (isdigit(m))
                 p++;
         }
     }
@@ -216,20 +176,19 @@ bool ExtractSingleWmo(std::string& fname)
         return true;
 
     bool file_ok = true;
+    std::cout << "Extracting " << fname << std::endl;
     WMORoot froot(fname);
     if(!froot.open())
     {
-        printf("Couldn't open RootWmo %s!!!\n", fname);
+        printf("Couldn't open RootWmo!!!\n");
         return true;
     }
-
     FILE *output = fopen(szLocalFile,"wb");
     if(!output)
     {
         printf("couldn't open %s for writing!\n", szLocalFile);
         return false;
     }
-
     froot.ConvertToVMAPRootWmo(output);
     int Wmo_nVertices = 0;
     //printf("root has %d groups\n", froot->nGroups);
@@ -272,43 +231,29 @@ void ParsMapFiles()
     char fn[512];
     //char id_filename[64];
     char id[10];
-    for (uint32 i = 0; i < map_count; ++i)
+    for (unsigned int i=0; i<map_count; ++i)
     {
-        sprintf(id,"%03u", map_ids[i].id);
+        sprintf(id,"%03u",map_ids[i].id);
         sprintf(fn,"World\\Maps\\%s\\%s.wdt", map_ids[i].name, map_ids[i].name);
-        WDTFile WDT(fn, map_ids[i].name, id, map_ids[i].id);
-        if(WDT.init())
+        WDTFile WDT(fn,map_ids[i].name);
+        if(WDT.init(id, map_ids[i].id))
         {
-            printf("Processing Map %s(%u)\n", map_ids[i].name, map_ids[i].id);
-            // Read our source data from the WDT file
-            WDT.readandprocess();
-            WDT.close();
-            // Pull our ADT data from the WDT file
-            uint32 ADTCount = WDT.getADTCount();
-            if(ADTCount)
+            printf("Processing Map %u\n[", map_ids[i].id);
+            for (int x=0; x<64; ++x)
             {
-                printf("[");
-                uint32 count = 1;
-                while(ADTFile *ADT = WDT.GetADT())
+                for (int y=0; y<64; ++y)
                 {
-                    ADT->init();
-                    delete ADT;
-                    if(ADTCount%count++ == 10)
-                        printf("#");
+                    if (ADTFile *ADT = WDT.GetMap(x,y))
+                    {
+                        //sprintf(id_filename,"%02u %02u %03u",x,y,map_ids[i].id);//!!!!!!!!!
+                        ADT->init(map_ids[i].id, x, y);
+                        delete ADT;
+                    }
                 }
-
-                if(WDT.hasWMO())
-                {
-
-                }
-                printf("]\n\n");
+                printf("#");
+                fflush(stdout);
             }
-            else if(WDT.hasWMO())
-            {
-                printf("[####################]\n\n");
-            }
-            else
-                printf("No data found!\n\n");
+            printf("]\n");
         }
     }
 }
@@ -359,114 +304,77 @@ bool fillArchiveNameVector(std::vector<std::string>& pArchiveNames)
 
     printf("\nGame path: %s\n", input_path);
 
-	FILE * tf = fopen("Data/base.MPQ", "r");
-	if(tf != NULL)
-		expansion = 0;
-	else
-	{
-		expansion = 1;
-		tf = fopen("Data/common-2.MPQ", "r");
-		if(tf != NULL)
-		{
-			fclose(tf);
-			expansion = 2;
-		}
-	}
+    char path[512];
+    string in_path(input_path);
+    std::vector<std::string> locales, searchLocales;
 
-	if(expansion)
-	{
-		char path[512];
-		string in_path(input_path);
-		std::vector<std::string> locales, searchLocales;
+    searchLocales.push_back("enGB");
+    searchLocales.push_back("enUS");
+    searchLocales.push_back("deDE");
+    searchLocales.push_back("esES");
+    searchLocales.push_back("frFR");
+    searchLocales.push_back("koKR");
+    searchLocales.push_back("zhCN");
+    searchLocales.push_back("zhTW");
+    searchLocales.push_back("enCN");
+    searchLocales.push_back("enTW");
+    searchLocales.push_back("esMX");
+    searchLocales.push_back("ruRU");
 
-		searchLocales.push_back("enGB");
-		searchLocales.push_back("enUS");
-		searchLocales.push_back("deDE");
-		searchLocales.push_back("esES");
-		searchLocales.push_back("frFR");
-		searchLocales.push_back("koKR");
-		searchLocales.push_back("zhCN");
-		searchLocales.push_back("zhTW");
-		searchLocales.push_back("enCN");
-		searchLocales.push_back("enTW");
-		searchLocales.push_back("esMX");
-		searchLocales.push_back("ruRU");
+    for (std::vector<std::string>::iterator i = searchLocales.begin(); i != searchLocales.end(); ++i)
+    {
+        std::string localePath = in_path + *i;
+        // check if locale exists:
+        struct stat status;
+        if (stat(localePath.c_str(), &status))
+            continue;
+        if ((status.st_mode & S_IFDIR) == 0)
+            continue;
+        printf("Found locale '%s'\n", i->c_str());
+        locales.push_back(*i);
+    }
+    printf("\n");
 
-		for (std::vector<std::string>::iterator i = searchLocales.begin(); i != searchLocales.end(); ++i)
-		{
-			std::string localePath = in_path + *i;
-			// check if locale exists:
-			struct stat status;
-			if (stat(localePath.c_str(), &status))
-				continue;
-			if ((status.st_mode & S_IFDIR) == 0)
-				continue;
-			printf("Found locale '%s'\n", i->c_str());
-			locales.push_back(*i);
-		}
-		printf("\n");
+    // open locale expansion and common files
+    printf("Adding data files from locale directories.\n");
+    for (std::vector<std::string>::iterator i = locales.begin(); i != locales.end(); ++i)
+    {
+        pArchiveNames.push_back(in_path + *i + "/locale-" + *i + ".MPQ");
+        pArchiveNames.push_back(in_path + *i + "/expansion-locale-" + *i + ".MPQ");
+        pArchiveNames.push_back(in_path + *i + "/lichking-locale-" + *i + ".MPQ");
+    }
 
+    // open expansion and common files
+    pArchiveNames.push_back(input_path + string("common.MPQ"));
+    pArchiveNames.push_back(input_path + string("common-2.MPQ"));
+    pArchiveNames.push_back(input_path + string("expansion.MPQ"));
+    pArchiveNames.push_back(input_path + string("lichking.MPQ"));
 
-		// open locale expansion and common files
-		printf("Adding data files from locale directories.\n");
-		for (std::vector<std::string>::iterator i = locales.begin(); i != locales.end(); ++i)
-		{
-			pArchiveNames.push_back(in_path + *i + "/locale-" + *i + ".MPQ");
-			pArchiveNames.push_back(in_path + *i + "/expansion-locale-" + *i + ".MPQ");
-			if(expansion == 2)
-				pArchiveNames.push_back(in_path + *i + "/lichking-locale-" + *i + ".MPQ");
-		}
+    // now, scan for the patch levels in the core dir
+    printf("Scanning patch levels from data directory.\n");
+    sprintf(path, "%spatch", input_path);
+    if (!scan_patches(path, pArchiveNames))
+        return(false);
 
-		// open expansion and common files
-		pArchiveNames.push_back(input_path + string("common.MPQ"));
-		pArchiveNames.push_back(input_path + string("expansion.MPQ"));
-		if(expansion == 2)
-		{
-			pArchiveNames.push_back(input_path + string("common-2.MPQ"));
-			pArchiveNames.push_back(input_path + string("lichking.MPQ"));
+    // now, scan for the patch levels in locale dirs
+    printf("Scanning patch levels from locale directories.\n");
+    bool foundOne = false;
+    for (std::vector<std::string>::iterator i = locales.begin(); i != locales.end(); ++i)
+    {
+        printf("Locale: %s\n", i->c_str());
+        sprintf(path, "%s%s/patch-%s", input_path, i->c_str(), i->c_str());
+        if(scan_patches(path, pArchiveNames))
+            foundOne = true;
+    }
 
-			// now, scan for the patch levels in the core dir
-			printf("Scanning patch levels from data directory.\n");
-			sprintf(path, "%spatch", input_path);
-			if (!scan_patches(path, pArchiveNames))
-				return(false);
+    printf("\n");
 
-			// now, scan for the patch levels in locale dirs
-			printf("Scanning patch levels from locale directories.\n");
-			bool foundOne = false;
-			for (std::vector<std::string>::iterator i = locales.begin(); i != locales.end(); ++i)
-			{
-				printf("Locale: %s\n", i->c_str());
-				sprintf(path, "%s%s/patch-%s", input_path, i->c_str(), i->c_str());
-				if(scan_patches(path, pArchiveNames))
-					foundOne = true;
-			}
+    if(!foundOne)
+    {
+        printf("no locale found\n");
+        return false;
+    }
 
-			printf("\n");
-
-			if(!foundOne)
-			{
-				printf("no locale found\n");
-				return false;
-			}
-		}
-		else
-		{
-			pArchiveNames.push_back(input_path + string("patch.MPQ"));
-			pArchiveNames.push_back(input_path + string("patch-2.MPQ"));
-		}
-	}
-	else
-	{
-		pArchiveNames.push_back(input_path + string("wmo.MPQ"));
-		pArchiveNames.push_back(input_path + string("dbc.MPQ"));
-		pArchiveNames.push_back(input_path + string("base.MPQ"));
-		pArchiveNames.push_back(input_path + string("model.MPQ"));
-		pArchiveNames.push_back(input_path + string("patch.MPQ"));
-		pArchiveNames.push_back(input_path + string("patch-2.MPQ"));
-		pArchiveNames.push_back(input_path + string("terrain.MPQ"));
-		pArchiveNames.push_back(input_path + string("texture.MPQ"));
-	}
     return true;
 }
 
@@ -605,7 +513,9 @@ int main(int argc, char ** argv)
         {
             map_ids[x].id=dbc->getRecord (x).getUInt(0);
             strcpy(map_ids[x].name,dbc->getRecord(x).getString(1));
+            printf("Map - %s\n",map_ids[x].name);
         }
+
 
         delete dbc;
         ParsMapFiles();

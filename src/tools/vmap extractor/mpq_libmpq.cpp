@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "mpq_libmpq04.h"
 #include <deque>
 #include <cstdio>
@@ -41,7 +59,6 @@ void MPQArchive::close()
 }
 
 MPQFile::MPQFile(const char* filename):
-    f_name(filename),
     eof(false),
     buffer(0),
     pointer(0),
@@ -53,23 +70,19 @@ MPQFile::MPQFile(const char* filename):
 
         uint32 filenum;
         if(libmpq__file_number(mpq_a, filename, &filenum)) continue;
-        libmpq__off_t transferred = 0;
-        libmpq__file_unpacked_size(mpq_a, filenum, &transferred);
+        libmpq__off_t transferred;
+        libmpq__file_unpacked_size(mpq_a, filenum, &size);
 
         // HACK: in patch.mpq some files don't want to open and give 1 for filesize
-        if (transferred <= 1 || transferred > 0x7FFFFFFF)
-        {
+        if (size<=1) {
             // printf("info: file %s has size %d; considered dummy file.\n", filename, size);
             eof = true;
             buffer = 0;
             return;
         }
-        // Force a positive number here
-        size = 0x7FFFFFFF&transferred;
         buffer = new char[size];
 
         //libmpq_file_getdata
-        transferred = 0;
         libmpq__file_read(mpq_a, filenum, (unsigned char*)buffer, size, &transferred);
         /*libmpq_file_getdata(&mpq_a, hash, fileno, (unsigned char*)buffer);*/
         return;

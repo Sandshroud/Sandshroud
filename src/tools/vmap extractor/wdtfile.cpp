@@ -1,19 +1,19 @@
 /*
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "vmapexport.h"
@@ -30,13 +30,87 @@ char * wdtGetPlainName(char * FileName)
     return FileName;
 }
 
-WDTFile::WDTFile(char* file_name, char* adtname, char* map_id, uint32 mapID) : filename(file_name), adtName(adtname), MapEntry(map_id), MapId(mapID), WDT(file_name)
+WDTFile::WDTFile(char* file_name, char* file_name1) : WDT(file_name), gWmoInstansName(NULL), gnWMO(0)
 {
-    memset(&_mphdChunk, 0, 4);
-    memset(&_mphdChunk, 0, 32);
-    memset(&_modfChunk, 0, 64);
-    memset(&_mainChunk.m_chunkData, 0, 64*64*8);
-    _mwmoChunk.hasWMO = false;
+    filename.append(file_name1,strlen(file_name1));
+}
+
+bool WDTFile::init(char* /*map_id*/, unsigned int mapID)
+{
+    if (WDT.isEof())
+    {
+        //printf("Can't find WDT file.\n");
+        return false;
+    }
+
+    char fourcc[5];
+    uint32 size;
+
+    std::string dirname = std::string(szWorkDirWmo) + "/dir_bin";
+    FILE *dirfile;
+    dirfile = fopen(dirname.c_str(), "ab");
+    if(!dirfile)
+    {
+        printf("Can't open dirfile!'%s'\n", dirname.c_str());
+        return false;
+    }
+
+    while (!WDT.isEof())
+    {
+        WDT.read(fourcc,4);
+        WDT.read(&size, 4);
+
+        flipcc(fourcc);
+        fourcc[4] = 0;
+
+        size_t nextpos = WDT.getPos() + size;
+
+        if (!strcmp(fourcc,"MAIN"))
+        {
+        }
+        if (!strcmp(fourcc,"MWMO"))
+        {
+            // global map objects
+            if (size)
+            {
+                char *buf = new char[size];
+                WDT.read(buf, size);
+                char *p=buf;
+                int q = 0;
+                gWmoInstansName = new string[size];
+                while (p < buf + size)
+                {
+                    char* s=wdtGetPlainName(p);
+                    fixnamen(s,strlen(s));
+                    p=p+strlen(p)+1;
+                    gWmoInstansName[q++] = s;
+                }
+                delete[] buf;
+            }
+        }
+        else if (!strcmp(fourcc, "MODF"))
+        {
+            // global wmo instance data
+            if (size)
+            {
+                gnWMO = (int)size / 64;
+
+                for (int i = 0; i < gnWMO; ++i)
+                {
+                    int id;
+                    WDT.read(&id, 4);
+                    WMOInstance inst(WDT,gWmoInstansName[id].c_str(), mapID, 65, 65, dirfile);
+                }
+
+                delete[] gWmoInstansName;
+            }
+        }
+        WDT.seek((int)nextpos);
+    }
+
+    WDT.close();
+    fclose(dirfile);
+    return true;
 }
 
 WDTFile::~WDTFile(void)
@@ -44,99 +118,13 @@ WDTFile::~WDTFile(void)
     WDT.close();
 }
 
-bool WDTFile::init()
+ADTFile* WDTFile::GetMap(int x, int z)
 {
-    if (WDT.isEof())
-        return false;
-    return true;
-}
-
-void WDTFile::readandprocess()
-{
-    // WDT is literally MVER->MPHD->Main->MWMO->MODF, we'll keep this structure though
-    uint32 size;
-    char fourcc[5];
-    while (!WDT.isEof())
-    {
-        WDT.read(fourcc,4);
-        WDT.read(&size, 4);
-        flipcc(fourcc);
-        fourcc[4] = 0;
-
-        size_t nextpos = WDT.getPos()+size;
-        if (!strcmp(fourcc,"MVER"))
-        {
-            if(size > 4)
-                size = 4;
-            WDT.read(&_mverChunk, size);
-        }
-        else if (!strcmp(fourcc,"MPHD"))
-        {
-            if(size > 32)
-                size = 32;
-            WDT.read(&_mphdChunk, size);
-        }
-        else if (!strcmp(fourcc,"MAIN"))
-        {
-            if(size > 32768)
-                size = 32768;
-            // Data offset used for compression, but nonexistent till 4.x
-            WDT.read(&_mainChunk.m_chunkData+_mphdChunk.DataOffset, size);
-            for(uint8 x = 0; x < 64; x++)
-            {
-                for(uint8 y = 0; y < 64; y++)
-                {
-                    if(_mainChunk.m_chunkData[x][y].m_flags & MPHD_FLAG_ADT_BASED)
-                        ADTTiles.push_back(std::make_pair(x,y));
-                }
-            }
-        }
-        else if (!strcmp(fourcc,"MWMO"))
-        {
-            _mwmoChunk.hasWMO = size > 1;
-            if(_mwmoChunk.hasWMO)
-            {
-                if(size > 256)
-                    size = 256;
-                _mwmoChunk.WMOName = (char*)malloc(size+1);
-                WDT.read(_mwmoChunk.WMOName, size);
-            }
-        }
-        else if (!strcmp(fourcc, "MODF"))
-        {
-            if(_mwmoChunk.hasWMO)
-            {
-                if(size > 64)
-                    size = 64;
-                WDT.read(&_modfChunk, size);
-            }
-        }
-        WDT.seek((int)nextpos);
-    }
-}
-
-void WDTFile::close()
-{
-    WDT.close();
-}
-
-ADTFile* WDTFile::GetADT()
-{
-    if(ADTTiles.empty())
+    if(!(x>=0 && z >= 0 && x<64 && z<64))
         return NULL;
 
-    std::pair<uint32, uint32> xY = ADTTiles.front();
-    ADTTiles.pop_front();
+    char name[512];
 
-    char buff[512];
-    sprintf_s(buff, 512, "World\\Maps\\%s\\%s_%d_%d.adt", adtName.c_str(), adtName.c_str(), xY.first, xY.second);
-    return new ADTFile(buff, MapId, xY.first, xY.second);
-}
-
-WMOInstance* WDTFile::GetWMO()
-{
-    if(!_mwmoChunk.hasWMO)
-        return NULL;
-
-    return new WMOInstance(MapId, WDT, _mwmoChunk.WMOName, _modfChunk);
+    sprintf(name,"World\\Maps\\%s\\%s_%d_%d.adt", filename.c_str(), filename.c_str(), x, z);
+    return new ADTFile(name);
 }
