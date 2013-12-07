@@ -18,4 +18,9 @@ target_link_libraries( ${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT} ${ZLIB_LIBRARIE
 #Set the solution folder to tools
 SET_PROPERTY(TARGET Extractor PROPERTY FOLDER "Tools")
 #Set the output folder to bin/tools
+#Set our runtime(exes/dlls) to output into our bin/config
 set_target_properties( Extractor PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OUTPUT_DIRECTORY}/Tools")
+foreach(buildtype IN ITEMS ${CMAKE_CONFIGURATION_TYPES} )
+  string(TOUPPER "${buildtype}" BUILD_DATA)
+  set_target_properties( Extractor PROPERTIES "RUNTIME_OUTPUT_DIRECTORY_${BUILD_DATA}" "${OUTPUT_DIRECTORY}/Tools")
+endforeach()
