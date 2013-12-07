@@ -1,19 +1,19 @@
 /*
+ * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef ADT_H
@@ -22,7 +22,6 @@
 #include "mpq_libmpq04.h"
 #include "wmo.h"
 #include "model.h"
-#include "liquidmodel.h"
 
 #define TILESIZE (533.33333f)
 #define CHUNKSIZE ((TILESIZE) / 16.0f)
@@ -111,17 +110,27 @@ struct MapChunkHeader
 class ADTFile
 {
 private:
+    //size_t mcnk_offsets[256], mcnk_sizes[256];
     MPQFile ADT;
+    //mcell Mcell;
     string Adtfilename;
-
 public:
-    uint32 MapId, TileX, TileY;
-
-public:
-    ADTFile(char* filename, uint32 mapid, uint32 tilex, uint32 tiley);
+    ADTFile(char* filename);
     ~ADTFile();
+    int nWMO;
+    int nMDX;
+    string* WmoInstansName;
+    string* ModelInstansName;
+    bool init(uint32 map_num, uint32 tileX, uint32 tileY);
+    //void LoadMapChunks();
 
-    bool init();
+    //uint32 wmo_count;
+/*
+    const mcell& Getmcell() const
+    {
+        return Mcell;
+    }
+*/
 };
 
 const char * GetPlainName(const char * FileName);
