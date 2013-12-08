@@ -1,7 +1,7 @@
 #!/bin/sh
 version=`git log -1 --pretty=format:"%h"`
 timestamp=`git log -1 --pretty=format:"%ct"`
-tag=`git log -1 --pretty=format:"%d" | cut -d ' ' -f3 | cut -d ')' -f1`
+tag=`git log -1 --pretty=format:"%d" | cut -d ' ' -f3 | cut -d ')' -f1  | cut -d ',' -f1 | cut -d '/' -f2`
 count=`git rev-list --count HEAD`
 hostname=`hostname`
 username=`whoami | cut -d\\\ -f2`
