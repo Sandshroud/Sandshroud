@@ -202,7 +202,7 @@ void Lacrimi::SetupScripts()
 	Log.Success("","############################################################");
 
 	// Load our configs
-	lacrimiIni = new CIniFile("./Lacrimi.ini");
+	lacrimiIni = new CIniFile("./lacrimi.ini");
 	if(lacrimiIni->ParseError())
 		config = false;
 

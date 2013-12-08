@@ -71,9 +71,9 @@ ELSE()
 ENDIF()
 
 IF(IS_64BIT)
-	SET(DEPENDENCY_DLLS ${DEPENDENCY_ROOT}"/DLL Files/amd64")
+	SET(DEPENDENCY_DLLS "${DEPENDENCY_ROOT}/DLL Files/amd64")
 ELSE()
-	SET(DEPENDENCY_DLLS ${DEPENDENCY_ROOT}"/DLL Files")
+	SET(DEPENDENCY_DLLS "${DEPENDENCY_ROOT}/DLL Files")
 ENDIF()
 
 SET(BUILD_INFORMATION "${CMAKE_SYSTEM_PROCESSOR} - ${CMAKE_GENERATOR}" CACHE PATH "What the cmake generator string is")
@@ -223,15 +223,25 @@ IF( APPLE )
 	ENDIF( NOT IS_64BIT )
 ENDIF( APPLE )
 
-#Copy world ini
-if(NOT EXISTS "${OUTPUT_DIRECTORY}/hearthstone-world.ini" AND EXISTS "${INIFILE_PATH}/hearthstone-world.ini")
-FILE(COPY "${INIFILE_PATH}/hearthstone-world.ini" DESTINATION "${OUTPUT_DIRECTORY}")
+#Copy ini files
+FILE(GLOB ini_files "${INIFILE_PATH}/*.ini")
+foreach(ini_file IN ITEMS ${ini_files} )
+#Get the raw xxx.ini
+get_filename_component(f_inifile ${ini_file} NAME)
+#Check existence in bin and inifile path
+if(NOT EXISTS "${OUTPUT_DIRECTORY}/${f_inifile}" AND EXISTS "${INIFILE_PATH}/${f_inifile}")
+FILE(COPY "${INIFILE_PATH}/${f_inifile}" DESTINATION "${OUTPUT_DIRECTORY}")
 endif()
+endforeach()
 
-#Copy logonserver ini
-if(NOT EXISTS "${OUTPUT_DIRECTORY}/hearthstone-logonserver.ini" AND EXISTS "${INIFILE_PATH}/hearthstone-logonserver.ini")
-FILE(COPY "${INIFILE_PATH}/hearthstone-logonserver.ini" DESTINATION "${OUTPUT_DIRECTORY}")
-endif()
+#Copy DLL files
+FILE(GLOB dll_files "${DEPENDENCY_DLLS}/*.dll")
+foreach(dll_file IN ITEMS ${dll_files} )
+#Get the raw xxx.dll
+get_filename_component(f_dllfile ${dll_file} NAME)
+#Copy the dll file to the output directory
+FILE(COPY "${DEPENDENCY_DLLS}/${f_dllfile}" DESTINATION "${OUTPUT_DIRECTORY}")
+endforeach()
 
 SET(BUILD_TOOLS 0 CACHE STRING "Option to include tool cmakefiles, auto off" )
 
@@ -243,6 +253,8 @@ add_subdirectory(lacrimi)
 
 if(BUILD_TOOLS)
 add_subdirectory(tools)
+#Copy libmysql for tool usage
+FILE(COPY "${DEPENDENCY_DLLS}/libmysql.dll" DESTINATION "${OUTPUT_DIRECTORY}/Tools")
 endif()
 
 #Get the source directory for our code
