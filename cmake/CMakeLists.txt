@@ -4,7 +4,7 @@ project(Hearthstone)
 cmake_minimum_required(VERSION 2.8)
 
 #set our system paths
-SET(ROOT_PATH  ${CMAKE_SOURCE_DIR}/..)
+get_filename_component(ROOT_PATH ${CMAKE_SOURCE_DIR} PATH)
 SET(GLOBAL_DEFINES "-DHAVE_CONFIG_H")
 #Our output directory is root/bin
 SET(OUTPUT_DIRECTORY "${ROOT_PATH}/bin" CACHE STRING "Output directory for built files")
@@ -243,4 +243,24 @@ add_subdirectory(lacrimi)
 
 if(BUILD_TOOLS)
 add_subdirectory(tools)
+endif()
+
+#Get the source directory for our code
+get_filename_component(C_MAKESOURCEPATH ${CMAKE_SOURCE_DIR} PATH)
+#Our cmake output directory is in our git folder!
+IF(${CMAKE_BINARY_DIR} MATCHES ${C_MAKESOURCEPATH})
+#Cut out the path of our binary path
+string(REGEX REPLACE "${C_MAKESOURCEPATH}" "" C_MAKECUTBINDIR "${CMAKE_BINARY_DIR}")
+#Check the path of our output bin
+get_filename_component(C_MAKEOUTPUTBIN ${C_MAKECUTBINDIR} PATH)
+if(${C_MAKEOUTPUTBIN} STREQUAL "/")
+#Our output bin is directly in our source folder
+get_filename_component(C_MAKEOUTPUTBIN ${CMAKE_BINARY_DIR} NAME)
+endif()
+
+#Add our configured output of cmake to git ignore
+FILE(APPEND "${ROOT_PATH}/.gitignore" "
+${C_MAKEOUTPUTBIN}")
+#End function for appending output of cmake
+
 endif()
