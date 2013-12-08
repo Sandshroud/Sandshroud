@@ -125,7 +125,7 @@ bool Lacrimi::_StartDB()
 		error.append("DatabaseName");
 	else if(port == 0 || type == 0)
 		error.append("Port/Type");
-	if(error.length() || username == "username" || password == "passwd" || hostname == "host")
+	if(error.length() || username == "user" || password == "pass" || hostname == "host")
 	{
 		sLog.outError("sql: Lacrimi database parameter not found for %s.", error.c_str());
 		return false;
