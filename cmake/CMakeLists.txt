@@ -270,9 +270,13 @@ if(${C_MAKEOUTPUTBIN} STREQUAL "/")
 get_filename_component(C_MAKEOUTPUTBIN ${CMAKE_BINARY_DIR} NAME)
 endif()
 
+IF(NOT EXISTS "${ROOT_PATH}/${C_MAKEOUTPUTBIN}.ignore")
 #Add our configured output of cmake to git ignore
 FILE(APPEND "${ROOT_PATH}/.gitignore" "
 ${C_MAKEOUTPUTBIN}")
 #End function for appending output of cmake
+FILE(APPEND "${ROOT_PATH}/${C_MAKEOUTPUTBIN}.ignore" "")
+
+endif()
 
 endif()
