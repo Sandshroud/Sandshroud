@@ -4,17 +4,15 @@
 
 #pragma once
 
+#include "MemAllocator.h"
+
 #ifdef SCRIPTLIB
 
-#ifndef SKIP_ALLOCATOR_SHARING
-#include "CoreMemoryAllocator.cpp"
-#endif
-
-#define MAKE_SCRIPT_VERSION(major, minor) (uint32)(((uint16)major << 16) | ((uint16)minor))
+const uint32 SCRIPT_BUILD_HASH = BUILD_HASH;
 
 extern "C" SCRIPT_DECL uint32 _exp_get_version()
 {
-	return MAKE_SCRIPT_VERSION(BUILD_HASH / 1000, BUILD_HASH % 1000);
+	return SCRIPT_BUILD_HASH;
 }
 
 #endif

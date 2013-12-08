@@ -175,6 +175,7 @@ extern "C" {
 #include "GuildDefines.h"
 #include "GuildManager.h"
 #include "WorldCreator.h"
+#include "ScriptSetup.h"
 #include "ScriptMgr.h"
 #include "Channel.h"
 #include "ChannelMgr.h"
