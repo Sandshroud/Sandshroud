@@ -101,31 +101,31 @@ SET(group_sources ${group_sources} ${mainframe_resouce_sources})
 FILE(GLOB map_system_sources
 "${prefix}/Map System/*.h"
 "${prefix}/Map System/*.cpp")
-source_group("Mainframe" FILES ${map_system_sources})
+source_group("Map System" FILES ${map_system_sources})
 SET(group_sources ${group_sources} ${map_system_sources})
 
 FILE(GLOB map_system_environment_sources
 "${prefix}/Map System/Environment/*.h"
 "${prefix}/Map System/Environment/*.cpp")
-source_group("Mainframe\\Environment" FILES ${map_system_environment_sources})
+source_group("Map System\\Environment" FILES ${map_system_environment_sources})
 SET(group_sources ${group_sources} ${map_system_environment_sources})
 
 FILE(GLOB map_system_map_interface_sources
 "${prefix}/Map System/Map Interface/*.h"
 "${prefix}/Map System/Map Interface/*.cpp")
-source_group("Mainframe\\Map Interface" FILES ${map_system_map_interface_sources})
+source_group("Map System\\Map Interface" FILES ${map_system_map_interface_sources})
 SET(group_sources ${group_sources} ${map_system_map_interface_sources})
 
 FILE(GLOB map_system_map_managers_sources
 "${prefix}/Map System/Map Managers/*.h"
 "${prefix}/Map System/Map Managers/*.cpp")
-source_group("Mainframe\\Map Managers" FILES ${map_system_map_managers_sources})
+source_group("Map System\\Map Managers" FILES ${map_system_map_managers_sources})
 SET(group_sources ${group_sources} ${map_system_map_managers_sources})
 
 FILE(GLOB map_system_map_tiles_sources
 "${prefix}/Map System/Map Tiles/*.h"
 "${prefix}/Map System/Map Tiles/*.cpp")
-source_group("Mainframe\\Map Tiles" FILES ${map_system_map_tiles_sources})
+source_group("Map System\\Map Tiles" FILES ${map_system_map_tiles_sources})
 SET(group_sources ${group_sources} ${map_system_map_tiles_sources})
 
 FILE(GLOB object_sources
@@ -164,9 +164,8 @@ FILE(GLOB spell_fixes_sources
 source_group("Spell\\Spell Fixes" FILES ${spell_fixes_sources})
 SET(group_sources ${group_sources} ${spell_fixes_sources})
 
-FILE(GLOB sources
-"${prefix}/*.h"
-"${prefix}/*.cpp")
+FILE(GLOB sources "${prefix}/*.h" "${prefix}/*.cpp"
+"${ROOT_PATH}/src/hearthstone-shared/MemAllocator.*")
 source_group("System" FILES ${sources})
 
 #Remove already added files from our main source files

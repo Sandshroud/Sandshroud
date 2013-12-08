@@ -33,16 +33,6 @@ GuildMgr::GuildMgr()
 		m_hiCharterId = result->Fetch()[0].GetUInt32();
 		delete result;
 	}
-
-    GuildLogEvent *_event = new GuildLogEvent();
-    _event->iEvent = 0;
-    _event->iLogId = 0;
-    _event->iTimeStamp = 0;
-    _event->iEventData[0] = 0;
-    _event->iEventData[1] = 0;
-    _event->iEventData[2] = 0;
-    Log.Notice("GuildMgr", "%u %u %u", sizeof(_event->iEvent), sizeof(_event->iLogId), sizeof(GuildLogEvent));
-    delete _event;
 }
 
 GuildMgr::~GuildMgr()
