@@ -89,7 +89,7 @@ StrandOfTheAncients::StrandOfTheAncients(MapMgr* mgr, uint32 id, uint32 lgroup, 
 		m_gates[gates] = m_mapMgr->CreateGameObject(m_gatesLocations[gates][0]);
 		if(m_gates[gates] == NULL || !m_gates[gates]->CreateFromProto(m_gatesLocations[gates][0], m_mapMgr->GetMapId() , m_gatesLocations[gates][1] ,m_gatesLocations[gates][2], m_gatesLocations[gates][3], m_gatesLocations[gates][4]))
 		{
-			Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
+			sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
 			abort();
 			return;
 		}
@@ -105,7 +105,7 @@ StrandOfTheAncients::StrandOfTheAncients(MapMgr* mgr, uint32 id, uint32 lgroup, 
 	m_endgate = m_mapMgr->CreateGameObject(192549);
 	if(m_endgate == NULL || !m_endgate->CreateFromProto(192549, m_mapMgr->GetMapId() ,878.555f, -108.989f, 119.835f, 0.0565f))
 	{
-		Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
+		sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
 		abort();
 		return;
 	}
@@ -117,7 +117,7 @@ StrandOfTheAncients::StrandOfTheAncients(MapMgr* mgr, uint32 id, uint32 lgroup, 
 		m_gateSigils[sigils] = m_mapMgr->CreateGameObject(m_gateSigilsLocations[sigils][0]);
 		if(m_gateSigils[sigils] == NULL || !m_gateSigils[sigils]->CreateFromProto(m_gateSigilsLocations[sigils][0], m_mapMgr->GetMapId() , m_gateSigilsLocations[sigils][1] , m_gateSigilsLocations[sigils][2] , m_gateSigilsLocations[sigils][3], m_gateSigilsLocations[sigils][4]))
 		{
-			Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
+			sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
 			abort();
 			return;
 		}
@@ -128,7 +128,7 @@ StrandOfTheAncients::StrandOfTheAncients(MapMgr* mgr, uint32 id, uint32 lgroup, 
 	m_relic = m_mapMgr->CreateGameObject(192834);
 	if(m_relic == NULL || !m_relic->CreateFromProto(192834, m_mapMgr->GetMapId() , 836.5f , -108.8f , 150.0f ,0.0f))
 	{
-		Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
+		sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
 		abort();
 		return;
 	}
@@ -167,7 +167,7 @@ StrandOfTheAncients::StrandOfTheAncients(MapMgr* mgr, uint32 id, uint32 lgroup, 
 		m_gateTransporters[i] = m_mapMgr->CreateGameObject(192819);
 		if(m_gateTransporters[i] == NULL || !m_gateTransporters[i]->CreateFromProto(192819, m_mapMgr->GetMapId() , m_gateTransportersLocations[i][0] ,m_gateTransportersLocations[i][1], m_gateTransportersLocations[i][2], m_gateTransportersLocations[i][3]))
 		{
-			Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
+			sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
 			abort();
 			return;
 		}
@@ -334,7 +334,7 @@ void StrandOfTheAncients::Respawn()
 		m_gateTransporters[i] = m_mapMgr->CreateGameObject(192819);
 		if(m_gateTransporters[i] == NULL || !m_gateTransporters[i]->CreateFromProto(192819, m_mapMgr->GetMapId() , m_gateTransportersLocations[i][0] ,m_gateTransportersLocations[i][1], m_gateTransportersLocations[i][2], m_gateTransportersLocations[i][3]))
 		{
-			Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
+			sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
 			abort();
 			return;
 		}
@@ -354,7 +354,7 @@ void StrandOfTheAncients::Respawn()
 		m_gates[gates] = m_mapMgr->CreateGameObject(m_gatesLocations[gates][0]);
 		if(m_gates[gates] == NULL || !m_gates[gates]->CreateFromProto(m_gatesLocations[gates][0], m_mapMgr->GetMapId() , m_gatesLocations[gates][1] ,m_gatesLocations[gates][2], m_gatesLocations[gates][3], m_gatesLocations[gates][4]))
 		{
-			Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
+			sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
 			abort();
 			return;
 		}
@@ -370,7 +370,7 @@ void StrandOfTheAncients::Respawn()
 	m_endgate = m_mapMgr->CreateGameObject(192549);
 	if(m_endgate == NULL || !m_endgate->CreateFromProto(192549, m_mapMgr->GetMapId() ,878.555f, -108.989f, 119.835f, 0.0565f))
 	{
-		Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
+		sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
 		abort();
 		return;
 	}
@@ -387,7 +387,7 @@ void StrandOfTheAncients::Respawn()
 		m_gateSigils[sigils] = m_mapMgr->CreateGameObject(m_gateSigilsLocations[sigils][0]);
 		if(m_gateSigils[sigils] == NULL || !m_gateSigils[sigils]->CreateFromProto(m_gateSigilsLocations[sigils][0], m_mapMgr->GetMapId() , m_gateSigilsLocations[sigils][1] , m_gateSigilsLocations[sigils][2] , m_gateSigilsLocations[sigils][3], m_gateSigilsLocations[sigils][4]))
 		{
-			Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
+			sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "SOTA is being created and you are missing gameobjects. Terminating.");
 			abort();
 			return;
 		}

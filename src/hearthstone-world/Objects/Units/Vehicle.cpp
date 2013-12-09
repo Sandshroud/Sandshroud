@@ -42,10 +42,7 @@ void Vehicle::InitSeats(uint32 vehicleEntry, Player* pRider)
 	vehicleData = dbcVehicle.LookupEntry( GetVehicleEntry() );
 	if(!vehicleData)
 	{
-		if(sLog.IsOutDevelopement())
-			printf("Attempted to create non-existant vehicle %u.\n", vehicleEntry);
-		else
-			OUT_DEBUG("Attempted to create non-existant vehicle %u.", vehicleEntry);
+		sLog.outDebug("Attempted to create non-existant vehicle %u.", vehicleEntry);
 		return;
 	}
 
@@ -170,10 +167,7 @@ void Vehicle::Load(CreatureProto * proto_, uint32 mode, float x, float y, float 
 	else
 	{
 		m_vehicleEntry = 124;
-		if(sLog.IsOutDevelopement())
-			printf("Attempted to create vehicle %u with invalid vehicle_entry, defaulting to 124, check your creature_proto table.\n", proto->Id);
-		else
-			OUT_DEBUG("Attempted to create vehicle %u with invalid vehicle_entry, defaulting to 124, check your creature_proto table.", proto->Id);
+		sLog.outDebug("Attempted to create vehicle %u with invalid vehicle_entry, defaulting to 124, check your creature_proto table.", proto->Id);
 	}
 
 	m_maxPassengers = 0;
@@ -181,10 +175,7 @@ void Vehicle::Load(CreatureProto * proto_, uint32 mode, float x, float y, float 
 	vehicleData = dbcVehicle.LookupEntry( m_vehicleEntry );
 	if(!vehicleData)
 	{
-		if(sLog.IsOutDevelopement())
-			printf("Attempted to create non-existant vehicle %u.\n", GetVehicleEntry());
-		else
-			OUT_DEBUG("Attempted to create non-existant vehicle %u.", GetVehicleEntry());
+		sLog.outDebug("Attempted to create non-existant vehicle %u.", GetVehicleEntry());
 		return;
 	}
 
@@ -221,10 +212,7 @@ bool Vehicle::Load(CreatureSpawn *spawn, uint32 mode, MapInfo *info)
 	else
 	{
 		m_vehicleEntry = 124;
-		if(sLog.IsOutDevelopement())
-			printf("Attempted to create vehicle %u with invalid vehicle_entry, defaulting to 124, check your creature_proto table.\n", proto->Id);
-		else
-			OUT_DEBUG("Attempted to create vehicle %u with invalid vehicle_entry, defaulting to 124, check your creature_proto table.", proto->Id);
+		sLog.outDebug("Attempted to create vehicle %u with invalid vehicle_entry, defaulting to 124, check your creature_proto table.", proto->Id);
 	}
 
 	m_maxPassengers = 0;
@@ -232,10 +220,7 @@ bool Vehicle::Load(CreatureSpawn *spawn, uint32 mode, MapInfo *info)
 	vehicleData = dbcVehicle.LookupEntry( m_vehicleEntry );
 	if(!vehicleData)
 	{
-		if(sLog.IsOutDevelopement())
-			printf("Attempted to create non-existant vehicle %u.\n", GetVehicleEntry());
-		else
-			OUT_DEBUG("Attempted to create non-existant vehicle %u.", GetVehicleEntry());
+		sLog.outDebug("Attempted to create non-existant vehicle %u.", GetVehicleEntry());
 		return false;
 	}
 
@@ -440,7 +425,7 @@ void Vehicle::AddPassenger(Unit* pPassenger, int8 requestedseat /*= -1*/, bool f
 	if(pPassenger->GetVehicle())
 		pPassenger->GetVehicle()->RemovePassenger(pPassenger);
 
-	OUT_DEBUG("AddPassenger: Max Vehicle Slot: %u, Max Passengers: %u\n", m_seatSlotMax, m_maxPassengers);
+	sLog.outDebug("AddPassenger: Max Vehicle Slot: %u, Max Passengers: %u\n", m_seatSlotMax, m_maxPassengers);
 
 	if(requestedseat > -1)
 	{
@@ -925,12 +910,7 @@ void WorldSession::HandleSpellClick( WorldPacket & recv_data )
 		if(sp != NULL)
 			unit->CastSpell(_player, sp, true);
 		else
-		{
-			if(sLog.IsOutDevelopement())
-				printf("[SPELLCLICK]: Invalid Spell ID %u creature %u\n", ctr->GetProto()->SpellClickid, ctr->GetEntry());
-			else
-				OUT_DEBUG("[SPELLCLICK]: Invalid Spell ID %u creature %u", ctr->GetProto()->SpellClickid, ctr->GetEntry());
-		}
+			sLog.outDebug("[SPELLCLICK]: Invalid Spell ID %u creature %u", ctr->GetProto()->SpellClickid, ctr->GetEntry());
 		return;
 	}
 
@@ -1023,7 +1003,7 @@ void Vehicle::ChangeSeats(Unit* unit, uint8 seatid)
 {
 	if(seatid == unit->GetSeatID())
 	{
-		OUT_DEBUG("Return, Matching Seats. Requsted: %u, current: %u", seatid, unit->GetSeatID());
+		sLog.outDebug("Return, Matching Seats. Requsted: %u, current: %u", seatid, unit->GetSeatID());
 		return;
 	}
 
@@ -1048,7 +1028,7 @@ void WorldSession::HandleEjectPassenger( WorldPacket & recv_data )
 	Unit* u = _player->GetMapMgr()->GetUnit(guid);
 	if(!u)
 	{
-		OUT_DEBUG("CMSG_EJECT_PASSENGER couldn't find unit with recv'd guid %u.", guid);
+		sLog.outDebug("CMSG_EJECT_PASSENGER couldn't find unit with recv'd guid %u.", guid);
 		return;
 	}
 	if((u->GetVehicle() != _player->GetVehicle() || !u->GetVehicle()) && !(HasGMPermissions() && sWorld.no_antihack_on_gm))

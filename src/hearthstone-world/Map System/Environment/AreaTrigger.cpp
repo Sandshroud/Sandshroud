@@ -33,7 +33,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recv_data)
 
 void WorldSession::_HandleAreaTriggerOpcode(uint32 id)
 {
-	DEBUG_LOG( "WorldSession","HandleAreaTriggerOpcode: %u", id);
+	sLog.Debug( "WorldSession","HandleAreaTriggerOpcode: %u", id);
 
 	// Are we REALLY here?
 	CHECK_INWORLD_RETURN();
@@ -66,7 +66,7 @@ void WorldSession::_HandleAreaTriggerOpcode(uint32 id)
 
 	if( pAreaTrigger == NULL )
 	{
-		OUT_DEBUG("Missing AreaTrigger: %u", id);
+		sLog.outDebug("Missing AreaTrigger: %u", id);
 		return;
 	}
 	if(pAreaTrigger->RequiredTeam != -1)

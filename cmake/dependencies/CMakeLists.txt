@@ -1,4 +1,5 @@
 
+add_subdirectory(consolelog)
 add_subdirectory(zlib)
 add_subdirectory(pcre)
 add_subdirectory(g3dlite)

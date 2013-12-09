@@ -77,7 +77,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 
 	if(!spellInfo)
 	{
-		sLog.outSpellDebug("WORLD: unknown spell id %i\n", spellId);
+		sLog.outDebug("WORLD: unknown spell id %i\n", spellId);
 		return;
 	}
 
@@ -200,7 +200,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
 	if(!spellId)
 	{
-		sLog.outSpellDebug("WORLD: unknown spell id %i\n", spellId);
+		sLog.outDebug("WORLD: unknown spell id %i\n", spellId);
 		return;
 	}
 	// check for spell id
@@ -210,7 +210,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 	{
 		SKIP_READ_PACKET(recvPacket);
 		if(spellInfo == NULL)
-			sLog.outSpellDebug("WORLD: unknown spell id %i\n", spellId);
+			sLog.outDebug("WORLD: unknown spell id %i\n", spellId);
 		return;
 	}
 
@@ -232,7 +232,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 		return;
 	}
 
-	Log.DebugSpell("WORLD","Received cast_spell packet, spellId - %i (%s), data length = %i", spellId, spellInfo->Name, recvPacket.size());
+	sLog.Debug("WORLD","Received cast_spell packet, spellId - %i (%s), data length = %i", spellId, spellInfo->Name, recvPacket.size());
 
 	// Cheat Detection only if player and not from an item
 	// this could fuck up things but meh it's needed ALOT of the newbs are using WPE now
@@ -374,7 +374,7 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
 	{
 		SpellEntry* info = dbcSpell.LookupEntryForced(spellId);
 		_player->m_AuraInterface.RemoveAllPosAurasByNameHash(info->NameHash);
-		Log.DebugSpell("Aura","Removing aura with names %s", info->Name);
+		sLog.Debug("Aura","Removing aura with names %s", info->Name);
 	}
 }
 
@@ -385,7 +385,7 @@ void WorldSession::HandleCancelChannellingOpcode( WorldPacket& recvPacket)
 	if(_player->m_currentSpell != NULL)
 	{
 		if(_player->m_currentSpell->GetSpellProto()->Id != spellId)
-			Log.DebugSpell("Spell","Player cancelled spell that was not being channeled: %u", spellId);
+			sLog.Debug("Spell","Player cancelled spell that was not being channeled: %u", spellId);
 
 		_player->m_currentSpell->cancel();
 	}

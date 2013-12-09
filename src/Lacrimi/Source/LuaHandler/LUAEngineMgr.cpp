@@ -187,7 +187,7 @@ void LuaEngineMgr::Unload()
 
 void LuaEngineMgr::Restart(ScriptMgr* sMgr)
 {
-	Log.Notice("LuaEngineMgr", "Restarting Engine.");
+	sLog.Notice("LuaEngineMgr", "Restarting Engine.");
 	CREATE_L_PTR;
 	g_engine->getcoLock().Acquire();
 	Unload();
@@ -404,7 +404,7 @@ void LuaEngineMgr::Restart(ScriptMgr* sMgr)
 	}
 	temp.clear();
 
-	Log.Notice("LuaEngineMgr", "Done restarting engine.");
+	sLog.Notice("LuaEngineMgr", "Done restarting engine.");
 }
 
 void LuaEngineMgr::CallFunctionByReference(int ref)
@@ -430,7 +430,7 @@ void LuaEngineMgr::DestroyAllLuaEvents()
 
 void LuaEngineMgr::Startup()
 {
-	Log.Notice("LuaEngineMgr", "Spawning Lua Engine...");
+	sLog.Notice("LuaEngineMgr", "Spawning Lua Engine...");
 	m_engine = new LuaEngine();
 	sLacrimi.LuaEngineIsStarting = true;
 	m_engine->LoadScripts();

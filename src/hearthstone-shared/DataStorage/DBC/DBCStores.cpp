@@ -5,7 +5,7 @@
 // Crow: If it has more than 40 columns, break em up.
 #include "DBCStores.h"
 #include "DataStore.h"
-#include "NGLog.h"
+#include "hearthstone_log.h"
 
 SERVER_DECL DBCStorage<AchievementEntry> dbcAchievement;
 SERVER_DECL DBCStorage<AchievementCriteriaEntry> dbcAchievementCriteria;
@@ -288,7 +288,7 @@ const char* itemlimitcategoryformat = "uxxxxxxxxxxxxxxxxxux";
 template<class T>
 bool loader_stub(const char * filename, const char * format, bool ind, T& l, bool loadstrs)
 {
-	Log.Notice("DBC", "Loading %s.", filename);
+	sLog.Notice("DBC", "Loading %s.", filename);
 	return l.Load(filename, format, ind, loadstrs);
 }
 

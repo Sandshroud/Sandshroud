@@ -67,7 +67,7 @@ bool Lacrimi::run()
 			break;
 		Delay(5);
 	}
-	Log.Notice("Lacrimi", "Terminating...");
+	sLog.Notice("Lacrimi", "Terminating...");
 
 	FinalCleanup();
 	if(database)
@@ -93,13 +93,13 @@ void Lacrimi::Cleanup()
 
 void Lacrimi::FinalCleanup()
 {
-	Log.Notice("Lacrimi", "Running Final Cleanup!");
+	sLog.Notice("Lacrimi", "Running Final Cleanup!");
 	uint32 current = getMSTime();
 	for(std::set<CleanupComponent*>::iterator itr = CleanupComponents.begin(); itr != CleanupComponents.end(); itr++)
 		(*itr)->CleanupFunction(current);
 	for(std::set<CleanupComponent*>::iterator itr = CleanupComponents.begin(); itr != CleanupComponents.end(); itr++)
 		(*itr)->Destruct();
-	Log.Notice("Lacrimi", "Final Cleanup Finished!");
+	sLog.Notice("Lacrimi", "Final Cleanup Finished!");
 }
 
 bool Lacrimi::_StartDB()
@@ -138,7 +138,7 @@ bool Lacrimi::_StartDB()
 	if( !LacrimiDB->Initialize(hostname.c_str(), uint(port), username.c_str(),
 		password.c_str(), database.c_str(), lacrimiIni->ReadInteger("LacrimiDatabase", "ConnectionCount", 2), 15000 ) )
 	{
-		OUT_DEBUG( "sql: Main database initialization failed. Exiting." );
+        sLog.outDebug( "sql: Main database initialization failed. Exiting." );
 		_StopDB(); // Kekeke
 		return false;
 	}
@@ -189,17 +189,17 @@ int Lacrimi::GetConfigInt(char* configfamily, char* configoption, int intdefault
 // Use sMgr for Script Mgr.
 void Lacrimi::SetupScripts()
 {
-	Log.Success("Lacrimi", "Lacrimi Engine Started");
-	Log.Success("","############################################################");
-	Log.Success("","# ##            #       ####### ####### ##    #    #    ## #");
-	Log.Success("","# ##           ###      ##      ##   ## ##   ###  ###   ## #");
-	Log.Success("","# ##          ## ##     ##      ##   ## ##   ###  ###   ## #");
-	Log.Success("","# ##         #######    ##      ####### ##  ## #### ##  ## #");
-	Log.Success("","# ##        ##     ##   ##      #####   ##  ## #### ##  ## #");
-	Log.Success("","# ##       ##       ##  ##      ##  ##  ## ##   ##   ## ## #");
-	Log.Success("","# ####### ##         ## ####### ##   ## ## ##   ##   ## ## #");
-	Log.Success("","# :::::::.::.........::.:::::::.::...::.::.::...::...::.:: #");
-	Log.Success("","############################################################");
+	sLog.Success("Lacrimi", "Lacrimi Engine Started");
+	sLog.Success("","############################################################");
+	sLog.Success("","# ##            #       ####### ####### ##    #    #    ## #");
+	sLog.Success("","# ##           ###      ##      ##   ## ##   ###  ###   ## #");
+	sLog.Success("","# ##          ## ##     ##      ##   ## ##   ###  ###   ## #");
+	sLog.Success("","# ##         #######    ##      ####### ##  ## #### ##  ## #");
+	sLog.Success("","# ##        ##     ##   ##      #####   ##  ## #### ##  ## #");
+	sLog.Success("","# ##       ##       ##  ##      ##  ##  ## ##   ##   ## ## #");
+	sLog.Success("","# ####### ##         ## ####### ##   ## ## ##   ##   ## ## #");
+	sLog.Success("","# :::::::.::.........::.:::::::.::...::.::.::...::...::.:: #");
+	sLog.Success("","############################################################");
 
 	// Load our configs
 	lacrimiIni = new CIniFile("./lacrimi.ini");
@@ -213,11 +213,11 @@ void Lacrimi::SetupScripts()
 	dumpstats = GetConfigBool("StatDumper", "DumpStats", false);
 	if(dumpstats)
 	{
-		Log.Success("Lacrimi", "Stat Dumper Initialized");
+		sLog.Success("Lacrimi", "Stat Dumper Initialized");
 		strcpy(Filename, GetConfigString("StatDumper", "Filename", "stats.xml").c_str());
 	}
 
-	Log.Notice("Lacrimi", "C++ Loading scripts...");
+	sLog.Notice("Lacrimi", "C++ Loading scripts...");
 	SetupCityScripts();
 	SetupSpellScripts();
 	SetupCustomScripts();
@@ -459,7 +459,7 @@ void Lacrimi::DumpStats()
 	if( !f )
 		return;
 
-	Log.Debug("Lacrimi", "Dumping stats...");
+	sLog.Debug("Lacrimi", "Dumping stats...");
 
 	// Dump Header
 	fprintf(f, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");

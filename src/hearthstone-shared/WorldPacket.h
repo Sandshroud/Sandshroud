@@ -6,7 +6,7 @@
 
 #include "Common.h"
 #include "ByteBuffer.h"
-#include "Log.h"
+#include "hearthstone_log.h"
 
 class SERVER_DECL WorldPacket : public ByteBuffer
 {
@@ -39,7 +39,7 @@ protected:
 public:
 	void print_storage() const
 	{
-		if(sLog.m_screenLogLevel >= 5)
+        if(sLog.isOutProcess())
 		{
 			sLog.outDebugInLine("STORAGE_SIZE: %lu\n", ulong(size()) );
 			sLog.outDebugInLine("START: ");

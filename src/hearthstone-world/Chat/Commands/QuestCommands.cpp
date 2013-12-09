@@ -68,7 +68,7 @@ string RemoveQuestFromPlayer(Player* plr, Quest *qst)
 			plr->UpdateNearbyQuestGivers();
 			plr->UpdateNearbyGameObjects();
 		}
-		recout += "Quest removed from current questlog.";
+		recout += "Quest removed from current quest log.";
 		has = true;
 	}
 

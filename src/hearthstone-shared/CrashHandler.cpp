@@ -4,7 +4,7 @@
 
 #include "Common.h"
 #include "CrashHandler.h"
-#include "Log.h"
+#include "hearthstone_log.h"
 
 void OutputCrashLogLine(const char * format, ...)
 {
@@ -34,7 +34,6 @@ Mutex m_crashLock;
 
 #include <stdio.h>
 #include <time.h>
-#include "Log.h"
 #include <tchar.h>
 
 bool ON_CRASH_BREAK_DEBUGGER;

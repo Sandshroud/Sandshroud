@@ -46,9 +46,9 @@ void WintergraspScript::OnUpdate(uint32 p_time)
 	if(!m_Initialized)
 	{
 		m_Initialized = true;
-		Log.Notice("Wintergrasp", "Server is loading wintergrasp tiles, it might take some time..");
+		sLog.Notice("Wintergrasp", "Server is loading wintergrasp tiles, it might take some time..");
 		mgr->UpdateAllCells(true, ZONE_WINTERGRASP);
-		Log.Notice("Wintergrasp", "Finished loading tiles...");
+		sLog.Notice("Wintergrasp", "Finished loading tiles...");
 	}
 
 	UpdateClockDigit(m_NextTime-UNIXTIME, m_started ? 0 : 1, 10);

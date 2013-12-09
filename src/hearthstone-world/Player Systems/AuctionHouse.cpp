@@ -111,7 +111,7 @@ void AuctionHouse::AddAuction(Auction * auct)
 	auctionedItems.insert( HM_NAMESPACE::hash_map<uint64, Item* >::value_type( auct->pItem->GetGUID(), auct->pItem ) );
 	itemLock.ReleaseWriteLock();
 
-	DEBUG_LOG("AuctionHouse", "%u: Add auction %u, expire@ %u.", dbc->id, auct->Id, auct->ExpiryTime);
+	sLog.Debug("AuctionHouse", "%u: Add auction %u, expire@ %u.", dbc->id, auct->Id, auct->ExpiryTime);
 }
 
 Auction * AuctionHouse::GetAuction(uint32 Id)
@@ -127,7 +127,7 @@ Auction * AuctionHouse::GetAuction(uint32 Id)
 
 void AuctionHouse::RemoveAuction(Auction * auct)
 {
-	DEBUG_LOG("AuctionHouse", "%u: Removing auction %u, reason %u.", dbc->id, auct->Id, auct->DeletedReason);
+	sLog.Debug("AuctionHouse", "%u: Removing auction %u, reason %u.", dbc->id, auct->Id, auct->DeletedReason);
 
 	char subject[100];
 	char body[200];

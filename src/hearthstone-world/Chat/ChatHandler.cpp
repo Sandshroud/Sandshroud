@@ -5,7 +5,6 @@
 #include "StdAfx.h"
 
 extern std::string LogFileName;
-extern bool bLogChat;
 
 static const uint32 LanguageSkills[NUM_LANGUAGES] = {
 	0,				// UNIVERSAL		0x00
@@ -203,7 +202,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 				data = sChatHandler.FillMessageData( CHAT_MSG_EMOTE, CanUseCommand('c') ? LANG_UNIVERSAL : lang,  msg.c_str(), _player->GetGUID(), _player->GetChatTag());
 
 			GetPlayer()->SendMessageToSet( data, true ,true );
-			if(sWorld.LogChats)
+			if(sWorld.bLogChat)
 				sWorld.LogChat(this, "[emote] %s: %s", _player->GetName(), msg.c_str());
 			delete data;
 		}break;
@@ -230,7 +229,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 						(*itr)->GetSession()->SendChatPacket(data, 1, lang, this);
 				}
 			}
-			if(sWorld.LogChats && msg.c_str()[0] != '.')
+			if(sWorld.bLogChat && msg.c_str()[0] != '.')
 				sWorld.LogChat(this, "[say] %s: %s", _player->GetName(), msg.c_str());
 			delete data;
 		} break;
@@ -281,7 +280,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 					_player->GetGroup()->Unlock();
 				}
 			}
-			if(sWorld.LogChats && msg.c_str()[0] != '.')
+			if(sWorld.bLogChat && msg.c_str()[0] != '.')
 				sWorld.LogChat(this, "[Party/Raid/Battleground] %s: %s", _player->GetName(), msg.c_str());
 			delete data;
 		} break;
@@ -314,7 +313,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 
 			_player->GetMapMgr()->SendChatMessageToCellPlayers(_player, data, 2, 1, lang, this);
 			delete data;
-			if(sWorld.LogChats && msg.c_str()[0] != '.')
+			if(sWorld.bLogChat && msg.c_str()[0] != '.')
 				sWorld.LogChat(this, "[Yell] %s: %s", _player->GetName(), msg.c_str());
 		} break;
 	case CHAT_MSG_WHISPER:
@@ -325,7 +324,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 				if( misc == "Console" ||  misc == "console" )
 				{
 					string ConsoleMessage = format("%s To Console: %s", _player->GetName(), msg.c_str());
-					Log.Notice("Whisper", ConsoleMessage.c_str());
+					sLog.Notice("Whisper", ConsoleMessage.c_str());
 					data = sChatHandler.FillSystemMessageData(ConsoleMessage.c_str());
 					SendPacket(data);
 					delete data;
@@ -394,7 +393,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 				SendPacket(data);
 				delete data;
 			}
-			if(sWorld.LogChats)
+			if(sWorld.bLogChat)
 				sWorld.LogChat(this, "[whisper] %s to %s: %s", _player->GetName(), player->GetName(), msg.c_str());
 		} break;
 	case CHAT_MSG_CHANNEL:
@@ -428,7 +427,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 				if(chn != NULL)
 					chn->Say(GetPlayer(),msg.c_str(), NULL, false);
 
-				if(sWorld.LogChats && msg.c_str()[0] != '.')
+				if(sWorld.bLogChat && msg.c_str()[0] != '.')
 					sWorld.LogChat(this, "[%s] %s: %s", misc.c_str(), _player->GetName(), msg.c_str());
 			}
 		} break;
@@ -462,7 +461,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 			GetPlayer()->Social_TellFriendsStatus();
 		} break;
 	default:
-		OUT_DEBUG("CHAT: unknown msg type %u, lang: %u", type, lang);
+		sLog.outDebug("CHAT: unknown msg type %u, lang: %u", type, lang);
 		break;
 	}
 }

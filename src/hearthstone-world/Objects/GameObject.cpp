@@ -292,7 +292,7 @@ void GameObject::InitAI()
 			GameObjectInfo* gopInfo = GameObjectNameStorage.LookupEntry( objectid );
 			if(gopInfo == NULL)
 			{
-				Log.Warning("GameObject", "Redirected gameobject %u doesn't seem to exists in database, skipping", objectid);
+				sLog.Warning("GameObject", "Redirected gameobject %u doesn't seem to exists in database, skipping", objectid);
 				return;
 			}
 
@@ -432,12 +432,7 @@ void GameObject::UseFishingNode(Player* player)
 	{
 		entry = FishingZoneStorage.LookupEntry( zone );
 		if( entry == NULL ) // No fishing information found for area, log an error
-		{
-			if(sLog.IsOutDevelopement())
-				printf("ERROR: Fishing area information for area %d not found!\n", zone );
-			else
-				OUT_DEBUG( "ERROR: Fishing area information for area %d not found!", zone );
-		}
+			sLog.outDebug( "ERROR: Fishing area information for area %d not found!", zone );
 	}
 	if(zone == 0 || entry == NULL)
 	{
@@ -445,10 +440,7 @@ void GameObject::UseFishingNode(Player* player)
 		entry = FishingZoneStorage.LookupEntry( zone );
 		if( entry == NULL ) // No fishing information found for area, log an error
 		{
-			if(sLog.IsOutDevelopement())
-				printf("ERROR: Fishing zone information for zone %d not found!\n", zone);
-			else
-				OUT_DEBUG( "ERROR: Fishing zone information for zone %d not found!", zone );
+			sLog.outDebug( "ERROR: Fishing zone information for zone %d not found!", zone );
 			EndFishing( player, true );
 			return;
 		}
@@ -587,10 +579,7 @@ Unit* GameObject::CreateTemporaryGuardian(uint32 guardian_entry,uint32 duration,
 	CreatureInfo * info = CreatureNameStorage.LookupEntry(guardian_entry);
 	if(!proto || !info)
 	{
-		if(sLog.IsOutDevelopement())
-			printf("Warning: Missing summon creature template %u !\n",guardian_entry);
-		else
-			OUT_DEBUG("Warning : Missing summon creature template %u !",guardian_entry);
+		sLog.outDebug("Warning : Missing summon creature template %u !",guardian_entry);
 		return NULLUNIT;
 	}
 	uint32 lvl = u_caster->getLevel();

@@ -115,7 +115,7 @@ void QuestMgr::LoadQuests()
 	LoadLocks.Acquire();
 	QueryResult* mainResult = WorldDatabase.Query("SELECT * FROM quests");
 	if(mainResult == NULL)
-		Log.Notice("QuestMgr", "No quests found in the quests table!");
+		sLog.Notice("QuestMgr", "No quests found in the quests table!");
 	else
 	{
 		Field *fields = NULL;
@@ -132,7 +132,7 @@ void QuestMgr::LoadQuests()
 		if(result != NULL)
 		{
 			if(result->GetFieldCount() != 55)
-				Log.Error("QuestMgr", "Incorrect column count in quests_rewards(%u/55)", result->GetFieldCount());
+				sLog.Error("QuestMgr", "Incorrect column count in quests_rewards(%u/55)", result->GetFieldCount());
 			else do
 			{
 				f = 0;
@@ -198,7 +198,7 @@ void QuestMgr::LoadQuests()
 		if(result != NULL)
 		{
 			if(result->GetFieldCount() != 40)
-				Log.Error("QuestMgr", "Incorrect column count in quests_rewards(%u/40)", result->GetFieldCount());
+				sLog.Error("QuestMgr", "Incorrect column count in quests_rewards(%u/40)", result->GetFieldCount());
 			else do
 			{
 				f = 0;
@@ -257,7 +257,7 @@ void QuestMgr::LoadQuests()
 		if(result != NULL)
 		{
 			if(result->GetFieldCount() != 13)
-				Log.Error("QuestMgr", "Incorrect column count in quests_rewards(%u/13)", result->GetFieldCount());
+				sLog.Error("QuestMgr", "Incorrect column count in quests_rewards(%u/13)", result->GetFieldCount());
 			else do
 			{
 				f = 0;
@@ -373,7 +373,7 @@ void QuestMgr::LoadQuests()
 		}while(mainResult->NextRow());
 		delete mainResult;
 		mainResult = NULL;
-		Log.Notice("QuestMgr", "Loaded %u Quests from the Database! Starting cleanup...", QuestStorage.size());
+		sLog.Notice("QuestMgr", "Loaded %u Quests from the Database! Starting cleanup...", QuestStorage.size());
 
 		if(QRewardMap.size())
 		{
@@ -600,7 +600,7 @@ uint32 QuestMgr::ActiveQuestsCount(Object* quest_giver, Player* plr)
 
 	if(!bValid)
 	{
-		OUT_DEBUG("QUESTS: Warning, invalid NPC "I64FMT" specified for ActiveQuestsCount. TypeId: %d.", quest_giver->GetGUID(), quest_giver->GetTypeId());
+		sLog.outDebug("QUESTS: Warning, invalid NPC "I64FMT" specified for ActiveQuestsCount. TypeId: %d.", quest_giver->GetGUID(), quest_giver->GetTypeId());
 		return 0;
 	}
 
@@ -1077,7 +1077,7 @@ void QuestMgr::_OnPlayerKill(Player* plr, uint32 creature_entry)
 							qle->GetQuest()->objectives->required_mobtype[j] == QUEST_MOB_TYPE_CREATURE &&
 							qle->m_mobcount[j] < qle->GetQuest()->objectives->required_mobcount[j] )
 						{
-							// don't update killcount for these questslogentries
+							// don't update killcount for these questlog entries
 							if ( SkippedKills( qle->GetQuest()->id) )
 								return;
 
@@ -1132,7 +1132,7 @@ void QuestMgr::_OnPlayerKill(Player* plr, uint32 creature_entry)
 											qle->GetQuest()->objectives->required_mobtype[j] == QUEST_MOB_TYPE_CREATURE &&
 											qle->m_mobcount[j] < qle->GetQuest()->objectives->required_mobcount[j] )
 										{
-											// don't update killcount for these questslogentries
+											// don't update killcount for these quest log entries
 											if ( SkippedKills( qle->GetQuest()->id) )
 												return;
 
@@ -1517,12 +1517,7 @@ void QuestMgr::OnQuestFinished(Player* plr, Quest* qst, Object* qst_giver, uint3
 				{
 					ItemPrototype *proto = ItemPrototypeStorage.LookupEntry(qst->rewards->reward_item[i]);
 					if(!proto)
-					{
-						if(sLog.IsOutDevelopement())
-							printf("Invalid item prototype in quest reward! ID %d, quest %d\n", qst->rewards->reward_item[i], qst->id);
-						else
-							OUT_DEBUG("Invalid item prototype in quest reward! ID %d, quest %d", qst->rewards->reward_item[i], qst->id);
-					}
+                        sLog.outDebug("Invalid item prototype in quest reward! ID %d, quest %d", qst->rewards->reward_item[i], qst->id);
 					else
 					{
 						Item* add;
@@ -1560,12 +1555,7 @@ void QuestMgr::OnQuestFinished(Player* plr, Quest* qst, Object* qst_giver, uint3
 			{
 				ItemPrototype *proto = ItemPrototypeStorage.LookupEntry(qst->rewards->reward_choiceitem[reward_slot]);
 				if(!proto)
-				{
-					if(sLog.IsOutDevelopement())
-						printf("Invalid item prototype in quest reward! ID %d, quest %d\n", qst->rewards->reward_choiceitem[reward_slot], qst->id);
-					else
-						OUT_DEBUG("Invalid item prototype in quest reward! ID %d, quest %d", qst->rewards->reward_choiceitem[reward_slot], qst->id);
-				}
+                    sLog.outDebug("Invalid item prototype in quest reward! ID %d, quest %d", qst->rewards->reward_choiceitem[reward_slot], qst->id);
 				else
 				{
 					Item* add;
@@ -1634,12 +1624,7 @@ void QuestMgr::OnQuestFinished(Player* plr, Quest* qst, Object* qst_giver, uint3
 				{
 					ItemPrototype *proto = ItemPrototypeStorage.LookupEntry(qst->rewards->reward_item[i]);
 					if(!proto)
-					{
-						if(sLog.IsOutDevelopement())
-							printf("Invalid item prototype in quest reward! ID %d, quest %d\n", qst->rewards->reward_item[i], qst->id);
-						else
-							OUT_DEBUG("Invalid item prototype in quest reward! ID %d, quest %d", qst->rewards->reward_item[i], qst->id);
-					}
+                        sLog.outDebug("Invalid item prototype in quest reward! ID %d, quest %d", qst->rewards->reward_item[i], qst->id);
 					else
 					{
 						Item* add;
@@ -1677,12 +1662,7 @@ void QuestMgr::OnQuestFinished(Player* plr, Quest* qst, Object* qst_giver, uint3
 			{
 				ItemPrototype *proto = ItemPrototypeStorage.LookupEntry(qst->rewards->reward_choiceitem[reward_slot]);
 				if(!proto)
-				{
-					if(sLog.IsOutDevelopement())
-						printf("Invalid item prototype in quest reward! ID %d, quest %d\n", qst->rewards->reward_choiceitem[reward_slot], qst->id);
-					else
-						OUT_DEBUG("Invalid item prototype in quest reward! ID %d, quest %d", qst->rewards->reward_choiceitem[reward_slot], qst->id);
-				}
+                    sLog.outDebug("Invalid item prototype in quest reward! ID %d, quest %d", qst->rewards->reward_choiceitem[reward_slot], qst->id);
 				else
 				{
 					Item* add;
@@ -2038,7 +2018,7 @@ void QuestMgr::SendQuestInvalid(INVALID_REASON reason, Player* plyr)
 	if(!plyr)
 		return;
 	plyr->GetSession()->OutPacket(SMSG_QUESTGIVER_QUEST_INVALID, 4, &reason);
-	OUT_DEBUG("WORLD:Sent SMSG_QUESTGIVER_QUEST_INVALID");
+	sLog.outDebug("WORLD:Sent SMSG_QUESTGIVER_QUEST_INVALID");
 }
 
 void QuestMgr::SendQuestFailed(FAILED_REASON failed, Quest * qst, Player* plyr)
@@ -2050,7 +2030,7 @@ void QuestMgr::SendQuestFailed(FAILED_REASON failed, Quest * qst, Player* plyr)
 	data << uint32(qst->id);
 	data << failed;
 	plyr->GetSession()->SendPacket(&data);
-	OUT_DEBUG("WORLD:Sent SMSG_QUESTGIVER_QUEST_FAILED");
+	sLog.outDebug("WORLD:Sent SMSG_QUESTGIVER_QUEST_FAILED");
 }
 
 void QuestMgr::SendQuestUpdateFailedTimer(Quest *pQuest, Player* plyr)
@@ -2059,7 +2039,7 @@ void QuestMgr::SendQuestUpdateFailedTimer(Quest *pQuest, Player* plyr)
 		return;
 
 	plyr->GetSession()->OutPacket(SMSG_QUESTUPDATE_FAILEDTIMER, 4, &pQuest->id);
-	OUT_DEBUG("WORLD:Sent SMSG_QUESTUPDATE_FAILEDTIMER");
+	sLog.outDebug("WORLD:Sent SMSG_QUESTUPDATE_FAILEDTIMER");
 }
 
 void QuestMgr::SendQuestUpdateFailed(Quest *pQuest, Player* plyr)
@@ -2068,7 +2048,7 @@ void QuestMgr::SendQuestUpdateFailed(Quest *pQuest, Player* plyr)
 		return;
 
 	plyr->GetSession()->OutPacket(SMSG_QUESTUPDATE_FAILED, 4, &pQuest->id);
-	OUT_DEBUG("WORLD:Sent SMSG_QUESTUPDATE_FAILED");
+	sLog.outDebug("WORLD:Sent SMSG_QUESTUPDATE_FAILED");
 }
 
 void QuestMgr::SendQuestLogFull(Player* plyr)
@@ -2077,7 +2057,7 @@ void QuestMgr::SendQuestLogFull(Player* plyr)
 		return;
 
 	plyr->GetSession()->OutPacket(SMSG_QUESTLOG_FULL);
-	OUT_DEBUG("WORLD:Sent QUEST_LOG_FULL_MESSAGE");
+	sLog.outDebug("WORLD:Sent QUEST_LOG_FULL_MESSAGE");
 }
 
 uint32 QuestMgr::GetGameObjectLootQuest(uint32 GO_Entry)
@@ -2135,7 +2115,7 @@ bool QuestMgr::OnActivateQuestGiver(Object* qst_giver, Player* plr)
 	uint32 questCount = sQuestMgr.ActiveQuestsCount(qst_giver, plr);
 	if (questCount == 0)
 	{
-		OUT_DEBUG("WORLD: Invalid NPC for CMSG_QUESTGIVER_HELLO.");
+		sLog.outDebug("WORLD: Invalid NPC for CMSG_QUESTGIVER_HELLO.");
 		return false;
 	}
 	else if (questCount == 1)
@@ -2167,7 +2147,7 @@ bool QuestMgr::OnActivateQuestGiver(Object* qst_giver, Player* plr)
 
 		if(!bValid)
 		{
-			OUT_DEBUG("QUESTS: Warning, invalid NPC "I64FMT" specified for OnActivateQuestGiver. TypeId: %d.", qst_giver->GetGUID(), qst_giver->GetTypeId());
+			sLog.outDebug("QUESTS: Warning, invalid NPC "I64FMT" specified for OnActivateQuestGiver. TypeId: %d.", qst_giver->GetGUID(), qst_giver->GetTypeId());
 			return false;
 		}
 
@@ -2186,26 +2166,26 @@ bool QuestMgr::OnActivateQuestGiver(Object* qst_giver, Player* plr)
 			sQuestMgr.BuildOfferReward(&data, (*itr)->qst, qst_giver, 1, plr);
 			plr->GetSession()->SendPacket(&data);
 			//ss
-			DEBUG_LOG( "WORLD"," Sent SMSG_QUESTGIVER_OFFER_REWARD." );
+			sLog.Debug( "WORLD"," Sent SMSG_QUESTGIVER_OFFER_REWARD." );
 		}
 		else if (status == QMGR_QUEST_CHAT || status == QMGR_QUEST_AVAILABLE)
 		{
 			sQuestMgr.BuildQuestDetails(&data, (*itr)->qst, qst_giver, 1, plr);		// 1 because we have 1 quest, and we want goodbye to function
 			plr->GetSession()->SendPacket(&data);
-			DEBUG_LOG( "WORLD"," Sent SMSG_QUESTGIVER_QUEST_DETAILS." );
+			sLog.Debug( "WORLD"," Sent SMSG_QUESTGIVER_QUEST_DETAILS." );
 		}
 		else if (status == QMGR_QUEST_NOT_FINISHED)
 		{
 			sQuestMgr.BuildRequestItems(&data, (*itr)->qst, qst_giver, status);
 			plr->GetSession()->SendPacket(&data);
-			DEBUG_LOG( "WORLD"," Sent SMSG_QUESTGIVER_REQUEST_ITEMS." );
+			sLog.Debug( "WORLD"," Sent SMSG_QUESTGIVER_REQUEST_ITEMS." );
 		}
 	}
 	else
 	{
 		sQuestMgr.BuildQuestList(&data, qst_giver ,plr);
 		plr->GetSession()->SendPacket(&data);
-		DEBUG_LOG( "WORLD"," Sent SMSG_QUESTGIVER_QUEST_LIST." );
+		sLog.Debug( "WORLD"," Sent SMSG_QUESTGIVER_QUEST_LIST." );
 	}
 	return true;
 }
@@ -2225,12 +2205,7 @@ bool QuestMgr::CanStoreReward(Player* plyr, Quest *qst, uint32 reward_slot)
 				slotsrequired++;
 				ItemPrototype *proto = ItemPrototypeStorage.LookupEntry(qst->rewards->reward_item[i]);
 				if(!proto)
-				{
-					if(sLog.IsOutDevelopement())
-						printf("Invalid item prototype in quest reward! ID %d, quest %d\n", qst->rewards->reward_item[i], qst->id);
-					else
-						OUT_DEBUG("Invalid item prototype in quest reward! ID %d, quest %d", qst->rewards->reward_item[i], qst->id);
-				}
+                    sLog.outDebug("Invalid item prototype in quest reward! ID %d, quest %d", qst->rewards->reward_item[i], qst->id);
 				else if(plyr->GetItemInterface()->CanReceiveItem(proto, qst->rewards->reward_itemcount[i], NULL))
 					return false;
 			}
@@ -2242,7 +2217,7 @@ bool QuestMgr::CanStoreReward(Player* plyr, Quest *qst, uint32 reward_slot)
 			slotsrequired++;
 			ItemPrototype *proto = ItemPrototypeStorage.LookupEntry(qst->rewards->reward_choiceitem[reward_slot]);
 			if(!proto)
-				OUT_DEBUG("Invalid item prototype in quest reward! ID %d, quest %d", qst->rewards->reward_choiceitem[reward_slot], qst->id);
+				sLog.outDebug("Invalid item prototype in quest reward! ID %d, quest %d", qst->rewards->reward_choiceitem[reward_slot], qst->id);
 			else if(plyr->GetItemInterface()->CanReceiveItem(proto, qst->rewards->reward_choiceitemcount[reward_slot], NULL))
 				return false;
 		}
@@ -2262,7 +2237,7 @@ void QuestMgr::LoadExtraQuestStuff()
 
 	lootmgr.LoadLoot();
 	lootmgr.FillObjectLootMap(&loot_map);
-	DEBUG_LOG("QuestMgr","Creating gameobject involved quest map...");
+	sLog.Debug("QuestMgr","Creating gameobject involved quest map...");
 
 	while(it != QuestStorage.end())
 	{
@@ -2339,7 +2314,7 @@ void QuestMgr::LoadExtraQuestStuff()
 			qst = GetQuestPointer(quest);
 			if(!qst)
 			{
-				Log.Warning("QuestMgr","Tried to add starter to npc %u for non-existant quest %u.", creature, quest);
+				sLog.Warning("QuestMgr","Tried to add starter to npc %u for non-existant quest %u.", creature, quest);
 				if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 				{
 					WorldDatabase.Execute("DELETE FROM creature_quest_starter where quest = '%u'", quest);
@@ -2352,7 +2327,7 @@ void QuestMgr::LoadExtraQuestStuff()
 		} while(pResult->NextRow());
 		delete pResult;
 	}
-	Log.Notice("QuestMgr","Marked %u creatures as quest starter", total);
+	sLog.Notice("QuestMgr","Marked %u creatures as quest starter", total);
 
 	pResult = WorldDatabase.Query("SELECT * FROM creature_quest_finisher");
 	pos = total = 0;
@@ -2368,7 +2343,7 @@ void QuestMgr::LoadExtraQuestStuff()
 			qst = GetQuestPointer(quest);
 			if(!qst)
 			{
-				Log.Warning("QuestMgr","Tried to add finisher to npc %d for non-existant quest %d.", creature, quest);
+				sLog.Warning("QuestMgr","Tried to add finisher to npc %d for non-existant quest %d.", creature, quest);
 				if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 				{
 					WorldDatabase.Execute("DELETE FROM creature_quest_finisher where quest = '%u'", quest);
@@ -2381,7 +2356,7 @@ void QuestMgr::LoadExtraQuestStuff()
 		} while(pResult->NextRow());
 		delete pResult;
 	}
-	Log.Notice("QuestMgr","Marked %u creatures as quest finisher", total);
+	sLog.Notice("QuestMgr","Marked %u creatures as quest finisher", total);
 
 	pResult = WorldDatabase.Query("SELECT * FROM gameobject_quest_starter");
 	pos = total = 0;
@@ -2397,7 +2372,7 @@ void QuestMgr::LoadExtraQuestStuff()
 			qst = GetQuestPointer(quest);
 			if(!qst)
 			{
-				Log.Warning("QuestMgr","Tried to add starter to go %d for non-existant quest %d.", creature, quest);
+				sLog.Warning("QuestMgr","Tried to add starter to go %d for non-existant quest %d.", creature, quest);
 				if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 				{
 					WorldDatabase.Execute("DELETE FROM gameobject_quest_starter where quest = '%u'", quest);
@@ -2409,7 +2384,7 @@ void QuestMgr::LoadExtraQuestStuff()
 
 		} while(pResult->NextRow());
 		delete pResult;
-		Log.Notice("QuestMgr","Marked %u gameobjects as quest starter", total);
+		sLog.Notice("QuestMgr","Marked %u gameobjects as quest starter", total);
 	}
 
 	pResult = WorldDatabase.Query("SELECT * FROM gameobject_quest_finisher");
@@ -2426,7 +2401,7 @@ void QuestMgr::LoadExtraQuestStuff()
 			qst = GetQuestPointer(quest);
 			if(!qst)
 			{
-				Log.Warning("QuestMgr","Tried to add finisher to go %d for non-existant quest %d.\n", creature, quest);
+				sLog.Warning("QuestMgr","Tried to add finisher to go %d for non-existant quest %d.\n", creature, quest);
 				if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 				{
 					WorldDatabase.Execute("DELETE FROM gameobject_quest_finisher where quest = '%u'", quest);
@@ -2438,7 +2413,7 @@ void QuestMgr::LoadExtraQuestStuff()
 
 		} while(pResult->NextRow());
 		delete pResult;
-		Log.Notice("QuestMgr","Marked %u gameobjects as quest finisher", total);
+		sLog.Notice("QuestMgr","Marked %u gameobjects as quest finisher", total);
 	}
 
 	//load item quest associations
@@ -2459,7 +2434,7 @@ void QuestMgr::LoadExtraQuestStuff()
 			qst = GetQuestPointer(quest);
 			if(!qst)
 			{
-				Log.Warning("QuestMgr","Tried to add association to item %d for non-existant quest %d.", item, quest);
+				sLog.Warning("QuestMgr","Tried to add association to item %d for non-existant quest %d.", item, quest);
 				if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 				{
 					WorldDatabase.Execute("DELETE FROM item_quest_association where quest = '%u'", quest);
@@ -2471,7 +2446,7 @@ void QuestMgr::LoadExtraQuestStuff()
 
 		} while( pResult->NextRow() );
 		delete pResult;
-		Log.Notice("QuestMgr","Loaded %u item-quest associations", total);
+		sLog.Notice("QuestMgr","Loaded %u item-quest associations", total);
 	}
 
 	//Proccess the stuff

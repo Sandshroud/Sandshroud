@@ -646,7 +646,7 @@ void Arena::HookOnAreaTrigger(Player* plr, uint32 id)
 			break;
 		default:
 			{
-				Log.Error("Arena", "Encountered unhandled areatrigger id %u", id);
+				sLog.Error("Arena", "Encountered unhandled areatrigger id %u", id);
 				return;
 			}break;
 	}

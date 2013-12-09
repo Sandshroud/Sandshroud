@@ -176,10 +176,7 @@ pSpellEffect SpellEffectsHandler[TOTAL_SPELL_EFFECTS] = {
 
 void Spell::SpellEffectNULL(uint32 i)
 {
-	if(sLog.IsOutDevelopement())
-		printf("Unhandled spell effect %u in spell %u.\n",GetSpellProto()->Effect[i],GetSpellProto()->Id);
-	else
-		Log.DebugSpell("Spell","Unhandled spell effect %u in spell %u.",GetSpellProto()->Effect[i],GetSpellProto()->Id);
+	sLog.Debug("Spell","Unhandled spell effect %u in spell %u.",GetSpellProto()->Effect[i],GetSpellProto()->Id);
 }
 
 void Spell::SpellEffectInstantKill(uint32 i)
@@ -436,10 +433,7 @@ void Spell::SpellEffectDummy(uint32 i) // Dummy(Scripted events)
 	if(sScriptMgr.CallScriptedDummySpell(m_spellInfo->Id, i, this))
 		return;
 
-	if(sLog.IsOutDevelopement())
-		printf("Dummy spell not handled: %u%s\n", m_spellInfo->Id, ((ProcedOnSpell != NULL) ? (format(" proc'd on: %u", ProcedOnSpell->Id).c_str()) : ""));
-	else
-		sLog.outSpellDebug("Dummy spell not handled: %u%s\n", m_spellInfo->Id, ((ProcedOnSpell != NULL) ? (format(" proc'd on: %u", ProcedOnSpell->Id).c_str()) : ""));
+	sLog.outDebug("Dummy spell not handled: %u%s\n", m_spellInfo->Id, ((ProcedOnSpell != NULL) ? (format(" proc'd on: %u", ProcedOnSpell->Id).c_str()) : ""));
 }
 
 void Spell::SpellEffectTeleportUnits( uint32 i )  // Teleport Units
@@ -1181,7 +1175,7 @@ void Spell::SpellEffectWeapon(uint32 i)
 	default:
 		{
 			skill = 0;
-			Log.Warning("Spell","Could not determine skill for spell id %d (SPELL_EFFECT_WEAPON)", GetSpellProto()->Id);
+			sLog.Warning("Spell","Could not determine skill for spell id %d (SPELL_EFFECT_WEAPON)", GetSpellProto()->Id);
 		}break;
 	}
 
@@ -1748,10 +1742,7 @@ void Spell::SpellEffectSendEvent(uint32 i) //Send Event
 	if(sScriptMgr.HandleScriptedSpellEffect(m_spellInfo->Id, i, this))
 		return;
 
-	if(sLog.IsOutDevelopement())
-		printf("Event spell not handled: %u%s\n", m_spellInfo->Id, ((ProcedOnSpell != NULL) ? (format(" proc'd on: %u", ProcedOnSpell->Id).c_str()) : ""));
-	else
-		sLog.outSpellDebug("Event spell not handled: %u%s\n", m_spellInfo->Id, ((ProcedOnSpell != NULL) ? (format(" proc'd on: %u", ProcedOnSpell->Id).c_str()) : ""));
+	sLog.outDebug("Event spell not handled: %u%s\n", m_spellInfo->Id, ((ProcedOnSpell != NULL) ? (format(" proc'd on: %u", ProcedOnSpell->Id).c_str()) : ""));
 }
 
 void Spell::SpellEffectApplyAA(uint32 i) // Apply Area Aura
@@ -3008,10 +2999,7 @@ void Spell::SpellEffectScriptEffect(uint32 i) // Script Effect
 	if(sScriptMgr.HandleScriptedSpellEffect(m_spellInfo->Id, i, this))
 		return;
 
-	if(sLog.IsOutDevelopement())
-		printf("Unhandled Scripted Effect In Spell %u\n", m_spellInfo->Id);
-	else
-		sLog.outSpellDebug("Unhandled Scripted Effect In Spell %u", m_spellInfo->Id);
+	sLog.outDebug("Unhandled Scripted Effect In Spell %u", m_spellInfo->Id);
 }
 
 void Spell::SpellEffectSanctuary(uint32 i) // Stop all attacks made to you
@@ -3512,12 +3500,12 @@ void Spell::SpellEffectDisenchant(uint32 i)
 				if(Rand(float(100-skill*100.0/75.0)))
 					p_caster->_AdvanceSkillLine(SKILL_ENCHANTING, float2int32( 1.0f * sWorld.getRate(RATE_SKILLRATE)));
 			}
-			sLog.outSpellDebug("SpellEffect","Succesfully disenchanted item %d", uint32(itemTarget->GetEntry()));
+			sLog.outDebug("SpellEffect","Succesfully disenchanted item %d", uint32(itemTarget->GetEntry()));
 			p_caster->SendLoot( itemTarget->GetGUID(), itemTarget->GetMapId(), LOOT_DISENCHANTING );
 		}
 		else
 		{
-			sLog.outSpellDebug("SpellEffect","Disenchanting failed, item %d has no loot", uint32(itemTarget->GetEntry()));
+			sLog.outDebug("SpellEffect","Disenchanting failed, item %d has no loot", uint32(itemTarget->GetEntry()));
 			SendCastResult(SPELL_FAILED_CANT_BE_DISENCHANTED);
 			return;
 		}

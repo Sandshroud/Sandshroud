@@ -421,7 +421,7 @@ void Transporter::Destruct()
 
 void ObjectMgr::LoadTransporters()
 {
-	Log.Notice("ObjectMgr", "Loading Transports...");
+	sLog.Notice("ObjectMgr", "Loading Transports...");
 	QueryResult * QR = WorldDatabase.Query("SELECT entry FROM gameobject_names WHERE type = %u", GAMEOBJECT_TYPE_MO_TRANSPORT);
 	if(!QR)
 		return;
@@ -438,7 +438,7 @@ void ObjectMgr::LoadTransporters()
 		pTransporter->Init();
 		if(!pTransporter->CreateAsTransporter(entry, ""))
 		{
-			Log.Warning("ObjectMgr","Skipped invalid transporterid %d.", entry);
+			sLog.Warning("ObjectMgr","Skipped invalid transporterid %d.", entry);
 			pTransporter->Destruct();
 			pTransporter = NULL;
 		}

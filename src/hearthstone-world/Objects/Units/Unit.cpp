@@ -4054,7 +4054,7 @@ int32 Unit::Strike( Unit* pVictim, uint32 weapon_damage_type, SpellEntry* abilit
 
 		//float r = ( 7.5f * dmg.full_damage / c + f * s ) / 2.0f;
 		//float p = ( 1 + ( TO_PLAYER(this)->rageFromDamageDealt / 100.0f ) );
-		//OUT_DEBUG( "Rd(%i) d(%i) c(%f) f(%f) s(%f) p(%f) r(%f) rage = %f", realdamage, dmg.full_damage, c, f, s, p, r, val );
+		//sLog.outDebug( "Rd(%i) d(%i) c(%f) f(%f) s(%f) p(%f) r(%f) rage = %f", realdamage, dmg.full_damage, c, f, s, p, r, val );
 
 		ModUnsigned32Value( UNIT_FIELD_POWER2, (int32)val );
 		if( GetUInt32Value( UNIT_FIELD_POWER2 ) > 1000 )
@@ -4075,7 +4075,7 @@ int32 Unit::Strike( Unit* pVictim, uint32 weapon_damage_type, SpellEntry* abilit
 		val = 2.5f * dmg.full_damage / c;
 		val *= 10;
 
-		//OUT_DEBUG( "Rd(%i) d(%i) c(%f) rage = %f", realdamage, dmg.full_damage, c, val );
+		//sLog.outDebug( "Rd(%i) d(%i) c(%f) rage = %f", realdamage, dmg.full_damage, c, val );
 
 		pVictim->ModUnsigned32Value( UNIT_FIELD_POWER2, (int32)val );
 		if( pVictim->GetUInt32Value( UNIT_FIELD_POWER2) > 1000 )
@@ -4609,10 +4609,7 @@ void Unit::MoveToWaypoint(uint32 wp_id)
 		WayPoint *wp = ai->getWayPoint(wp_id);
 		if(!wp)
 		{
-			if(sLog.IsOutDevelopement())
-				printf("Database: Invalid WP %u specified for spawnid %u.\n", wp_id, TO_CREATURE(this)->GetSQL_id());
-			else
-				OUT_DEBUG("Database: Invalid WP %u specified for spawnid %u.", wp_id, TO_CREATURE(this)->GetSQL_id());
+            sLog.outDebug("Database: Invalid WP %u specified for spawnid %u.", wp_id, TO_CREATURE(this)->GetSQL_id());
 			return;
 		}
 
@@ -4681,8 +4678,7 @@ uint32 Unit::ManaShieldAbsorb(uint32 dmg, SpellEntry* sp)
 		SpellEntry *spInfo = dbcSpell.LookupEntry(44413);
 		if(spInfo)
 		{
-			Spell* sp = NULLSPELL;
-			sp = (new Spell(TO_UNIT(this),spInfo,true,NULLAURA));
+			Spell* sp = new Spell(TO_UNIT(this), spInfo, true, NULLAURA);
 			SpellCastTargets tgt;
 			int spamount = std::min(float2int32(GetUInt32Value(UNIT_FIELD_HEALTH) * 0.05f), float2int32((potential * m_incanterAbsorption) / 100));
 			sp->forced_basepoints[0] = spamount;
@@ -5287,7 +5283,7 @@ void Unit::RemoveSoloAura(uint32 type)
 		}break;*/
 		default:
 			{
-			OUT_DEBUG("Warning: we are trying to remove a soloauratype that has no handle");
+			sLog.outDebug("Warning: we are trying to remove a soloauratype that has no handle");
 			}break;
 	}
 }
@@ -5395,10 +5391,7 @@ Unit* Unit::CreateTemporaryGuardian(uint32 guardian_entry,uint32 duration,float 
 	CreatureInfo * info = CreatureNameStorage.LookupEntry(guardian_entry);
 	if(!proto || !info)
 	{
-		if(sLog.IsOutDevelopement())
-			printf("Warning : Missing summon creature template %u !\n",guardian_entry);
-		else
-			OUT_DEBUG("Warning : Missing summon creature template %u !",guardian_entry);
+        sLog.outDebug("Warning : Missing summon creature template %u !",guardian_entry);
 		return NULLUNIT;
 	}
 

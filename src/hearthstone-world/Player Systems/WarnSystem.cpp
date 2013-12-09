@@ -124,7 +124,7 @@ void WarnSystem::AddWarn(Player * Warner, Player * Warned, const char  *reason)
 
 	sChatHandler.GreenSystemMessage(Warner->GetSession(), "You have warned %s for: %s", WarnedChar.c_str(), reason );
 	sChatHandler.BlueSystemMessage(Warned->GetSession(), "You have been warned by %s for: %s", GMChar.c_str(), reason );
-	Log.Notice("WarnSystem", "Player %s has been warned by %s for: %s", WarnedChar.c_str(), GMAcct.c_str(), reason );
+	sLog.Notice("WarnSystem", "Player %s has been warned by %s for: %s", WarnedChar.c_str(), GMAcct.c_str(), reason );
 	sWorld.LogGM(Warner->GetSession(), "warned(%u) player %s(%s) for %s", newWarnID, WarnedChar.c_str(), WarnedAcct.c_str(), reason);
 
 	std::stringstream mySql;
@@ -162,7 +162,7 @@ void WarnSystem::AddWarn_Internal(std::string Warner, Player * Warned, const cha
 	BroadcastToGMs("Player %s has been warned by %s for: %s", WarnedChar.c_str(), Warner.c_str(), reason );
 
 	sChatHandler.BlueSystemMessage(Warned->GetSession(), "You have been warned by %s for: %s", Warner.c_str(), reason );
-	Log.Notice("WarnSystem", "Player %s has been warned by %s for: %s", WarnedChar.c_str(), Warner.c_str(), reason );
+	sLog.Notice("WarnSystem", "Player %s has been warned by %s for: %s", WarnedChar.c_str(), Warner.c_str(), reason );
 
 	ReachedPunishmentLevel(NULL, Warned, newWarnID, reason);
 
@@ -198,7 +198,7 @@ void WarnSystem::DelWarn(Player * Warner, Player * Warned, uint32 WarnID)
 	sChatHandler.SystemMessage(gmSession, "Warn Deleted.");
 	sChatHandler.SystemMessage(plrSession, "Warn Deleted.");
 
-	Log.Notice("WarnSystem", "GM %s[%s] has cleared warn %u from player %s(%s)", GMAcct.c_str(), GMSession.c_str(), WarnID, WarnedChar.c_str(), WarnedAcct.c_str());
+	sLog.Notice("WarnSystem", "GM %s[%s] has cleared warn %u from player %s(%s)", GMAcct.c_str(), GMSession.c_str(), WarnID, WarnedChar.c_str(), WarnedAcct.c_str());
 	sWorld.LogGM(gmSession ,"deleted warn %u from player %s(%s)", WarnID, WarnedChar.c_str(), WarnedAcct.c_str());
 	return;
 }
@@ -284,7 +284,7 @@ void WarnSystem::ClearWarns(Player * Warner, Player *  Warned)
 
 	sChatHandler.GreenSystemMessage(gm_session, "Warns cleared!");
 	sChatHandler.GreenSystemMessage(Warned->GetSession(), "Your warns were cleared!");
-	Log.Notice("WarnSystem", "GM %s[%s] has cleared the warns from player %s(%s)", GMAcct.c_str(), GM_IP.c_str(), WarnedChar.c_str(), WarnedAcct.c_str());
+	sLog.Notice("WarnSystem", "GM %s[%s] has cleared the warns from player %s(%s)", GMAcct.c_str(), GM_IP.c_str(), WarnedChar.c_str(), WarnedAcct.c_str());
 }
 
 

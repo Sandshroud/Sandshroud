@@ -24,7 +24,7 @@ void WorldSession::HandleNameQueryOpcode( WorldPacket & recv_data )
 		_player->sentMOTD = true;
 	}
 
-	DEBUG_LOG("WorldSession","Received CMSG_NAME_QUERY for: %s", pn->name );
+	sLog.Debug("WorldSession","Received CMSG_NAME_QUERY for: %s", pn->name );
 	WorldPacket data(SMSG_NAME_QUERY_RESPONSE, 10000);
 	data << WoWGuid(guid);
 	data << uint8(0);
@@ -85,7 +85,7 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recv_data )
 	if(ci == NULL)
 		return;
 
-	DEBUG_LOG("WORLD","HandleCreatureQueryOpcode CMSG_CREATURE_QUERY '%s'", ci->Name);
+	sLog.Debug("WORLD","HandleCreatureQueryOpcode CMSG_CREATURE_QUERY '%s'", ci->Name);
 	data << entry;
 	data << ci->Name;
 	data << uint8(0) << uint8(0) << uint8(0);
@@ -124,7 +124,7 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recv_data )
 	recv_data >> entryID;
 	recv_data >> guid;
 
-	DEBUG_LOG("WORLD","HandleGameObjectQueryOpcode CMSG_GAMEOBJECT_QUERY '%u'", entryID);
+	sLog.Debug("WORLD","HandleGameObjectQueryOpcode CMSG_GAMEOBJECT_QUERY '%u'", entryID);
 
 	GameObjectInfo* goinfo = GameObjectNameStorage.LookupEntry(entryID);
 	if(goinfo == NULL)
@@ -181,7 +181,7 @@ void BuildCorpseInfo(WorldPacket* data, Corpse* corpse)
 //////////////////////////////////////////////////////////////
 void WorldSession::HandleCorpseQueryOpcode(WorldPacket &recv_data)
 {
-	OUT_DEBUG("WORLD: Received MSG_CORPSE_QUERY");
+	sLog.outDebug("WORLD: Received MSG_CORPSE_QUERY");
 
 	Corpse *pCorpse= objmgr.GetCorpseByOwner(GetPlayer()->GetLowGUID());
 	if(pCorpse == NULL)

@@ -130,13 +130,13 @@ void LuaEngine::ScriptLoadDir(char* Dirname, LUALoadScripts *pak)
 void LuaEngine::LoadScripts()
 {
 	LUALoadScripts rtn;
-	Log.Notice("LuaEngine", "Scanning Script-Directories...");
+	sLog.Notice("LuaEngine", "Scanning Script-Directories...");
 	ScriptLoadDir(((char*)sWorld.LuaScriptPath.c_str()), &rtn);
 
 	unsigned int cnt_uncomp = 0;
 	luaL_openlibs(L);
 	RegisterCoreFunctions();
-	Log.Notice("LuaEngine", "Loading Scripts...");
+	sLog.Notice("LuaEngine", "Loading Scripts...");
 
 	char filename[200];
 
@@ -145,7 +145,7 @@ void LuaEngine::LoadScripts()
 		strcpy(filename, itr->c_str());
 		if(luaL_loadfile(L, filename) != 0)
 		{
-			Log.Error("LuaEngine", "loading %s failed.(could not load)", itr->c_str());
+			sLog.Error("LuaEngine", "loading %s failed.(could not load)", itr->c_str());
 			report(L);
 			continue;
 		}
@@ -153,14 +153,14 @@ void LuaEngine::LoadScripts()
 		{
 			if(lua_pcall(L, 0, 0, 0) != 0)
 			{
-				Log.Error("LuaEngine", "%s failed.(could not run)", itr->c_str());
+				sLog.Error("LuaEngine", "%s failed.(could not run)", itr->c_str());
 				report(L);
 				continue;
 			}
 		}
 		cnt_uncomp++;
 	}
-	Log.Notice("LuaEngine","Loaded %u Lua scripts.", cnt_uncomp);
+	sLog.Notice("LuaEngine","Loaded %u Lua scripts.", cnt_uncomp);
 }
 
 /*******************************************************************************

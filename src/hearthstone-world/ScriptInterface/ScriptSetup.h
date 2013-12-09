@@ -15,4 +15,9 @@ extern "C" SCRIPT_DECL uint32 _exp_get_version()
 	return SCRIPT_BUILD_HASH;
 }
 
+extern basicLog GetSingleLogFile()
+{
+    return *sLog.getBasic();
+}
+
 #endif

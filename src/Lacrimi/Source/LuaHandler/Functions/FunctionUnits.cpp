@@ -4434,7 +4434,7 @@ int LuaUnit_SetActionBar(lua_State * L, Unit * ptr) //experimental
 	//spellbook spells would go here
 	data << uint8(0); // loop cycles
 	plr->delayedPackets.add( &data );
-	Log.Notice("SetActionBar", "Performed function, using delayed packet");
+	sLog.Notice("SetActionBar", "Performed function, using delayed packet");
 	return 1;
 }
 

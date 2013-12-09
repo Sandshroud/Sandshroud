@@ -157,7 +157,7 @@ void LogonCommServerSocket::HandleRegister(WorldPacket & recvData)
 	if (tmp_RealmID == -1)
 	{
 		tmp_RealmID = sInfoCore.GenerateRealmID();
-		Log.Notice("LogonCommServer","Registering realm `%s` under ID %u.", Name.c_str(), tmp_RealmID);
+		sLog.Notice("LogonCommServer","Registering realm `%s` under ID %u.", Name.c_str(), tmp_RealmID);
 	}
 	else
 	{
@@ -167,7 +167,7 @@ void LogonCommServerSocket::HandleRegister(WorldPacket & recvData)
 		{
 			sInfoCore.RemoveRealm(tmp_RealmID);
 //			int new_tmp_RealmID = sInfoCore.GenerateRealmID(); //socket timout will DC old id after a while, make sure it's not the one we restarted
-			Log.Notice("LogonCommServer","Updating realm `%s` with ID %u to new ID %u.",
+			sLog.Notice("LogonCommServer","Updating realm `%s` with ID %u to new ID %u.",
 				Name.c_str(), tmp_RealmID, (tmp_RealmID = sInfoCore.GenerateRealmID()));
 //			tmp_RealmID = new_tmp_RealmID;
 		}
@@ -179,7 +179,7 @@ void LogonCommServerSocket::HandleRegister(WorldPacket & recvData)
 			data << uint32(0);
 			data << string("ERROR");
 			SendPacket(&data);
-			Log.Notice("LogonCommServer", "Realm(%s) addition denied, realm already connected.", Name.c_str());
+			sLog.Notice("LogonCommServer", "Realm(%s) addition denied, realm already connected.", Name.c_str());
 			return;
 		}
 	}
@@ -195,8 +195,8 @@ void LogonCommServerSocket::HandleRegister(WorldPacket & recvData)
 		data << uint32(0); // Error
 		data << string("ERROR"); // Error
 		SendPacket(&data);
-		Log.Notice("LogonCommServer", "Realm(%s) addition denied, adress already used.", Name.c_str());
-		Log.Line();
+		sLog.Notice("LogonCommServer", "Realm(%s) addition denied, adress already used.", Name.c_str());
+		sLog.Line();
 		return;
 	}
 
@@ -208,7 +208,7 @@ void LogonCommServerSocket::HandleRegister(WorldPacket & recvData)
 		data << uint32(0);
 		data << string("ERROR");
 		SendPacket(&data);
-		Log.Notice("LogonCommServer", "Realm(%s) addition denied, incorrect world server type.", Name.c_str());
+		sLog.Notice("LogonCommServer", "Realm(%s) addition denied, incorrect world server type.", Name.c_str());
 		return;
 	}
 
@@ -239,7 +239,7 @@ void LogonCommServerSocket::HandleRegister(WorldPacket & recvData)
 
 	SendPing();
 
-	Log.Notice("LogonCommServer", "Realm(%s) successfully added.", realm->Name.c_str());
+	sLog.Notice("LogonCommServer", "Realm(%s) successfully added.", realm->Name.c_str());
 }
 
 void LogonCommServerSocket::HandleSessionRequest(WorldPacket & recvData)
@@ -359,7 +359,7 @@ void LogonCommServerSocket::HandleReloadAccounts(WorldPacket & recvData)
 {
 	if( !IsServerAllowedMod( GetRemoteAddress().s_addr ) )
 	{
-		Log.Notice("WORLD", "We received a reload request from %s, but access was denied.", GetIP());
+		sLog.Notice("WORLD", "We received a reload request from %s, but access was denied.", GetIP());
 		return;
 	}
 
@@ -368,12 +368,12 @@ void LogonCommServerSocket::HandleReloadAccounts(WorldPacket & recvData)
 
 	if(	num1 == 3 )
 	{
-		Log.Notice("WORLD", "World Server at %s is forcing us to reload accounts.", GetIP());
+		sLog.Notice("WORLD", "World Server at %s is forcing us to reload accounts.", GetIP());
 		sAccountMgr.ReloadAccounts(false);
 	}
 	else
 	{
-		Log.Notice("WORLD", "We received a reload request from %s, but bad packet received.", GetIP());
+		sLog.Notice("WORLD", "We received a reload request from %s, but bad packet received.", GetIP());
 	}
 }
 
@@ -387,7 +387,7 @@ void LogonCommServerSocket::HandleAuthChallenge(WorldPacket & recvData)
 	if(memcmp(key, LogonServer::getSingleton().sql_hash, 20))
 		result = 0;
 
-	Log.Notice("LogonCommServer","Authentication request from %s, result %s.", GetIP(), result ? "OK" : "FAIL");
+	sLog.Notice("LogonCommServer","Authentication request from %s, result %s.", GetIP(), result ? "OK" : "FAIL");
 
 	printf("Key: ");
 	for(int i = 0; i < 20; ++i)
@@ -438,7 +438,7 @@ void LogonCommServerSocket::HandleMappingReply(WorldPacket & recvData)
 
 	HM_NAMESPACE::hash_map<uint32, uint8>::iterator itr;
 	buf >> count;
-	Log.Notice("LogonCommServer","Got mapping packet for realm %u, total of %u entries.\n", (unsigned int)realm_id, (unsigned int)count);
+	sLog.Notice("LogonCommServer","Got mapping packet for realm %u, total of %u entries.\n", (unsigned int)realm_id, (unsigned int)count);
 	for(uint32 i = 0; i < count; ++i)
 	{
 		buf >> account_id >> number_of_characters;
@@ -492,7 +492,7 @@ void LogonCommServerSocket::HandleTestConsoleLogin(WorldPacket & recvData)
 	recvData >> request;
 	recvData >> accountname;
 	recvData.read(key, 20);
-	DEBUG_LOG("LogonCommServerSocket","Testing console login: %s\n", accountname.c_str());
+	sLog.Debug("LogonCommServerSocket","Testing console login: %s\n", accountname.c_str());
 
 	data << request;
 
@@ -529,7 +529,7 @@ void LogonCommServerSocket::HandleDatabaseModify(WorldPacket& recvData)
 
 	if( !IsServerAllowedMod(GetRemoteAddress().s_addr) )
 	{
-		Log.Error("LogonCommServerSocket","Database modify request %u denied for %s.\n", method, GetIP());
+		sLog.Error("LogonCommServerSocket","Database modify request %u denied for %s.\n", method, GetIP());
 		return;
 	}
 

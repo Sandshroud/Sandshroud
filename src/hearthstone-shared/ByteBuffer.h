@@ -7,7 +7,7 @@
 #include "Common.h"
 #include "LocationVector.h"
 #include "WoWGuid.h"
-#include "Log.h"
+#include "hearthstone_log.h"
 #include "int24.h"
 
 class ByteBufferException
@@ -402,7 +402,7 @@ public:
 
 	void hexlike()
 	{
-		if(sLog.IsOutProccess())
+		if(sLog.isOutProcess())
 		{
 			uint32 j = 1, k = 1;
 			printf("STORAGE_SIZE: %u\n", (unsigned int)size() );

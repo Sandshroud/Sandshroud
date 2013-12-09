@@ -299,10 +299,7 @@ Spell::Spell(Object* Caster, SpellEntry *info, bool triggered, Aura* aur)
 
 	default:
 		{
-			if(sLog.IsOutDevelopement())
-				printf("[DEBUG][SPELL] Incompatible object type, please report this to the dev's\n");
-			else
-				sLog.outSpellDebug("[DEBUG][SPELL] Incompatible object type, please report this to the dev's");
+			sLog.outDebug("[DEBUG][SPELL] Incompatible object type, please report this to the dev's");
 		}break;
 	}
 
@@ -1294,7 +1291,7 @@ void Spell::cast(bool check)
 		return;
 	}
 
-	Log.DebugSpell("Spell","Cast %u, Unit: %u", GetSpellProto()->Id, m_caster->GetLowGUID());
+	sLog.Debug("Spell","Cast %u, Unit: %u", GetSpellProto()->Id, m_caster->GetLowGUID());
 
 	if(u_caster != NULL )
 		if(u_caster->CallOnCastSpell != NULL)
@@ -2723,7 +2720,7 @@ bool Spell::HasPower()
 	case POWER_TYPE_RUNIC:	{ powerField = UNIT_FIELD_POWER7; }break;
 	default:
 		{
-			Log.DebugSpell("Spell","unknown power type %d", GetSpellProto()->powerType);
+			sLog.Debug("Spell","unknown power type %d", GetSpellProto()->powerType);
 			return false;
 		}break;
 	}
@@ -2809,7 +2806,7 @@ bool Spell::TakePower()
 		}break;
 	default:
 		{
-			Log.DebugSpell("Spell","Unknown power type %u for spell %u", GetSpellProto()->powerType, GetSpellProto()->Id);
+			sLog.Debug("Spell","Unknown power type %u for spell %u", GetSpellProto()->powerType, GetSpellProto()->Id);
 			// we shouldn't be here to return
 			return false;
 		}break;
@@ -3029,7 +3026,7 @@ void Spell::HandleEffects(uint32 i)
 	static_damage = false;
 	AdditionalCritChance = 0;
 	damage = CalculateEffect(i, unitTarget);
-	Log.DebugSpell( "Spell","Handling Effect id = %u, damage = %d", GetSpellProto()->Effect[i], damage);
+	sLog.Debug( "Spell","Handling Effect id = %u, damage = %d", GetSpellProto()->Effect[i], damage);
 
 	uint32 effect = GetSpellProto()->Effect[i];
 	sScriptMgr.HandleSpellEffectMod(GetSpellProto()->Id, i, this, effect);
@@ -3037,12 +3034,7 @@ void Spell::HandleEffects(uint32 i)
 	if( effect < TOTAL_SPELL_EFFECTS)
 		(*this.*SpellEffectsHandler[effect])(i);
 	else
-	{
-		if(sLog.IsOutDevelopement())
-			printf("Unknown spell effect %u in spell %u.\n", effect, GetSpellProto()->Id);
-		else
-			Log.DebugSpell("Spell","Unknown effect %u spellid %u", effect, GetSpellProto()->Id);
-	}
+		sLog.Debug("Spell","Unknown effect %u spellid %u", effect, GetSpellProto()->Id);
 }
 
 void Spell::HandleAddAura(uint64 guid)
@@ -3240,7 +3232,7 @@ uint8 Spell::CanCast(bool tolerate)
 	/* Spells for the zombie event */
 	if( p_caster && p_caster->GetShapeShift() ==FORM_ZOMBIE && !( ((uint32)1 << (p_caster->GetShapeShift()-1)) & GetSpellProto()->RequiredShapeShift  ))
 	{
-		sLog.outSpellDebug("Invalid shapeshift: %u", GetSpellProto()->RequiredShapeShift);
+		sLog.outDebug("Invalid shapeshift: %u", GetSpellProto()->RequiredShapeShift);
 		return SPELL_FAILED_SPELL_UNAVAILABLE;
 	}
 
@@ -3696,7 +3688,7 @@ uint8 Spell::CanCast(bool tolerate)
 				GameObjectInfo *info = TO_GAMEOBJECT(*itr)->GetInfo();
 				if(!info)
 				{
-					Log.DebugSpell("Spell","Warning: could not find info about game object %u", (*itr)->GetEntry());
+					sLog.Debug("Spell","Warning: could not find info about game object %u", (*itr)->GetEntry());
 					continue;
 				}
 
@@ -4615,10 +4607,7 @@ void Spell::HandleTeleport(uint32 id, Unit* Target)
 				}
 				else
 				{
-					if(sLog.IsOutDevelopement())
-						printf("Unknown teleport spell: %u\n", id);
-					else
-						sLog.outSpellDebug("Unknown teleport spell: %u", id);
+					sLog.outDebug("Unknown teleport spell: %u", id);
 					return;
 				}
 			}break;

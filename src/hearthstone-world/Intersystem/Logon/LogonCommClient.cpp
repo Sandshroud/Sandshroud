@@ -118,7 +118,7 @@ void LogonCommClientSocket::HandleRegister(WorldPacket & recvData)
 		return;
 	}
 
-	Log.Notice("LogonCommClient", "Realm `%s` registered as realm %u.", realmname.c_str(), realmlid);
+	sLog.Notice("LogonCommClient", "Realm `%s` registered as realm %u.", realmname.c_str(), realmlid);
 	sLogonCommHandler.AdditionAck(realmlid);
 	realm_ids.insert(realmlid);
 }
@@ -188,7 +188,7 @@ void LogonCommClientSocket::OnDisconnect()
 {
 	if(_id != 0)
 	{
-		DEBUG_LOG("LogonCommClientSocket","Calling ConnectionDropped() due to OnDisconnect().");
+		sLog.Debug("LogonCommClientSocket","Calling ConnectionDropped() due to OnDisconnect().");
 		sLogonCommHandler.ConnectionDropped();
 	}
 }
@@ -303,7 +303,7 @@ void LogonCommClientSocket::HandleRequestAccountMapping(WorldPacket & recvData)
 
 		uncompressed.clear();
 	}
-	Log.Notice("LogonCommClient", "Build character mapping in %ums. (%u)", getMSTime()-t,mapping_to_send.size());
+	sLog.Notice("LogonCommClient", "Build character mapping in %ums. (%u)", getMSTime()-t,mapping_to_send.size());
 }
 
 void LogonCommClientSocket::CompressAndSend(ByteBuffer & uncompressed)
@@ -322,7 +322,7 @@ void LogonCommClientSocket::CompressAndSend(ByteBuffer & uncompressed)
 
 	if(deflateInit(&stream, 1) != Z_OK)
 	{
-		OUT_DEBUG("deflateInit failed.");
+		sLog.outDebug("deflateInit failed.");
 		return;
 	}
 
@@ -336,21 +336,21 @@ void LogonCommClientSocket::CompressAndSend(ByteBuffer & uncompressed)
 	if(deflate(&stream, Z_NO_FLUSH) != Z_OK ||
 		stream.avail_in != 0)
 	{
-		OUT_DEBUG("deflate failed.");
+		sLog.outDebug("deflate failed.");
 		return;
 	}
 
 	// finish the deflate
 	if(deflate(&stream, Z_FINISH) != Z_STREAM_END)
 	{
-		OUT_DEBUG("deflate failed: did not end stream");
+		sLog.outDebug("deflate failed: did not end stream");
 		return;
 	}
 
 	// finish up
 	if(deflateEnd(&stream) != Z_OK)
 	{
-		OUT_DEBUG("deflateEnd failed.");
+		sLog.outDebug("deflateEnd failed.");
 		return;
 	}
 

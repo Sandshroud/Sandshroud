@@ -69,7 +69,7 @@ void LfgMgr::LoadRandomDungeonRewards()
 		}while(result->NextRow());
 	}
 
-	Log.Notice("LfgMgr", "%u LFD rewards loaded.", count);
+	sLog.Notice("LfgMgr", "%u LFD rewards loaded.", count);
 }
 
 bool LfgMgr::AttemptLfgJoin(Player* pl, uint32 LfgDungeonId)
