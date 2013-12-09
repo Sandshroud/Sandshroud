@@ -55,11 +55,10 @@ LogonCommClientSocket * LogonCommHandler::ConnectToLogon(string Address, uint32 
 
 void LogonCommHandler::RequestAddition(LogonCommClientSocket * Socket)
 {
-	WorldPacket data(RCMSG_REGISTER_REALM, 100);
 	// Add realm to the packet
-	data << realm->Name;
+	WorldPacket data(RCMSG_REGISTER_REALM, 100);
+	data << logon->realmID << logon->realmName;
 	data << realm->Address;
-	data << uint16(0x042); // Six by nine. Forty two.
 	data << realm->Icon;
 	data << realm->WorldRegion;
 	data << uint32(sWorld.GetPlayerLimit());
@@ -131,12 +130,15 @@ void LogonCommHandler::Connect()
 
 	sLog.Notice("LogonCommClient", "Authenticating...");
 	uint32 tt = getMSTime()+10000;
-	logon->SendChallenge();
+	logon->SendChallenge(realm->Name);
 	while(!logon->authenticated)
 	{
-		if(getMSTime() >= tt || bServerShutdown)
+		if(getMSTime() >= tt || logon->rejected || bServerShutdown)
 		{
-			sLog.Notice("LogonCommClient", "Authentication timed out.");
+			if(logon->rejected)
+				sLog.Error("LogonCommClient", "Authentication rejected.");
+			else
+				sLog.Notice("LogonCommClient", "Authentication timed out.");
 			logon->Disconnect();
 			logon = NULL;
 			mapLock.Release();
@@ -146,7 +148,7 @@ void LogonCommHandler::Connect()
 		Delay(10);
 	}
 
-	if(logon->authenticated != 1)
+	if(!logon->authenticated)
 	{
 		sLog.Notice("LogonCommClient","Authentication failed.");
 		logon->Disconnect();
@@ -221,7 +223,7 @@ void LogonCommHandler::UpdateSockets(uint32 diff)
 
 		if(pings)
 		{
-			if(t - logon->last_ping > 15000)
+            if(t - logon->last_ping > (15000+logon->latency))
 			{
 				// no ping for 15 seconds -> remove the socket
 				sLog.Error("LogonCommClient","Realm id %u connection dropped due to pong timeout.", (unsigned int)server->ID);
@@ -279,12 +281,7 @@ uint32 LogonCommHandler::ClientConnected(string AccountName, WorldSocket * Socke
 	data << int32(-42);
 	data << server->ID;
 	data << request_id;
-
-	// strip the shitty hash from it
-	for(; acct[i] != '#' && acct[i] != '\0'; i++ )
-		data.append( &acct[i], 1 );
-
-	data.append( "\0", 1 );
+    data << string(acct);
 	logon->SendPacket(&data, false);
 
 	pendingLock.Acquire();
@@ -373,9 +370,9 @@ void LogonCommHandler::Account_SetBanned(const char * account, uint32 banned, co
 
 	WorldPacket data(RCMSG_MODIFY_DATABASE, 50);
 	data << uint32(1);		// 1 = ban
-	data << account;
-	data << banned;
-	data << reason;
+	data << string(account);
+	data << uint32(banned);
+	data << string(reason);
 	logon->SendPacket(&data, false);
 }
 
@@ -386,8 +383,8 @@ void LogonCommHandler::Account_SetGM(const char * account, const char * flags)
 
 	WorldPacket data(RCMSG_MODIFY_DATABASE, 50);
 	data << uint32(2);		// 2 = set gm
-	data << account;
-	data << flags;
+	data << string(account);
+	data << string(flags);
 	logon->SendPacket(&data, false);
 }
 
@@ -398,8 +395,8 @@ void LogonCommHandler::Account_SetMute(const char * account, uint32 muted)
 
 	WorldPacket data(RCMSG_MODIFY_DATABASE, 50);
 	data << uint32(3);		// 3 = mute
-	data << account;
-	data << muted;
+	data << string(account);
+	data << uint32(muted);
 	logon->SendPacket(&data, false);
 }
 
@@ -410,9 +407,9 @@ void LogonCommHandler::IPBan_Add(const char * ip, uint32 duration, const char* r
 
 	WorldPacket data(RCMSG_MODIFY_DATABASE, 50);
 	data << uint32(4);		// 4 = ipban add
-	data << ip;
-	data << duration;
-	data << reason;
+	data << string(ip);
+	data << uint32(duration);
+	data << string(reason);
 	logon->SendPacket(&data, false);
 }
 
@@ -423,6 +420,6 @@ void LogonCommHandler::IPBan_Remove(const char * ip)
 
 	WorldPacket data(RCMSG_MODIFY_DATABASE, 50);
 	data << uint32(5);		// 5 = ipban remove
-	data << ip;
+	data << string(ip);
 	logon->SendPacket(&data, false);
 }

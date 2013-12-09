@@ -46,10 +46,7 @@ void LogonCommServerSocket::OnDisconnect()
 	// if we're registered -> de-register
 	if(!removed)
 	{
-		set<uint32>::iterator itr = server_ids.begin();
-		for(; itr != server_ids.end(); ++itr)
-			sInfoCore.SetRealmOffline((*itr), this);
-
+		sInfoCore.SetRealmOffline(realmID, this);
 		sInfoCore.RemoveServerSocket(this);
 	}
 }
@@ -131,8 +128,6 @@ void LogonCommServerSocket::HandlePacket(WorldPacket & recvData)
 		&LogonCommServerSocket::HandleTestConsoleLogin,		// RCMSG_TEST_CONSOLE_LOGIN
 		NULL,												// RSMSG_CONSOLE_LOGIN_RESULT
 		&LogonCommServerSocket::HandleDatabaseModify,		// RCMSG_MODIFY_DATABASE
-		NULL,												// RSMSG_REALM_POP_REQ
-		&LogonCommServerSocket::HandlePopulationRespond,	// RCMSG_REALM_POP_RES
 		NULL,												// RSMSG_SERVER_PING
 		&LogonCommServerSocket::HandleServerPong,			// RCMSG_SERVER_PONG
 	};
@@ -148,96 +143,52 @@ void LogonCommServerSocket::HandlePacket(WorldPacket & recvData)
 
 void LogonCommServerSocket::HandleRegister(WorldPacket & recvData)
 {
-	string Name;
-	int32 tmp_RealmID;
+	uint32 realmid;
+	string realmName, address;
 
-	recvData >> Name;
-	tmp_RealmID = sInfoCore.GetRealmIdByName(Name);
-
-	if (tmp_RealmID == -1)
+	recvData >> realmid >> realmName >> address;
+	sLog.Notice("LogonCommServer","Registering realm `%s` under ID %u.", realmName.c_str(), realmid);
+	Realm* oldrealm = sInfoCore.GetRealm(realmid);
+	if(oldrealm || sInfoCore.FindRealmWithAdress(address))
 	{
-		tmp_RealmID = sInfoCore.GenerateRealmID();
-		sLog.Notice("LogonCommServer","Registering realm `%s` under ID %u.", Name.c_str(), tmp_RealmID);
-	}
-	else
-	{
-		sInfoCore.TimeoutSockets();
-		Realm* oldrealm = sInfoCore.GetRealm(tmp_RealmID);
-		if(oldrealm == NULL || oldrealm->Flag == REALM_FLAG_OFFLINE) // The oldrealm should always exist.
-		{
-			sInfoCore.RemoveRealm(tmp_RealmID);
-//			int new_tmp_RealmID = sInfoCore.GenerateRealmID(); //socket timout will DC old id after a while, make sure it's not the one we restarted
-			sLog.Notice("LogonCommServer","Updating realm `%s` with ID %u to new ID %u.",
-				Name.c_str(), tmp_RealmID, (tmp_RealmID = sInfoCore.GenerateRealmID()));
-//			tmp_RealmID = new_tmp_RealmID;
-		}
+		// We already have a realm here, and it's not offline, this may be dangerous, but meh.
+		WorldPacket data(RSMSG_REALM_REGISTERED, 4);
+		data << uint32(1); // Error
+		SendPacket(&data);
+		if(oldrealm)
+			sLog.Notice("LogonCommServer", "Realm(%s) addition denied, realm already connected.", realmName.c_str());
 		else
 		{
-			// We already have a realm here, and it's not offline, this may be dangerous, but meh.
-			WorldPacket data(RSMSG_REALM_REGISTERED, 4);
-			data << uint32(1); // Error
-			data << uint32(0);
-			data << string("ERROR");
-			SendPacket(&data);
-			sLog.Notice("LogonCommServer", "Realm(%s) addition denied, realm already connected.", Name.c_str());
-			return;
+			sLog.Notice("LogonCommServer", "Realm(%s) addition denied, adress already used.", realmName.c_str());
+			sLog.Line();
 		}
-	}
-
-	uint16 tester = 0;
-	std::string adress;
-	recvData >> adress;
-	// Check if we have a conflicting realm that is using the same adress.
-	if(sInfoCore.FindRealmWithAdress(adress))
-	{
-		WorldPacket data(RSMSG_REALM_REGISTERED, 4);
-		data << uint32(1); // Error
-		data << uint32(0); // Error
-		data << string("ERROR"); // Error
-		SendPacket(&data);
-		sLog.Notice("LogonCommServer", "Realm(%s) addition denied, adress already used.", Name.c_str());
-		sLog.Line();
 		return;
 	}
 
-	recvData >> tester;
-	if(tester != 0x042)
-	{
-		WorldPacket data(RSMSG_REALM_REGISTERED, 4);
-		data << uint32(1); // Error
-		data << uint32(0);
-		data << string("ERROR");
-		SendPacket(&data);
-		sLog.Notice("LogonCommServer", "Realm(%s) addition denied, incorrect world server type.", Name.c_str());
-		return;
-	}
-
-	Realm * realm = new Realm;
+	Realm * realm = new Realm();
 	ZeroMemory(realm, sizeof(Realm*));
-	realm->Name = Name;
-	realm->Address = adress;
+	realm->Name = realmName;
+	realm->Address = address;
 	realm->Flag = REALM_FLAG_RECOMMENDED;
 	realm->Population = REALM_POP_NEW_PLAYERS;
 	realm->ServerSocket = this;
 	recvData >> realm->Icon >> realm->WorldRegion >> realm->RealmCap >> realm->RequiredCV[0] >> realm->RequiredCV[1] >> realm->RequiredCV[2] >> realm->RequiredBuild;
 
 	// Add to the main realm list
-	sInfoCore.AddRealm(tmp_RealmID, realm);
+	sInfoCore.AddRealm(realmid, realm);
 
 	// Send back response packet.
 	WorldPacket data(RSMSG_REALM_REGISTERED, 4);
 	data << uint32(0);			// Error
-	data << tmp_RealmID;		// Realm ID
-	data << realm->Name;
 	SendPacket(&data);
-	server_ids.insert(tmp_RealmID);
+	realmID = realmid;
 
 	/* request character mapping for this realm */
 	data.Initialize(RSMSG_REQUEST_ACCOUNT_CHARACTER_MAPPING);
-	data << tmp_RealmID;
+	data << realmid;
 	SendPacket(&data);
 
-	SendPing();
+	SendDataPing();
 
 	sLog.Notice("LogonCommServer", "Realm(%s) successfully added.", realm->Name.c_str());
 }
@@ -293,10 +244,10 @@ void LogonCommServerSocket::HandleSessionRequest(WorldPacket & recvData)
 	SendPacket(&data);
 }
 
-void LogonCommServerSocket::SendPing()
+void LogonCommServerSocket::SendDataPing()
 {
 	WorldPacket data(RCMSG_PING, 4);
-	data << latency;
+	data << realmID;
 	SendPacket(&data);
 
 	last_ping = getMSTime();
@@ -304,16 +255,14 @@ void LogonCommServerSocket::SendPing()
 
 void LogonCommServerSocket::HandlePong(WorldPacket & recvData)
 {
+	uint32 realmId, population;
+	recvData >> realmId >> population;
+	sInfoCore.UpdateRealmPop(realmId, population);
+
 	last_pong = getMSTime();
-
-	uint32 serverDiff;
-	recvData >> serverDiff;
 	latency = last_pong-last_ping;
-	if(latency > serverDiff)
-		latency -= serverDiff;
-	else latency = 0;
 
-	WorldPacket data(RMSG_LATENCY, 4);
+	WorldPacket data(RMSG_LATENCY, 0);
 	data << latency;
 	SendPacket(&data);
 }
@@ -379,9 +328,12 @@ void LogonCommServerSocket::HandleReloadAccounts(WorldPacket & recvData)
 
 void LogonCommServerSocket::HandleAuthChallenge(WorldPacket & recvData)
 {
+	int32 realmId = -1;
+	std::string challenger;
 	unsigned char key[20];
 	uint32 result = 1;
 	recvData.read(key, 20);
+	recvData >> challenger;
 
 	// check if we have the correct password
 	if(memcmp(key, LogonServer::getSingleton().sql_hash, 20))
@@ -397,16 +349,32 @@ void LogonCommServerSocket::HandleAuthChallenge(WorldPacket & recvData)
 	recvCrypto.Setup(key, 20);
 	sendCrypto.Setup(key, 20);	
 
-	/* packets are encrypted from now on */
-	use_crypto = true;
-
 	/* send the response packet */
-	WorldPacket data(RSMSG_AUTH_RESPONSE, 4);
-	data << result;
-	SendPacket(&data);
+	WorldPacket data(RSMSG_AUTH_RESPONSE, 8+challenger.length());
+	if(result)
+	{
+		realmId = sInfoCore.GetRealmIdByName(challenger);
+		if(realmId == -1)
+			realmId = sInfoCore.GenerateRealmID();
+		else
+		{
+			sInfoCore.TimeoutSockets();
+			Realm* oldrealm = sInfoCore.GetRealm(realmId);
+			if(oldrealm->Flag == REALM_FLAG_OFFLINE)
+			{
+				sInfoCore.RemoveRealm(realmId);
+				sLog.Notice("LogonCommServer", "Challenge from %s to take place of %u, old realm dropped.", challenger.c_str(), realmId);
+			} // Set the result to failed
+			else result = 2;
+		}
+	}
 
-	/* set our general var */
-	authenticated = result;
+	/* packets are encrypted from now on */
+	use_crypto = authenticated = (result==1);
+	data << result;
+	data << realmId;
+	data << challenger;
+	SendPacket(&data);
 }
 
 void LogonCommServerSocket::HandleMappingReply(WorldPacket & recvData)
@@ -631,26 +599,4 @@ void LogonCommServerSocket::SendRPing()
 void LogonCommServerSocket::HandleServerPong(WorldPacket &recvData)
 {
 	// nothing
-}
-
-void LogonCommServerSocket::HandlePopulationRespond(WorldPacket & recvData)
-{
-	uint32 realmId, population;
-	recvData >> realmId >> population;
-	sInfoCore.UpdateRealmPop(realmId, population);
-}
-
-void LogonCommServerSocket::RefreshRealmsPop()
-{
-	if(server_ids.empty())
-		return;
-
-	WorldPacket data(RSMSG_REALM_POP_REQ, 4);
-	set<uint32>::iterator itr = server_ids.begin();
-	for( ; itr != server_ids.end() ; itr++ )
-	{
-		data.clear();
-		data << (*itr);
-		SendPacket(&data);
-	}
 }
