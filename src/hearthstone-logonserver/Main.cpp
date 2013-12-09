@@ -418,6 +418,7 @@ void LogonServer::Run(int argc, char ** argv)
 		}
 
 		PatchMgr::getSingleton().UpdateJobs();
+		loop_counter++;
 		Sleep(10);
 	}
 

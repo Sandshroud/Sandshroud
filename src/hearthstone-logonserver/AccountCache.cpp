@@ -627,22 +627,18 @@ void InformationCore::TimeoutSockets()
 		if(s->removed)
 			continue;
 
-		// Ping every 2 seconds
-		if(t - s->last_ping > 2000)
-			s->SendPing();
-		if(t - s->last_pong > (10000+s->latency))
+		if(t - s->last_pong > (15000+s->latency))
 		{
 			// ping timeout
 			s->removed = true;
-			set<uint32>::iterator idItr = s->server_ids.begin();
-			for(; idItr != s->server_ids.end(); ++idItr)
-				SetRealmOffline(*idItr, s);
+			SetRealmOffline(s->realmID, s);
 			m_serverSockets.erase(it2);
-
 			s->Disconnect();
 			continue;
 		}
-		s->RefreshRealmsPop();
+
+		// Send ping and refresh pop
+		s->SendDataPing();
 	}
 
 	serverSocketLock.Release();

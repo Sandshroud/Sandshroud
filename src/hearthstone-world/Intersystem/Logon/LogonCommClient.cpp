@@ -14,12 +14,10 @@ typedef struct
 LogonCommClientSocket::LogonCommClientSocket(SOCKET fd, const sockaddr_in * peer) : TcpSocket(fd, 524288, 65536, false, peer)
 {
 	// do nothing
-	remaining = opcode = 0;
-	last_ping = getMSTime();
+	remaining = opcode = last_ping = 0;
 	_id = 0;
 	latency = 0;
-	use_crypto = false;
-	authenticated = 0;
+	use_crypto = rejected = authenticated = false;
 }
 
 void LogonCommClientSocket::OnRecvData()
@@ -91,8 +89,6 @@ void LogonCommClientSocket::HandlePacket(WorldPacket & recvData)
 		NULL,												// RCMSG_TEST_CONSOLE_LOGIN
 		&LogonCommClientSocket::HandleConsoleAuthResult,	// RSMSG_CONSOLE_LOGIN_RESULT
 		NULL,												// RCMSG_MODIFY_DATABASE
-		&LogonCommClientSocket::HandlePopulationRequest,	// RSMSG_REALM_POP_REQ
-		NULL,												// RCMSG_REALM_POP_RES
 		&LogonCommClientSocket::HandleServerPing,			// RCMSG_SERVER_PING
 		NULL,												// RSMSG_SERVER_PONG
 	};
@@ -109,18 +105,13 @@ void LogonCommClientSocket::HandlePacket(WorldPacket & recvData)
 void LogonCommClientSocket::HandleRegister(WorldPacket & recvData)
 {
 	uint32 error;
-	uint32 realmlid;
-	string realmname;
-	recvData >> error >> realmlid >> realmname;
-	if(error || realmlid == 0) // Address already used, or realm is active on our slot/name
-	{
-		// FUUUUU
+	recvData >> error;
+	if(error > 0) // Address already used, or realm is active on our slot/name
 		return;
-	}
 
-	sLog.Notice("LogonCommClient", "Realm `%s` registered as realm %u.", realmname.c_str(), realmlid);
-	sLogonCommHandler.AdditionAck(realmlid);
-	realm_ids.insert(realmlid);
+	last_ping = getMSTime();
+	sLog.Notice("LogonCommClient", "Realm `%s` registered as realm %u.", realmName.c_str(), realmID);
+	sLogonCommHandler.AdditionAck(realmID);
 }
 
 void LogonCommClientSocket::HandleSessionInfo(WorldPacket & recvData)
@@ -141,9 +132,12 @@ void LogonCommClientSocket::HandleSessionInfo(WorldPacket & recvData)
 
 void LogonCommClientSocket::HandlePing(WorldPacket & recvData)
 {
+	uint32 realmId;
+	recvData >> realmId; // Grab the realm id
+
 	last_ping = getMSTime();
-	WorldPacket pong(RSMSG_PONG, 4);
-	pong << uint32(15);
+	WorldPacket pong(RSMSG_PONG, 8);
+	pong << realmId << uint32(sWorld.AlliancePlayers*sWorld.HordePlayers);
 	SendPacket(&pong);
 }
 
@@ -198,7 +192,7 @@ LogonCommClientSocket::~LogonCommClientSocket()
 
 }
 
-void LogonCommClientSocket::SendChallenge()
+void LogonCommClientSocket::SendChallenge(std::string challenger)
 {
 	uint8 * key = sLogonCommHandler.sql_passhash;
 
@@ -208,8 +202,9 @@ void LogonCommClientSocket::SendChallenge()
 	/* packets are encrypted from now on */
 	use_crypto = true;
 
-	WorldPacket data(RCMSG_AUTH_CHALLENGE, 20);
+	WorldPacket data(RCMSG_AUTH_CHALLENGE, 20+challenger.length());
 	data.append(key, 20);
+	data << challenger;
 	SendPacket(&data, true);
 }
 
@@ -217,28 +212,17 @@ void LogonCommClientSocket::HandleAuthResponse(WorldPacket & recvData)
 {
 	uint32 result = 0;
 	recvData >> result;
-	if(result != 1)
-	{
-		authenticated = 0xFFFFFFFF;
-	}
-	else
-	{
-		authenticated = 1;
-	}
-	use_crypto = true;
+	use_crypto = authenticated = (result == 1);
+	rejected = (result == 2);
+	if(authenticated)
+		recvData >> realmID >> realmName;
 }
 
 void LogonCommClientSocket::UpdateAccountCount(uint32 account_id, int8 add)
 {
 	WorldPacket data(RCMSG_UPDATE_CHARACTER_MAPPING_COUNT, 9);
-	set<uint32>::iterator itr = realm_ids.begin();
-
-	for(; itr != realm_ids.end(); itr++)
-	{
-		data.clear();
-		data << (*itr) << account_id << add;
-		SendPacket(&data);
-	}
+	data << realmID << account_id << add;
+	SendPacket(&data);
 }
 
 void LogonCommClientSocket::HandleRequestAccountMapping(WorldPacket & recvData)
@@ -385,16 +369,5 @@ void LogonCommClientSocket::HandleServerPing(WorldPacket &recvData)
 
 	WorldPacket data(RCMSG_SERVER_PONG, 4);
 	data << r;
-	SendPacket(&data, false);
-}
-
-void LogonCommClientSocket::HandlePopulationRequest(WorldPacket & recvData)
-{
-	uint32 realmId;
-	recvData >> realmId; // Grab the realm id
-
-	// Send the result
-	WorldPacket data(RCMSG_REALM_POP_RES, 8);
-	data << realmId << uint32(sWorld.AlliancePlayers*sWorld.HordePlayers);
 	SendPacket(&data, false);
 }
