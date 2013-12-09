@@ -17,7 +17,7 @@ public:
 	void OnRecvData();
 	void SendPacket(WorldPacket * data, bool no_crypto = false);
 	void HandlePacket(WorldPacket & recvData);
-	void SendChallenge();
+	void SendChallenge(std::string challenger);
 	void HandleAuthResponse(WorldPacket & recvData);
 
 	void HandleRegister(WorldPacket & recvData);
@@ -29,7 +29,6 @@ public:
 	void UpdateAccountCount(uint32 account_id, int8 add);
 	void HandleDisconnectAccount(WorldPacket & recvData);
 	void HandleConsoleAuthResult(WorldPacket & recvData);
-	void HandlePopulationRequest(WorldPacket & recvData);
 
 	void OnDisconnect();
 	void CompressAndSend(ByteBuffer & uncompressed);
@@ -37,9 +36,10 @@ public:
 	uint32 _id;
 	uint32 latency;
 	uint32 last_ping;
-	uint32 authenticated;
-	bool use_crypto;
-	set<uint32> realm_ids;
+	bool use_crypto, authenticated, rejected;
+
+	uint32 realmID;
+	string realmName;
 };
 
 typedef void (LogonCommClientSocket::*logonpacket_handler)(WorldPacket&);

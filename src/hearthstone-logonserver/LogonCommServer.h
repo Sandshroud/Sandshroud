@@ -16,8 +16,7 @@ class LogonCommServerSocket : public TcpSocket
 	RC4Engine sendCrypto;
 	RC4Engine recvCrypto;
 public:
-	uint32 authenticated;
-	bool use_crypto;
+	bool use_crypto, authenticated;
 
 	LogonCommServerSocket(SOCKET fd, const sockaddr_in * peer);
 	~LogonCommServerSocket();
@@ -39,17 +38,15 @@ public:
 	void HandleTestConsoleLogin(WorldPacket & recvData);
 	void HandleServerPong(WorldPacket &recvData);
 	void HandleDatabaseModify(WorldPacket& recvData);
-	void HandlePopulationRespond(WorldPacket& recvData);
 
-	void SendPing();
-	void RefreshRealmsPop();
+	void SendDataPing();
 	void SendRPing();
 
 	uint32 latency;
 	uint32 last_ping;
 	uint32 last_pong;
 	bool removed;
-	set<uint32> server_ids;
+	uint32 realmID;
 };
 
 typedef void (LogonCommServerSocket::*logonpacket_handler)(WorldPacket&);
