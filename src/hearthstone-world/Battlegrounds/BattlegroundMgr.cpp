@@ -123,7 +123,7 @@ void CBattlegroundManager::Init()
 CBattlegroundManager::~CBattlegroundManager()
 {
 	// Moved from Master.cpp
-	Log.Notice("BattlegroundMgr", "~BattlegroundMgr()");
+	sLog.Notice("BattlegroundMgr", "~BattlegroundMgr()");
 }
 
 // Returns the average queue time for a bg type, using last 10 players queued
@@ -289,16 +289,16 @@ void CBattlegroundManager::HandleBattlegroundJoin(WorldSession * m_session, Worl
 	if( joinasgroup && m_session->GetPlayer()->GetGroup())
 	{
 		m_session->GetPlayer()->GetGroup()->m_isqueued = true;
-		Log.Success("BattlegroundManager", "Group %u is now in battleground queue for instance %u", m_session->GetPlayer()->GetGroupID(), instance );
+		sLog.Success("BattlegroundManager", "Group %u is now in battleground queue for instance %u", m_session->GetPlayer()->GetGroupID(), instance );
 	}
 	else
-		Log.Success("BattlegroundManager", "Player %u is now in battleground queue for instance %u", m_session->GetPlayer()->GetLowGUID(), instance );
+		sLog.Success("BattlegroundManager", "Player %u is now in battleground queue for instance %u", m_session->GetPlayer()->GetLowGUID(), instance );
 
 	/* send the battleground status packet */
 	uint32 queueSlot = plr->GetBGQueueSlot();
 	if(queueSlot == 0xFFFFFFFF)
 	{
-		OUT_DEBUG("WARNING: queueSlot is 0xFFFFFFFF in %s\n", __FUNCTION__);
+		sLog.outDebug("WARNING: queueSlot is 0xFFFFFFFF in %s\n", __FUNCTION__);
 		m_queueLock.Release();
 		return;
 	}
@@ -317,12 +317,12 @@ void CBattlegroundManager::HandleBattlegroundJoin(WorldSession * m_session, Worl
 
 	if( plr->m_bg && plr->m_bg->GetType() == bgtype )
 	{
-		OUT_DEBUG("Player has queued from already in a BG for itself.");
+		sLog.outDebug("Player has queued from already in a BG for itself.");
 		m_queueLock.Release();
 		return;
 	}
 
-	//Log.Notice("BattlegroundManager", "Chose queue slot %u for HandleBattlegroundJoin", queueSlot);
+	//sLog.Notice("BattlegroundManager", "Chose queue slot %u for HandleBattlegroundJoin", queueSlot);
 	plr->m_bgIsQueued[queueSlot] = true;
 	plr->m_bgQueueInstanceId[queueSlot] = instance;
 	plr->m_bgQueueType[queueSlot] = bgtype;
@@ -442,7 +442,7 @@ int CBattlegroundManager::CreateArenaType(int type, Group * group1, Group * grou
 	Arena* ar = TO_ARENA(CreateInstance(type, LEVEL_GROUP_RATED_ARENA));
 	if (ar == NULL)
 	{
-		Log.Error("BattlegroundMgr", "%s (%u): Couldn't create Arena Instance", __FILE__, __LINE__);
+		sLog.Error("BattlegroundMgr", "%s (%u): Couldn't create Arena Instance", __FILE__, __LINE__);
 		m_queueLock.Release();
 		m_instanceLock.Release();
 		return -1;
@@ -710,7 +710,7 @@ void CBattlegroundManager::EventQueueUpdate(bool forceStart)
 
 			if(itz == m_queuedGroups[i].end())
 			{
-				Log.Error("BattlegroundMgr", "Internal error at %s:%u", __FILE__, __LINE__);
+				sLog.Error("BattlegroundMgr", "Internal error at %s:%u", __FILE__, __LINE__);
 				m_queueLock.Release();
 				m_instanceLock.Release();
 				return;
@@ -760,7 +760,7 @@ void CBattlegroundManager::EventQueueUpdate(bool forceStart)
 
 				if(itz == possibleGroups.end())
 				{
-					Log.Error("BattlegroundMgr", "Internal error at %s:%u", __FILE__, __LINE__);
+					sLog.Error("BattlegroundMgr", "Internal error at %s:%u", __FILE__, __LINE__);
 					m_queueLock.Release();
 					m_instanceLock.Release();
 					return;
@@ -800,7 +800,7 @@ void CBattlegroundManager::RemovePlayerFromQueues(Player* plr)
 			itr2++;
 			if((*itr) == plr->GetLowGUID())
 			{
-				OUT_DEBUG("BattlegroundManager", "Removing player %u from queue instance %u type %u", plr->GetLowGUID(), plr->m_bgQueueInstanceId[i], plr->m_bgQueueType[i]);
+				sLog.outDebug("BattlegroundManager", "Removing player %u from queue instance %u type %u", plr->GetLowGUID(), plr->m_bgQueueInstanceId[i], plr->m_bgQueueType[i]);
 				m_queuedPlayers[plr->m_bgQueueType[i]][lgroup].erase(itr);
 			}
 
@@ -1239,7 +1239,7 @@ CBattleground* CBattlegroundManager::CreateInstance(uint32 Type, uint32 LevelGro
 		mgr = sInstanceMgr.CreateBattlegroundInstance(mapid);
 		if(mgr == NULL)
 		{
-			Log.Error("BattlegroundManager", "Arena CreateInstance() call failed for map %u, type %u, level group %u", mapid, Type, LevelGroup);
+			sLog.Error("BattlegroundManager", "Arena CreateInstance() call failed for map %u, type %u, level group %u", mapid, Type, LevelGroup);
 			return NULLBATTLEGROUND;		// Shouldn't happen
 		}
 
@@ -1266,7 +1266,7 @@ CBattleground* CBattlegroundManager::CreateInstance(uint32 Type, uint32 LevelGro
         bg = new Arena(mgr, iid, LevelGroup, Type, players_per_side);
 		bg->Init();
 		mgr->m_battleground = bg;
-		Log.Success("BattlegroundManager", "Created arena battleground type %u for level group %u on map %u.", Type, LevelGroup, mapid);
+		sLog.Success("BattlegroundManager", "Created arena battleground type %u for level group %u on map %u.", Type, LevelGroup, mapid);
 		sEventMgr.AddEvent(bg, &CBattleground::EventCreate, EVENT_BATTLEGROUNDMGR_QUEUE_UPDATE, 1, 1,0);
 		m_instanceLock.Acquire();
 		m_instances[Type].insert( make_pair(iid, bg) );
@@ -1276,7 +1276,7 @@ CBattleground* CBattlegroundManager::CreateInstance(uint32 Type, uint32 LevelGro
 
 	if(cfunc == NULL)
 	{
-		Log.Error("BattlegroundManager", "Could not find CreateBattlegroundFunc pointer for type %u level group %u", Type, LevelGroup);
+		sLog.Error("BattlegroundManager", "Could not find CreateBattlegroundFunc pointer for type %u level group %u", Type, LevelGroup);
 		return NULLBATTLEGROUND;
 	}
 
@@ -1284,7 +1284,7 @@ CBattleground* CBattlegroundManager::CreateInstance(uint32 Type, uint32 LevelGro
 	mgr = sInstanceMgr.CreateBattlegroundInstance(GetBGMapID(Type));
 	if(mgr == NULL)
 	{
-		Log.Error("BattlegroundManager", "CreateInstance() call failed for map %u, type %u, level group %u", GetBGMapID(Type), Type, LevelGroup);
+		sLog.Error("BattlegroundManager", "CreateInstance() call failed for map %u, type %u, level group %u", GetBGMapID(Type), Type, LevelGroup);
 		return NULLBATTLEGROUND;		// Shouldn't happen
 	}
 
@@ -1317,7 +1317,7 @@ CBattleground* CBattlegroundManager::CreateInstance(uint32 Type, uint32 LevelGro
 	bg->SetIsWeekend(isWeekend);
 	mgr->m_battleground = bg;
 	sEventMgr.AddEvent(bg, &CBattleground::EventCreate, EVENT_BATTLEGROUNDMGR_QUEUE_UPDATE, 1, 1,0);
-	Log.Success("BattlegroundManager", "Created battleground type %u for level group %u.", Type, LevelGroup);
+	sLog.Success("BattlegroundManager", "Created battleground type %u for level group %u.", Type, LevelGroup);
 
 	m_instanceLock.Acquire();
 	m_instances[Type].insert( make_pair(iid, bg) );
@@ -1485,7 +1485,7 @@ void CBattlegroundManager::SendBattlegroundQueueStatus(Player* plr, uint32 queue
 	// We're no longer queued!
 	if( !plr->m_bgIsQueued[queueSlot] && !plr->m_pendingBattleground[queueSlot])
 	{
-		//Log.Notice("BattlegroundManager", "No queue slot active for %u.", queueSlot);
+		//sLog.Notice("BattlegroundManager", "No queue slot active for %u.", queueSlot);
 		data << uint64(0);
 		plr->GetSession()->SendPacket(&data);
 		return;
@@ -2038,7 +2038,7 @@ void CBattlegroundManager::HandleArenaJoin(WorldSession * m_session, uint32 Batt
 			m_queueLock.Acquire();
 			m_queuedGroups[BattlegroundType].push_back(pGroup->GetID());
 			m_queueLock.Release();
-			Log.Success("BattlegroundMgr", "Group %u is now in battleground queue for arena type %u", pGroup->GetID(), BattlegroundType);
+			sLog.Success("BattlegroundMgr", "Group %u is now in battleground queue for arena type %u", pGroup->GetID(), BattlegroundType);
 
 			/* send the battleground status packet */
 
@@ -2050,7 +2050,7 @@ void CBattlegroundManager::HandleArenaJoin(WorldSession * m_session, uint32 Batt
 	/* Queue him! */
 	m_queueLock.Acquire();
 	m_queuedPlayers[BattlegroundType][lgroup].push_back(pguid);
-	Log.Success("BattlegroundMgr", "Player %u is now in battleground queue for {Arena %u}", plr->GetLowGUID(), BattlegroundType );
+	sLog.Success("BattlegroundMgr", "Player %u is now in battleground queue for {Arena %u}", plr->GetLowGUID(), BattlegroundType );
 
 	/* send the battleground status packet */
 	// use queueslot 0 since we can only join 1 arena :P

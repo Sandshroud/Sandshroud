@@ -280,13 +280,13 @@ void MapCell::QueueUnloadPending()
 		return;
 
 	_unloadpending = true;
-	DEBUG_LOG("MapCell", "Queueing pending unload of cell %u %u", _x, _y);
+	sLog.Debug("MapCell", "Queueing pending unload of cell %u %u", _x, _y);
 	sEventMgr.AddEvent(_mapmgr, &MapMgr::UnloadCell, (uint32)_x, (uint32)_y, MAKE_CELL_EVENT(_x,_y), 60000, 1, 0);
 }
 
 void MapCell::CancelPendingUnload()
 {
-	DEBUG_LOG("MapCell", "Cancelling pending unload of cell %u %u", _x, _y);
+	sLog.Debug("MapCell", "Cancelling pending unload of cell %u %u", _x, _y);
 	if(!_unloadpending)
 		return;
 
@@ -295,7 +295,7 @@ void MapCell::CancelPendingUnload()
 
 void MapCell::Unload()
 {
-	DEBUG_LOG("MapCell", "Unloading cell %u %u", _x, _y);
+	sLog.Debug("MapCell", "Unloading cell %u %u", _x, _y);
 	ASSERT(_unloadpending);
 	if(_active)
 		return;

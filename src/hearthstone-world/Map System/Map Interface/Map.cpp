@@ -38,7 +38,7 @@ Map::Map(uint32 mapid, MapInfo * inf)
 
 Map::~Map()
 {
-	Log.Notice("Map", "~Map %u", _mapId);
+	sLog.Notice("Map", "~Map %u", _mapId);
 	delete _terrain;
 
 	CellSpawns *sp = NULL;
@@ -105,7 +105,7 @@ bool CheckResultLengthCreatures(QueryResult * res)
 		if( first_table_warning )
 		{
 			first_table_warning = false;
-			Log.LargeErrorMessage(LARGERRORMESSAGE_WARNING, format("Your creature_spawns table has the wrong column count(%u,%u).", fieldcount, 22).c_str(),
+			sLog.LargeErrorMessage(LARGERRORMESSAGE_WARNING, format("Your creature_spawns table has the wrong column count(%u,%u).", fieldcount, 22).c_str(),
 				"This table has skipped loading in order to avoid crashing.", "Please correct this, if you do not no spawns will show.", NULL);
 		}
 
@@ -124,7 +124,7 @@ bool CheckResultLengthGameObject(QueryResult * res)
 		if( first_table_warningg )
 		{
 			first_table_warningg = false;
-			Log.LargeErrorMessage(LARGERRORMESSAGE_WARNING, format("Your gameobject_spawns table has the wrong column count(%u,%u).", fieldcount, 12).c_str(),
+			sLog.LargeErrorMessage(LARGERRORMESSAGE_WARNING, format("Your gameobject_spawns table has the wrong column count(%u,%u).", fieldcount, 12).c_str(),
 				"This table has skipped loading in order to avoid crashing.", "Please correct this, if you do not no spawns will show.", NULL);
 		}
 

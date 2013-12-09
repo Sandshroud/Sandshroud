@@ -3,6 +3,7 @@
  */
 
 #include "../G3DAll.h"
+#include "VMapDefinitions.h"
 
 using G3D::Vector3;
 using G3D::Ray;
@@ -18,24 +19,10 @@ namespace VMAP
     bool ModelInstance::intersectRay(const G3D::Ray& pRay, float& pMaxDist, bool pStopAtFirstHit) const
     {
         if (!iModel)
-        {
-            //std::cout << "<object not loaded>\n";
             return false;
-        }
         float time = pRay.intersectionTime(iBound);
         if (time == G3D::inf())
-        {
-//            std::cout << "Ray does not hit '" << name << "'\n";
-
             return false;
-        }
-//        std::cout << "Ray crosses bound of '" << name << "'\n";
-/*        std::cout << "ray from:" << pRay.origin().x << ", " << pRay.origin().y << ", " << pRay.origin().z
-                  << " dir:" << pRay.direction().x << ", " << pRay.direction().y << ", " << pRay.direction().z
-                  << " t/tmax:" << time << '/' << pMaxDist;
-        std::cout << "\nBound lo:" << iBound.low().x << ", " << iBound.low().y << ", " << iBound.low().z << " hi: "
-                  << iBound.high().x << ", " << iBound.high().y << ", " << iBound.high().z << std::endl; */
-        // child bounds are defined in object space:
         Vector3 p = iInvRot * (pRay.origin() - iPos) * iInvScale;
         Ray modRay(p, iInvRot * pRay.direction());
         float distance = pMaxDist * iInvScale;
@@ -52,9 +39,7 @@ namespace VMAP
     {
         if (!iModel)
         {
-#ifdef VMAP_DEBUG
-            std::cout << "<object not loaded>\n";
-#endif
+            bLog.outDebug("<object not loaded>");
             return;
         }
 
@@ -86,9 +71,7 @@ namespace VMAP
     {
         if (!iModel)
         {
-#ifdef VMAP_DEBUG
-            std::cout << "<object not loaded>\n";
-#endif
+            bLog.outDebug("<object not loaded>");
             return false;
         }
 
@@ -142,7 +125,7 @@ namespace VMAP
         if (!check)
         {
             if (ferror(rf))
-                std::cout << "Error reading ModelSpawn!\n";
+				bLog.outDetail("Error reading ModelSpawn!");
             return false;
         }
         check += fread(&spawn.adtId, sizeof(G3D::g3d_uint16), 1, rf);
@@ -161,19 +144,19 @@ namespace VMAP
         check += fread(&nameLen, sizeof(G3D::g3d_uint32), 1, rf);
         if (check != G3D::g3d_uint32(has_bound ? 17 : 11))
         {
-            std::cout << "Error reading ModelSpawn!\n";
+			bLog.outDetail("Error reading ModelSpawn!");
             return false;
         }
         char nameBuff[500];
         if (nameLen > 500) // file names should never be that long, must be file error
         {
-            std::cout << "Error reading ModelSpawn, file name too long!\n";
+			bLog.outDetail("Error reading ModelSpawn, file name too long!");
             return false;
         }
         check = fread(nameBuff, sizeof(char), nameLen, rf);
         if (check != nameLen)
         {
-            std::cout << "Error reading ModelSpawn!\n";
+			bLog.outDetail("Error reading ModelSpawn!");
             return false;
         }
         spawn.name = std::string(nameBuff, nameLen);

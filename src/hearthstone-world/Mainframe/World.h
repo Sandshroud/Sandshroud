@@ -530,7 +530,7 @@ public:
 	bool LogCheaters;
 	bool LogCommands;
 	bool LogPlayers;
-	bool LogChats;
+	bool bLogChat;
 
 	bool NumericCommandGroups;
 

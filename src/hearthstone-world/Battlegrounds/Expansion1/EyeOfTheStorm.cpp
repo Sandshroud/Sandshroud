@@ -550,7 +550,7 @@ void EyeOfTheStorm::OnCreate()
 		m_CPStatusGO[i] = m_mapMgr->CreateGameObject(EOTSTowerIds[i]);
 		if(m_CPStatusGO[i] == NULL || !m_CPStatusGO[i]->CreateFromProto( EOTSTowerIds[i], m_mapMgr->GetMapId(), EOTSCPLocations[i][0], EOTSCPLocations[i][1], EOTSCPLocations[i][2], 0.0f))
 		{
-			Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "EOTS is being created and you are missing gameobject %u.", EOTSTowerIds[i]);
+			sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "EOTS is being created and you are missing gameobject %u.", EOTSTowerIds[i]);
 			abort();
 			return;
 		}
@@ -560,7 +560,7 @@ void EyeOfTheStorm::OnCreate()
 		m_CPBanner[i] = m_mapMgr->CreateGameObject(EOTS_BANNER_NEUTRAL);
 		if( m_CPBanner[i] == NULL || !m_CPBanner[i]->CreateFromProto( EOTS_BANNER_NEUTRAL, m_mapMgr->GetMapId(), EOTSCTLocations[i][0], EOTSCTLocations[i][1], EOTSCTLocations[i][2], 0.0f))
 		{
-			Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "EOTS is being created and you are missing gameobjects %u",EOTS_BANNER_NEUTRAL);
+			sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "EOTS is being created and you are missing gameobjects %u",EOTS_BANNER_NEUTRAL);
 			abort();
 			return;
 		}
@@ -570,7 +570,7 @@ void EyeOfTheStorm::OnCreate()
 		m_CPBanner2[i] = m_mapMgr->CreateGameObject(EOTS_BANNER_NEUTRAL);
 		if( m_CPBanner2[i] == NULL || !m_CPBanner2[i]->CreateFromProto( EOTS_BANNER_NEUTRAL, m_mapMgr->GetMapId(), EOTSCTLocations2[i][0], EOTSCTLocations2[i][1], EOTSCTLocations2[i][2], 0.0f))
 		{
-			Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "EOTS is being created and you are missing gameobjects %u",EOTS_BANNER_NEUTRAL);
+			sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "EOTS is being created and you are missing gameobjects %u",EOTS_BANNER_NEUTRAL);
 			abort();
 			return;
 		}
@@ -580,7 +580,7 @@ void EyeOfTheStorm::OnCreate()
 		m_CPBanner3[i] = m_mapMgr->CreateGameObject(EOTS_BANNER_NEUTRAL);
 		if( m_CPBanner3[i] == NULL || !m_CPBanner3[i]->CreateFromProto( EOTS_BANNER_NEUTRAL, m_mapMgr->GetMapId(), EOTSCTLocations3[i][0], EOTSCTLocations3[i][1], EOTSCTLocations3[i][2], 0.0f))
 		{
-			Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "EOTS is being created and you are missing gameobjects %u",EOTS_BANNER_NEUTRAL);
+			sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "EOTS is being created and you are missing gameobjects %u",EOTS_BANNER_NEUTRAL);
 			abort();
 			return;
 		}
@@ -593,7 +593,7 @@ void EyeOfTheStorm::OnCreate()
 		m_bubbles[i] = m_mapMgr->CreateGameObject((uint32)EOTSBubbleLocations[i][0]);
 		if( m_bubbles[i] == NULL || !m_bubbles[i]->CreateFromProto( (uint32)EOTSBubbleLocations[i][0], m_mapMgr->GetMapId(), EOTSBubbleLocations[i][1], EOTSBubbleLocations[i][2], EOTSBubbleLocations[i][3], EOTSBubbleLocations[i][4] ) )
 		{
-			Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "EOTS is being created and you are missing gameobjects. Terminating.");
+			sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "EOTS is being created and you are missing gameobjects. Terminating.");
 			abort();
 			return;
 		}
@@ -617,7 +617,7 @@ void EyeOfTheStorm::OnCreate()
 	m_standFlag = m_mapMgr->CreateGameObject(EOTS_STANDFLAG);
 	if( m_standFlag == NULL ||!	m_standFlag->CreateFromProto( EOTS_STANDFLAG, m_mapMgr->GetMapId(), 2174.782227f, 1569.054688f, 1160.361938f, -1.448624f ))
 	{
-		Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "EOTS is being created and you are missing gameobject %u",EOTS_STANDFLAG);
+		sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "EOTS is being created and you are missing gameobject %u",EOTS_STANDFLAG);
 		abort();
 		return;
 	}
@@ -627,7 +627,7 @@ void EyeOfTheStorm::OnCreate()
 	m_dropFlag = m_mapMgr->CreateGameObject(EOTS_DROPFLAG);
 	if( m_dropFlag == NULL || !m_dropFlag->CreateFromProto( EOTS_DROPFLAG, m_mapMgr->GetMapId(), 2174.782227f, 1569.054688f, 1160.361938f, -1.448624f ))
 	{
-		Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "EOTS is being created and you are missing gameobject %u",EOTS_DROPFLAG);
+		sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "EOTS is being created and you are missing gameobject %u",EOTS_DROPFLAG);
 		abort();
 		return;
 	}

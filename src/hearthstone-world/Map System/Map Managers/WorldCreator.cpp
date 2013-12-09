@@ -42,7 +42,7 @@ void InstanceMgr::Load(TaskList * l)
 		MapInfo* mapinfo = itr->Get();
 		if( mapinfo->mapid >= NUM_MAPS )
 		{
-			Log.Warning("InstanceMgr", "One or more of your worldmap_info rows specifies an invalid map: %u", mapinfo->mapid );
+			sLog.Warning("InstanceMgr", "One or more of your worldmap_info rows specifies an invalid map: %u", mapinfo->mapid );
 			itr->Inc();
 			continue;
 		}
@@ -52,7 +52,7 @@ void InstanceMgr::Load(TaskList * l)
 
 		if( mapinfo->flags != 1 && mapinfo->cooldown == 0) //Transport maps have 0 update_distance since you don't load into them ;)
 		{
-			Log.Warning("InstanceMgr", "Your worldmap_info has no cooldown for map %u.", itr->Get()->mapid);
+			sLog.Warning("InstanceMgr", "Your worldmap_info has no cooldown for map %u.", itr->Get()->mapid);
 			itr->Get()->cooldown = TIME_MINUTE * 30;
 		}
 		itr->Inc();
@@ -256,7 +256,7 @@ uint32 InstanceMgr::PreTeleport(uint32 mapid, Player* plr, uint32 instanceid)
 					}
 				}
 				else
-					DEBUG_LOG("InstanceMgr","Check failed %s, return code %u",plr->GetName(), owns);
+					sLog.Debug("InstanceMgr","Check failed %s, return code %u",plr->GetName(), owns);
 			}
 			m_mapLock.Release();
 			return INSTANCE_ABORT_NOT_FOUND;
@@ -309,7 +309,7 @@ uint32 InstanceMgr::PreTeleport(uint32 mapid, Player* plr, uint32 instanceid)
 					}
 				}
 				else
-					DEBUG_LOG("InstanceMgr","Check failed %s, return code %u",plr->GetName(), owns);
+					sLog.Debug("InstanceMgr","Check failed %s, return code %u",plr->GetName(), owns);
 			}
 		}
 	}
@@ -350,7 +350,7 @@ uint32 InstanceMgr::PreTeleport(uint32 mapid, Player* plr, uint32 instanceid)
 	in->m_dbcMap = map;
 	in->m_isBattleground = false;
 	plr->SetInstanceID(in->m_instanceId);
-	DEBUG_LOG("InstanceMgr", "Prepared new %s %u for player %u and group %u on map %u with difficulty %u. (%u)", raid ? "Raid" : "Instance" ,in->m_instanceId, in->m_creatorGuid, in->m_creatorGroup, in->m_mapId, in->m_difficulty, in->m_instanceId);
+	sLog.Debug("InstanceMgr", "Prepared new %s %u for player %u and group %u on map %u with difficulty %u. (%u)", raid ? "Raid" : "Instance" ,in->m_instanceId, in->m_creatorGuid, in->m_creatorGroup, in->m_mapId, in->m_difficulty, in->m_instanceId);
 
 	// apply it in the instance map
 	instancemap->insert( InstanceMap::value_type( in->m_instanceId, in ) );
@@ -473,7 +473,7 @@ MapMgr* InstanceMgr::GetInstance(Object* obj)
 					return itr->second->m_mapMgr;
 				}
 				else
-					DEBUG_LOG("InstanceMgr","Check failed %u %s", owns, plr->GetName());
+					sLog.Debug("InstanceMgr","Check failed %u %s", owns, plr->GetName());
 			}
 		}
 
@@ -582,13 +582,13 @@ MapMgr* InstanceMgr::_CreateInstance(uint32 mapid, uint32 instanceid)
 	const char* name = m_maps[mapid]->GetName();
 	bool transportmap = (strstr(name, "Transport") ? true : false);
 	if(transportmap) // Only list transports on debug.
-		Log.Debug("InstanceMgr", "Created transport map %u.", mapid);
+		sLog.Debug("InstanceMgr", "Created transport map %u.", mapid);
 	else
 	{
 		if(ret->IsCollisionEnabled())
-			Log.Notice("InstanceMgr", "Created Collision continent %s.", name);
+			sLog.Notice("InstanceMgr", "Created Collision continent %s.", name);
 		else
-			Log.Notice("InstanceMgr", "Created continent %s.", name);
+			sLog.Notice("InstanceMgr", "Created continent %s.", name);
 	}
 
 	// start its thread
@@ -606,7 +606,7 @@ MapMgr* InstanceMgr::_CreateInstance(Instance * in)
 	if(!dbcMap.LookupEntry(in->m_mapId)) // SHOULD NEVER HAPPEN!
 		return NULL;
 
-	Log.Notice("InstanceMgr", "Creating %s %u(%s) Difficulty %u", dbcMap.LookupEntry(in->m_mapId)->israid() ? "Raid" : "Instance", in->m_instanceId, m_maps[in->m_mapId]->GetName(), in->m_difficulty);
+	sLog.Notice("InstanceMgr", "Creating %s %u(%s) Difficulty %u", dbcMap.LookupEntry(in->m_mapId)->israid() ? "Raid" : "Instance", in->m_instanceId, m_maps[in->m_mapId]->GetName(), in->m_difficulty);
 
 	// we don't have to check for world map info here, since the instance wouldn't have been saved if it didn't have any.
 	in->m_mapMgr = (new MapMgr(m_maps[in->m_mapId], in->m_mapId, in->m_instanceId));
@@ -779,7 +779,7 @@ void InstanceMgr::BuildXMLStats(char * m_file)
 	}
 
 	m_mapLock.Release();
-	Log.Debug("InstanceMgr", "Dumping XML stats...");
+	sLog.Debug("InstanceMgr", "Dumping XML stats...");
 }
 
 void InstanceMgr::_LoadInstances()
@@ -789,12 +789,12 @@ void InstanceMgr::_LoadInstances()
 	QueryResult* result;
 
 	// clear any instances that have expired.
-	Log.Notice("InstanceMgr", "Deleting Expired Instances...");
+	sLog.Notice("InstanceMgr", "Deleting Expired Instances...");
 	CharacterDatabase.WaitExecute("DELETE FROM instances WHERE expiration <= %u", UNIXTIME);
 
 	// load saved instances
 	result = CharacterDatabase.Query("SELECT * FROM instances");
-	Log.Notice("InstanceMgr", "Loading %u saved instance(s)." , result ? result->GetRowCount() : 0);
+	sLog.Notice("InstanceMgr", "Loading %u saved instance(s)." , result ? result->GetRowCount() : 0);
 
 	if(result)
 	{
@@ -817,11 +817,11 @@ void InstanceMgr::_LoadInstances()
 
 			m_instances[in->m_mapId]->insert( InstanceMap::value_type( in->m_instanceId, in ) );
 		} while(result->NextRow());
-		Log.Success("InstanceMgr", "Loaded %u saved instance(s)." , result->GetRowCount());
+		sLog.Success("InstanceMgr", "Loaded %u saved instance(s)." , result->GetRowCount());
 		delete result;
 	}
 	else
-		DEBUG_LOG("InstanceMgr", "No saved instances found.");
+		sLog.Debug("InstanceMgr", "No saved instances found.");
 }
 
 void Instance::LoadFromDB(Field * fields)

@@ -713,7 +713,7 @@ void Item::ApplyEnchantmentBonus( uint32 Slot, bool Apply )
 								TS.procChance = Entry->min[c];
 						}
 
-						DEBUG_LOG( "Enchant", "Setting procChance to %u%%.", TS.procChance );
+						sLog.Debug( "Enchant", "Setting procChance to %u%%.", TS.procChance );
 						TS.deleted = false;
 						TS.spellId = Entry->spell[c];
 						m_owner->m_procSpells.push_back( TS );
@@ -850,7 +850,7 @@ void Item::ApplyEnchantmentBonus( uint32 Slot, bool Apply )
 
 			default:
 				{
-					DEBUG_LOG( "Enchant","Unknown enchantment type: %u (%u)", Entry->type[c], Entry->Id );
+					sLog.Debug( "Enchant","Unknown enchantment type: %u (%u)", Entry->type[c], Entry->Id );
 				}break;
 			}
 		}

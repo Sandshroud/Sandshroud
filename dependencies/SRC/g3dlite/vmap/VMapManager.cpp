@@ -3,6 +3,7 @@
  */
 
 #include "../G3DAll.h"
+#include "VMapDefinitions.h"
 
 #include <iomanip>
 
@@ -110,9 +111,7 @@ namespace VMAP
         if (mdl_box == G3D::AABox::zero())
         {
             // ignore models with no bounds
-#ifdef _DEBUG
-            printf("GameObject model %s has zero bounds, loading skipped\n", it->second.name.c_str());
-#endif
+            bLog.outDebug("GameObject model %s has zero bounds, loading skipped", it->second.name.c_str());
             return false;
         }
 
@@ -316,7 +315,7 @@ namespace VMAP
             bool result = DynamicTree->second->getObjectHitPos(instanceId, m_phase, pos1, pos2, resultPos, modifyDist);
             if(result)
             {
-                printf("%f %f %f\n", resultPos.x, resultPos.y, resultPos.z);
+                bLog.outDebug("%f %f %f", resultPos.x, resultPos.y, resultPos.z);
                 rx = resultPos.x;
                 ry = resultPos.y;
                 rz = resultPos.z;
@@ -402,16 +401,12 @@ namespace VMAP
             if (!worldmodel->readFile(vmapDir + filename + ".vmo"))
             {
                 LoadedModelFilesLock.unlock();
-#ifdef _DEBUG
-                printf("VMapManager: could not load '%s%s.vmo'!\n", vmapDir.c_str(), filename.c_str());
-#endif
+                bLog.outDebug("VMapManager: could not load '%s%s.vmo'!", vmapDir.c_str(), filename.c_str());
                 delete worldmodel;
                 return NULL;
             }
 
-#ifdef _DEBUG
-            printf("VMapManager: loading file '%s%s'\n", vmapDir.c_str(), filename.c_str());
-#endif
+            bLog.outDebug("VMapManager: loading file '%s%s'", vmapDir.c_str(), filename.c_str());
             model = iLoadedModelFiles.insert(std::pair<std::string, ManagedModel>(filename, ManagedModel())).first;
             model->second.setModel(worldmodel);
         }
@@ -429,17 +424,13 @@ namespace VMAP
         if (model == iLoadedModelFiles.end())
         {
             LoadedModelFilesLock.unlock();
-#ifdef _DEBUG
-            printf("VMapManager: trying to unload non-loaded file '%s'\n", filename.c_str());
-#endif
+            bLog.outDebug("VMapManager: trying to unload non-loaded file '%s'", filename.c_str());
             return;
         }
 
         if (model->second.decRefCount() == 0)
         {
-#ifdef _DEBUG
-            printf("VMapManager: unloading file '%s'\n", filename.c_str());
-#endif
+            bLog.outDebug("VMapManager: unloading file '%s'", filename.c_str());
             delete model->second.getModel();
             iLoadedModelFiles.erase(model);
         }
@@ -469,9 +460,7 @@ namespace VMAP
         FILE* model_list_file = fopen((vmapDir + VMAP::GAMEOBJECT_MODELS).c_str(), "rb");
         if (!model_list_file)
         {
-#ifdef _DEBUG
-            printf("Unable to open '%s' file.\n", VMAP::GAMEOBJECT_MODELS);
-#endif
+            bLog.outDebug("Unable to open '%s' file.", VMAP::GAMEOBJECT_MODELS);
             return;
         }
 
@@ -490,9 +479,7 @@ namespace VMAP
                 || fread(&v1, sizeof(Vector3), 1, model_list_file) != 1
                 || fread(&v2, sizeof(Vector3), 1, model_list_file) != 1)
             {
-#ifdef _DEBUG
-                printf("File '%s' seems to be corrupted!\n", VMAP::GAMEOBJECT_MODELS);
-#endif
+                bLog.outDebug("File '%s' seems to be corrupted!", VMAP::GAMEOBJECT_MODELS);
                 break;
             }
 
@@ -503,9 +490,7 @@ namespace VMAP
         }
 
         fclose(model_list_file);
-#ifdef _DEBUG
-        printf(">> Loaded %u GameObject models\n", G3D::g3d_uint32(GOModelList.size()));
-#endif
+        bLog.outDetail("Loaded %u GameObject models", G3D::g3d_uint32(GOModelList.size()));
     }
 
 } // namespace VMAP

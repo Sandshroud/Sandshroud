@@ -107,7 +107,7 @@ void GuildMgr::Update(uint32 p_time)
 void GuildMgr::LoadAllGuilds()
 {
 	sWorld.GuildsLoading = true;
-	Log.Notice("GuildMgr", "Loading Guilds.");
+	sLog.Notice("GuildMgr", "Loading Guilds.");
 
 	QueryResult *result = CharacterDatabase.Query( "SELECT * FROM guilds" );
 	if(result)
@@ -137,7 +137,7 @@ void GuildMgr::LoadAllGuilds()
 			m_Guilds.insert(make_pair(gInfo->m_guildId, gInfo));
 			m_GuildNames.insert(make_pair(gInfo->m_guildName, gInfo));
 			if( !((++c) % period) )
-				Log.Notice("GuildMgr", "Done %u/%u, %u%% complete.", c, result->GetRowCount(), float2int32( (float(c) / float(result->GetRowCount()))*100.0f ));
+				sLog.Notice("GuildMgr", "Done %u/%u, %u%% complete.", c, result->GetRowCount(), float2int32( (float(c) / float(result->GetRowCount()))*100.0f ));
 		} while(result->NextRow());
 		delete result;
 		result = NULL;
@@ -222,7 +222,7 @@ void GuildMgr::LoadAllGuilds()
 
 			if(r->iId != storage->ssid)
 			{
-				Log.Notice("GuildMgr", "Renaming rank %u of guild %s to %u.", r->iId, gInfo->m_guildName.c_str(), storage->ssid);
+				sLog.Notice("GuildMgr", "Renaming rank %u of guild %s to %u.", r->iId, gInfo->m_guildName.c_str(), storage->ssid);
 				r->iId = storage->ssid;
 			}
 			storage->ssid++;
@@ -434,7 +434,7 @@ void GuildMgr::LoadAllGuilds()
 			m_GuildTabs.insert(make_pair(itr->first, new GuildBankTabStorage(itr->first)));
 	}
 
-	Log.Notice("GuildMgr", "%u guilds loaded.", m_Guilds.size());
+	sLog.Notice("GuildMgr", "%u guilds loaded.", m_Guilds.size());
 	sWorld.GuildsLoading = false;
 	m_GuildsLoading = false;
 }
@@ -1097,7 +1097,7 @@ void GuildMgr::DestroyGuild(GuildInfo* guildInfo)
 
 void GuildMgr::SaveAllGuilds()
 {
-	Log.Debug("GuildMgr", "Saving all guilds...");
+	sLog.Debug("GuildMgr", "Saving all guilds...");
 
 #ifdef MASS_SAVE_QUERYBUFFER
 	QueryBuffer* qb = NULL;
@@ -1143,7 +1143,7 @@ void GuildMgr::SaveAllGuilds()
 
 		if(gInfo->m_GuildStatus == GUILD_STATUS_DIRTY || gInfo->m_GuildStatus == GUILD_STATUS_NEW || bServerShutdown)
 		{
-			Log.Debug("GuildMgr", "Saving Guild %s", gInfo->m_guildName.c_str());
+			sLog.Debug("GuildMgr", "Saving Guild %s", gInfo->m_guildName.c_str());
 #ifdef MASS_SAVE_QUERYBUFFER
 			SaveGuild(qb, gInfo);
 #else
@@ -1309,11 +1309,11 @@ void GuildMgr::CreateGuildRank(GuildRankStorage* storage, const char* szRankName
 			storage->RankLock.Release();
 			gInfo->m_GuildStatus = GUILD_STATUS_DIRTY;
 			gInfo->m_GuildLock.Release();
-//			Log.Notice("Guild", "Created rank %u on guild %u (%s)", i, storage->GuildId, szRankName);
+//			sLog.Notice("Guild", "Created rank %u on guild %u (%s)", i, storage->GuildId, szRankName);
 			return;
 		}
 	}
-	Log.Error("GuildMgr", "Failed to create rank %s", szRankName);
+	sLog.Error("GuildMgr", "Failed to create rank %s", szRankName);
 	storage->RankLock.Release();
 }
 
@@ -1768,7 +1768,7 @@ void GuildMgr::RemoveCharter(Charter * c)
 		return;
 	if( c->CharterType > NUM_CHARTER_TYPES )
 	{
-		Log.Notice("GuildMgr", "Charter %u cannot be destroyed as type %u is not a sane type value.", c->CharterId, c->CharterType );
+		sLog.Notice("GuildMgr", "Charter %u cannot be destroyed as type %u is not a sane type value.", c->CharterId, c->CharterType );
 		return;
 	}
 

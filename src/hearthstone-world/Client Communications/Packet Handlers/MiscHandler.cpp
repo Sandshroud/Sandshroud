@@ -6,7 +6,7 @@
 
 void WorldSession::HandleRepopRequestOpcode( WorldPacket & recv_data )
 {
-	DEBUG_LOG( "WORLD"," Recvd CMSG_REPOP_REQUEST Message" );
+	sLog.Debug( "WORLD"," Recvd CMSG_REPOP_REQUEST Message" );
 	uint8 popcheck;
 	recv_data >> popcheck;
 	// Todo: Death checks and whatnot.
@@ -134,7 +134,7 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recv_data )
 			return;
 		}
 
-		DEBUG_LOG("HandleAutostoreItem","AutoLootItem %u",itemid);
+		sLog.Debug("HandleAutostoreItem","AutoLootItem %u",itemid);
 		Item* item = objmgr.CreateItem( itemid, GetPlayer());
 
 		item->SetUInt32Value(ITEM_FIELD_STACK_COUNT, amt);
@@ -526,7 +526,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recv_data )
 	else
 		cname = false;
 
-	DEBUG_LOG( "WORLD"," Recvd CMSG_WHO Message with %u zones and %u names", zone_count, name_count );
+	sLog.Debug( "WORLD"," Recvd CMSG_WHO Message with %u zones and %u names", zone_count, name_count );
 
 	bool gm = false;
 	uint32 team = _player->GetTeam();
@@ -663,7 +663,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & recv_data )
 	Player* pPlayer = GetPlayer();
 	WorldPacket data(SMSG_LOGOUT_RESPONSE, 9);
 
-	DEBUG_LOG( "WORLD"," Recvd CMSG_LOGOUT_REQUEST Message" );
+	sLog.Debug( "WORLD"," Recvd CMSG_LOGOUT_REQUEST Message" );
 
 	if(pPlayer)
 	{
@@ -703,7 +703,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandlePlayerLogoutOpcode( WorldPacket & recv_data )
 {
-	DEBUG_LOG( "WORLD"," Recvd CMSG_PLAYER_LOGOUT Message" );
+	sLog.Debug( "WORLD"," Recvd CMSG_PLAYER_LOGOUT Message" );
 	if(!HasGMPermissions())
 	{
 		// send "You do not have permission to use this"
@@ -715,7 +715,7 @@ void WorldSession::HandlePlayerLogoutOpcode( WorldPacket & recv_data )
 
 void WorldSession::HandleLogoutCancelOpcode( WorldPacket & recv_data )
 {
-	DEBUG_LOG( "WORLD"," Recvd CMSG_LOGOUT_CANCEL Message" );
+	sLog.Debug( "WORLD"," Recvd CMSG_LOGOUT_CANCEL Message" );
 
 	Player* pPlayer = GetPlayer();
 	if(!pPlayer || !_logoutTime)
@@ -736,7 +736,7 @@ void WorldSession::HandleLogoutCancelOpcode( WorldPacket & recv_data )
 	//make player stand
 	pPlayer->SetStandState(STANDSTATE_STAND);
 
-	DEBUG_LOG( "WORLD"," sent SMSG_LOGOUT_CANCEL_ACK Message" );
+	sLog.Debug( "WORLD"," sent SMSG_LOGOUT_CANCEL_ACK Message" );
 }
 
 void WorldSession::HandleZoneUpdateOpcode( WorldPacket & recv_data )
@@ -791,12 +791,12 @@ void WorldSession::HandleBugOpcode( WorldPacket & recv_data )
 	recv_data >> suggestion >> contentlen >> content >> typelen >> type;
 
 	if( suggestion == 0 )
-		DEBUG_LOG( "WORLD"," Received CMSG_BUG [Bug Report]" );
+		sLog.Debug( "WORLD"," Received CMSG_BUG [Bug Report]" );
 	else
-		DEBUG_LOG( "WORLD"," Received CMSG_BUG [Suggestion]" );
+		sLog.Debug( "WORLD"," Received CMSG_BUG [Suggestion]" );
 
-	OUT_DEBUG( type.c_str( ) );
-	OUT_DEBUG( content.c_str( ) );
+	sLog.outDebug( type.c_str( ) );
+	sLog.outDebug( content.c_str( ) );
 }
 
 void WorldSession::HandleCorpseReclaimOpcode(WorldPacket& recv_data)
@@ -804,7 +804,7 @@ void WorldSession::HandleCorpseReclaimOpcode(WorldPacket& recv_data)
 	if(_player->isAlive())
 		return;
 
-	OUT_DEBUG("WORLD: Received CMSG_RECLAIM_CORPSE");
+	sLog.outDebug("WORLD: Received CMSG_RECLAIM_CORPSE");
 
 	uint64 guid;
 	recv_data >> guid;
@@ -855,7 +855,7 @@ void WorldSession::HandleCorpseReclaimOpcode(WorldPacket& recv_data)
 void WorldSession::HandleResurrectResponseOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN();
-	OUT_DEBUG("WORLD: Received CMSG_RESURRECT_RESPONSE");
+	sLog.outDebug("WORLD: Received CMSG_RESURRECT_RESPONSE");
 
 	if(GetPlayer()->isAlive() || GetPlayer()->PreventRes)
 		return;
@@ -893,7 +893,7 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleUpdateAccountData(WorldPacket& recv_data)
 {
-	//OUT_DEBUG("WORLD: Received CMSG_UPDATE_ACCOUNT_DATA");
+	//sLog.outDebug("WORLD: Received CMSG_UPDATE_ACCOUNT_DATA");
 	if(!sWorld.m_useAccountData)
 	{
 		SKIP_READ_PACKET(recv_data); // Spam cleanup.
@@ -953,7 +953,7 @@ void WorldSession::HandleUpdateAccountData(WorldPacket& recv_data)
 		{
 		case Z_OK:				  //0 no error decompression is OK
 			SetAccountData(uiID, data, false, uiDecompressedSize);
-			OUT_DEBUG("WORLD: Successfully decompressed account data %d for %s, and updated storage array.", uiID, GetPlayer() ? GetPlayer()->GetName() : GetAccountNameS());
+			sLog.outDebug("WORLD: Successfully decompressed account data %d for %s, and updated storage array.", uiID, GetPlayer() ? GetPlayer()->GetName() : GetAccountNameS());
 			break;
 
 		case Z_ERRNO:				//-1
@@ -983,7 +983,7 @@ void WorldSession::HandleUpdateAccountData(WorldPacket& recv_data)
 
 void WorldSession::HandleRequestAccountData(WorldPacket& recv_data)
 {
-	//OUT_DEBUG("WORLD: Received CMSG_REQUEST_ACCOUNT_DATA");
+	//sLog.outDebug("WORLD: Received CMSG_REQUEST_ACCOUNT_DATA");
 	if(!sWorld.m_useAccountData)
 	{
 		SKIP_READ_PACKET(recv_data); // Spam cleanup for packet size checker.
@@ -1007,7 +1007,7 @@ void WorldSession::HandleRequestAccountData(WorldPacket& recv_data)
 
 	if(res->sz && compress(const_cast<uint8*>(bbuff.contents()), &destSize, (uint8*)res->data, res->sz) != Z_OK)
 	{
-		OUT_DEBUG("Error while compressing ACCOUNT_DATA");
+		sLog.outDebug("Error while compressing ACCOUNT_DATA");
 		SKIP_READ_PACKET(recv_data);
 		return;
 	}
@@ -1033,7 +1033,7 @@ void WorldSession::HandleRequestAccountData(WorldPacket& recv_data)
 
 void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recv_data)
 {
-	DEBUG_LOG( "WORLD"," Received CMSG_SET_ACTION_BUTTON" );
+	sLog.Debug( "WORLD"," Received CMSG_SET_ACTION_BUTTON" );
 	uint8 button, type;
 	uint32 PackedAction, action;
 	recv_data >> button >> PackedAction;
@@ -1041,10 +1041,10 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recv_data)
 	type = ACTION_BUTTON_TYPE(PackedAction);
 	action = ACTION_BUTTON_ACTION(PackedAction);
 
-	OUT_DEBUG("BUTTON: %u ACTION: %u TYPE: %u", button, action, type );
+	sLog.outDebug("BUTTON: %u ACTION: %u TYPE: %u", button, action, type );
 	if(PackedAction == 0)
 	{
-		OUT_DEBUG( "MISC: Remove action from button %u", button );
+		sLog.outDebug( "MISC: Remove action from button %u", button );
 		GetPlayer()->setAction(button, 0, 0);
 	}
 	else
@@ -1053,28 +1053,28 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recv_data)
 		{
 		case ACTION_BUTTON_SPELL:
 			{
-				OUT_DEBUG( "MISC: Added Spell %u into button %u", action, button );
+				sLog.outDebug( "MISC: Added Spell %u into button %u", action, button );
 				GetPlayer()->setAction(button,action,type);
 			}break;
 		case ACTION_BUTTON_EQSET:
 			{
-				OUT_DEBUG( "MISC: Added EquipmentSet %u into button %u", action, button );
+				sLog.outDebug( "MISC: Added EquipmentSet %u into button %u", action, button );
 				GetPlayer()->setAction(button,action,type);
 			}break;
 		case ACTION_BUTTON_MACRO:
 		case ACTION_BUTTON_CMACRO:
 			{
-				OUT_DEBUG( "MISC: Added Macro %u into button %u", action, button );
+				sLog.outDebug( "MISC: Added Macro %u into button %u", action, button );
 				GetPlayer()->setAction(button,action,type);
 			}break;
 		case ACTION_BUTTON_ITEM:
 			{
-				OUT_DEBUG( "MISC: Added Item %u into button %u", action, button );
+				sLog.outDebug( "MISC: Added Item %u into button %u", action, button );
 				GetPlayer()->setAction(button,action,type);
 			}break;
 		default:
 			{
-				OUT_DEBUG( "Unknown Action Type %u for button %u", action, button );
+				sLog.outDebug( "Unknown Action Type %u for button %u", action, button );
 			}break;
 		}
 	}
@@ -1180,7 +1180,7 @@ void WorldSession::HandleGameObjectUse(WorldPacket & recv_data)
 
 	uint64 guid;
 	recv_data >> guid;
-	OUT_DEBUG("WORLD: CMSG_GAMEOBJ_USE: [GUID %d]", guid);
+	sLog.outDebug("WORLD: CMSG_GAMEOBJ_USE: [GUID %d]", guid);
 
 	GameObject* obj = _player->GetMapMgr()->GetGameObject(GET_LOWGUID_PART(guid));
 	if (!obj)
@@ -1206,7 +1206,7 @@ void WorldSession::HandleTutorialFlag( WorldPacket & recv_data )
 	tutflag |= (1 << rInt);
 	GetPlayer()->SetTutorialInt( wInt, tutflag );
 
-	DEBUG_LOG("WorldSession","Received Tutorial Flag Set {%u}.", iFlag);
+	sLog.Debug("WorldSession","Received Tutorial Flag Set {%u}.", iFlag);
 }
 
 void WorldSession::HandleTutorialClear( WorldPacket & recv_data )
@@ -1314,7 +1314,7 @@ void WorldSession::HandleSetActionBarTogglesOpcode(WorldPacket &recvPacket)
 	uint8 cActionBarId;
 	recvPacket >> cActionBarId;
 
-	DEBUG_LOG("WorldSession","Received CMSG_SET_ACTIONBAR_TOGGLES for actionbar id %d.", cActionBarId);
+	sLog.Debug("WorldSession","Received CMSG_SET_ACTIONBAR_TOGGLES for actionbar id %d.", cActionBarId);
 
 	_player->SetByte(PLAYER_FIELD_BYTES, 2, cActionBarId);
 }
@@ -1340,7 +1340,7 @@ void WorldSession::HandleRandomRollOpcode(WorldPacket& recv_data)
 	uint32 min, max;
 	recv_data >> min >> max;
 
-	OUT_DEBUG("WORLD: Received MSG_RANDOM_ROLL: %u-%u", min, max);
+	sLog.outDebug("WORLD: Received MSG_RANDOM_ROLL: %u-%u", min, max);
 
 	WorldPacket data(20);
 	data.SetOpcode(MSG_RANDOM_ROLL);
@@ -1416,7 +1416,7 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recv_data)
 
 	if (slotid >= pLoot->items.size())
 	{
-		OUT_DEBUG("AutoLootItem: Player %s might be using a hack! (slot %d, size %d)",
+		sLog.outDebug("AutoLootItem: Player %s might be using a hack! (slot %d, size %d)",
 						GetPlayer()->GetName(), slotid, pLoot->items.size());
 		return;
 	}
@@ -1825,7 +1825,7 @@ void WorldSession::HandleSummonResponseOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleDismountOpcode(WorldPacket& recv_data)
 {
-	DEBUG_LOG( "WORLD"," Received CMSG_DISMOUNT"  );
+	sLog.Debug( "WORLD"," Received CMSG_DISMOUNT"  );
 
 	if( !_player->IsInWorld() || _player->GetTaxiState())
 		return;
@@ -1863,7 +1863,7 @@ void WorldSession::HandleWorldStateUITimerUpdate(WorldPacket& recv_data)
 
 void WorldSession::HandleReadyForAccountDataTimes(WorldPacket& recv_data)
 {
-	DEBUG_LOG( "WORLD","Received CMSG_READY_FOR_ACCOUNT_DATA_TIMES" );
+	sLog.Debug( "WORLD","Received CMSG_READY_FOR_ACCOUNT_DATA_TIMES" );
 
 	// account data == UI config
 	WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4+1+4+8*4);
@@ -2125,7 +2125,7 @@ void WorldSession::HandleCalendarGetNumPending(WorldPacket & /*recv_data*/)
 
 void WorldSession::HandleMeetingStoneInfo(WorldPacket& )
 {
-	DEBUG_LOG("WORLD"," Received CMSG_MEETINGSTONE_INFO");
+	sLog.Debug("WORLD"," Received CMSG_MEETINGSTONE_INFO");
 	//Used for LFR/LFG updates
 }
 

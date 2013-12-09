@@ -667,7 +667,7 @@ public:
 				Max = result->Fetch()[0].GetUInt32() + 1;
 				if(Max > STORAGE_ARRAY_MAX)
 				{
-					Log.Warning("Storage", "The table, '%s', has been limited to maximum of %u entries.\
+					sLog.Warning("Storage", "The table, '%s', has been limited to maximum of %u entries.\
 						Any entry higher than %u will be discarded.",
 						IndexName, STORAGE_ARRAY_MAX, Max );
 
@@ -689,11 +689,11 @@ public:
 		{
 			if(result->GetFieldCount() > cols)
 			{
-				Log.Warning("Storage", "Invalid format in %s (%u/%u), loading anyway because we have enough data\n", IndexName, (unsigned int)result->GetFieldCount(), (unsigned int)cols);
+				sLog.Warning("Storage", "Invalid format in %s (%u/%u), loading anyway because we have enough data\n", IndexName, (unsigned int)result->GetFieldCount(), (unsigned int)cols);
 			}
 			else
 			{
-				Log.Error("Storage", "Invalid format in %s (%u/%u), not enough data to proceed.\n", IndexName, (unsigned int)result->GetFieldCount(), (unsigned int)cols);
+				sLog.Error("Storage", "Invalid format in %s (%u/%u), not enough data to proceed.\n", IndexName, (unsigned int)result->GetFieldCount(), (unsigned int)cols);
 				delete result;
 				return;
 			}
@@ -713,10 +713,10 @@ public:
 
 			LoadBlock(fields, Allocated);
 		} while(result->NextRow());
-		Log.Notice("Storage", "%u entries loaded from table %s.", result->GetRowCount(), IndexName);
+		sLog.Notice("Storage", "%u entries loaded from table %s.", result->GetRowCount(), IndexName);
 		delete result;
 
-		//Log.Success("Storage", "Loaded database cache from `%s`.", IndexName);
+		//sLog.Success("Storage", "Loaded database cache from `%s`.", IndexName);
 	}
 
 	/** Loads from the worldmapinfo table.
@@ -735,7 +735,7 @@ public:
 				Max = result->Fetch()[0].GetUInt32() + 1;
 				if(Max > STORAGE_ARRAY_MAX)
 				{
-					Log.Warning("Storage", "The table, '%s', has been limited to maximum of %u entries.\
+					sLog.Warning("Storage", "The table, '%s', has been limited to maximum of %u entries.\
 						Any entry higher than %u will be discarded.",
 						IndexName, STORAGE_ARRAY_MAX, Max );
 
@@ -757,11 +757,11 @@ public:
 		{
 			if(result->GetFieldCount() > cols)
 			{
-				Log.Warning("Storage", "Invalid format in %s (%u/%u), loading anyway because we have enough data\n", IndexName, (unsigned int)result->GetFieldCount(), (unsigned int)cols);
+				sLog.Warning("Storage", "Invalid format in %s (%u/%u), loading anyway because we have enough data\n", IndexName, (unsigned int)result->GetFieldCount(), (unsigned int)cols);
 			}
 			else
 			{
-				Log.Error("Storage", "Invalid format in %s (%u/%u), not enough data to proceed.\n", IndexName, (unsigned int)result->GetFieldCount(), (unsigned int)cols);
+				sLog.Error("Storage", "Invalid format in %s (%u/%u), not enough data to proceed.\n", IndexName, (unsigned int)result->GetFieldCount(), (unsigned int)cols);
 				delete result;
 				return;
 			}
@@ -781,7 +781,7 @@ public:
 
 			LoadBlock(fields, Allocated);
 		} while(result->NextRow());
-		Log.Notice("Storage", "%u entries loaded from table %s.", result->GetRowCount(), IndexName);
+		sLog.Notice("Storage", "%u entries loaded from table %s.", result->GetRowCount(), IndexName);
 		delete result;
 	}
 
@@ -798,7 +798,7 @@ public:
 				Max = result->Fetch()[0].GetUInt32() + 1;
 				if(Max > STORAGE_ARRAY_MAX)
 				{
-					Log.Error("Storage", "The table, '%s', has been limited to maximum of %u entries. Any entry higher than %u will be discarted.",
+					sLog.Error("Storage", "The table, '%s', has been limited to maximum of %u entries. Any entry higher than %u will be discarted.",
 						IndexName, STORAGE_ARRAY_MAX, Max );
 
 					Max = STORAGE_ARRAY_MAX;
@@ -819,11 +819,11 @@ public:
 		{
 			if(result->GetFieldCount() > cols)
 			{
-				Log.Error("Storage", "Invalid format in %s (%u/%u), loading anyway because we have enough data\n", IndexName, (unsigned int)result->GetFieldCount(), (unsigned int)cols);
+				sLog.Error("Storage", "Invalid format in %s (%u/%u), loading anyway because we have enough data\n", IndexName, (unsigned int)result->GetFieldCount(), (unsigned int)cols);
 			}
 			else
 			{
-				Log.Error("Storage", "Invalid format in %s (%u/%u), not enough data to proceed.\n", IndexName, (unsigned int)result->GetFieldCount(), (unsigned int)cols);
+				sLog.Error("Storage", "Invalid format in %s (%u/%u), not enough data to proceed.\n", IndexName, (unsigned int)result->GetFieldCount(), (unsigned int)cols);
 				delete result;
 				return;
 			}
@@ -840,7 +840,7 @@ public:
 
 			LoadBlock(fields, Allocated);
 		} while(result->NextRow());
-		Log.Notice("Storage", "%u entries loaded from table %s.", result->GetRowCount(), IndexName);
+		sLog.Notice("Storage", "%u entries loaded from table %s.", result->GetRowCount(), IndexName);
 		delete result;
 	}
 
@@ -848,7 +848,7 @@ public:
 	 */
 	void Reload()
 	{
-		Log.Notice("Storage", "Reloading database cache from `%s`...\n", Storage<T, StorageType>::_indexName);
+		sLog.Notice("Storage", "Reloading database cache from `%s`...\n", Storage<T, StorageType>::_indexName);
 		QueryResult * result = WorldDatabase.Query("SELECT MAX(entry) FROM %s", Storage<T, StorageType>::_indexName);
 		if(result == 0)
 			return;
@@ -874,7 +874,7 @@ public:
 
 		if(result->GetFieldCount() != cols)
 		{
-			Log.Error("Storage", "Invalid format in %s (%u/%u).", Storage<T, StorageType>::_indexName, (unsigned int)cols, (unsigned int)result->GetFieldCount());
+			sLog.Error("Storage", "Invalid format in %s (%u/%u).", Storage<T, StorageType>::_indexName, (unsigned int)cols, (unsigned int)result->GetFieldCount());
 			delete result;
 			return;
 		}

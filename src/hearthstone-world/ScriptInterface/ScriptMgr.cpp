@@ -33,7 +33,7 @@ void ScriptMgr::LoadScripts()
 	if(!HookInterface::getSingletonPtr())
 		new HookInterface;
 
-	Log.Notice("ScriptMgr","Loading External Script Libraries..." );
+	sLog.Notice("ScriptMgr","Loading External Script Libraries..." );
 	string start_path = mainIni->ReadString( "Script", "BinaryLocation", "script_bin" );
 	start_path.append("\\");
 	string search_path = start_path + "*.";
@@ -48,7 +48,7 @@ void ScriptMgr::LoadScripts()
 	uint32 count = 0;
 	HANDLE find_handle = FindFirstFile( search_path.c_str(), &data );
 	if(find_handle == INVALID_HANDLE_VALUE)
-		Log.Notice("ScriptMgr","No external scripts found." );
+		sLog.Notice("ScriptMgr","No external scripts found." );
 	else
 	{
 		do
@@ -56,12 +56,12 @@ void ScriptMgr::LoadScripts()
 			string full_path = start_path + data.cFileName;
 			HMODULE mod = LoadLibrary( full_path.c_str() );
 			if( mod == 0 )
-				Log.Error("ScriptMgr","Loading %s failed, crc=0x%p", data.cFileName, reinterpret_cast< uint32* >( mod ));
+				sLog.Error("ScriptMgr","Loading %s failed, crc=0x%p", data.cFileName, reinterpret_cast< uint32* >( mod ));
 			else
 			{
 				if(HEARTHSTONE_TOLOWER_RETURN(data.cFileName) == "lacrimi.dll")
 				{
-					Log.Error("ScriptMgr", "Lacrimi must be loaded from world directory.");
+					sLog.Error("ScriptMgr", "Lacrimi must be loaded from world directory.");
 					FreeLibrary(mod);
 					continue;
 				}
@@ -72,7 +72,7 @@ void ScriptMgr::LoadScripts()
 				exp_get_script_type scall = (exp_get_script_type)GetProcAddress(mod, "_exp_get_script_type");
 				if(vcall == 0 || rcall == 0 || scall == 0)
 				{
-					Log.Error("ScriptMgr","Loading %s failed, version info not found", data.cFileName);
+					sLog.Error("ScriptMgr","Loading %s failed, version info not found", data.cFileName);
 					FreeLibrary(mod);
 				}
 				else
@@ -100,12 +100,12 @@ void ScriptMgr::LoadScripts()
 							cmsg << ", Version:" << version;
 							rcall(this);
 						}
-						Log.Success("ScriptMgr", cmsg.str().c_str());
+						sLog.Success("ScriptMgr", cmsg.str().c_str());
 						++count;
 					}
 					else
 					{
-						Log.Error("ScriptMgr","Loading %s failed, version mismatch", data.cFileName);
+						sLog.Error("ScriptMgr","Loading %s failed, version mismatch", data.cFileName);
 						FreeLibrary(mod);
 					}
 				}
@@ -113,8 +113,8 @@ void ScriptMgr::LoadScripts()
 		}
 		while(FindNextFile(find_handle, &data));
 		FindClose(find_handle);
-		Log.Notice("ScriptMgr","Loaded %u external libraries.", count);
-		Log.Notice("ScriptMgr","Loading optional scripting engines...");
+		sLog.Notice("ScriptMgr","Loaded %u external libraries.", count);
+		sLog.Notice("ScriptMgr","Loading optional scripting engines...");
 		for(vector<ScriptingEngine>::iterator itr = ScriptEngines.begin(); itr != ScriptEngines.end(); itr++)
 		{
 			if( itr->Type & SCRIPT_TYPE_SCRIPT_ENGINE_LUA )
@@ -122,7 +122,7 @@ void ScriptMgr::LoadScripts()
 				// lua :O
 				if( mainIni->ReadBoolean("ScriptBackends", "LUA", false) )
 				{
-					Log.Notice("ScriptMgr","Initializing LUA script engine...");
+					sLog.Notice("ScriptMgr","Initializing LUA script engine...");
 					itr->InitializeCall(this);
 					_handles.push_back( (SCRIPT_MODULE)itr->Handle );
 				}
@@ -135,7 +135,7 @@ void ScriptMgr::LoadScripts()
 			{
 				if( mainIni->ReadBoolean("ScriptBackends", "GM", false) )
 				{
-					Log.Notice("ScriptMgr","Initializing GameMonkey script engine...");
+					sLog.Notice("ScriptMgr","Initializing GameMonkey script engine...");
 					itr->InitializeCall(this);
 					_handles.push_back( (SCRIPT_MODULE)itr->Handle );
 				}
@@ -146,11 +146,11 @@ void ScriptMgr::LoadScripts()
 			}
 			else
 			{
-				Log.Error("ScriptMgr","Unknown script engine type: 0x%.2X, please contact developers.", (*itr).Type );
+				sLog.Error("ScriptMgr","Unknown script engine type: 0x%.2X, please contact developers.", (*itr).Type );
 				FreeLibrary( itr->Handle );
 			}
 		}
-		Log.Success("ScriptMgr","Done loading script engines...");
+		sLog.Success("ScriptMgr","Done loading script engines...");
 	}
 #else
 	/* Loading system for *nix */
@@ -261,7 +261,7 @@ char *ext;
 				dlclose( itr->Handle );
 			}
 		}
-		Log.Success("ScriptMgr","Done loading script engines...");
+		sLog.Success("ScriptMgr","Done loading script engines...");
 	}
 #endif
 
@@ -270,13 +270,13 @@ char *ext;
 	HMODULE mod = LoadLibrary("Lacrimi.dll");
 	if( mod != 0 )
 	{
-		Log.Notice("ScriptMgr","Initializing Lacrimi...");
+		sLog.Notice("ScriptMgr","Initializing Lacrimi...");
 		// find version import
 		exp_get_version vcall = (exp_get_version)GetProcAddress(mod, "_exp_get_version");
 		exp_script_register rcall = (exp_script_register)GetProcAddress(mod, "_exp_script_register");
 		if(vcall == 0 || rcall == 0)
 		{
-			Log.Error("ScriptMgr","Lacrimi loading failed, version info not found");
+			sLog.Error("ScriptMgr","Lacrimi loading failed, version info not found");
 			FreeLibrary(mod);
 		}
 		else
@@ -289,7 +289,7 @@ char *ext;
 			}
 			else
 			{
-				Log.Error("ScriptMgr","Lacrimi loading failed, version mismatch %u|%u", version, BUILD_HASH);
+				sLog.Error("ScriptMgr","Lacrimi loading failed, version mismatch %u|%u", version, BUILD_HASH);
 				FreeLibrary(mod);
 			}
 		}
@@ -491,7 +491,7 @@ void ScriptMgr::register_quest_script(uint32 entry, QuestScript * qs)
 {
 	if(EntryQuestScriptMap.find(entry) != EntryQuestScriptMap.end())
 	{
-		Log.Error("ScriptMgr", "Two scripts affecting the same quest, denying second script.");
+		sLog.Error("ScriptMgr", "Two scripts affecting the same quest, denying second script.");
 		return;
 	}
 
@@ -515,12 +515,12 @@ MapManagerScript * ScriptMgr::CreateMapManagerScriptForMapManager(uint32 mapid, 
 	if(itr == _mapmanagers.end())
 	{
 		if(!Silent)
-			Log.Notice("ScriptMgr", "Giving map %u a standard Interface..", mapid);
+			sLog.Notice("ScriptMgr", "Giving map %u a standard Interface..", mapid);
 		return new MapManagerScript(_internal); // Give us a basic one.
 	}
 
 	if(!Silent)
-		Log.Notice("ScriptMgr", "Giving map %u a non-standard Interface..", mapid);
+		sLog.Notice("ScriptMgr", "Giving map %u a non-standard Interface..", mapid);
 	exp_create_mapmanager_script function_ptr = itr->second;
 	return (function_ptr)(_internal);
 }
@@ -975,7 +975,7 @@ void GossipScript::GossipSelectOption(Object* pObject, Player* Plr, uint32 Id, u
 			Plr->Gossip_Complete();
 		}break;
 	default:
-		DEBUG_LOG("GossipSelectOption","Unknown menuitem %u on npc %u", IntId, pCreature->GetEntry());
+		sLog.Debug("GossipSelectOption","Unknown menuitem %u on npc %u", IntId, pCreature->GetEntry());
 		break;
 	}
 }

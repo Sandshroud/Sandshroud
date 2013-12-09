@@ -1124,10 +1124,7 @@ void Pet::ApplySummonLevelAbilities()
 
 	if(stat_index < 0)
 	{
-		if(sLog.IsOutDevelopement())
-			printf("PETSTAT: No stat index found for entry %u, `%s`!\n", GetEntry(), creature_info->Name);
-		else
-			OUT_DEBUG("PETSTAT: No stat index found for entry %u, `%s`!", GetEntry(), creature_info->Name);
+        sLog.outDebug("PETSTAT: No stat index found for entry %u, `%s`!", GetEntry(), creature_info->Name);
 		return;
 	}
 
@@ -1359,10 +1356,7 @@ void Pet::AddPetSpellToOwner(uint32 spellId)
 
 	}
 	else
-		if(sLog.IsOutDevelopement())
-			printf("WORLD: Could not find teaching spell for spell %u\n", spellId);
-		else
-			OUT_DEBUG("WORLD: Could not find teaching spell for spell %u", spellId);
+        sLog.outDebug("WORLD: Could not find teaching spell for spell %u", spellId);
 }
 
 uint32 Pet::GetHighestRankSpell(uint32 spellId)
@@ -1407,7 +1401,7 @@ AI_Spell * Pet::HandleAutoCastEvent()
 		else
 		{
 			// bad pointers somehow end up here :S
-			OUT_DEBUG("Bad AI_Spell detected in AutoCastEvent!");
+			sLog.outDebug("Bad AI_Spell detected in AutoCastEvent!");
 			m_autoCastSpells[AUTOCAST_EVENT_ATTACK].erase(itr);
 		}
 	}
@@ -1464,12 +1458,12 @@ void Pet::HandleAutoCastEvent(uint32 Type)
 
 		if( sp->info == NULL )
 		{
-			OUT_DEBUG("Found corrupted spell at m_autoCastSpells, skipping");
+			sLog.outDebug("Found corrupted spell at m_autoCastSpells, skipping");
 			continue;
 		}
 		else if( sp->autocast_type != int32(Type) )
 		{
-			OUT_DEBUG("Found corrupted spell (%lu) at m_autoCastSpells, skipping", it2->first);
+			sLog.outDebug("Found corrupted spell (%lu) at m_autoCastSpells, skipping", it2->first);
 			continue;
 		}
 
@@ -1658,7 +1652,7 @@ void Pet::InitializeTalents()
 		if(!talentEntry)
 		{
 			spellId = 0;
-			Log.Warning("Pet Talent", "Tried to load non-existent talent %u", talentid);
+			sLog.Warning("Pet Talent", "Tried to load non-existent talent %u", talentid);
 			continue;
 		}
 

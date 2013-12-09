@@ -119,7 +119,7 @@ void WeatherMgr::LoadFromDB()
 
 		wi->_GenerateWeather();
 	} while( result->NextRow() );
-	Log.Notice("WeatherMgr", "Loaded weather information for %u zones.", result->GetRowCount());
+	sLog.Notice("WeatherMgr", "Loaded weather information for %u zones.", result->GetRowCount());
 
 	delete result;
 }
@@ -189,7 +189,7 @@ void WeatherInfo::_GenerateWeather()
 	SendUpdate();
 
 	sEventMgr.AddEvent(this, &WeatherInfo::BuildUp, EVENT_WEATHER_UPDATE, (uint32)(m_totalTime/ceil(m_maxDensity/WEATHER_DENSITY_UPDATE)*2), 0,0);
-	DEBUG_LOG("WeatherMgr", "Forecast for zone:%d new type:%d new interval:%d ms",m_zoneId,m_currentEffect,(uint32)(m_totalTime/ceil(m_maxDensity/WEATHER_DENSITY_UPDATE)*2));
+	sLog.Debug("WeatherMgr", "Forecast for zone:%d new type:%d new interval:%d ms",m_zoneId,m_currentEffect,(uint32)(m_totalTime/ceil(m_maxDensity/WEATHER_DENSITY_UPDATE)*2));
 }
 
 void WeatherInfo::BuildUp()
@@ -199,12 +199,12 @@ void WeatherInfo::BuildUp()
 	{
 		sEventMgr.RemoveEvents(this, EVENT_WEATHER_UPDATE);
 		sEventMgr.AddEvent(this, &WeatherInfo::Update, EVENT_WEATHER_UPDATE, (uint32)(m_totalTime/ceil(m_maxDensity/WEATHER_DENSITY_UPDATE)*4), 0,0);
-//		OUT_DEBUG("Weather starting random for zone:%d type:%d new interval:%d ms",m_zoneId,m_currentEffect,(uint32)(m_totalTime/ceil(m_maxDensity/WEATHER_DENSITY_UPDATE)*4));
+//		sLog.outDebug("Weather starting random for zone:%d type:%d new interval:%d ms",m_zoneId,m_currentEffect,(uint32)(m_totalTime/ceil(m_maxDensity/WEATHER_DENSITY_UPDATE)*4));
 	}
 	else
 	{
 		m_currentDensity += WEATHER_DENSITY_UPDATE;
-//		OUT_DEBUG("Weather increased for zone:%d type:%d density:%f",m_zoneId,m_currentEffect,m_currentDensity);
+//		sLog.outDebug("Weather increased for zone:%d type:%d density:%f",m_zoneId,m_currentEffect,m_currentDensity);
 		SendUpdate();
 	}
 }
@@ -233,7 +233,7 @@ void WeatherInfo::Update()
 		}
 	}
 	SendUpdate();
-//	OUT_DEBUG("Weather Updated,zoneId:%d type:%d density:%f", m_zoneId, m_currentEffect, m_currentDensity);
+//	sLog.outDebug("Weather Updated,zoneId:%d type:%d density:%f", m_zoneId, m_currentEffect, m_currentDensity);
 }
 
 void WeatherInfo::SendUpdate()

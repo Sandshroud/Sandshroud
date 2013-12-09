@@ -10,7 +10,7 @@ SkillNameMgr::SkillNameMgr()
 
 	if(!SkillDBC.open(format("%s/SkillLine.dbc", sWorld.DBCPath.c_str()).c_str()))
 	{
-		Log.Error( "SkillNameMgr", "Cannot find file %s/SkillLine.dbc", sWorld.DBCPath.c_str());
+		sLog.Error( "SkillNameMgr", "Cannot find file %s/SkillLine.dbc", sWorld.DBCPath.c_str());
 		return;
 	}
 

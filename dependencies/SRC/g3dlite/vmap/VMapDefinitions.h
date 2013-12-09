@@ -3,6 +3,9 @@
  */
 
 #pragma once
+
+#include "../consolelog/log.h"
+
 #define LIQUID_TILE_SIZE (533.333f / 128.f)
 
 namespace VMAP

@@ -17,8 +17,8 @@ void ApplyNormalFixes()
 	map<uint32, uint32>::iterator talentSpellIterator;
 	map<uint32, uint32> talentSpells, dummySpellLevels;
 
-	Log.Notice("World", "Processing %u spells...", cnt);
-	Log.Notice("World", "Highest spell found %u...", dbcSpell.GetMaxRow());
+	sLog.Notice("World", "Processing %u spells...", cnt);
+	sLog.Notice("World", "Highest spell found %u...", dbcSpell.GetMaxRow());
 	for(uint i = 0; i < dbcTalent.GetNumRows(); i++)
 	{
 		tal = dbcTalent.LookupRow(i);
@@ -771,10 +771,10 @@ void ApplyNormalFixes()
 		ApplyCoeffSpellFixes(sp);
 	}
 
-	Log.Notice("World", "Setting target flags...");
+	sLog.Notice("World", "Setting target flags...");
 	SetupSpellTargets();
 
-	Log.Notice("World", "Processing %u dummy spells...", DummySpells.size());
+	sLog.Notice("World", "Processing %u dummy spells...", DummySpells.size());
 	set<uint32>::iterator itr = DummySpells.begin();
 	if(itr != DummySpells.end())
 	{
@@ -793,11 +793,11 @@ void ApplyNormalFixes()
 	/////////////////////////////////////////////////////////////////
 	//FORCER CREATURE SPELL TARGETING
 	//////////////////////////////////////////////////////////////////
-	Log.Notice("World", "Loading forced targets for spells...");
+	sLog.Notice("World", "Loading forced targets for spells...");
 	QueryResult * resultfcst = WorldDatabase.Query("SELECT * FROM spell_forced_targets");
 	if( resultfcst != NULL )
 	{
-		Log.Notice("World", "Forcing targets for %u spells...", resultfcst->GetRowCount());
+		sLog.Notice("World", "Forcing targets for %u spells...", resultfcst->GetRowCount());
 		do
 		{
 			Field * f = resultfcst->Fetch();
@@ -1167,7 +1167,7 @@ void GenerateNameHashesFile()
 
 	if( !dbc.open( "DBC/Spell.dbc" ) )
 	{
-		Log.Error("World", "Cannot find file ./DBC/Spell.dbc" );
+		sLog.Error("World", "Cannot find file ./DBC/Spell.dbc" );
 		return;
 	}
 

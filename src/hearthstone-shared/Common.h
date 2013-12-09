@@ -670,8 +670,7 @@ HEARTHSTONE_INLINE std::string HEARTHSTONE_TOLOWER_RETURN(std::string str)
 bool ParseCIDRBan(unsigned int IP, unsigned int Mask, unsigned int MaskBits);
 unsigned int MakeIP(const char * str);
 
-#include "Log.h"
-#include "NGLog.h"
+#include "hearthstone_log.h"
 #include "ByteConverter.h"
 #include "Console/CConsole.h"
 

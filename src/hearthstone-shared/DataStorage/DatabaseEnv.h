@@ -7,7 +7,7 @@
 //! Other libs we depend on.
 #include "../Common.h"
 #include "../Singleton.h"
-#include "../Log.h"
+#include "../hearthstone_log.h"
 
 //! Our own includes.
 #include "DBC/DBCStores.h"

@@ -226,13 +226,6 @@ int LuaGlobalFunctions_GetLuaEngineVersion(lua_State * L)
 	return 1;
 }
 
-int LuaGlobalFunctions_logcol(lua_State * L)
-{
-	int color = luaL_checkint(L,1);
-	Log.Color(color);
-	return 1;
-}
-
 /*int LuaGlobalFunctions_WorldDBQuery(lua_State * L)
 {
 	const char * qStr = luaL_checkstring(L,1);

@@ -6,6 +6,16 @@
 
 using namespace std;
 
+createFileSingleton( hLog );
+
+basicLog GetSingleLogFile()
+{
+    return *sLog.getBasic();
+}
+
+SERVER_DECL time_t UNIXTIME;
+SERVER_DECL tm g_localTime;
+
 vector<string> StrSplit(const string &src, const string &sep)
 {
 	vector<string> r;
@@ -52,6 +62,27 @@ void SetThreadName(const char* thread_name)
 #endif
 }
 
+string FormatOutputString(const char * Prefix, const char * Description, bool useTimeStamp)
+{
+
+	char p[MAX_PATH];
+	p[0] = 0;
+	time_t t = time(NULL);
+	tm * a = gmtime(&t);
+	strcat(p, Prefix);
+	strcat(p, "/");
+	strcat(p, Description);
+	if(useTimeStamp)
+	{
+		char ftime[100];
+		snprintf(ftime, 100, "-%-4d-%02d-%02d %02d-%02d-%02d", a->tm_year+1900, a->tm_mon+1, a->tm_mday, a->tm_hour, a->tm_min, a->tm_sec);
+		strcat(p, ftime);
+	}
+
+	strcat(p, ".log");
+	return string(p);
+}
+
 time_t convTimePeriod ( uint32 dLength, char dType )
 {
 	time_t rawtime = 0;
@@ -83,6 +114,7 @@ time_t convTimePeriod ( uint32 dLength, char dType )
 	}
 	return mktime(ti);
 }
+
 int32 GetTimePeriodFromString(const char * str)
 {
 	uint32 time_to_ban = 0;

@@ -129,5 +129,5 @@ IF( CMAKE_GENERATOR MATCHES Visual*)
 ENDIF()
 
 #Link our hearthstone-shared lib.
-add_dependencies( ${PROJECT_NAME} hearthstone-world )
-target_link_libraries( ${PROJECT_NAME} hearthstone-world ${EXTRA_LIBS} lualib.lib )
+add_dependencies( ${PROJECT_NAME} hearthstone-world consolelog )
+target_link_libraries( ${PROJECT_NAME} hearthstone-world consolelog ${EXTRA_LIBS} lualib.lib )

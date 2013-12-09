@@ -3,6 +3,7 @@
  */
 
 #include "../G3DAll.h"
+#include "VMapDefinitions.h"
 
 using G3D::Vector3;
 using G3D::AABox;
@@ -58,7 +59,7 @@ namespace VMAP
             // build global map tree
             std::vector<ModelSpawn*> mapSpawns;
             UniqueEntryMap::iterator entry;
-            printf("Calculating model bounds for map %u...\n", map_iter->first);
+            bLog.outDetail("Calculating model bounds for map %u...", map_iter->first);
             for (entry = map_iter->second->UniqueEntries.begin(); entry != map_iter->second->UniqueEntries.end(); ++entry)
             {
                 // M2 models don't have a bound set in WDT/ADT placement data, i still think they're not used for LoS at all on retail
@@ -77,7 +78,7 @@ namespace VMAP
                 spawnedModelFiles.insert(entry->second.name);
             }
 
-            printf("Creating map tree for map %u...\n", map_iter->first);
+            bLog.outDetail("Creating map tree for map %u...", map_iter->first);
             BIH pTree;
             pTree.build(mapSpawns, BoundsTrait<ModelSpawn*>::getBounds);
 
@@ -93,7 +94,7 @@ namespace VMAP
             if (!mapfile)
             {
                 success = false;
-                printf("Cannot open %s\n", mapfilename.str().c_str());
+                bLog.outDetail("Cannot open %s", mapfilename.str().c_str());
                 break;
             }
 
@@ -158,13 +159,13 @@ namespace VMAP
         exportGameobjectModels();
 
         // export objects
-        std::cout << "\nConverting Model Files" << std::endl;
+        bLog.outDetail("\nConverting Model Files");
         for (std::set<std::string>::iterator mfile = spawnedModelFiles.begin(); mfile != spawnedModelFiles.end(); ++mfile)
         {
-            std::cout << "Converting " << *mfile << std::endl;
+            bLog.outDetail("Converting %s", (*mfile).c_str());
             if (!convertRawFile(*mfile))
             {
-                std::cout << "error converting " << *mfile << std::endl;
+                bLog.outDetail("error converting %s", (*mfile).c_str());
                 success = false;
                 break;
             }
@@ -184,10 +185,10 @@ namespace VMAP
         FILE *dirf = fopen(fname.c_str(), "rb");
         if (!dirf)
         {
-            printf("Could not read dir_bin file!\n");
+            bLog.outDetail("Could not read dir_bin file!");
             return false;
         }
-        printf("Read coordinate mapping...\n");
+        bLog.outDetail("Read coordinate mapping...");
         G3D::g3d_uint32 mapID, tileX, tileY, check=0;
         G3D::Vector3 v1, v2;
         ModelSpawn spawn;
@@ -207,7 +208,7 @@ namespace VMAP
             MapData::iterator map_iter = mapData.find(mapID);
             if (map_iter == mapData.end())
             {
-                printf("spawning Map %d\n", mapID);
+                bLog.outDetail("spawning Map %d", mapID);
                 mapData[mapID] = current = new MapSpawns();
             }
             else current = (*map_iter).second;
@@ -236,7 +237,7 @@ namespace VMAP
 
         G3D::g3d_uint32 groups = raw_model.groupsArray.size();
         if (groups != 1)
-            printf("Warning: '%s' does not seem to be a M2 model!\n", modelFilename.c_str());
+            bLog.outDetail("Warning: '%s' does not seem to be a M2 model!", modelFilename.c_str());
 
         AABox modelBound;
         bool boundEmpty=true;
@@ -247,7 +248,7 @@ namespace VMAP
 
             if (vertices.empty())
             {
-                std::cout << "error: model '" << spawn.name << "' has no geometry!" << std::endl;
+                bLog.outDetail("error: model %s has no geometry!", spawn.name);
                 continue;
             }
 
@@ -308,7 +309,6 @@ namespace VMAP
         }
 
         success = model.writeFile(iDestDir + "/" + pModelFilename + ".vmo");
-        //std::cout << "readRawFile2: '" << pModelFilename << "' tris: " << nElements << " nodes: " << nNodes << std::endl;
         return success;
     }
 
@@ -334,7 +334,7 @@ namespace VMAP
                 || name_length >= sizeof(buff)
                 || fread(&buff, sizeof(char), name_length, model_list) != name_length)
             {
-                std::cout << "\nFile 'temp_gameobject_models' seems to be corrupted" << std::endl;
+                bLog.outDetail("\nFile 'temp_gameobject_models' seems to be corrupted");
                 break;
             }
 
@@ -374,11 +374,11 @@ namespace VMAP
     }
         // temporary use defines to simplify read/check code (close file and return at fail)
         #define READ_OR_RETURN(V, S) if (fread((V), (S), 1, rf) != 1) { \
-                                        fclose(rf); printf("readfail, op = %i\n", readOperation); return(false); }
+                                        fclose(rf); bLog.outDetail("readfail, op = %i", readOperation); return(false); }
         #define READ_OR_RETURN_WITH_DELETE(V, S) if (fread((V), (S), 1, rf) != 1) { \
-                                        fclose(rf); printf("readfail, op = %i\n", readOperation); delete[] V; return(false); };
+                                        fclose(rf); bLog.outDetail("readfail, op = %i", readOperation); delete[] V; return(false); };
         #define CMP_OR_RETURN(V, S)  if (strcmp((V), (S)) != 0)        { \
-                                        fclose(rf); printf("cmpfail, %s!=%s\n", V, S);return(false); }
+                                        fclose(rf); bLog.outDetail("cmpfail, %s!=%s", V, S);return(false); }
 
     bool GroupModel_Raw::Read(FILE* rf)
     {
@@ -475,7 +475,7 @@ namespace VMAP
         FILE* rf = fopen(path, "rb");
         if (!rf)
         {
-            printf("ERROR: Can't open raw model file: %s\n", path);
+            bLog.outDetail("ERROR: Can't open raw model file: %s", path);
             return false;
         }
 

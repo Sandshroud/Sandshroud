@@ -60,7 +60,7 @@ bool Tracker::IsBeingTracked(Player *plr)
 
 void Tracker::GetGUIDCount()
 {
-	Log.Notice("ObjectMgr", "HighGuid(Trackers) = %u - Size(Trackers) = %u ", m_maxId, m_IdCount);
+	sLog.Notice("ObjectMgr", "HighGuid(Trackers) = %u - Size(Trackers) = %u ", m_maxId, m_IdCount);
 }
 
 uint64 Tracker::GenerateID()
@@ -89,7 +89,7 @@ void Tracker::LoadFromDB()
 
 		} while( result->NextRow() );
 
-		Log.Notice("Tracker", "%u trackers identified.", result->GetRowCount());
+		sLog.Notice("Tracker", "%u trackers identified.", result->GetRowCount());
 
 		delete result;
 	}
@@ -193,7 +193,7 @@ TrackedPlr* Tracker::GetTrackerByIP(string RemoteIP)
 
 void Tracker::Destroy()
 {
-	Log.Notice("ObjectMgr", "Deleting list of trackers from memory...");
+	sLog.Notice("ObjectMgr", "Deleting list of trackers from memory...");
 	for(TrackerTable::iterator itr = Tracked_List.begin(); itr != Tracked_List.end(); ++itr)
 		delete (*itr);
 }

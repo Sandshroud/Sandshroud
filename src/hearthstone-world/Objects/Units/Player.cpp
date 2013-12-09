@@ -987,12 +987,12 @@ void Player::Update( uint32 p_time )
 	{
 		if( m_AutoShotAttackTimer > p_time )
 		{
-			//OUT_DEBUG( "HUNTER AUTOSHOT 0) %i, %i", m_AutoShotAttackTimer, p_time );
+			//sLog.outDebug( "HUNTER AUTOSHOT 0) %i, %i", m_AutoShotAttackTimer, p_time );
 			m_AutoShotAttackTimer -= p_time;
 		}
 		else
 		{
-			//OUT_DEBUG( "HUNTER AUTOSHOT 1) %i", p_time );
+			//sLog.outDebug( "HUNTER AUTOSHOT 1) %i", p_time );
 			EventRepeatSpell();
 		}
 	}
@@ -1316,7 +1316,7 @@ void Player::_EventAttack( bool offhand )
 	// Can't find victim, stop attacking
 	if (!pVictim || !isAttackable( this, pVictim ) )
 	{
-		OUT_DEBUG("Player::Update:  No valid current selection to attack, stopping attack.");
+		sLog.outDebug("Player::Update:  No valid current selection to attack, stopping attack.");
 		smsg_AttackStop(pVictim);
 		setHRegenTimer(5000); //prevent clicking off creature for a quick heal
 		EventAttackStop();
@@ -1386,8 +1386,8 @@ void Player::_EventCharmAttack()
 	//Can't find victim, stop attacking
 	if (!pVictim)
 	{
-		DEBUG_LOG( "WORLD"," "I64FMT" doesn't exist.",m_curSelection);
-		OUT_DEBUG("Player::Update:  No valid current selection to attack, stopping attack\n");
+		sLog.Debug( "WORLD"," "I64FMT" doesn't exist.",m_curSelection);
+		sLog.outDebug("Player::Update:  No valid current selection to attack, stopping attack\n");
 		setHRegenTimer(5000); //prevent clicking off creature for a quick heal
 		clearStateFlag(UF_ATTACKING);
 		EventAttackStop();
@@ -1698,7 +1698,7 @@ void Player::smsg_InitialSpells()
 
 		++itemCount;
 
-		OUT_DEBUG("sending spell cooldown for spell %u to %u ms", itr2->first, itr2->second.ExpireTime - mstime);
+		sLog.outDebug("sending spell cooldown for spell %u to %u ms", itr2->first, itr2->second.ExpireTime - mstime);
 	}
 
 	for( itr = m_cooldownMap[COOLDOWN_TYPE_CATEGORY].begin(); itr != m_cooldownMap[COOLDOWN_TYPE_CATEGORY].end(); )
@@ -1720,7 +1720,7 @@ void Player::smsg_InitialSpells()
 
 		++itemCount;
 
-		OUT_DEBUG("InitialSpells", "sending category cooldown for cat %u to %u ms", itr2->first, itr2->second.ExpireTime - mstime);
+		sLog.outDebug("InitialSpells", "sending category cooldown for cat %u to %u ms", itr2->first, itr2->second.ExpireTime - mstime);
 	}
 
 	*(uint16*)&data.contents()[pos] = (uint16)itemCount;
@@ -2070,7 +2070,7 @@ void Player::SpawnPet(uint32 pet_number)
 	if(itr == m_Pets.end())
 	{
 		PetLocks.Release();
-		OUT_DEBUG("PET SYSTEM: "I64FMT" Tried to load invalid pet %d", GetGUID(), pet_number);
+		sLog.outDebug("PET SYSTEM: "I64FMT" Tried to load invalid pet %d", GetGUID(), pet_number);
 		return;
 	}
 
@@ -3128,7 +3128,7 @@ void Player::LoadFromDBProc(QueryResultVector & results)
 	info = objmgr.GetPlayerCreateInfo(getRace(), getClass());
 	if( info == NULL )
 	{
-		Log.Error("PlayerCreateInfo", "Character of guid %u creation failed due to non existant or invalid playercreateinfo.", uint(GetLowGUID()));
+		sLog.Error("PlayerCreateInfo", "Character of guid %u creation failed due to non existant or invalid playercreateinfo.", uint(GetLowGUID()));
 		RemovePendingPlayer();
 		return;
 	}
@@ -3169,7 +3169,7 @@ void Player::LoadFromDBProc(QueryResultVector & results)
 	{
 		_LoadSkills(results[12].result);
 		field_index++;
-		DEBUG_LOG("WorldSession","Skills loaded");
+		sLog.Debug("WorldSession","Skills loaded");
 	}
 	else
 	{
@@ -3245,7 +3245,7 @@ void Player::LoadFromDBProc(QueryResultVector & results)
 				}
 				free(f);
 				_UpdateMaxSkillCounts();
-				DEBUG_LOG("Player","loaded old style skills for player %s", m_name.c_str());
+				sLog.Debug("Player","loaded old style skills for player %s", m_name.c_str());
 			}
 		}
 		else
@@ -3985,7 +3985,7 @@ void Player::AddToWorld(bool loggingin /* = false */)
 	// Add failed.
 	if(m_mapMgr == NULL)
 	{
-		DEBUG_LOG("WorldSession","Adding player %s to map %u failed.",GetName(),GetMapId());
+		sLog.Debug("WorldSession","Adding player %s to map %u failed.",GetName(),GetMapId());
 		// eject from instance
 		m_beingPushed = false;
 		EjectFromInstance();
@@ -6162,7 +6162,7 @@ uint32 Player::SubtractRestXP(uint32 amount)
 	else
 		m_restAmount = restAmount;
 
-	DEBUG_LOG("REST","Subtracted %d rest XP to a total of %d", amount, m_restAmount);
+	sLog.Debug("REST","Subtracted %d rest XP to a total of %d", amount, m_restAmount);
 	UpdateRestState();																	// Update clients interface with new values.
 	return amount;
 }
@@ -6200,7 +6200,7 @@ void Player::AddCalculatedRestXP(uint32 seconds)
 	if (m_restAmount > xp_to_lvl + (uint32)((float)( xp_to_lvl >> 1 ) * bubblerate ))
 		m_restAmount = xp_to_lvl + (uint32)((float)( xp_to_lvl >> 1 ) * bubblerate );
 
-	DEBUG_LOG("REST","Add %d rest XP to a total of %d, RestState %d", rested_xp, m_restAmount,m_isResting);
+	sLog.Debug("REST","Add %d rest XP to a total of %d, RestState %d", rested_xp, m_restAmount,m_isResting);
 
 	// Update clients interface with new values.
 	UpdateRestState();
@@ -7189,7 +7189,7 @@ bool Player::removeSpell(uint32 SpellID)
 void Player::EventTimedQuestExpire(Quest *qst, QuestLogEntry *qle, uint32 log_slot, uint32 interval)
 {
 	qle->SubtractTime(interval);
-	DEBUG_LOG("QuestLogEntry","qle TimeLeft:%u[ms]",qle->GetTimeLeft());
+	sLog.Debug("QuestLogEntry","qle TimeLeft:%u[ms]",qle->GetTimeLeft());
 
 	if(qle->GetTimeLeft() == 0)
 	{
@@ -7348,7 +7348,7 @@ void Player::SendInitialLogonPackets()
 	data << uint32(0);
 	GetSession()->SendPacket( &data );
 
-	DEBUG_LOG("WORLD","Sent initial logon packets for %s.", GetName());
+	sLog.Debug("WORLD","Sent initial logon packets for %s.", GetName());
 }
 
 void Player::Reset_Spells()
@@ -7776,7 +7776,7 @@ void Player::LearnTalent(uint32 talent_id, uint32 requested_rank)
 	uint32 spellid = talentInfo->RankID[requested_rank];
 	if( spellid == 0 )
 	{
-		OUT_DEBUG("Talent: %u Rank: %u = 0", talent_id, requested_rank);
+		sLog.outDebug("Talent: %u Rank: %u = 0", talent_id, requested_rank);
 		return;
 	}
 
@@ -8898,7 +8898,7 @@ bool Player::CompressAndSendUpdateBuffer(uint32 size, const uint8* update_buffer
 
 	if(deflateInit(&stream, rate) != Z_OK)
 	{
-		OUT_DEBUG("deflateInit failed.");
+		sLog.outDebug("deflateInit failed.");
 		return false;
 	}
 
@@ -8924,7 +8924,7 @@ bool Player::CompressAndSendUpdateBuffer(uint32 size, const uint8* update_buffer
 	if(deflate(&stream, Z_NO_FLUSH) != Z_OK ||
 		stream.avail_in != 0)
 	{
-		OUT_DEBUG("deflate failed.");
+		sLog.outDebug("deflate failed.");
 		if(pCompressionBuffer != NULL)
 			pCompressionBuffer->clear();
 		else
@@ -8935,7 +8935,7 @@ bool Player::CompressAndSendUpdateBuffer(uint32 size, const uint8* update_buffer
 	// finish the deflate
 	if(deflate(&stream, Z_FINISH) != Z_STREAM_END)
 	{
-		OUT_DEBUG("deflate failed: did not end stream");
+		sLog.outDebug("deflate failed: did not end stream");
 		if(pCompressionBuffer != NULL)
 			pCompressionBuffer->clear();
 		else
@@ -8946,7 +8946,7 @@ bool Player::CompressAndSendUpdateBuffer(uint32 size, const uint8* update_buffer
 	// finish up
 	if(deflateEnd(&stream) != Z_OK)
 	{
-		OUT_DEBUG("deflateEnd failed.");
+		sLog.outDebug("deflateEnd failed.");
 		if(pCompressionBuffer != NULL)
 			pCompressionBuffer->clear();
 		else
@@ -9047,7 +9047,7 @@ void Player::EventChatUpdate(bool TradeCheck)
 					continue;
 
 				chn->AttemptJoin(this, "");
-				DEBUG_LOG("ChannelJoin", "%s", name);
+				sLog.Debug("ChannelJoin", "%s", name);
 			}
 			else
 			{
@@ -9080,7 +9080,7 @@ void Player::EventChatUpdate(bool TradeCheck)
 						itr2->second->Part(this, true);
 
 					chn->AttemptJoin(this, "");
-					DEBUG_LOG("ChannelJoin", "%s", name);
+					sLog.Debug("ChannelJoin", "%s", name);
 				}
 			}
 		}
@@ -9120,7 +9120,7 @@ void Player::EventChatUpdate(bool TradeCheck)
 					itr2->second->Part(this, true);
 
 				chn->AttemptJoin(this, "");
-				DEBUG_LOG("ChannelJoin", "%s", name);
+				sLog.Debug("ChannelJoin", "%s", name);
 			}
 		}
 	}
@@ -9509,7 +9509,7 @@ void Player::ApplyLevelInfo(uint32 Level)
 		UpdateNearbyQuestGivers(); // For quests that require levels
 	}
 
-	OUT_DEBUG("Player %s set parameters to level %u", GetName(), Level);
+	sLog.outDebug("Player %s set parameters to level %u", GetName(), Level);
 }
 
 void Player::BroadcastMessage(const char* Format, ...)
@@ -11663,7 +11663,7 @@ void Player::_Cooldown_Add(uint32 Type, uint32 Misc, uint32 Time, uint32 SpellId
 		m_cooldownMap[Type].insert( make_pair( Misc, cd ) );
 	}
 
-	DEBUG_LOG("Player","added cooldown for type %u misc %u time %u item %u spell %u", Type, Misc, Time - getMSTime(), ItemId, SpellId);
+	sLog.Debug("Player","added cooldown for type %u misc %u time %u item %u spell %u", Type, Misc, Time - getMSTime(), ItemId, SpellId);
 }
 
 void Player::Cooldown_Add(SpellEntry * pSpell, Item* pItemCaster)
@@ -11724,7 +11724,7 @@ void Player::Cooldown_AddStart(SpellEntry * pSpell)
 		_Cooldown_Add( COOLDOWN_TYPE_CATEGORY, pSpell->StartRecoveryCategory, mstime + atime, pSpell->Id, 0 );
 	else									// no category, so it's a gcd
 	{
-		//OUT_DEBUG("Global cooldown adding: %u ms", atime );
+		//sLog.outDebug("Global cooldown adding: %u ms", atime );
 		m_globalCooldown = mstime + atime;
 	}
 }
@@ -11975,7 +11975,7 @@ void Player::_SpeedhackCheck()
 		uint32 time_diff = m_lastMoveTime - m_startMoveTime;
 		uint32 move_time = float2int32( ( distance / ( speed * 0.001f ) ) );
 		int32 difference = time_diff - move_time;
-		DEBUG_LOG("Player","SpeedhackCheck: speed=%f diff=%i dist=%f move=%u tdiff=%u", speed, difference, distance, move_time, time_diff );
+		sLog.Debug("Player","SpeedhackCheck: speed=%f diff=%i dist=%f move=%u tdiff=%u", speed, difference, distance, move_time, time_diff );
 		if( difference < sWorld.m_speedHackThreshold )
 		{
 			BroadcastMessage("Speedhack detected. Please contact an admin with the below information if you believe this is a false detection." );
@@ -13506,10 +13506,7 @@ void Player::InitAsVehicle()
 	VehicleEntry * ve = dbcVehicle.LookupEntry(m_vehicleEntry);
 	if(!ve)
 	{
-		if(sLog.IsOutDevelopement())
-			printf("Attempted to create non-existant vehicle %u.\n", m_vehicleEntry);
-		else
-			OUT_DEBUG("Attempted to create non-existant vehicle %u.", m_vehicleEntry);
+        sLog.outDebug("Attempted to create non-existant vehicle %u.", m_vehicleEntry);
 		return;
 	}
 
@@ -13670,7 +13667,7 @@ void Player::ChangeSeats(Unit* pPassenger, uint8 seatid)
 {
 	if(seatid == pPassenger->GetSeatID())
 	{
-		OUT_DEBUG("Return, Matching Seats. Requsted: %u, current: %u", seatid, pPassenger->GetSeatID());
+		sLog.outDebug("Return, Matching Seats. Requsted: %u, current: %u", seatid, pPassenger->GetSeatID());
 		return;
 	}
 

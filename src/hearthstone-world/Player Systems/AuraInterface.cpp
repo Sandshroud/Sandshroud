@@ -1151,7 +1151,7 @@ void AuraInterface::AddAura(Aura* aur)
 
 			if(aur->m_auraSlot == 255)
 			{
-				DEBUG_LOG("Unit","AddAura error in active aura. removing. SpellId: %u", aur->GetSpellProto()->Id);
+				sLog.Debug("Unit","AddAura error in active aura. removing. SpellId: %u", aur->GetSpellProto()->Id);
 				RemoveAura(aur);
 				return;
 			}
@@ -1178,7 +1178,7 @@ void AuraInterface::AddAura(Aura* aur)
 
 		if(aur->m_auraSlot == 255)
 		{
-			DEBUG_LOG("Unit","AddAura error in passive aura. removing. SpellId: %u", aur->GetSpellProto()->Id);
+			sLog.Debug("Unit","AddAura error in passive aura. removing. SpellId: %u", aur->GetSpellProto()->Id);
 			RemoveAura(aur);
 			return;
 		}

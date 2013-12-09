@@ -8,7 +8,6 @@
 
 createFileSingleton( Master );
 std::string LogFileName;
-bool bLogChat;
 bool crashed = false;
 
 volatile bool Master::m_stopEvent;
@@ -109,7 +108,7 @@ bool Master::Run(int argc, char ** argv)
 		case 0:
 			break;
 		default:
-			sLog.m_screenLogLevel = 3;
+			sLog.SetLoggingLevel(3);
 			printf("Usage: %s [--checkconf] [--conf <filename>] [--realmconf <filename>] [--version]\n", argv[0]);
 			return true;
 		}
@@ -117,41 +116,41 @@ bool Master::Run(int argc, char ** argv)
 
 	/* set new log levels if used as argument*/
 	if( screen_log_level != (int)DEF_VALUE_NOT_SET )
-		sLog.SetScreenLoggingLevel(screen_log_level);
+		sLog.SetLoggingLevel(screen_log_level);
 
 	// Startup banner
 	UNIXTIME = time(NULL);
 	g_localTime = *localtime(&UNIXTIME);
 
 	printf(BANNER, BUILD_TAG, BUILD_HASH_STR, BUILD_REVISION, CONFIG, PLATFORM_TEXT, ARCH);
-	Log.Line();
+	sLog.Line();
 
 	printf( "The key combination <Ctrl-C> will safely shut down the server at any time.\n" );
-	Log.Line();
+	sLog.Line();
 
 #ifndef WIN32
 	if(geteuid() == 0 || getegid() == 0)
-		Log.LargeErrorMessage( LARGERRORMESSAGE_WARNING, "You are running Hearthstone as root.", "This is not needed, and may be a possible security risk.", "It is advised to hit CTRL+C now and", "start as a non-privileged user.", NULL);
+		sLog.LargeErrorMessage( LARGERRORMESSAGE_WARNING, "You are running Hearthstone as root.", "This is not needed, and may be a possible security risk.", "It is advised to hit CTRL+C now and", "start as a non-privileged user.", NULL);
 #endif
 
 	InitRandomNumberGenerators();
-	Log.Success( "Rnd", "Initialized Random Number Generators." );
+	sLog.Success( "Rnd", "Initialized Random Number Generators." );
 
 	mainIni = new CIniFile(config_file);
 	uint32 LoadingTime = getMSTime();
-	Log.Notice( "Config", "Loading Config Files..." );
+	sLog.Notice( "Config", "Loading Config Files..." );
 	if( !mainIni->ParseError() )
-		Log.Success( "Config", ">> hearthstone-world.conf" );
+		sLog.Success( "Config", ">> hearthstone-world.conf" );
 	else
 	{
-		Log.Error( "Config", ">> hearthstone-world.conf" );
+		sLog.Error( "Config", ">> hearthstone-world.conf" );
 		return false;
 	}
 
 	//use these log_level until we are fully started up.
 	if(mainIni->ReadInteger("LogLevel", "Screen", 1) == -1)
 	{
-		Log.Notice("Master", "Running silent mode...");
+		sLog.Notice("Master", "Running silent mode...");
 		sLog.Init(-1);
 	}
 	else
@@ -169,7 +168,7 @@ bool Master::Run(int argc, char ** argv)
 		return false;
 	}
 
-	Log.Line();
+	sLog.Line();
 	sLog.outString("");
 
 	new EventMgr();
@@ -184,9 +183,9 @@ bool Master::Run(int argc, char ** argv)
 	sWorld.LogCheaters = mainIni->ReadBoolean("Log", "Cheaters", false);
 	sWorld.LogCommands = mainIni->ReadBoolean("Log", "GMCommands", false);
 	sWorld.LogPlayers = mainIni->ReadBoolean("Log", "Player", false);
-	sWorld.LogChats = mainIni->ReadBoolean("Log", "Chat", false);
+	sWorld.bLogChat = mainIni->ReadBoolean("Log", "Chat", false);
 
-	//Update sLog to obey config setting
+	//Update log to obey config setting
 	sLog.Init(mainIni->ReadInteger("LogLevel", "Screen", 1));
 
 	// Initialize Opcode Table
@@ -199,7 +198,7 @@ bool Master::Run(int argc, char ** argv)
 
 	if( !sWorld.SetInitialWorldSettings() )
 	{
-		Log.Error( "Server", "SetInitialWorldSettings() failed. Something went wrong? Exiting." );
+		sLog.Error( "Server", "SetInitialWorldSettings() failed. Something went wrong? Exiting." );
 		return false;
 	}
 
@@ -220,17 +219,17 @@ bool Master::Run(int argc, char ** argv)
 	uint32 start = 0, last_time = getMSTime(), etime = 0;
 
 	// Start Network Subsystem
-	DEBUG_LOG("Server","Starting network subsystem..." );
+	sLog.Debug("Server","Starting network subsystem..." );
 	CreateSocketEngine(8);
 	sSocketEngine.SpawnThreads();
 
 	if( StartConsoleListener() )
-		Log.Success("RemoteConsole", "Started and listening on port %i", mainIni->ReadInteger("RemoteConsole", "Port", 8092));
+		sLog.Success("RemoteConsole", "Started and listening on port %i", mainIni->ReadInteger("RemoteConsole", "Port", 8092));
 	else
-		DEBUG_LOG("RemoteConsole", "Not enabled or failed listen.");
+		sLog.Debug("RemoteConsole", "Not enabled or failed listen.");
 
 	LoadingTime = getMSTime() - LoadingTime;
-	Log.Success("Server","Ready for connections. Startup time: %ums\n", LoadingTime );
+	sLog.Success("Server","Ready for connections. Startup time: %ums\n", LoadingTime );
 
 	/* write pid file */
 	FILE * fPid = fopen( "hearthstone-world.pid", "w" );
@@ -253,7 +252,7 @@ bool Master::Run(int argc, char ** argv)
 	if(mainIni->ReadInteger("LogLevel", "Screen", 1) == -1)
 	{
 		sLog.Init(1);
-		Log.Notice("Master", "Leaving Silent Mode...");
+		sLog.Notice("Master", "Leaving Silent Mode...");
 	}
 
 	/* Connect to realmlist servers / logon servers */
@@ -293,12 +292,12 @@ bool Master::Run(int argc, char ** argv)
 		}
 	}
 	// begin server shutdown
-	Log.Notice( "Shutdown", "Initiated at %s", ConvertTimeStampToDataTime( (uint32)UNIXTIME).c_str() );
+	sLog.Notice( "Shutdown", "Initiated at %s", ConvertTimeStampToDataTime( (uint32)UNIXTIME).c_str() );
 	bServerShutdown = true;
 
 	if( lootmgr.is_loading )
 	{
-		Log.Notice( "Shutdown", "Waiting for loot to finish loading..." );
+		sLog.Notice( "Shutdown", "Waiting for loot to finish loading..." );
 		while( lootmgr.is_loading )
 			Sleep( 100 );
 	}
@@ -309,12 +308,12 @@ bool Master::Run(int argc, char ** argv)
 	{
 		sWorld.LacrimiThread->SelfTerminate();
 
-		Log.Notice( "Shutdown", "Waiting for Lacrimi to finish shutting down..." );
+		sLog.Notice( "Shutdown", "Waiting for Lacrimi to finish shutting down..." );
 		while(sWorld.LacrimiThread->GetThreadState() == THREADSTATE_SELF_TERMINATE)
 			Sleep(100);
 	}
 
-	Log.Notice( "Database", "Clearing all pending queries..." );
+	sLog.Notice( "Database", "Clearing all pending queries..." );
 
 	// kill the database thread first so we don't lose any queries/data
 	CharacterDatabase.EndThreads();
@@ -327,22 +326,22 @@ bool Master::Run(int argc, char ** argv)
 	sWorld.LogoutPlayers(); //(Also saves players).
 	CharacterDatabase.Execute("UPDATE characters SET online = 0");
 
-	Log.Notice("Server", "Shutting down random generator.");
+	sLog.Notice("Server", "Shutting down random generator.");
 	CleanupRandomNumberGenerators();
 
 	ls->Disconnect();
 
-	Log.Notice( "Network", "Shutting down network subsystem." );
+	sLog.Notice( "Network", "Shutting down network subsystem." );
 	sSocketEngine.Shutdown();
 
 	sAddonMgr.SaveToDB();
-	Log.Notice("AddonMgr", "~AddonMgr()");
+	sLog.Notice("AddonMgr", "~AddonMgr()");
 	delete AddonMgr::getSingletonPtr();
 
-	Log.Notice("LootMgr", "~LootMgr()");
+	sLog.Notice("LootMgr", "~LootMgr()");
 	delete LootMgr::getSingletonPtr();
 
-	Log.Notice("MailSystem", "~MailSystem()");
+	sLog.Notice("MailSystem", "~MailSystem()");
 	delete MailSystem::getSingletonPtr();
 
 	/* Shut down console system */
@@ -350,12 +349,12 @@ bool Master::Run(int argc, char ** argv)
 	console->terminate();
 	delete console;
 
-	Log.Notice("Thread", "Terminating thread pool...");
+	sLog.Notice("Thread", "Terminating thread pool...");
 	ThreadPool.Shutdown();
 
 	ls = NULL;
 
-	Log.Notice( "Network", "Deleting Network Subsystem..." );
+	sLog.Notice( "Network", "Deleting Network Subsystem..." );
 	{
 		/* delete the socket deleter */
 		delete SocketDeleter::getSingletonPtr();
@@ -367,24 +366,24 @@ bool Master::Run(int argc, char ** argv)
 		WSACleanup();
 	}
 
-	Log.Notice("InsertQueueLoader", "~InsertQueueLoader()");
+	sLog.Notice("InsertQueueLoader", "~InsertQueueLoader()");
 	delete InsertQueueLoader::getSingletonPtr();
 
-	Log.Notice("LogonComm", "~LogonCommHandler()");
+	sLog.Notice("LogonComm", "~LogonCommHandler()");
 	delete LogonCommHandler::getSingletonPtr();
 
-	Log.Notice( "World", "~World()" );
+	sLog.Notice( "World", "~World()" );
 	sWorld.Destruct();
 //	delete World::getSingletonPtr();
 
-	Log.Notice( "ScriptMgr", "~ScriptMgr()" );
+	sLog.Notice( "ScriptMgr", "~ScriptMgr()" );
 	sScriptMgr.UnloadScripts();
 	delete ScriptMgr::getSingletonPtr();
 
-	Log.Notice( "EventMgr", "~EventMgr()" );
+	sLog.Notice( "EventMgr", "~EventMgr()" );
 	delete EventMgr::getSingletonPtr();
 
-	Log.Notice( "Database", "Closing Connections..." );
+	sLog.Notice( "Database", "Closing Connections..." );
 	_StopDB();
 
 	_UnhookSignals();
@@ -392,7 +391,7 @@ bool Master::Run(int argc, char ** argv)
 	// remove pid
 	remove( "hearthstone-world.pid" );
 
-	Log.Notice( "Shutdown", "Shutdown complete." );
+	sLog.Notice( "Shutdown", "Shutdown complete." );
 	return true;
 }
 
@@ -430,7 +429,7 @@ bool Master::_StartDB()
 	if( !WorldDatabase.Initialize(hostname.c_str(), uint(port), username.c_str(),
 		password.c_str(), database.c_str(), mainIni->ReadInteger("WorldDatabase", "ConnectionCount", sysinfo.dwNumberOfProcessors), 16384 ) )
 	{
-		OUT_DEBUG( "sql: Main database initialization failed. Exiting." );
+		sLog.outDebug( "sql: Main database initialization failed. Exiting." );
 		return false;
 	}
 
@@ -461,7 +460,7 @@ bool Master::_StartDB()
 	if( !CharacterDatabase.Initialize( hostname.c_str(), uint(port), username.c_str(),
 		password.c_str(), database.c_str(), mainIni->ReadInteger( "CharacterDatabase", "ConnectionCount", sysinfo.dwNumberOfProcessors), 16384 ) )
 	{
-		OUT_DEBUG( "sql: Main database initialization failed. Exiting." );
+		sLog.outDebug( "sql: Main database initialization failed. Exiting." );
 		return false;
 	}
 
@@ -496,7 +495,7 @@ bool Master::_StartDB()
 		if( !(LogDatabase.Initialize( hostname.c_str(), uint(port), username.c_str(),
 			password.c_str(), database.c_str(), mainIni->ReadInteger( "LogDatabase", "ConnectionCount", 2 ), 16384 )) )
 		{
-			OUT_DEBUG( "sql: Log database initialization failed. Exiting." );
+			sLog.outDebug( "sql: Log database initialization failed. Exiting." );
 			return false;
 		}
 	}

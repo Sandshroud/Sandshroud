@@ -207,7 +207,7 @@ void WorldSession::CharacterEnumProc(QueryResult * result)
 
 	data.put<uint8>(0, num);
 
-	//OUT_DEBUG("Character Enum", "Built in %u ms.", getMSTime() - start_time);
+	//sLog.outDebug("Character Enum", "Built in %u ms.", getMSTime() - start_time);
 	SendPacket( &data );
 }
 
@@ -535,7 +535,7 @@ uint8 WorldSession::DeleteCharacter(uint32 guid)
 		}
 
 		/*if( _socket != NULL )
-			sPlrLog.write("Account: %s | IP: %s >> Deleted player %s", GetAccountName().c_str(), GetSocket()->GetRemoteIP().c_str(), name.c_str());*/
+			sPlrsLog.write("Account: %s | IP: %s >> Deleted player %s", GetAccountName().c_str(), GetSocket()->GetRemoteIP().c_str(), name.c_str());*/
 
 		sWorld.LogPlayer(this, "deleted character %s (GUID: %u)", name.c_str(), (uint32)guid);
 
@@ -672,7 +672,7 @@ void WorldSession::HandlePlayerLoginOpcode( WorldPacket & recv_data )
 	CHECK_PACKET_SIZE(recv_data, 8);
 	uint64 playerGuid = 0;
 
-	DEBUG_LOG( "WorldSession"," Recvd Player Logon Message" );
+	sLog.Debug( "WorldSession"," Recvd Player Logon Message" );
 
 	recv_data >> playerGuid; // this is the GUID selected by the player
 
@@ -701,14 +701,14 @@ void WorldSession::HandlePlayerLoginOpcode( WorldPacket & recv_data )
 	plr->SetSession(this);
 	m_bIsWLevelSet = false;
 
-	DEBUG_LOG("WorldSession", "Async loading player %u", (uint32)playerGuid);
+	sLog.Debug("WorldSession", "Async loading player %u", (uint32)playerGuid);
 	m_loggingInPlayer = plr;
 	plr->LoadFromDB((uint32)playerGuid);
 }
 
 void WorldSession::FullLogin(Player* plr)
 {
-	DEBUG_LOG("WorldSession", "Fully loading player %u", plr->GetLowGUID());
+	sLog.Debug("WorldSession", "Fully loading player %u", plr->GetLowGUID());
 	SetPlayer(plr);
 	m_MoverWoWGuid.Init(plr->GetGUID());
 
@@ -882,7 +882,7 @@ void WorldSession::FullLogin(Player* plr)
 	if(plr->GetVehicle())
 		plr->GetVehicle()->RemovePassenger(plr);
 
-	DEBUG_LOG( "WorldSession","Player %s logged in.", plr->GetName());
+	sLog.Debug( "WorldSession","Player %s logged in.", plr->GetName());
 
 	if(plr->GetTeam() == 1)
 		sWorld.HordePlayers++;
@@ -892,7 +892,7 @@ void WorldSession::FullLogin(Player* plr)
 	if(sWorld.SendMovieOnJoin && plr->m_FirstLogin && !HasGMPermissions())
 		plr->SendCinematic(plr->myRace->cinematic_id);
 
-	DEBUG_LOG( "WorldSession","Created new player for existing players (%s)", plr->GetName() );
+	sLog.Debug( "WorldSession","Created new player for existing players (%s)", plr->GetName() );
 
 	// Login time, will be used for played time calc
 	plr->m_playedtime[2] = (uint32)UNIXTIME;
@@ -1012,7 +1012,7 @@ bool ChatHandler::HandleRenameCommand(const char * args, WorldSession * m_sessio
 
 void WorldSession::HandleAlterAppearance(WorldPacket & recv_data)
 {
-	OUT_DEBUG("WORLD: CMSG_ALTER_APPEARANCE");
+	sLog.outDebug("WORLD: CMSG_ALTER_APPEARANCE");
 	CHECK_PACKET_SIZE(recv_data, 12);
 
 	uint32 hair, colour, facialhair;

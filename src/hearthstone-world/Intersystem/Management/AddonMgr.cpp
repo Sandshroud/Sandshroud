@@ -38,7 +38,7 @@ bool AddonMgr::IsAddonBanned(std::string name, uint32 crc)
 	{
 		if(i->second->banned)
 		{
-			OUT_DEBUG("Addon %s is banned.", name.c_str());
+			sLog.outDebug("Addon %s is banned.", name.c_str());
 			return true;
 		}
 	}
@@ -52,7 +52,7 @@ bool AddonMgr::IsAddonBanned(std::string name, uint32 crc)
 		ent->isNew = true;
 		ent->showinlist = (crc == 0x4C1C776D ? false : true);
 
-		OUT_DEBUG("Discovered new addon %s sent by client.", name.c_str());
+		sLog.outDebug("Discovered new addon %s sent by client.", name.c_str());
 
 		KnownAddons[ent->name] = ent;
 	}
@@ -80,7 +80,7 @@ bool AddonMgr::ShouldShowInList(std::string name, uint32 crc)
 		ent->isNew = true;
 		ent->showinlist = (crc == 0x4C1C776D ? false : true);
 
-		DEBUG_LOG("AddonMgr","Discovered new addon %s sent by client.", name.c_str());
+		sLog.Debug("AddonMgr","Discovered new addon %s sent by client.", name.c_str());
 
 		KnownAddons[ent->name] = ent;
 	}
@@ -101,7 +101,7 @@ void AddonMgr::SendAddonInfoPacket(WorldPacket *source, uint32 pos, WorldSession
 	}
 	catch (ByteBufferException &)
 	{
-		DEBUG_LOG("AddonMgr","Warning, Incomplete auth session sent.");
+		sLog.Debug("AddonMgr","Warning, Incomplete auth session sent.");
 		return;
 	}
 	rsize = realsize;
@@ -113,18 +113,18 @@ void AddonMgr::SendAddonInfoPacket(WorldPacket *source, uint32 pos, WorldSession
 	if((source->size() - position) < 4 || realsize == 0)
 	{
 		// we shouldnt get here.. but just in case this will stop any crash here.
-		DEBUG_LOG("AddonMgr","Warning, Incomplete auth session sent.");
+		sLog.Debug("AddonMgr","Warning, Incomplete auth session sent.");
 		return;
 	}
 	int32 result;
 	result = uncompress((uint8*)unpacked.contents(), &rsize, (uint8*)(*source).contents() + position, (uLong)((*source).size() - position));
 	if(result != Z_OK)
 	{
-		DEBUG_LOG("AddonMgr","Decompression of addon section of CMSG_AUTH_SESSION failed.");
+		sLog.Debug("AddonMgr","Decompression of addon section of CMSG_AUTH_SESSION failed.");
 		return;
 	}
 
-	DEBUG_LOG("AddonMgr","Decompression of addon section of CMSG_AUTH_SESSION succeeded.");
+	sLog.Debug("AddonMgr","Decompression of addon section of CMSG_AUTH_SESSION succeeded.");
 
 	uint32 addons; // Added in 3.0.8
 	uint8 Enable; // based on the parsed files from retool
@@ -234,12 +234,12 @@ void AddonMgr::LoadFromDB()
 
 void AddonMgr::SaveToDB()
 {
-	DEBUG_LOG("AddonMgr","Saving any new addons discovered in this session to database.");
+	sLog.Debug("AddonMgr","Saving any new addons discovered in this session to database.");
 	for(std::map<std::string, AddonEntry*>::iterator itr = KnownAddons.begin();itr!=KnownAddons.end();itr++)
 	{
 		if(itr->second->isNew)
 		{
-			OUT_DEBUG("Saving new addon %s", itr->second->name.c_str());
+			sLog.outDebug("Saving new addon %s", itr->second->name.c_str());
 			std::stringstream ss;
 			ss << "INSERT INTO clientaddons (name, crc, banned, showinlist) VALUES(\""
 				<< WorldDatabase.EscapeString(itr->second->name) << "\",\""
