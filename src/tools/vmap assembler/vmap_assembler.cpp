@@ -21,12 +21,24 @@
 
 #include "G3DAll.h"
 #include "TileAssembler.h"
+#include "consolelog/log.h"
+
+basicLog *cLog = NULL;
+
+basicLog GetSingleLogFile()
+{
+    return *cLog;
+}
+
 
 #define WaitForInput() { char cmd[300]; memset( cmd, 0, sizeof( cmd ) ); fgets( cmd, 300, stdin ); }
 
 //=======================================================
 int main(int argc, char* argv[])
 {
+    cLog = new basicLog();
+    cLog->Init(7);
+
     if(argc != 3)
     {
         std::cout << "usage: " << argv[0] << " <raw data dir> <vmap dest dir>" << std::endl;

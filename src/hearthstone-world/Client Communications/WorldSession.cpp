@@ -109,7 +109,7 @@ int WorldSession::Update(uint32 InstanceID)
 			//Timeout client after 2 minutes, in case AddToWorld failed (f.e. client crash)
 			if(  (uint32)UNIXTIME - m_lastPing > 120 )
 			{
-				DEBUG_LOG("WorldSession","Removing InQueue player due to socket timeout.");
+				sLog.Debug("WorldSession","Removing InQueue player due to socket timeout.");
 				LogoutPlayer(true);
 				bDeleted = true;
 				return 1;
@@ -127,7 +127,7 @@ int WorldSession::Update(uint32 InstanceID)
 			ASSERT(packet);
 
 			if(packet->GetOpcode() >= NUM_MSG_TYPES)
-				Log.Error("WorldSession", "Received out of range packet with opcode 0x%.4X", packet->GetOpcode());
+				sLog.Error("WorldSession", "Received out of range packet with opcode 0x%.4X", packet->GetOpcode());
 			else
 			{
 				Handler = &WorldPacketHandlers[packet->GetOpcode()];
@@ -135,19 +135,19 @@ int WorldSession::Update(uint32 InstanceID)
 				{
 					if(Handler->status == STATUS_LOGGEDIN && !_player && Handler->handler != 0)
 					{
-						Log.Warning("WorldSession", "Received unexpected/wrong state packet(Logged In) with opcode %s (0x%.4X)",
+						sLog.Warning("WorldSession", "Received unexpected/wrong state packet(Logged In) with opcode %s (0x%.4X)",
 							LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());
 					}
 					else if(Handler->status == STATUS_IN_OR_LOGGINGOUT && !_player && !_recentlogout && Handler->handler != 0)
 					{
-						Log.Warning("WorldSession", "Received unexpected/wrong state packet(In or Out) with opcode %s (0x%.4X)",
+						sLog.Warning("WorldSession", "Received unexpected/wrong state packet(In or Out) with opcode %s (0x%.4X)",
 							LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());
 					}
 					else
 					{
 						// Valid Packet :>
 						if(Handler->handler == 0)
-							Log.Warning("WorldSession", "Received unhandled packet with opcode %s (0x%.4X)", LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());
+							sLog.Warning("WorldSession", "Received unhandled packet with opcode %s (0x%.4X)", LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());
 						else
 						{
 							bool fail = false;
@@ -159,10 +159,10 @@ int WorldSession::Update(uint32 InstanceID)
 							catch (ByteBufferException &)
 							{
 								fail = true;
-								Log.Error("WorldSession", "Incorrect handling of opcode %s (0x%.4X) REPORT TO DEVS", LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());
+								sLog.Error("WorldSession", "Incorrect handling of opcode %s (0x%.4X) REPORT TO DEVS", LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());
 							}
 
-							if(!fail && sLog.IsOutProccess() && (packet->rpos() < packet->wpos()))
+							if(!fail && sLog.isOutProcess() && (packet->rpos() < packet->wpos()))
 								LogUnprocessedTail(packet);
 
 							if(Handler->status == STATUS_AUTHED)
@@ -195,7 +195,7 @@ int WorldSession::Update(uint32 InstanceID)
 			//Timeout client after 2 minutes, in case AddToWorld failed (f.e. client crash)
 			if(  (uint32)UNIXTIME - m_lastPing > 120 )
 			{
-				DEBUG_LOG("WorldSession","Removing InQueue player due to socket timeout.");
+				sLog.Debug("WorldSession","Removing InQueue player due to socket timeout.");
 				LogoutPlayer(true);
 				bDeleted = true;
 				return 1;
@@ -408,7 +408,7 @@ void WorldSession::LogoutPlayer(bool Save)
 		_player = NULLPLR;
 
 		OutPacket(SMSG_LOGOUT_COMPLETE, 0, NULL);
-		DEBUG_LOG( "WorldSession","Sent SMSG_LOGOUT_COMPLETE Message" );
+		sLog.Debug( "WorldSession","Sent SMSG_LOGOUT_COMPLETE Message" );
 	}
 	_loggingOut = false;
 
@@ -466,7 +466,7 @@ void WorldSession::LoadSecurity(std::string securitystring)
 	if(permissions[tmp.size()] != 0)
 		permissions[tmp.size()] = 0;
 
-	DEBUG_LOG("WorldSession","Loaded permissions for %u. (%u) : [%s]", GetAccountId(), permissioncount, securitystring.c_str());
+	sLog.Debug("WorldSession","Loaded permissions for %u. (%u) : [%s]", GetAccountId(), permissioncount, securitystring.c_str());
 }
 
 void WorldSession::SetSecurity(std::string securitystring)
@@ -1682,7 +1682,7 @@ void WorldSession::SendGossipForObject(Object* pObject)
 			// reputation
 			_player->Reputation_OnTalk(TalkingWith->m_factionDBC);
 
-			DEBUG_LOG( "WORLD"," Received CMSG_GOSSIP_HELLO from %u", TalkingWith->GetLowGUID());
+			sLog.Debug( "WORLD"," Received CMSG_GOSSIP_HELLO from %u", TalkingWith->GetLowGUID());
 
 			GossipScript* Script = sScriptMgr.GetRegisteredGossipScript(GTYPEID_CTR, TalkingWith->GetEntry());
 			if(!Script)
@@ -1742,7 +1742,7 @@ void WorldSession::SendGossipForObject(Object* pObject)
 				}
 				data.put<uint32>(pos, count);
 				SendPacket(&data);
-				DEBUG_LOG( "WORLD"," Sent SMSG_GOSSIP_MESSAGE" );
+				sLog.Debug( "WORLD"," Sent SMSG_GOSSIP_MESSAGE" );
 			}
 			else
 			{

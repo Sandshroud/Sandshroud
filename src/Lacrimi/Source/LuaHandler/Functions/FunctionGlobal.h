@@ -29,7 +29,6 @@ int LuaGlobalFunctions_CharDBQueryTable(lua_State * L);
 int LuaGlobalFunctions_GetPlayer(lua_State * L);
 int LuaGlobalFunctions_GetLUAEngine(lua_State * L);
 int LuaGlobalFunctions_GetLuaEngineVersion(lua_State * L);
-int LuaGlobalFunctions_logcol(lua_State * L);
 int LuaGlobalFunctions_SendWorldMessage(lua_State * L);
 int LuaGlobalFunctions_ReloadTable(lua_State * L);
 int LuaGlobalFunctions_ReloadLuaEngine(lua_State * L);

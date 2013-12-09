@@ -181,7 +181,7 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
 		}break;
 	default:
 		{
-			DEBUG_LOG("Pet","WARNING: Unknown pet action received. Action = %.4X, Misc = %.4X\n", action, misc);
+			sLog.Debug("Pet","WARNING: Unknown pet action received. Action = %.4X, Misc = %.4X\n", action, misc);
 		}break;
 	}
 
@@ -194,7 +194,7 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
 void WorldSession::HandlePetInfo(WorldPacket & recv_data)
 {
 	//nothing
-	DEBUG_LOG("WorldSession","HandlePetInfo is called");
+	sLog.Debug("WorldSession","HandlePetInfo is called");
 }
 
 void WorldSession::HandlePetNameQuery(WorldPacket & recv_data)
@@ -249,7 +249,7 @@ void WorldSession::HandleUnstablePet(WorldPacket & recv_data)
 	PlayerPet *pet = _player->GetPlayerPet(petnumber);
 	if(!pet)
 	{
-		OUT_DEBUG("PET SYSTEM: Player "I64FMT" tried to unstable non-existant pet %d", _player->GetGUID(), petnumber);
+		sLog.outDebug("PET SYSTEM: Player "I64FMT" tried to unstable non-existant pet %d", _player->GetGUID(), petnumber);
 		return;
 	}
 
@@ -279,7 +279,7 @@ void WorldSession::HandleStableSwapPet(WorldPacket & recv_data)
 	PlayerPet *pet = _player->GetPlayerPet(petnumber);
 	if(!pet)
 	{
-		OUT_DEBUG("PET SYSTEM: Player "I64FMT" tried to unstable non-existant pet %d", _player->GetGUID(), petnumber);
+		sLog.outDebug("PET SYSTEM: Player "I64FMT" tried to unstable non-existant pet %d", _player->GetGUID(), petnumber);
 		return;
 	}
 	Pet* pPet = _player->GetSummon();
@@ -555,7 +555,7 @@ void WorldSession::HandlePetLearnTalent( WorldPacket & recvPacket )
 	if( sp )
 	{
 		// set the new talent points, remember we deducted a point earlier ;)
-		DEBUG_LOG("Pet","Setting available talent points to %u", talentPoints);
+		sLog.Debug("Pet","Setting available talent points to %u", talentPoints);
 		//pPet->SetUInt32Value(UNIT_FIELD_BYTES_1, 1 | (talentPoints << 24));
 		pPet->SetByte( UNIT_FIELD_BYTES_1, 1, talentPoints );
 

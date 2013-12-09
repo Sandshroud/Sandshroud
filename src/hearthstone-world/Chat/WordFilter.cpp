@@ -62,9 +62,9 @@ bool WordFilter::CompileExpression(const char * szExpression, void** pOutput, vo
 	if(re == NULL || error2 != NULL)
 	{
 		if(re == NULL)
-			Log.Error("WordFilter", "An error occurred while compiling the expression: \"%s\": %s", szExpression, error ? error : "unknown error");
+			sLog.Error("WordFilter", "An error occurred while compiling the expression: \"%s\": %s", szExpression, error ? error : "unknown error");
 		else
-			Log.Error("WordFilter", "An error occurred while compiling extra data for the expression: \"%s\": %s", szExpression, error2);
+			sLog.Error("WordFilter", "An error occurred while compiling extra data for the expression: \"%s\": %s", szExpression, error2);
 
 		if(re)
 			pcre_free(re);
@@ -163,7 +163,7 @@ bool WordFilter::Parse(string& sMessage, bool bAllowReplace /* = true */)
 			if(n == PCRE_ERROR_NOMATCH)
 				continue;
 
-			Log.Error("WordFilter", "::Parse -> pcre_exec returned %d.", n);
+			sLog.Error("WordFilter", "::Parse -> pcre_exec returned %d.", n);
 			return false;
 		}
 		else
@@ -179,7 +179,7 @@ bool WordFilter::Parse(string& sMessage, bool bAllowReplace /* = true */)
 					if(n == PCRE_ERROR_NOMATCH)
 						return true;
 
-					Log.Error("WordFilter", "::Parse -> pcre_exec returned %d.", n);
+					sLog.Error("WordFilter", "::Parse -> pcre_exec returned %d.", n);
 					return false;
 				}
 				else

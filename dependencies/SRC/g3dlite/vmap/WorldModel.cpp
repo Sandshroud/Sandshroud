@@ -3,6 +3,7 @@
  */
 
 #include "../G3DAll.h"
+#include "VMapDefinitions.h"
 
 using G3D::Vector3;
 using G3D::Ray;
@@ -426,28 +427,18 @@ namespace VMAP
             void operator()(const Vector3& point, G3D::g3d_uint32 entry)
             {
                 float group_Z;
-                //float pVol = prims[entry].GetBound().volume();
-                //if (pVol < minVol)
-                //{
-                    /* if (prims[entry].iBound.contains(point)) */
-                    if (prims[entry].IsInsideObject(point, zVec, group_Z))
+                if (prims[entry].IsInsideObject(point, zVec, group_Z))
+                {
+                    if (group_Z < zDist)
                     {
-                        //minVol = pVol;
-                        //hit = prims + entry;
-                        if (group_Z < zDist)
-                        {
-                            zDist = group_Z;
-                            hit = prims + entry;
-                        }
-#ifdef VMAP_DEBUG
-                        const GroupModel &gm = prims[entry];
-                        printf("%10u %8X %7.3f, %7.3f, %7.3f | %7.3f, %7.3f, %7.3f | z=%f, p_z=%f\n", gm.GetWmoID(), gm.GetMogpFlags(),
+                        zDist = group_Z;
+                        hit = prims + entry;
+                    }
+                    const GroupModel &gm = prims[entry];
+                    bLog.outDebug("%10u %8X %7.3f, %7.3f, %7.3f | %7.3f, %7.3f, %7.3f | z=%f, p_z=%f", gm.GetWmoID(), gm.GetMogpFlags(),
                         gm.GetBound().low().x, gm.GetBound().low().y, gm.GetBound().low().z,
                         gm.GetBound().high().x, gm.GetBound().high().y, gm.GetBound().high().z, group_Z, point.z);
-#endif
-                    }
-                //}
-                //std::cout << "trying to intersect '" << prims[entry].name << "'\n";
+                }
             }
     };
 

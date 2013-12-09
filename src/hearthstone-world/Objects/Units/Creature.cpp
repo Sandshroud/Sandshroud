@@ -163,7 +163,7 @@ void Creature::OnRemoveCorpse()
 	if (IsInWorld() && (int32)m_mapMgr->GetInstanceID() == m_instanceId)
 	{
 
-		DEBUG_LOG("Creature","OnRemoveCorpse Removing corpse of "I64FMT"...", GetGUID());
+		sLog.Debug("Creature","OnRemoveCorpse Removing corpse of "I64FMT"...", GetGUID());
 
 		if((GetMapMgr()->GetMapInfo() && GetMapMgr()->GetdbcMap()->israid() && proto && proto->boss) || m_noRespawn)
 		{
@@ -184,7 +184,7 @@ void Creature::OnRemoveCorpse()
 
 void Creature::OnRespawn( MapMgr* m)
 {
-	OUT_DEBUG("Respawning "I64FMT"...", GetGUID());
+	sLog.outDebug("Respawning "I64FMT"...", GetGUID());
 	SetUInt32Value(UNIT_FIELD_HEALTH, GetUInt32Value(UNIT_FIELD_MAXHEALTH));
 	SetUInt32Value(UNIT_DYNAMIC_FLAGS, 0); // not tagging shiat
 	if(proto)
@@ -931,7 +931,7 @@ bool Creature::Load(CreatureSpawn *spawn, uint32 mode, MapInfo *info)
 	EventModelChange();
 
 	float realscale = (proto->Scale > 0.0f ? proto->Scale : GetDBCScale( dbcCreatureDisplayInfo.LookupEntry( model )));
-	DEBUG_LOG("Creatures","NPC %u (model %u) got scale %f", proto->Id, model, realscale);
+	sLog.Debug("Creatures","NPC %u (model %u) got scale %f", proto->Id, model, realscale);
 	SetFloatValue(OBJECT_FIELD_SCALE_X, realscale);
 
 	SetUInt32Value(UNIT_NPC_EMOTESTATE, original_emotestate);
@@ -969,7 +969,7 @@ bool Creature::Load(CreatureSpawn *spawn, uint32 mode, MapInfo *info)
 			GetAIInterface()->m_canCallForHelp = true;
 	}
 	else
-		Log.Warning("Creature","Creature is missing a valid faction template for entry %u.", spawn->entry);
+		sLog.Warning("Creature","Creature is missing a valid faction template for entry %u.", spawn->entry);
 
 
 //SETUP NPC FLAGS
@@ -1286,7 +1286,7 @@ bool Creature::Load(CreatureProto * proto_, uint32 mode, float x, float y, float
 	float dbcscale = GetDBCScale( dbcCreatureDisplayInfo.LookupEntry( model ));
 	float realscale = (proto->Scale > 0.0f ? proto->Scale : dbcscale);
 	SetFloatValue(OBJECT_FIELD_SCALE_X, realscale);
-	DEBUG_LOG("Creature","NPC %u (model %u) got scale %f, found in DBC %f, found in Proto: %f", proto->Id, model, realscale, dbcscale, proto->Scale);
+	sLog.Debug("Creature","NPC %u (model %u) got scale %f, found in DBC %f, found in Proto: %f", proto->Id, model, realscale, dbcscale, proto->Scale);
 
 	SetUInt32Value(UNIT_FIELD_DISPLAYID,model);
 	SetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID,model);

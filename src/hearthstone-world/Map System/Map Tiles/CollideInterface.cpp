@@ -18,7 +18,7 @@ Mutex m_mapCreateLock;
 
 void CCollideInterface::Init()
 {
-	Log.Notice("CollideInterface", "Init");
+	sLog.Notice("CollideInterface", "Init");
 	CollisionMgr = new VMAP::VMapManager(sWorld.vMapPath);
 	for(uint32 i = 0; i < NUM_MAPS; i++)
 		m_mapLocks[i] = NULL;
@@ -88,10 +88,10 @@ bool CCollideInterface::ActivateTile(uint32 mapId, uint32 tileX, uint32 tileY)
 	if( m_mapLocks[mapId]->m_tileLoadCount[tileX][tileY] == 0 )
 	{
 		if(CollisionMgr->loadMap(mapId, tileX, tileY))
-			OUT_DEBUG("Loading VMap [%u/%u] successful", tileX, tileY);
+			sLog.outDebug("Loading VMap [%u/%u] successful", tileX, tileY);
 		else
 		{
-			OUT_DEBUG("Loading VMap [%u/%u] unsuccessful", tileX, tileY);
+			sLog.outDebug("Loading VMap [%u/%u] unsuccessful", tileX, tileY);
 			m_mapLocks[mapId]->m_lock.ReleaseWriteLock();
 			return false;
 		}

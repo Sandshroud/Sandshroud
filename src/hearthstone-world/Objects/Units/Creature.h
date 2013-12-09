@@ -55,7 +55,7 @@ struct CreatureInfo
 		if(!models[0] && !models[1] && !models[2] && !models[3])
 		{
 			// All models are invalid.
-			Log.Warning("CreatureSpawn", "Creature %u has no model_id", Id);
+			sLog.Warning("CreatureSpawn", "Creature %u has no model_id", Id);
 			return 0;
 		}
 

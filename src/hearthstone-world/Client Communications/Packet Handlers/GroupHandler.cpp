@@ -105,7 +105,7 @@ void WorldSession::HandleGroupInviteOpcode( WorldPacket & recv_data )
 void WorldSession::HandleGroupCancelOpcode( WorldPacket & recv_data )
 {
 	CHECK_INWORLD_RETURN();
-	DEBUG_LOG( "WORLD"," got CMSG_GROUP_CANCEL." );
+	sLog.Debug( "WORLD"," got CMSG_GROUP_CANCEL." );
 }
 
 ////////////////////////////////////////////////////////////////

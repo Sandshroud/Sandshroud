@@ -464,7 +464,7 @@ void WorldSession::HandleGossipSelectOptionOpcode( WorldPacket & recv_data )
 
 	recv_data >> guid >> unk24 >> option;
 
-	DEBUG_LOG("WORLD","CMSG_GOSSIP_SELECT_OPTION Option %i Guid %.8X", option, guid );
+	sLog.Debug("WORLD","CMSG_GOSSIP_SELECT_OPTION Option %i Guid %.8X", option, guid );
 	GossipScript* Script = NULL;
 	Object* qst_giver = NULLOBJ;
 	uint32 guidtype = GET_TYPE_FROM_GUID(guid);
@@ -572,7 +572,7 @@ void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recv_data )
 	GossipText *pGossip = NULL;
 
 	recv_data >> textID;
-	DEBUG_LOG("WORLD","CMSG_NPC_TEXT_QUERY ID '%u'", textID );
+	sLog.Debug("WORLD","CMSG_NPC_TEXT_QUERY ID '%u'", textID );
 
 	recv_data >> targetGuid;
 	GetPlayer()->SetUInt64Value(UNIT_FIELD_TARGET, targetGuid);

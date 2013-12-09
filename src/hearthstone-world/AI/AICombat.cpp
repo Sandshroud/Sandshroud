@@ -407,7 +407,7 @@ void AIInterface::_UpdateCombat(uint32 p_time)
 			{
 				if( m_CastNext != NULL && m_nextTarget != NULL )
 				{
-					DEBUG_LOG("AiAgents","NextSpell %u by NPC %u", m_CastNext->info->Id, GetUnit()->GetGUID());
+					sLog.Debug("AiAgents","NextSpell %u by NPC %u", m_CastNext->info->Id, GetUnit()->GetGUID());
 
 					if( m_Unit->GetTypeId() == TYPEID_UNIT )
 						TO_CREATURE(m_Unit)->SetSheatheForAttackType( 0 );

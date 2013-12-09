@@ -75,11 +75,11 @@ uint32 World::GetMaxLevelStatCalc()
 
 void World::LogoutPlayers()
 {
-	Log.Notice("World", "Logging out players...");
+	sLog.Notice("World", "Logging out players...");
 	for(SessionMap::iterator i = m_sessions.begin(); i != m_sessions.end(); i++)
 		(i->second)->LogoutPlayer(true);
 
-	Log.Notice("World", "Deleting sessions...");
+	sLog.Notice("World", "Deleting sessions...");
 	WorldSession * Session;
 	for(SessionMap::iterator i=m_sessions.begin();i!=m_sessions.end();)
 	{
@@ -99,55 +99,55 @@ void World::Destruct()
 {
 	dummyspells.clear();
 
-	Log.Notice("Tracker", "~Tracker()");
+	sLog.Notice("Tracker", "~Tracker()");
 	delete Tracker::getSingletonPtr();
 
-	Log.Notice("WarnSys", "~WarnSystem()");
+	sLog.Notice("WarnSys", "~WarnSystem()");
 	delete WarnSystem::getSingletonPtr();
 
-	Log.Notice("QuestMgr", "~QuestMgr()");
+	sLog.Notice("QuestMgr", "~QuestMgr()");
 	delete QuestMgr::getSingletonPtr();
 
-	Log.Notice("ObjectMgr", "~ObjectMgr()");
+	sLog.Notice("ObjectMgr", "~ObjectMgr()");
 	delete ObjectMgr::getSingletonPtr();
 
-	Log.Notice("GuildMgr", "~GuildMgr()");
+	sLog.Notice("GuildMgr", "~GuildMgr()");
 	delete GuildMgr::getSingletonPtr();
 
-	Log.Notice("LootMgr", "~LootMgr()");
+	sLog.Notice("LootMgr", "~LootMgr()");
 	delete LootMgr::getSingletonPtr();
 
-	Log.Notice("LfgMgr", "~LfgMgr()");
+	sLog.Notice("LfgMgr", "~LfgMgr()");
 	delete LfgMgr::getSingletonPtr();
 
-	Log.Notice("ChannelMgr", "~ChannelMgr()");
+	sLog.Notice("ChannelMgr", "~ChannelMgr()");
 	delete ChannelMgr::getSingletonPtr();
 
-	Log.Notice("WeatherMgr", "~WeatherMgr()");
+	sLog.Notice("WeatherMgr", "~WeatherMgr()");
 	delete WeatherMgr::getSingletonPtr();
 
-	Log.Notice("TaxiMgr", "~TaxiMgr()");
+	sLog.Notice("TaxiMgr", "~TaxiMgr()");
 	delete TaxiMgr::getSingletonPtr();
 
-	Log.Notice("ChatHandler", "~ChatHandler()");
+	sLog.Notice("ChatHandler", "~ChatHandler()");
 	delete ChatHandler::getSingletonPtr();
 
-	Log.Notice("CBattlegroundManager", "~CBattlegroundManager()");
+	sLog.Notice("CBattlegroundManager", "~CBattlegroundManager()");
 	delete CBattlegroundManager::getSingletonPtr();
 
-	Log.Notice("AuctionMgr", "~AuctionMgr()");
+	sLog.Notice("AuctionMgr", "~AuctionMgr()");
 	delete AuctionMgr::getSingletonPtr();
 
-	Log.Notice("WorldStateTemplateManager", "~WorldStateTemplateManager()");
+	sLog.Notice("WorldStateTemplateManager", "~WorldStateTemplateManager()");
 	delete WorldStateTemplateManager::getSingletonPtr();
 
-	Log.Notice("DayWatcherThread", "~DayWatcherThread()");
+	sLog.Notice("DayWatcherThread", "~DayWatcherThread()");
 	delete DayWatcherThread::getSingletonPtr();
 
-	Log.Notice("InstanceMgr", "~InstanceMgr()");
+	sLog.Notice("InstanceMgr", "~InstanceMgr()");
 	sInstanceMgr.Shutdown();
 
-	Log.Notice("WordFilter", "~WordFilter()");
+	sLog.Notice("WordFilter", "~WordFilter()");
 	delete g_characterNameFilter;
 	g_characterNameFilter = NULL;
 	delete g_chatFilter;
@@ -293,7 +293,7 @@ void PreStartQueries()
 	result = WorldDatabase.Query("SELECT * FROM prestartqueries ORDER BY seq ASC");
 	if(result)
 	{
-		Log.Notice("DataBase","Found and executing %u prestart queries on World tables.",result->GetRowCount());
+		sLog.Notice("DataBase","Found and executing %u prestart queries on World tables.",result->GetRowCount());
 		do
 		{
 			Field * f = result->Fetch();
@@ -308,7 +308,7 @@ void PreStartQueries()
 	result = CharacterDatabase.Query("SELECT * FROM prestartqueries ORDER BY seq ASC");
 	if(result)
 	{
-		Log.Notice("DataBase","Found and executing %u prestart queries on Character tables.",result->GetRowCount());
+		sLog.Notice("DataBase","Found and executing %u prestart queries on Character tables.",result->GetRowCount());
 		do
 		{
 			Field * f = result->Fetch();
@@ -327,7 +327,7 @@ bool World::SetInitialWorldSettings()
 	PreStartQueries();
 	CharacterDatabase.WaitExecute("UPDATE characters SET online = 0 WHERE online = 1");
 
-	Log.Notice("World", "Starting up...");
+	sLog.Notice("World", "Starting up...");
 
 	Player::InitVisibleUpdateBits();
 
@@ -384,7 +384,7 @@ bool World::SetInitialWorldSettings()
 	uint32 start_time = getMSTime();
 	if( !LoadDBCs(sWorld.DBCPath.c_str()) )
 	{
-		Log.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "One or more of the DBC files are missing.", "These are absolutely necessary for the server to function.", "The server will not start without them.", NULL);
+		sLog.LargeErrorMessage(LARGERRORMESSAGE_ERROR, "One or more of the DBC files are missing.", "These are absolutely necessary for the server to function.", "The server will not start without them.", NULL);
 		return false;
 	}
 
@@ -392,7 +392,7 @@ bool World::SetInitialWorldSettings()
 	DBCFile area;
 	if( !area.open( format("%s/AreaTable.dbc", sWorld.DBCPath.c_str()).c_str() ) )
 	{
-		Log.Error( "World", "Cannot find file %s/AreaTable.dbc", sWorld.DBCPath.c_str() );
+		sLog.Error( "World", "Cannot find file %s/AreaTable.dbc", sWorld.DBCPath.c_str() );
 		return false;
 	}
 
@@ -489,21 +489,21 @@ bool World::SetInitialWorldSettings()
 	tl.wait();
 
 	// start mail system
-	Log.Notice("World","Starting Mail System...");
+	sLog.Notice("World","Starting Mail System...");
 	MailSystem::getSingleton().StartMailSystem();
 
-	Log.Notice("World", "Starting Auction System...");
+	sLog.Notice("World", "Starting Auction System...");
 	new AuctionMgr;
 	sAuctionMgr.LoadAuctionHouses();
 
 	sComTableStore.Load();
-	Log.Notice("WordFilter", "Loading...");
+	sLog.Notice("WordFilter", "Loading...");
 
 	g_characterNameFilter = new WordFilter();
 	g_chatFilter = new WordFilter();
 	g_characterNameFilter->Load("wordfilter_character_names");
 	g_chatFilter->Load("wordfilter_chat");
-	Log.Success("World", "Database loaded in %ums.", getMSTime() - start_time);
+	sLog.Success("World", "Database loaded in %ums.", getMSTime() - start_time);
 
 	if(Collision)
 	{
@@ -525,25 +525,25 @@ bool World::SetInitialWorldSettings()
 	tl.waitForThreadsToExit();
 
 	LoadNameGenData();
-	Log.Notice("World", "Object size: %u bytes", sizeof(Object));
-	Log.Notice("World", "GameObject size: %u bytes", sizeof(GameObject));
-	Log.Notice("World", "AI size: %u bytes", sizeof(AIInterface));
-	Log.Notice("World", "Unit size: %u bytes", sizeof(Unit) + sizeof(AIInterface));
-	Log.Notice("World", "Creature size: %u bytes", sizeof(Creature) + sizeof(AIInterface));
-	Log.Notice("World", "Vehicle size: %u bytes", sizeof(Vehicle) + sizeof(AIInterface));
-	Log.Notice("World", "Player size: %u bytes", sizeof(Player) + sizeof(AIInterface) + sizeof(ItemInterface) + sizeof(WorldSession) + sizeof(MapMgr));
-	Log.Notice("World", "Single Player size: %u bytes", sizeof(Player) + sizeof(AIInterface));
-	Log.Notice("World", "MapMgr size: %u bytes", sizeof(MapMgr));
-	Log.Notice("World", "ItemInterface size: %u bytes", sizeof(ItemInterface));
-	Log.Notice("World", "WorldSession size: %u bytes", sizeof(WorldSession));
-	Log.Notice("World","Starting Transport System...");
+	sLog.Notice("World", "Object size: %u bytes", sizeof(Object));
+	sLog.Notice("World", "GameObject size: %u bytes", sizeof(GameObject));
+	sLog.Notice("World", "AI size: %u bytes", sizeof(AIInterface));
+	sLog.Notice("World", "Unit size: %u bytes", sizeof(Unit) + sizeof(AIInterface));
+	sLog.Notice("World", "Creature size: %u bytes", sizeof(Creature) + sizeof(AIInterface));
+	sLog.Notice("World", "Vehicle size: %u bytes", sizeof(Vehicle) + sizeof(AIInterface));
+	sLog.Notice("World", "Player size: %u bytes", sizeof(Player) + sizeof(AIInterface) + sizeof(ItemInterface) + sizeof(WorldSession) + sizeof(MapMgr));
+	sLog.Notice("World", "Single Player size: %u bytes", sizeof(Player) + sizeof(AIInterface));
+	sLog.Notice("World", "MapMgr size: %u bytes", sizeof(MapMgr));
+	sLog.Notice("World", "ItemInterface size: %u bytes", sizeof(ItemInterface));
+	sLog.Notice("World", "WorldSession size: %u bytes", sizeof(WorldSession));
+	sLog.Notice("World","Starting Transport System...");
 	objmgr.LoadTransporters();
 
 	ThreadPool.ExecuteTask("DayWatcherThread", new DayWatcherThread());
 
 	if(mainIni->ReadBoolean("Startup", "BackgroundLootLoading", true))
 	{
-		Log.Notice("World", "Background loot loading...");
+		sLog.Notice("World", "Background loot loading...");
 
 		// loot background loading in a lower priority thread.
 		ThreadPool.ExecuteTask("LootLoader", new BasicTaskExecutor(new CallbackP0<LootMgr>(LootMgr::getSingletonPtr(), &LootMgr::LoadDelayedLoot),
@@ -551,23 +551,23 @@ bool World::SetInitialWorldSettings()
 	}
 	else
 	{
-		Log.Notice("World", "Loading loot in foreground...");
+		sLog.Notice("World", "Loading loot in foreground...");
 		lootmgr.LoadDelayedLoot();
 	}
 
-	Log.Notice("World", "Loading Channel config...");
+	sLog.Notice("World", "Loading Channel config...");
 	Channel::LoadConfSettings();
 
-	Log.Notice("World", "Starting BattlegroundManager...");
+	sLog.Notice("World", "Starting BattlegroundManager...");
 	new CBattlegroundManager;
 	BattlegroundManager.Init();
 
-	Log.Notice("World", "Starting InsertQueueLoader...");
+	sLog.Notice("World", "Starting InsertQueueLoader...");
 	new InsertQueueLoader();
 
 	if(GuildsLoading)
 	{
-		Log.Notice( "World", "Waiting for groups and players to finish loading..." );
+		sLog.Notice( "World", "Waiting for groups and players to finish loading..." );
 		while(GuildsLoading)
 			Sleep( 100 );
 	}
@@ -602,7 +602,7 @@ bool World::SetInitialWorldSettings()
 		}
 		areaentry = NULL;
 	}
-	Log.Notice("World", "Hashed %u sanctuaries", Sanctuaries.size());
+	sLog.Notice("World", "Hashed %u sanctuaries", Sanctuaries.size());
 
 	sEventMgr.AddEvent(CAST(World,this), &World::CheckForExpiredInstances, EVENT_WORLD_UPDATEAUCTIONS, 120000, 0, 0);
 	return true;
@@ -1169,7 +1169,7 @@ void TaskList::spawn()
 	else
 		threadcount = 1;
 
-	Log.Notice("World", "Beginning %s server startup with %u thread(s).", (threadcount == 1) ? "progressive" : "parallel", threadcount);
+	sLog.Notice("World", "Beginning %s server startup with %u thread(s).", (threadcount == 1) ? "progressive" : "parallel", threadcount);
 	for(uint32 x = 0; x < threadcount; ++x)
 		ThreadPool.ExecuteTask(format("TaskExecutor|%u", x).c_str(), new TaskExecutor(this));
 }
@@ -1419,7 +1419,7 @@ void World::LoadNameGenData()
 
 	if( !dbc.open( format("%s/NameGen.dbc", sWorld.DBCPath.c_str()).c_str() ) )
 	{
-		Log.Error( "World", "Cannot find file %s/NameGen.dbc", sWorld.DBCPath.c_str() );
+		sLog.Error( "World", "Cannot find file %s/NameGen.dbc", sWorld.DBCPath.c_str() );
 		return;
 	}
 
@@ -1500,7 +1500,7 @@ void World::PollMailboxInsertQueue(DatabaseConnection * con)
 	result = CharacterDatabase.FQuery("SELECT * FROM mailbox_insert_queue", con);
 	if( result != NULL )
 	{
-		Log.Debug("MailboxQueue", "Sending queued messages....");
+		sLog.Debug("MailboxQueue", "Sending queued messages....");
 		do
 		{
 			f = result->Fetch();
@@ -1519,7 +1519,7 @@ void World::PollMailboxInsertQueue(DatabaseConnection * con)
 			else
 				pItem = NULLITEM;
 
-			Log.Debug("MailboxQueue", "Sending message to %u (item: %u)...", f[1].GetUInt32(), itemid);
+			sLog.Debug("MailboxQueue", "Sending message to %u (item: %u)...", f[1].GetUInt32(), itemid);
 			sMailSystem.DeliverMessage( 0, f[0].GetUInt64(), f[1].GetUInt64(), f[2].GetString(), f[3].GetString(), f[5].GetUInt32(),
 				0, pItem ? pItem->GetGUID() : 0, f[4].GetUInt32(), true );
 
@@ -1530,7 +1530,7 @@ void World::PollMailboxInsertQueue(DatabaseConnection * con)
 
 		} while ( result->NextRow() );
 		delete result;
-		Log.Debug("MailboxQueue", "Done.");
+		sLog.Debug("MailboxQueue", "Done.");
 		CharacterDatabase.FWaitExecute("DELETE FROM mailbox_insert_queue", con);
 	}
 }
@@ -2018,7 +2018,7 @@ void World::PollCharacterInsertQueue(DatabaseConnection * con)
 			ss.rdbuf()->str("");
 		} while(result->NextRow());
 		has_results = true;
-		Log.Debug("CharacterLoader","Imported %u character(s) from external queue",queuesize);
+		sLog.Debug("CharacterLoader","Imported %u character(s) from external queue",queuesize);
 		delete result;
 	}
 
@@ -2351,7 +2351,7 @@ void World::LogPlayer(WorldSession* session, string message, ...)
 
 void World::LogChat(WorldSession* session, string message, ...)
 {
-	if(LogChats)
+	if(bLogChat)
 	{
 		va_list ap;
 		va_start(ap, message);
@@ -2424,7 +2424,7 @@ void World::SetAnniversary(uint32 anniversarynumber)
 
 void World::OnHolidayChange(uint32 IgnoreHolidayId)
 {
-	Log.Notice("World", "Cleaning holiday items...");
+	sLog.Notice("World", "Cleaning holiday items...");
 	m_sessionlock.AcquireReadLock();
 	for (SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); itr++)
 		if(itr->second->GetPlayer() && itr->second->GetPlayer()->IsInWorld())
@@ -2456,7 +2456,7 @@ void World::OnHolidayChange(uint32 IgnoreHolidayId)
 	if(!first)
 	{
 		CharacterDatabase.Execute(ss.str().c_str());
-		Log.Notice("World", "Holiday Items Cleaned!");
+		sLog.Notice("World", "Holiday Items Cleaned!");
 	}
-	Log.Notice("World", "Done cleaning Holiday Items.");
+	sLog.Notice("World", "Done cleaning Holiday Items.");
 }

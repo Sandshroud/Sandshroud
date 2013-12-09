@@ -23,35 +23,35 @@ ObjectMgr::ObjectMgr()
 
 ObjectMgr::~ObjectMgr()
 {
-	Log.Notice("ObjectMgr", "Deleting Corpses...");
+	sLog.Notice("ObjectMgr", "Deleting Corpses...");
 	CorpseCollectorUnload();
 
-	Log.Notice("ObjectMgr", "Deleting Itemsets...");
+	sLog.Notice("ObjectMgr", "Deleting Itemsets...");
 	for(ItemSetContentMap::iterator i = mItemSets.begin(); i != mItemSets.end(); i++)
 	{
 		delete i->second;
 	}
 	mItemSets.clear();
 
-	Log.Notice("ObjectMgr", "Deleting PlayerCreateInfo...");
+	sLog.Notice("ObjectMgr", "Deleting PlayerCreateInfo...");
 	for( PlayerCreateInfoMap::iterator i = mPlayerCreateInfo.begin( ); i != mPlayerCreateInfo.end( ); ++ i ) {
 		delete i->second;
 	}
 	mPlayerCreateInfo.clear( );
 
-	Log.Notice("ObjectMgr", "Deleting Vendors...");
+	sLog.Notice("ObjectMgr", "Deleting Vendors...");
 	for( VendorMap::iterator i = mVendors.begin( ); i != mVendors.end( ); ++ i )
 	{
 		delete i->second;
 	}
 
-	Log.Notice("ObjectMgr", "Deleting Spell Override...");
+	sLog.Notice("ObjectMgr", "Deleting Spell Override...");
 	for(OverrideIdMap::iterator i = mOverrideIdMap.begin(); i != mOverrideIdMap.end(); i++)
 	{
 		delete i->second;
 	}
 
-	Log.Notice("ObjectMgr", "Deleting Trainers...");
+	sLog.Notice("ObjectMgr", "Deleting Trainers...");
 	for( TrainerMap::iterator i = mTrainers.begin( ); i != mTrainers.end( ); ++ i) {
 		Trainer * t = i->second;
 		if(t->UIMessage)
@@ -59,7 +59,7 @@ ObjectMgr::~ObjectMgr()
 		delete t;
 	}
 
-	Log.Notice("ObjectMgr", "Deleting Level Information...");
+	sLog.Notice("ObjectMgr", "Deleting Level Information...");
 	for( LevelInfoMap::iterator i = mLevelInfo.begin(); i != mLevelInfo.end(); i++)
 	{
 		LevelMap * l = i->second;
@@ -71,7 +71,7 @@ ObjectMgr::~ObjectMgr()
 		delete l;
 	}
 
-	Log.Notice("ObjectMgr", "Deleting Waypoint Cache...");
+	sLog.Notice("ObjectMgr", "Deleting Waypoint Cache...");
 	for(HM_NAMESPACE::hash_map<uint32, WayPointMap*>::iterator i = m_waypoints.begin(); i != m_waypoints.end(); i++)
 	{
 		for(WayPointMap::iterator i3 = i->second->begin(); i3 != i->second->end(); i3++)
@@ -81,7 +81,7 @@ ObjectMgr::~ObjectMgr()
 		delete i->second;
 	}
 
-	Log.Notice("ObjectMgr", "Deleting NPC Say Texts...");
+	sLog.Notice("ObjectMgr", "Deleting NPC Say Texts...");
 	for(uint32 i = 0 ; i < NUM_MONSTER_SAY_EVENTS ; i++)
 	{
 		NpcMonsterSay * p;
@@ -98,7 +98,7 @@ ObjectMgr::~ObjectMgr()
 		mMonsterSays[i].clear();
 	}
 
-	Log.Notice("ObjectMgr", "Deleting Reputation Tables...");
+	sLog.Notice("ObjectMgr", "Deleting Reputation Tables...");
 	for(ReputationModMap::iterator itr = m_reputation_creature.begin(); itr != m_reputation_creature.end(); itr++)
 	{
 		ReputationModifier * mod = itr->second;
@@ -119,7 +119,7 @@ ObjectMgr::~ObjectMgr()
 		delete mod;
 	}
 
-	Log.Notice("ObjectMgr", "Deleting Groups...");
+	sLog.Notice("ObjectMgr", "Deleting Groups...");
 	for(GroupMap::iterator itr = m_groups.begin(); itr != m_groups.end();)
 	{
 		Group* pGroup = itr->second;
@@ -139,7 +139,7 @@ ObjectMgr::~ObjectMgr()
 		}
 	}
 
-	Log.Notice("ObjectMgr", "Deleting Player Information...");
+	sLog.Notice("ObjectMgr", "Deleting Player Information...");
 	for(HM_NAMESPACE::hash_map<uint32, PlayerInfo*>::iterator itr = m_playersinfo.begin(); itr != m_playersinfo.end(); itr++)
 	{
 		itr->second->m_Group = NULL;
@@ -147,24 +147,24 @@ ObjectMgr::~ObjectMgr()
 		delete itr->second;
 	}
 
-	Log.Notice("ObjectMgr", "Deleting GM Tickets...");
+	sLog.Notice("ObjectMgr", "Deleting GM Tickets...");
 	for(GmTicketList::iterator itr = GM_TicketList.begin(); itr != GM_TicketList.end(); itr++)
 		delete (*itr);
 
-	Log.Notice("ObjectMgr", "Deleting Arena Teams...");
+	sLog.Notice("ObjectMgr", "Deleting Arena Teams...");
 	for(HM_NAMESPACE::hash_map<uint32, ArenaTeam*>::iterator itr = m_arenaTeams.begin(); itr != m_arenaTeams.end(); itr++)
 		delete itr->second;
 
-	Log.Notice("ObjectMgr", "Deleting Profession Discoveries...");
+	sLog.Notice("ObjectMgr", "Deleting Profession Discoveries...");
 	std::set<ProfessionDiscovery*>::iterator itr = ProfessionDiscoveryTable.begin();
 	for ( ; itr != ProfessionDiscoveryTable.end(); itr++ )
 		delete (*itr);
 
-	Log.Notice("ObjectMgr", "Deleting Achievement Cache...");
+	sLog.Notice("ObjectMgr", "Deleting Achievement Cache...");
 	for(AchievementCriteriaMap::iterator itr = m_achievementCriteriaMap.begin(); itr != m_achievementCriteriaMap.end(); itr++)
 		delete (itr->second);
 
-	Log.Notice("ObjectMgr", "Deleting Pet Levelup Spells...");
+	sLog.Notice("ObjectMgr", "Deleting Pet Levelup Spells...");
 	for(PetLevelupSpellMap::iterator itr = mPetLevelupSpellMap.begin(); itr != mPetLevelupSpellMap.end(); itr++)
 	{
 		itr->second.clear();
@@ -212,7 +212,7 @@ void ObjectMgr::LoadAchievements()
 			}
 		}
 	}
-	Log.Notice("AchievementMgr", "Loaded %u achievements", dbcAchievementCriteria.GetNumRows());
+	sLog.Notice("AchievementMgr", "Loaded %u achievements", dbcAchievementCriteria.GetNumRows());
 }
 
 //
@@ -341,7 +341,7 @@ void ObjectMgr::LoadSpellSkills()
 			mSpellSkills[sp->spell] = sp;
 		}
 	}
-	Log.Notice("ObjectMgr", "%u spell skills loaded.", mSpellSkills.size());
+	sLog.Notice("ObjectMgr", "%u spell skills loaded.", mSpellSkills.size());
 }
 
 skilllinespell* ObjectMgr::GetSpellSkill(uint32 id)
@@ -387,7 +387,7 @@ void ObjectMgr::LoadPlayersInfo()
 				// gotta rename him
 				char temp[300];
 				snprintf(temp, 300, "%s__%X__", pn->name, pn->guid);
-				Log.Notice("ObjectMgr", "Renaming duplicate player %s to %s. (%u)", pn->name,temp,pn->guid);
+				sLog.Notice("ObjectMgr", "Renaming duplicate player %s to %s. (%u)", pn->name,temp,pn->guid);
 				CharacterDatabase.WaitExecute("UPDATE characters SET name = '%s', forced_rename_pending = 1 WHERE guid = %u",
 					CharacterDatabase.EscapeString(string(temp)).c_str(), pn->guid);
 
@@ -402,13 +402,13 @@ void ObjectMgr::LoadPlayersInfo()
 			//this is startup -> no need in lock -> don't use addplayerinfo
 			m_playersinfo[(uint32)pn->guid] = pn;
 
-			 if( !((++c) % period) )
-				 Log.Notice("PlayerInfo", "Done %u/%u, %u%% complete.", c, result->GetRowCount(), float2int32( (float(c) / float(result->GetRowCount()))*100.0f ));
+			if( !((++c) % period) )
+				sLog.Notice("PlayerInfo", "Done %u/%u, %u%% complete.", c, result->GetRowCount(), float2int32( (float(c) / float(result->GetRowCount()))*100.0f ));
 		} while( result->NextRow() );
 
 		delete result;
 	}
-	Log.Notice("ObjectMgr", "%u players loaded.", m_playersinfo.size());
+	sLog.Notice("ObjectMgr", "%u players loaded.", m_playersinfo.size());
 }
 
 PlayerInfo* ObjectMgr::GetPlayerInfoByName(const char * name)
@@ -433,13 +433,13 @@ void ObjectMgr::LoadPlayerCreateInfo()
 
 	if( result == NULL )
 	{
-		Log.Error("MySQL","Query failed: SELECT * FROM playercreateinfo");
+		sLog.Error("MySQL","Query failed: SELECT * FROM playercreateinfo");
 		return;
 	}
 
 	if( result->GetFieldCount() < 25 )
 	{
-		Log.Error("PlayerCreateInfo", "Incorrect number of columns in playercreateinfo found %u, should be 25. check for sql updates", result->GetFieldCount());
+		sLog.Error("PlayerCreateInfo", "Incorrect number of columns in playercreateinfo found %u, should be 25. check for sql updates", result->GetFieldCount());
 		delete result;
 		return;
 	}
@@ -538,7 +538,7 @@ void ObjectMgr::LoadPlayerCreateInfo()
 	} while( result->NextRow() );
 	delete result;
 
-	Log.Notice("ObjectMgr", "%u player create infos loaded.", mPlayerCreateInfo.size());
+	sLog.Notice("ObjectMgr", "%u player create infos loaded.", mPlayerCreateInfo.size());
 	GenerateLevelUpInfo();
 }
 
@@ -643,7 +643,7 @@ void ObjectMgr::LoadGMTickets()
 
 	} while( result->NextRow() );
 
-	Log.Notice("ObjectMgr", "%u open GM Tickets loaded.", result->GetRowCount());
+	sLog.Notice("ObjectMgr", "%u open GM Tickets loaded.", result->GetRowCount());
 	delete result;
 }
 
@@ -724,7 +724,7 @@ void ObjectMgr::LoadQuestPOI()
 		delete result;
 	}
 	PoiMap.clear();
-	Log.Notice("ObjectMgr", "%u quest POI definitions, %u POI points", count, pointcount);
+	sLog.Notice("ObjectMgr", "%u quest POI definitions, %u POI points", count, pointcount);
 }
 
 void ObjectMgr::SetHighestGuids()
@@ -789,15 +789,15 @@ void ObjectMgr::SetHighestGuids()
 
 	sTracker.GetGUIDCount();
 
-	Log.Notice("ObjectMgr", "HighGuid(CORPSE) = %u", m_hiCorpseGuid);
-	Log.Notice("ObjectMgr", "HighGuid(PLAYER) = %u", m_hiPlayerGuid);
-	Log.Notice("ObjectMgr", "HighGuid(GAMEOBJ) = %u", m_hiGameObjectSpawnId);
-	Log.Notice("ObjectMgr", "HighGuid(UNIT) = %u", m_hiCreatureSpawnId);
-	Log.Notice("ObjectMgr", "HighGuid(ITEM) = %u", m_hiItemGuid);
-	Log.Notice("ObjectMgr", "HighGuid(CONTAINER) = %u", m_hiContainerGuid);
-	Log.Notice("ObjectMgr", "HighGuid(GROUP) = %u", m_hiGroupId);
-	Log.Notice("ObjectMgr", "HighGuid(TICKET) = %u", m_ticketid - 1);
-	Log.Notice("ObjectMgr", "HighGuid(EQSETS) = %u", m_equipmentSetGuid);
+	sLog.Notice("ObjectMgr", "HighGuid(CORPSE) = %u", m_hiCorpseGuid);
+	sLog.Notice("ObjectMgr", "HighGuid(PLAYER) = %u", m_hiPlayerGuid);
+	sLog.Notice("ObjectMgr", "HighGuid(GAMEOBJ) = %u", m_hiGameObjectSpawnId);
+	sLog.Notice("ObjectMgr", "HighGuid(UNIT) = %u", m_hiCreatureSpawnId);
+	sLog.Notice("ObjectMgr", "HighGuid(ITEM) = %u", m_hiItemGuid);
+	sLog.Notice("ObjectMgr", "HighGuid(CONTAINER) = %u", m_hiContainerGuid);
+	sLog.Notice("ObjectMgr", "HighGuid(GROUP) = %u", m_hiGroupId);
+	sLog.Notice("ObjectMgr", "HighGuid(TICKET) = %u", m_ticketid - 1);
+	sLog.Notice("ObjectMgr", "HighGuid(EQSETS) = %u", m_equipmentSetGuid);
 }
 
 void ObjectMgr::ListGuidAmounts()
@@ -863,7 +863,7 @@ void ObjectMgr::ListGuidAmounts()
 	}
 
 	for(int i = 0; i < 8; i++)
-		Log.Notice("ObjectMgr", "Load Amount(%s) = %u", name[i].c_str(), amount[i] ? amount[i] : 0);
+		sLog.Notice("ObjectMgr", "Load Amount(%s) = %u", name[i].c_str(), amount[i] ? amount[i] : 0);
 }
 
 uint64 ObjectMgr::GenerateTicketID()
@@ -920,7 +920,7 @@ void ObjectMgr::ProcessGameobjectQuests()
 		} while(result->NextRow());
 		delete result;
 	}
-	Log.Notice("ObjectMgr", "%u NPC Gossip TextIds loaded.", mNpcToGossipText.size());
+	sLog.Notice("ObjectMgr", "%u NPC Gossip TextIds loaded.", mNpcToGossipText.size());
 }
 
 Player* ObjectMgr::GetPlayer(const char* name, bool caseSensitive)
@@ -1089,12 +1089,12 @@ void ObjectMgr::LoadVendors()
 	{
 		if( result->GetFieldCount() < 9 )
 		{
-			Log.Notice("ObjectMgr", "Invalid format in vendors (%u/7) columns, not enough data to proceed.\n", result->GetFieldCount() );
+			sLog.Notice("ObjectMgr", "Invalid format in vendors (%u/7) columns, not enough data to proceed.\n", result->GetFieldCount() );
 			delete result;
 			return;
 		}
 		else if( result->GetFieldCount() > 9 )
-			Log.Notice("ObjectMgr", "Invalid format in vendors (%u/7) columns, loading anyway because we have enough data\n", result->GetFieldCount() );
+			sLog.Notice("ObjectMgr", "Invalid format in vendors (%u/7) columns, loading anyway because we have enough data\n", result->GetFieldCount() );
 
 		do
 		{
@@ -1126,7 +1126,7 @@ void ObjectMgr::LoadVendors()
 				{
 					if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 						WorldDatabase.Execute("UPDATE vendors set extendedcost = '0' where item = '%u' AND entry = '%u'", itm.itemid, fields[0].GetUInt32());
-					Log.Warning("ObjectMgr","Item %u at vendor %u has extended cost %u which is invalid. Skipping.", itm.itemid, fields[0].GetUInt32(), ec);
+					sLog.Warning("ObjectMgr","Item %u at vendor %u has extended cost %u which is invalid. Skipping.", itm.itemid, fields[0].GetUInt32(), ec);
 					continue;
 				}
 			}
@@ -1138,7 +1138,7 @@ void ObjectMgr::LoadVendors()
 		}while( result->NextRow() );
 		delete result;
 	}
-	Log.Notice("ObjectMgr", "%u vendors loaded.", mVendors.size());
+	sLog.Notice("ObjectMgr", "%u vendors loaded.", mVendors.size());
 }
 
 void ObjectMgr::ReloadVendors()
@@ -1175,7 +1175,7 @@ void ObjectMgr::LoadTotemSpells()
 		delete result;
 	}
 
-	Log.Notice("ObjectMgr", "%u totem spells loaded.", m_totemSpells.size());
+	sLog.Notice("ObjectMgr", "%u totem spells loaded.", m_totemSpells.size());
 }
 
 SpellEntry* ObjectMgr::GetTotemSpell(uint32 spellId)
@@ -1206,7 +1206,7 @@ void ObjectMgr::LoadAIThreatToSpellId()
 			{
 				WorldDatabase.Execute( "DELETE FROM ai_threattospellid where spell = '%u'", spellid);
 			}
-			Log.Warning("AIThreatSpell", "Cannot apply to spell %u; spell is nonexistant.", spellid);
+			sLog.Warning("AIThreatSpell", "Cannot apply to spell %u; spell is nonexistant.", spellid);
 		}
 		spellid = 0;
 
@@ -1225,12 +1225,12 @@ void ObjectMgr::LoadSpellFixes()
 	{
 		if( result->GetFieldCount() != 13 )
 		{
-			Log.LargeErrorMessage(LARGERRORMESSAGE_WARNING, "Incorrect column count at spellfixes, skipping, please fix it.", "", NULL);
+			sLog.LargeErrorMessage(LARGERRORMESSAGE_WARNING, "Incorrect column count at spellfixes, skipping, please fix it.", "", NULL);
 			delete result;
 			return;
 		}
 
-		Log.Notice("ObjectMgr", "%u spell fixes from database...", result->GetRowCount());
+		sLog.Notice("ObjectMgr", "%u spell fixes from database...", result->GetRowCount());
 
 		do
 		{
@@ -1523,7 +1523,7 @@ void ObjectMgr::LoadTrainers()
 
 	if(result2->GetFieldCount() != 10)
 	{
-		Log.LargeErrorMessage(LARGERRORMESSAGE_WARNING, "Trainers table format is invalid. Please update your database.");
+		sLog.LargeErrorMessage(LARGERRORMESSAGE_WARNING, "Trainers table format is invalid. Please update your database.");
 		delete result;
 		return;
 	}
@@ -1560,7 +1560,7 @@ void ObjectMgr::LoadTrainers()
 						ts.pCastRealSpell = dbcSpell.LookupEntryForced(ts.pCastSpell->EffectTriggerSpell[k]);
 						if( ts.pCastRealSpell == NULL )
 						{
-							Log.Warning("Trainers", "Trainer %u contains cast spell %u that is non-teaching", entry, CastSpellID);
+							sLog.Warning("Trainers", "Trainer %u contains cast spell %u that is non-teaching", entry, CastSpellID);
 							abrt = true;
 						}break;
 					}
@@ -1583,7 +1583,7 @@ void ObjectMgr::LoadTrainers()
 				else
 					WorldDatabase.Execute("DELETE FROM trainer_spells where entry='%u' AND cast_spell='%u'",entry, CastSpellID);
 			}
-			Log.Warning("ObjectMgr", "Trainer %u skipped invalid spell (%u/%u).", entry, CastSpellID, LearnSpellID);
+			sLog.Warning("ObjectMgr", "Trainer %u skipped invalid spell (%u/%u).", entry, CastSpellID, LearnSpellID);
 			continue; //omg a bad spell !
 		}
 
@@ -1613,7 +1613,7 @@ void ObjectMgr::LoadTrainers()
 		CreatureInfo* trainer_info = CreatureNameStorage.LookupEntry(entry);
 		if(!trainer_info)
 		{
-			Log.Warning("Trainers", "NPC id for Trainer %u does not exist, skipping.", entry);
+			sLog.Warning("Trainers", "NPC id for Trainer %u does not exist, skipping.", entry);
 			if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 			{
 				WorldDatabase.Execute("DELETE FROM trainer_defs where entry='%u'",entry);
@@ -1653,7 +1653,7 @@ void ObjectMgr::LoadTrainers()
 						std::string columnname = (i == 0 ? "can_train_gossip_textid" : "cannot_train_gossip_textid");
 						WorldDatabase.Execute("UPDATE trainer_defs SET %s = '0' where entry = '%u'", columnname.c_str(), entry);
 					}
-					Log.Warning("Trainers", "Trainer %u contains an invalid npc_gossip_id %d.", entry, tmptxtid[i] );
+					sLog.Warning("Trainers", "Trainer %u contains an invalid npc_gossip_id %d.", entry, tmptxtid[i] );
 					tmptxtid[i] = 0;
 				}
 			}
@@ -1686,7 +1686,7 @@ void ObjectMgr::LoadTrainers()
 
 	TSMap.clear();
 	TSCounterMap.clear();
-	Log.Notice("ObjectMgr", "%u trainers loaded.", mTrainers.size());
+	sLog.Notice("ObjectMgr", "%u trainers loaded.", mTrainers.size());
 }
 
 Trainer* ObjectMgr::GetTrainer(uint32 Entry)
@@ -1879,7 +1879,7 @@ void ObjectMgr::GenerateLevelUpInfo()
 			mLevelInfo.insert( LevelInfoMap::value_type( p, lMap ) );
 		}
 	}
-	Log.Notice("ObjectMgr", "%u level up information generated.", mLevelInfo.size());
+	sLog.Notice("ObjectMgr", "%u level up information generated.", mLevelInfo.size());
 }
 
 LevelInfo* ObjectMgr::GetLevelInfo(uint32 Race, uint32 Class, uint32 Level)
@@ -1910,7 +1910,7 @@ uint32 ObjectMgr::GetPetSpellCooldown(uint32 SpellId)
 		uint32 pscd = ( sp->CategoryRecoveryTime == 0 ? sp->RecoveryTime : sp->CategoryRecoveryTime) +  (sp->StartRecoveryCategory == 0 ? sp->StartRecoveryTime : sp->StartRecoveryCategory);
 		return pscd > PET_SPELL_SPAM_COOLDOWN ? pscd : PET_SPELL_SPAM_COOLDOWN;
 	}
-	Log.Error("ObjectMgr","GetPetSpellCooldown tried to add a non existing spell %d",SpellId);
+	sLog.Error("ObjectMgr","GetPetSpellCooldown tried to add a non existing spell %d",SpellId);
 	return 600000;//
 }
 
@@ -1955,7 +1955,7 @@ void ObjectMgr::LoadSpellOverride()
 		delete result;
 	}
 
-	Log.Notice("ObjectMgr", "%u spell overrides loaded.", mOverrideIdMap.size());
+	sLog.Notice("ObjectMgr", "%u spell overrides loaded.", mOverrideIdMap.size());
 }
 
 void ObjectMgr::SetVendorList(uint32 Entry, std::map<uint32, CreatureItem>* list_)
@@ -2047,7 +2047,7 @@ void ObjectMgr::LoadCreatureWaypoints()
 		wp->id = fields[1].GetUInt32();
 		if(wp->id < 0)
 		{
-			Log.Error("ObjectMgr", "Waypoints cannot start below 0, waypoint skipped for %u\n", spawnid);
+			sLog.Error("ObjectMgr", "Waypoints cannot start below 0, waypoint skipped for %u\n", spawnid);
 			continue;
 		}
 
@@ -2111,7 +2111,7 @@ void ObjectMgr::LoadCreatureWaypoints()
 		delete itr->second;
 	SpawnCoordMap.clear();
 
-	Log.Notice("ObjectMgr", "%u waypoints cached in %ums.", waypointcounter, getMSTime()-start);
+	sLog.Notice("ObjectMgr", "%u waypoints cached in %ums.", waypointcounter, getMSTime()-start);
 }
 
 WayPointMap*ObjectMgr::GetWayPointMap(uint32 spawnid)
@@ -2268,7 +2268,7 @@ void ObjectMgr::LoadReputationModifierTable(const char * tablename, ReputationMo
 		} while(result->NextRow());
 		delete result;
 	}
-	Log.Notice("ObjectMgr", "%u reputation modifiers on %s.", dmap->size(), tablename);
+	sLog.Notice("ObjectMgr", "%u reputation modifiers on %s.", dmap->size(), tablename);
 }
 
 void ObjectMgr::LoadReputationModifiers()
@@ -2356,7 +2356,7 @@ void ObjectMgr::LoadMonsterSay()
 		mMonsterSays[Event].insert( make_pair( Entry, ms ) );
 
 	} while(result->NextRow());
-	Log.Notice("ObjectMgr", "%u monster say events loaded.", result->GetRowCount());
+	sLog.Notice("ObjectMgr", "%u monster say events loaded.", result->GetRowCount());
 	delete result;
 }
 
@@ -2418,7 +2418,7 @@ void ObjectMgr::LoadInstanceReputationModifiers()
 			itr->second->mods.push_back(mod);
 
 	} while(result->NextRow());
-	Log.Notice("ObjectMgr", "%u instance reputation modifiers loaded.", m_reputation_instance.size());
+	sLog.Notice("ObjectMgr", "%u instance reputation modifiers loaded.", m_reputation_instance.size());
 	delete result;
 }
 
@@ -2484,7 +2484,7 @@ void ObjectMgr::LoadDisabledSpells()
 		delete result;
 	}
 
-	Log.Notice("ObjectMgr", "%u disabled spells.", m_disabled_spells.size());
+	sLog.Notice("ObjectMgr", "%u disabled spells.", m_disabled_spells.size());
 }
 
 void ObjectMgr::ReloadDisabledSpells()
@@ -2506,7 +2506,7 @@ void ObjectMgr::LoadGroups()
 		delete result;
 	}
 
-	Log.Notice("ObjectMgr", "%u groups loaded.", m_groups.size());
+	sLog.Notice("ObjectMgr", "%u groups loaded.", m_groups.size());
 }
 
 void ObjectMgr::LoadArenaTeams()
@@ -2868,14 +2868,14 @@ void ObjectMgr::LoadPetLevelupSpellMap()
 				}break;
 			default:
 				{
-					Log.Error("ObjectMgr",	"Unhandled creature	family %u",	creatureFamily->ID);
+					sLog.Error("ObjectMgr",	"Unhandled creature	family %u",	creatureFamily->ID);
 				}break;
 			}
 			mPetLevelupSpellMap[creatureFamily->ID][sp->spellLevel]	= sk->spell;
 			++count;
 		}
 	}
-	Log.Notice("ObjectMgr", "%u Pet LevelUp Spells loaded.",	count);
+	sLog.Notice("ObjectMgr", "%u Pet LevelUp Spells loaded.",	count);
 }
 
 PetLevelupSpellSet const* ObjectMgr::GetPetLevelupSpellList(uint32 petFamily)	const

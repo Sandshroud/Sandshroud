@@ -8,7 +8,7 @@ SERVER_DECL CNavMeshInterface NavMeshInterface;
 
 void CNavMeshInterface::Init()
 {
-	Log.Notice("NavMeshInterface", "Init");
+	sLog.Notice("NavMeshInterface", "Init");
 	memset( MMaps, 0, sizeof(MMapManager*)*NUM_MAPS );
 }
 
@@ -88,7 +88,7 @@ MMapManager::MMapManager(uint32 mapid)
 	FILE* file = fopen(fileName, "rb");
 	if (!file)
 	{
-		Log.Debug("NavMeshInterface", "Could not load mmap %03i", mapid);
+		sLog.Debug("NavMeshInterface", "Could not load mmap %03i", mapid);
 		delete [] fileName;
 		return;
 	}
@@ -102,7 +102,7 @@ MMapManager::MMapManager(uint32 mapid)
 	if(dtStatusFailed(mesh->init(&params)))
 	{
 		dtFreeNavMesh(mesh);
-		Log.Debug("NavMeshInterface", "Failed to initialize dtNavMesh for mmap %03u from file %s", mapid, fileName);
+		sLog.Debug("NavMeshInterface", "Failed to initialize dtNavMesh for mmap %03u from file %s", mapid, fileName);
 		delete [] fileName;
 		return;
 	}
@@ -111,14 +111,14 @@ MMapManager::MMapManager(uint32 mapid)
 	if(dtStatusFailed(m_navMeshQuery->init(mesh, 1024)))
 	{
 		dtFreeNavMesh(mesh);
-		Log.Debug("NavMeshInterface", "Failed to initialize dtNavMeshQuery for mmap %03u from file %s", mapid, fileName);
+		sLog.Debug("NavMeshInterface", "Failed to initialize dtNavMeshQuery for mmap %03u from file %s", mapid, fileName);
 		delete [] fileName;
 		return;
 	}
 
 	delete [] fileName;
 
-	Log.Debug("NavMeshInterface", "Loaded %03i.mmap", mapid);
+	sLog.Debug("NavMeshInterface", "Loaded %03i.mmap", mapid);
 
 	// store inside our map list
 	m_navMesh = mesh;
@@ -191,7 +191,7 @@ bool MMapManager::LoadNavMesh(uint32 x, uint32 y)
 		FILE *file = fopen(fileName, "rb");
 		if (!file)
 		{
-			Log.Debug("NavMeshInterface", "Could not open mmtile file '%s'", fileName);
+			sLog.Debug("NavMeshInterface", "Could not open mmtile file '%s'", fileName);
 			delete [] fileName;
 			return false;
 		}
@@ -202,14 +202,14 @@ bool MMapManager::LoadNavMesh(uint32 x, uint32 y)
 		fread(&fileHeader, sizeof(MmapTileHeader), 1, file);
 		if (fileHeader.mmapMagic != MMAP_MAGIC)
 		{
-			Log.Error("NavMeshInterface", "Bad header in mmap %03u%02i%02i.mmtile", ManagerMapId, x, y);
+			sLog.Error("NavMeshInterface", "Bad header in mmap %03u%02i%02i.mmtile", ManagerMapId, x, y);
 			fclose(file);
 			return false;
 		}
 
 		if (fileHeader.mmapVersion != MMAP_VERSION)
 		{
-			Log.Error("NavMeshInterface", "%03u%02i%02i.mmtile was built with generator v%i, expected v%i", ManagerMapId, x, y, fileHeader.mmapVersion, MMAP_VERSION);
+			sLog.Error("NavMeshInterface", "%03u%02i%02i.mmtile was built with generator v%i, expected v%i", ManagerMapId, x, y, fileHeader.mmapVersion, MMAP_VERSION);
 			fclose(file);
 			return false;
 		}
@@ -220,7 +220,7 @@ bool MMapManager::LoadNavMesh(uint32 x, uint32 y)
 		size_t result = fread(data, fileHeader.size, 1, file);
 		if(!result)
 		{
-			Log.Error("NavMeshInterface", "Bad header or data in mmap %03u%02u%02u.mmtile", ManagerMapId, x, y);
+			sLog.Error("NavMeshInterface", "Bad header or data in mmap %03u%02u%02u.mmtile", ManagerMapId, x, y);
 			fclose(file);
 			return false;
 		}
@@ -236,12 +236,12 @@ bool MMapManager::LoadNavMesh(uint32 x, uint32 y)
 		else if(dtStatusFailed(dtresult))
 		{
 			free(data);
-			Log.Debug("NavMeshInterface", "Could not load %03u%02u%02u.mmtile into navmesh", ManagerMapId, x, y);
+			sLog.Debug("NavMeshInterface", "Could not load %03u%02u%02u.mmtile into navmesh", ManagerMapId, x, y);
 			return false;
 		}
 		else
 		{
-			Log.Debug("NavMeshInterface", "Loaded mmtile %03u[%I64ld] into %03u[%02u,%02u]", ManagerMapId, reference, ManagerMapId, x, y);
+			sLog.Debug("NavMeshInterface", "Loaded mmtile %03u[%I64ld] into %03u[%02u,%02u]", ManagerMapId, reference, ManagerMapId, x, y);
 			TileReferences.insert(make_pair(PackedTileID, new TileReferenceC(reference)));
 		}
 	}
@@ -267,12 +267,12 @@ void MMapManager::UnloadNavMesh(uint32 x, uint32 y)
 		dtStatus status = m_navMesh->removeTile(reference, NULL, NULL);
 		if(dtStatusFailed(status))
 		{
-			Log.Debug("NavMeshInterface", "Failed to unload mmtile %03u[%I64ld] from %03u[%02u,%02u]", ManagerMapId, reference, ManagerMapId, x, y);
+			sLog.Debug("NavMeshInterface", "Failed to unload mmtile %03u[%I64ld] from %03u[%02u,%02u]", ManagerMapId, reference, ManagerMapId, x, y);
 			return;
 		}
 		delete itr->second;
 		TileReferences.erase(itr);
-		Log.Debug("NavMeshInterface", "Unloaded mmtile %03u[%I64ld] from %03u[%02u,%02u]", ManagerMapId, reference, ManagerMapId, x, y);
+		sLog.Debug("NavMeshInterface", "Unloaded mmtile %03u[%I64ld] from %03u[%02u,%02u]", ManagerMapId, reference, ManagerMapId, x, y);
 	}
 
 	TileLoadCount[reference]--;

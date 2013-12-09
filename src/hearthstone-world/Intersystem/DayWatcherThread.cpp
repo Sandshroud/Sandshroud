@@ -48,7 +48,7 @@ void DayWatcherThread::load_settings()
 	}
 	else
 	{
-		DEBUG_LOG("DayWatcherThread", "Initialized Arena Updates.");
+		sLog.Debug("DayWatcherThread", "Initialized Arena Updates.");
 		last_arena_time = 0;
 	}
 
@@ -60,7 +60,7 @@ void DayWatcherThread::load_settings()
 	}
 	else
 	{
-		DEBUG_LOG("DayWatcherThread", "Initialized Daily Updates.");
+		sLog.Debug("DayWatcherThread", "Initialized Daily Updates.");
 		last_daily_reset_time = 0;
 	}
 }
@@ -95,7 +95,7 @@ bool DayWatcherThread::has_timeout_expired(tm * now_time, tm * last_time, uint32
 
 bool DayWatcherThread::run()
 {
-	Log.Notice("DayWatcherThread", "Started.");
+	sLog.Notice("DayWatcherThread", "Started.");
 	_loaded = false;
 	currenttime = UNIXTIME;
 	dupe_tm_pointer(localtime(&currenttime), &local_currenttime);
@@ -150,7 +150,7 @@ bool DayWatcherThread::run()
 
 void DayWatcherThread::update_arena()
 {
-	Log.Notice("DayWatcherThread", "Running Weekly Arena Point Maintenance...");
+	sLog.Notice("DayWatcherThread", "Running Weekly Arena Point Maintenance...");
 	QueryResult * result = CharacterDatabase.Query("SELECT guid, arenaPoints FROM characters");		/* this one is a little more intensive. */
 	Player* plr;
 	uint32 guid, arenapoints, orig_arenapoints;
@@ -261,7 +261,7 @@ void DayWatcherThread::update_arena()
 
 void DayWatcherThread::update_daily()
 {
-	Log.Notice("DayWatcherThread", "Running Daily Quest Reset...");
+	sLog.Notice("DayWatcherThread", "Running Daily Quest Reset...");
 	CharacterDatabase.WaitExecute("UPDATE characters SET finished_daily_quests = ''");
 	objmgr.ResetDailies();
 	last_daily_reset_time = UNIXTIME;
@@ -271,7 +271,7 @@ void DayWatcherThread::update_daily()
 
 void DayWatcherThread::Reset_Heroic_Instances()
 {
-	Log.Notice("DayWatcherThread", "Reseting heroic instances...");
+	sLog.Notice("DayWatcherThread", "Reseting heroic instances...");
 	sInstanceMgr.ResetHeroicInstances();
 }
 

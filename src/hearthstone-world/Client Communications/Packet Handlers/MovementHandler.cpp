@@ -8,7 +8,7 @@
 
 void WorldSession::HandleMoveWorldportAckOpcode( WorldPacket & recv_data )
 {
-	DEBUG_LOG( "WORLD"," got MSG_MOVE_WORLDPORT_ACK." );
+	sLog.Debug( "WORLD"," got MSG_MOVE_WORLDPORT_ACK." );
 
 	GetPlayer()->SetPlayerStatus(NONE);
 	sEventMgr.RemoveEvents(GetPlayer(), EVENT_PLAYER_CHECK_STATUS_Transfer);
@@ -68,7 +68,7 @@ void WorldSession::HandleMoveTeleportAckOpcode( WorldPacket & recv_data )
 			return;
 		}
 
-		DEBUG_LOG( "WORLD"," got MSG_MOVE_TELEPORT_ACK." );
+		sLog.Debug( "WORLD"," got MSG_MOVE_TELEPORT_ACK." );
 		GetPlayer()->SetPlayerStatus(NONE);
 		sEventMgr.RemoveEvents(GetPlayer(), EVENT_PLAYER_CHECK_STATUS_Transfer);
 		GetPlayer()->SetMovement(MOVE_UNROOT,5);
@@ -182,7 +182,7 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
 		int32 server_delta = (int32)mstime - (int32)_player->m_lastMovementPacketTimestamp;
 		int32 client_delta = (int32)_player->movement_info.time - (int32)_player->m_lastMoveTime;
 		int32 diff = client_delta - server_delta;
-		//DEBUG_LOG("WorldSession","HandleMovementOpcodes: server delta=%u, client delta=%u", server_delta, client_delta);
+		//sLog.Debug("WorldSession","HandleMovementOpcodes: server delta=%u, client delta=%u", server_delta, client_delta);
 		int32 threshold = int32( sWorld.m_CEThreshold ) + int32( _player->GetSession()->GetLatency() );
 		if( diff >= threshold )		// replace with threshold var
 		{

@@ -58,14 +58,14 @@ void WorldStateManager::UpdateWorldState(uint32 uWorldStateId, uint32 uValue)
 	if( itr == m_states.end() )
 	{
 		// otherwise try to create it
-		DEBUG_LOG("WorldState","Creating new world state %u with value %u for map %u.", uWorldStateId, uValue, m_mapMgr->GetMapId());
+		sLog.Debug("WorldState","Creating new world state %u with value %u for map %u.", uWorldStateId, uValue, m_mapMgr->GetMapId());
 		CreateWorldState(uWorldStateId, uValue);
 		itr = m_states.find(uWorldStateId);
 		if( itr == m_states.end() )
 		{
 			//Creation of worldstate failed, abort !
 			//m_lock.Release();
-			Log.Error("WorldState","Creation of world state %u with value %u for map %u failed!", uWorldStateId, uValue, m_mapMgr->GetMapId());
+			sLog.Error("WorldState","Creation of world state %u with value %u for map %u failed!", uWorldStateId, uValue, m_mapMgr->GetMapId());
 			return;
 		}
 		//m_lock.Release();
@@ -192,7 +192,7 @@ void WorldStateTemplateManager::LoadFromDB(int32 mapid)
 		{
 			if( mapid >= NUM_MAPS )
 			{
-				Log.LargeErrorMessage(LARGERRORMESSAGE_WARNING, "Worldstate template for field %u on map %u (%s) contains out of range map.",
+				sLog.LargeErrorMessage(LARGERRORMESSAGE_WARNING, "Worldstate template for field %u on map %u (%s) contains out of range map.",
 					tmpl.uField, mapid, fields[5].GetString());
 
 				continue;

@@ -88,7 +88,7 @@ void LootMgr::LoadLoot()
 	//THIS MUST BE CALLED AFTER LOADING OF ITEMS
 	is_loading = true;
 	LoadLootProp();
-	DEBUG_LOG("LootMgr","Loading loot...");
+	sLog.Debug("LootMgr","Loading loot...");
 	LoadLootTables(FISHING_LOOT, &FishingLoot, false);
 	is_loading = false;
 }
@@ -153,7 +153,7 @@ void LootMgr::LoadLootProp()
 			rp = dbcRandomProps.LookupEntryForced(eid);
 			if(rp == NULL)
 			{
-				Log.Error("LoadLootProp", "RandomProp group %u references non-existant randomprop %u.", id, eid);
+				sLog.Error("LoadLootProp", "RandomProp group %u references non-existant randomprop %u.", id, eid);
 				continue;
 			}
 
@@ -184,7 +184,7 @@ void LootMgr::LoadLootProp()
 			rs = dbcItemRandomSuffix.LookupEntryForced(eid);
 			if(rs == NULL)
 			{
-				Log.Error("LoadLootProp", "RandomSuffix group %u references non-existant randomsuffix %u.", id, eid);
+				sLog.Error("LoadLootProp", "RandomSuffix group %u references non-existant randomsuffix %u.", id, eid);
 				continue;
 			}
 
@@ -205,7 +205,7 @@ void LootMgr::LoadLootProp()
 
 LootMgr::~LootMgr()
 {
-	Log.Notice("LootMgr","Deleting Loot Tables...");
+	sLog.Notice("LootMgr","Deleting Loot Tables...");
 	for(LootStore::iterator iter=CreatureLoot.begin(); iter != CreatureLoot.end(); iter++)
 		delete [] iter->second.items;
 
@@ -227,7 +227,7 @@ LootMgr::~LootMgr()
 
 void LootMgr::LoadLootTables(const char * szTableName, LootStore * LootTable, bool MultiDifficulty)
 {
-	DEBUG_LOG("LootMgr","Attempting to load loot from table %s...", szTableName);
+	sLog.Debug("LootMgr","Attempting to load loot from table %s...", szTableName);
 	vector< pair< uint32, vector< tempy > > > db_cache;
 	vector< pair< uint32, vector< tempy > > >::iterator itr;
 	db_cache.reserve(10000);
@@ -235,7 +235,7 @@ void LootMgr::LoadLootTables(const char * szTableName, LootStore * LootTable, bo
 	QueryResult *result = WorldDatabase.Query("SELECT * FROM %s ORDER BY entryid ASC",szTableName);
 	if(!result)
 	{
-		Log.Error("LootMgr", "Loading loot from table %s failed.", szTableName);
+		sLog.Error("LootMgr", "Loading loot from table %s failed.", szTableName);
 		return;
 	}
 
@@ -243,13 +243,13 @@ void LootMgr::LoadLootTables(const char * szTableName, LootStore * LootTable, bo
 	{
 		if(result->GetFieldCount() != 9)
 		{
-			Log.Error("LootMgr", "Incorrect structure in table %s(%u/9), loot loading has been cancled to prevent a crash.", szTableName, result->GetFieldCount());
+			sLog.Error("LootMgr", "Incorrect structure in table %s(%u/9), loot loading has been cancled to prevent a crash.", szTableName, result->GetFieldCount());
 			return;
 		}
 	}
 	else if(result->GetFieldCount() != 6)
 	{
-		Log.Error("LootMgr", "Incorrect structure in table %s(%u/6), loot loading has been cancled to prevent a crash.", szTableName, result->GetFieldCount());
+		sLog.Error("LootMgr", "Incorrect structure in table %s(%u/6), loot loading has been cancled to prevent a crash.", szTableName, result->GetFieldCount());
 		return;
 	}
 
@@ -267,7 +267,7 @@ void LootMgr::LoadLootTables(const char * szTableName, LootStore * LootTable, bo
 		entry_id = fields[0].GetUInt32();
 		if(entry_id < last_entry)
 		{
-			Log.Error("LootMgr", "WARNING: Out of order loot table being loaded.");
+			sLog.Error("LootMgr", "WARNING: Out of order loot table being loaded.");
 			delete result;
 			return;
 		}
@@ -339,7 +339,7 @@ void LootMgr::LoadLootTables(const char * szTableName, LootStore * LootTable, bo
 					list->items[ind].item.itemproto = NULL;
 					if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 						WorldDatabase.Query("DELETE FROM %s where entryid ='%u' AND itemid = '%u'", szTableName, entry_id, itemid);
-					Log.Warning("LootMgr", "Loot for %u contains non-existant item(%u). (%s)", entry_id, itemid, szTableName);
+					sLog.Warning("LootMgr", "Loot for %u contains non-existant item(%u). (%s)", entry_id, itemid, szTableName);
 				}
 				else
 				{
@@ -391,7 +391,7 @@ void LootMgr::LoadLootTables(const char * szTableName, LootStore * LootTable, bo
 		}
 	}
 
-	Log.Notice("LootMgr","%d loot templates loaded from %s", db_cache.size(), szTableName);
+	sLog.Notice("LootMgr","%d loot templates loaded from %s", db_cache.size(), szTableName);
 	delete result;
 }
 
@@ -900,7 +900,7 @@ void LootRoll::Finalize()
 			return;
 		}
 
-		DEBUG_LOG("HandleAutostoreItem","AutoLootItem %u",itemid);
+		sLog.Debug("HandleAutostoreItem","AutoLootItem %u",itemid);
 		Item* item = objmgr.CreateItem( itemid, _player);
 
 		item->SetUInt32Value(ITEM_FIELD_STACK_COUNT,amt);
@@ -1048,7 +1048,7 @@ int32 LootRoll::event_GetInstanceID()
 
 void LootMgr::FillObjectLootMap(map<uint32, vector<uint32> > *dest)
 {
-	DEBUG_LOG("LootMgr","Generating object loot map...");
+	sLog.Debug("LootMgr","Generating object loot map...");
 	QueryResult *result = WorldDatabase.Query("SELECT entryid, itemid FROM objectloot");
 	if( result != NULL )
 	{

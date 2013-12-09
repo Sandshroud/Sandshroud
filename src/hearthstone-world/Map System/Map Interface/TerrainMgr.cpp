@@ -172,7 +172,7 @@ bool TerrainMgr::LoadTerrainHeader()
 	FileDescriptor = fopen(File, "rb");
 	if(FileDescriptor == 0)
 	{
-		Log.Error("TerrainMgr", "Map load failed for %s. Missing file?", File);
+		sLog.Error("TerrainMgr", "Map load failed for %s. Missing file?", File);
 		return false;
 	}
 
@@ -193,7 +193,7 @@ bool TerrainMgr::LoadTerrainHeader()
 	size_t dread = fread(TileOffsets, 1, TERRAIN_HEADER_SIZE, FileDescriptor);
 	if(dread != TERRAIN_HEADER_SIZE)
 	{
-		Log.Error("TerrainMgr", "Terrain header read failed for %s! %u/%u | %u", File, dread, TERRAIN_HEADER_SIZE, sizeof(TileOffsets));
+		sLog.Error("TerrainMgr", "Terrain header read failed for %s! %u/%u | %u", File, dread, TERRAIN_HEADER_SIZE, sizeof(TileOffsets));
 		fclose(FileDescriptor);
 		FileDescriptor = NULL;
 		return false;
@@ -303,7 +303,7 @@ bool TerrainMgr::UnloadTileInformation(uint32 x, uint32 y)
 	delete ptr;
 	mutex.Release();
 
-	DEBUG_LOG("TerrainMgr","Unloaded tile information for tile [%u][%u] in %ums.", x, y, getMSTime() - Start);
+	sLog.Debug("TerrainMgr","Unloaded tile information for tile [%u][%u] in %ums.", x, y, getMSTime() - Start);
 	// Success
 	return true;
 }

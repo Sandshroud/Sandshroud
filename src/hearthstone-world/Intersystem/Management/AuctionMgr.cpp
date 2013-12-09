@@ -8,7 +8,7 @@ initialiseSingleton( AuctionMgr );
 
 void AuctionMgr::LoadAuctionHouses()
 {
-	Log.Notice("AuctionMgr", "Loading Auction Houses...");
+	sLog.Notice("AuctionMgr", "Loading Auction Houses...");
 
 	QueryResult* res = CharacterDatabase.Query("SELECT MAX(auctionId) FROM auctions");
 	if(res)

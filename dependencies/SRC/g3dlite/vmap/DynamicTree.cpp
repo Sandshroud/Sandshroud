@@ -3,6 +3,7 @@
  */
 
 #include "../G3DAll.h"
+#include "VMapDefinitions.h"
 
 using VMAP::ModelInstance;
 
@@ -324,22 +325,16 @@ struct DynamicTreeIntersectionCallback_WithLogger
     G3D::g3d_uint32 instanceId;
     DynamicTreeIntersectionCallback_WithLogger(G3D::g3d_int32 instanceid, G3D::g3d_uint32 phasemask) : did_hit(false), instanceId(instanceid), phase_mask(phasemask)
     {
-#ifdef _DEBUG
-        printf("Dynamic Intersection log\n");
-#endif
+        bLog.outDebug("Dynamic Intersection log");
     }
     bool operator()(const G3D::Ray& r, const VMAP::GameobjectModelInstance& obj, float& distance)
     {
-#ifdef _DEBUG
-        printf("testing intersection with %s\n", obj.name.c_str());
-#endif
+        bLog.outDebug("testing intersection with %s", obj.name.c_str());
         bool hit = obj.intersectRay(r, distance, true, instanceId, phase_mask);
         if (hit)
         {
             did_hit = true;
-#ifdef _DEBUG
-            printf("result: intersects\n");
-#endif
+            bLog.outDebug("result: intersects");
         }
         return hit;
     }

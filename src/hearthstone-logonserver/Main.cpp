@@ -15,8 +15,6 @@
 
 // Database impl
 Database * sLogonSQL;
-initialiseSingleton(oLog);
-initialiseSingleton(CLog);
 initialiseSingleton(LogonServer);
 bool mrunning = true;
 bool m_encryptedPasswords;
@@ -107,7 +105,9 @@ bool startdb()
 		return false;
 	}
 
-	sLog.SetScreenLoggingLevel(mainIni->ReadInteger("LogLevel", "Screen", 0));
+    int loglevel = mainIni->ReadInteger("LogLevel", "Screen", 0);
+    sLog.SetLoggingLevel(loglevel);
+    sLog.SetCLoggingLevel(loglevel);
 	sLogonSQL = Database::Create();
 
 	// Initialize it
@@ -163,10 +163,10 @@ bool Rehash()
 	mainIni->Reload();
 	if(mainIni->ParseError())
 	{
-		Log.Error( "Config", ">> hearthstone-logonserver.ini" );
+		sLog.Error( "Config", ">> hearthstone-logonserver.ini" );
 		return false;
 	}
-	Log.Success( "Config", ">> hearthstone-logonserver.ini" );
+	sLog.Success( "Config", ">> hearthstone-logonserver.ini" );
 
 	m_encryptedPasswords = mainIni->ReadBoolean("LogonServer", "UseEncryptedPasswords", false);
 
@@ -280,7 +280,7 @@ void LogonServer::Run(int argc, char ** argv)
 		case 0:
 			break;
 		default:
-			sLog.m_screenLogLevel = 3;
+            sLog.SetLoggingLevel(3);
 			printf("Usage: %s [--checkconf] [--screenloglevel <level>] [--fileloglevel <level>] [--conf <filename>] [--version]\n", argv[0]);
 			return;
 		}
@@ -288,41 +288,40 @@ void LogonServer::Run(int argc, char ** argv)
 
 	printf("Sandshroud Hearthstone(%s::%s) r%u/%s-%s(%s)::Logon Server\n", BUILD_TAG, BUILD_HASH_STR, BUILD_REVISION, CONFIG, PLATFORM_TEXT, ARCH);
 	printf("==============================================================================\n");
-	Log.Line();
+	sLog.Line();
 	if(do_version)
 		return;
 
 	mainIni = new CIniFile(config_file);
 	if(!mainIni->ParseError())
-		Log.Success("Config", "Passed without errors.");
+		sLog.Success("Config", "Passed without errors.");
 	else
 	{
-		Log.Warning("Config", "Encountered one or more errors.");
+		sLog.Warning("Config", "Encountered one or more errors.");
 		return;
 	}
 
 	printf( "The key combination <Ctrl-C> will safely shut down the server at any time.\n" );
-	Log.Line();
+	sLog.Line();
 
 	InitRandomNumberGenerators();
-	Log.Success( "Rnd", "Initialized Random Number Generators." );
+	sLog.Success( "Rnd", "Initialized Random Number Generators." );
 
-	Log.Notice("Config", "Loading Config Files...");
+	sLog.Notice("Config", "Loading Config Files...");
 	if(!Rehash())
 		return;
 
+    int32 logLevel = 1;
+#ifdef _DEBUG
+    logLevel = 3;
+#endif
 	//use these log_level until we are fully started up.
 	if(mainIni->ReadInteger("LogLevel", "Screen", 1) == -1)
 	{
-		Log.Notice("Main", "Running silent mode...");
-		sLog.Init(-1);
+		sLog.Notice("Main", "Running silent mode...");
+        logLevel = -1;
 	}
-	else
-#ifdef _DEBUG
-		sLog.Init(3);
-#else
-		sLog.Init(1);
-#endif // _DEBUG
+    sLog.Init(logLevel);
 
 	sDBEngine.Init(false);
 	if(!startdb())
@@ -331,21 +330,21 @@ void LogonServer::Run(int argc, char ** argv)
 		return;
 	}
 
-	Log.Line();
+	sLog.Line();
 	sLog.outString("");
 
-	Log.Notice("AccountMgr", "Starting...");
+	sLog.Notice("AccountMgr", "Starting...");
 	new AccountMgr;
 	new IPBanner;
 
-	Log.Notice("InfoCore", "Starting...");
+	sLog.Notice("InfoCore", "Starting...");
 	new InformationCore;
 
 	new PatchMgr;
-	Log.Notice("AccountMgr", "Precaching accounts...");
+	sLog.Notice("AccountMgr", "Precaching accounts...");
 	sAccountMgr.ReloadAccounts(true);
-	Log.Notice("AccountMgr", "%u accounts are loaded and ready.", sAccountMgr.GetCount());
-	Log.Line();
+	sLog.Notice("AccountMgr", "%u accounts are loaded and ready.", sAccountMgr.GetCount());
+	sLog.Line();
 
 	// Spawn periodic function caller thread for account reload every 10mins
 	int atime = mainIni->ReadInteger("Rates", "AccountRefresh",600);
@@ -368,7 +367,7 @@ void LogonServer::Run(int argc, char ** argv)
 
 	ThreadPool.ExecuteTask("ConsoleThread", new LogonConsoleThread());
 
-	DEBUG_LOG("Server","Starting network subsystem..." );
+	sLog.Debug("Server","Starting network subsystem..." );
 	CreateSocketEngine(2);
 	sSocketEngine.SpawnThreads();
 
@@ -381,7 +380,7 @@ void LogonServer::Run(int argc, char ** argv)
 	bool intersockcreated = sl->Open(shost.c_str(), sport);
 
 	// hook signals
-	Log.Notice("LogonServer","Hooking signals...");
+	sLog.Notice("LogonServer","Hooking signals...");
 	signal(SIGINT, _OnSignal);
 	signal(SIGTERM, _OnSignal);
 	signal(SIGABRT, _OnSignal);
@@ -406,7 +405,7 @@ void LogonServer::Run(int argc, char ** argv)
 	}
 	uint32 loop_counter = 0;
 	//ThreadPool.Gobble();
-	Log.Notice("LogonServer","Success! Ready for connections");
+	sLog.Notice("LogonServer","Success! Ready for connections");
 	while(mrunning && authsockcreated && intersockcreated)
 	{
 		if(!(loop_counter%100))  //100 loop ~ 1seconds
@@ -422,11 +421,11 @@ void LogonServer::Run(int argc, char ** argv)
 		Sleep(10);
 	}
 
-	Log.Notice("LogonServer","Shutting down...");
+	sLog.Notice("LogonServer","Shutting down...");
 	sDBEngine.EndThreads();
 	sLogonSQL->EndThreads();
 
-	Log.Notice("Server", "Shutting down random generator.");
+	sLog.Notice("Server", "Shutting down random generator.");
 	CleanupRandomNumberGenerators();
 
 	signal(SIGINT, 0);
@@ -442,7 +441,7 @@ void LogonServer::Run(int argc, char ** argv)
 	cl->Disconnect();
 	sl->Disconnect();
 
-	Log.Notice( "Network", "Shutting down network subsystem." );
+	sLog.Notice( "Network", "Shutting down network subsystem." );
 	sSocketEngine.Shutdown();
 
 	sLogonConsole.Kill();
@@ -464,7 +463,7 @@ void LogonServer::Run(int argc, char ** argv)
 	delete SocketEngine::getSingletonPtr();
 	delete SocketDeleter::getSingletonPtr();
 	delete pfc;
-	Log.Notice("LogonServer","Shutdown complete.\n");
+	sLog.Notice("LogonServer","Shutdown complete.\n");
 }
 
 void OnCrash(bool Terminate)

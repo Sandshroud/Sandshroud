@@ -175,7 +175,7 @@ OUTPACKET_RESULT WorldSocket::_OutPacket(uint16 opcode, size_t len, const void* 
 	{
 		if(Uniques.find(opcode) == Uniques.end())
 		{
-			Log.Notice("", "Sent packet %s (0x%03X)", LookupOpcodeName(opcode), uint(opcode), uint(opcode));
+			sLog.Notice("", "Sent packet %s (0x%03X)", LookupOpcodeName(opcode), uint(opcode), uint(opcode));
 			Uniques.insert(opcode);
 		}
 	}
@@ -242,7 +242,7 @@ void WorldSocket::_HandleAuthSession(WorldPacket* recvPacket)
 	}
 	catch(ByteBufferException &)
 	{
-		OUT_DEBUG("Incomplete copy of AUTH_SESSION Received.");
+		sLog.outDebug("Incomplete copy of AUTH_SESSION Received.");
 		return;
 	}
 
@@ -296,7 +296,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 	if( ForcedPermissions != NULL )
 		GMFlags.assign(ForcedPermissions->c_str());
 
-	DEBUG_LOG( "WorldSocket","Received information packet from logon: `%s` ID %u (request %u)", AccountName.c_str(), AccountID, mRequestID);
+	sLog.Debug( "WorldSocket","Received information packet from logon: `%s` ID %u (request %u)", AccountName.c_str(), AccountID, mRequestID);
 //	sLog.outColor(TNORMAL, "\n");
 
 	mRequestID = 0;
@@ -319,7 +319,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 	{
 		if(session->_player != NULL && session->_player->GetMapMgr() == NULL)
 		{
-			DEBUG_LOG("WorldSocket","_player found without m_mapmgr during logon, trying to remove him [player %s, map %d, instance %d].", session->_player->GetName(), session->_player->GetMapId(), session->_player->GetInstanceID() );
+			sLog.Debug("WorldSocket","_player found without m_mapmgr during logon, trying to remove him [player %s, map %d, instance %d].", session->_player->GetName(), session->_player->GetMapId(), session->_player->GetInstanceID() );
 			if(objmgr.GetPlayer(session->_player->GetLowGUID()))
 				objmgr.RemovePlayer(session->_player);
 			session->LogoutPlayer(false);
@@ -412,7 +412,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 		}
 	}
 
-	DEBUG_LOG("Auth", "%s from %s:%u [%ums]", AccountName.c_str(), GetIP(), GetPort(), _latency);
+	sLog.Debug("Auth", "%s from %s:%u [%ums]", AccountName.c_str(), GetIP(), GetPort(), _latency);
 
 	// Check for queue.
 	if( (sWorld.GetSessionCount() < sWorld.GetPlayerLimit()) || pSession->HasGMPermissions() )
@@ -422,7 +422,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 		// Queued, sucker.
 		uint32 Position = sWorld.AddQueuedSocket(this);
 		mQueued = true;
-		DEBUG_LOG("Queue", "%s added to queue in position %u", AccountName.c_str(), Position);
+		sLog.Debug("Queue", "%s added to queue in position %u", AccountName.c_str(), Position);
 
 		// Send packet so we know what we're doing
 		UpdateQueuePosition(Position);
@@ -439,7 +439,7 @@ void WorldSocket::Authenticate()
 
 	if(!pSession)
 	{
-		DEBUG_LOG( "WorldSocket","Lost Session");
+		sLog.Debug( "WorldSocket","Lost Session");
 		return;
 	}
 

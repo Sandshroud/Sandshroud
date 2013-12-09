@@ -73,7 +73,7 @@ void LogonCommHandler::Startup()
 	// Try to connect to all logons.
 	LoadRealmConfiguration();
 
-	Log.Notice("LogonCommClient", "Loading forced permission strings...");
+	sLog.Notice("LogonCommClient", "Loading forced permission strings...");
 	QueryResult * result = CharacterDatabase.Query("SELECT * FROM account_forced_permissions");
 	if( result != NULL )
 	{
@@ -115,7 +115,7 @@ void LogonCommHandler::Connect()
 
 	++ReConCounter;
 
-	Log.Notice("LogonCommClient", "Connecting to logonserver on `%s:%u, attempt %u`", server->Address.c_str(), server->Port, ReConCounter );
+	sLog.Notice("LogonCommClient", "Connecting to logonserver on `%s:%u, attempt %u`", server->Address.c_str(), server->Port, ReConCounter );
 
 	server->RetryTime = getMSTime()+10000;
 	server->Registered = false;
@@ -124,19 +124,19 @@ void LogonCommHandler::Connect()
 	logon = ConnectToLogon(server->Address, server->Port);
 	if(logon == NULL)
 	{
-		Log.Notice("LogonCommClient", "Connection failed. Will try again in 10 seconds.");
+		sLog.Notice("LogonCommClient", "Connection failed. Will try again in 10 seconds.");
 		mapLock.Release();
 		return;
 	}
 
-	Log.Notice("LogonCommClient", "Authenticating...");
+	sLog.Notice("LogonCommClient", "Authenticating...");
 	uint32 tt = getMSTime()+10000;
 	logon->SendChallenge();
 	while(!logon->authenticated)
 	{
 		if(getMSTime() >= tt || bServerShutdown)
 		{
-			Log.Notice("LogonCommClient", "Authentication timed out.");
+			sLog.Notice("LogonCommClient", "Authentication timed out.");
 			logon->Disconnect();
 			logon = NULL;
 			mapLock.Release();
@@ -148,16 +148,16 @@ void LogonCommHandler::Connect()
 
 	if(logon->authenticated != 1)
 	{
-		Log.Notice("LogonCommClient","Authentication failed.");
+		sLog.Notice("LogonCommClient","Authentication failed.");
 		logon->Disconnect();
 		logon = NULL;
 		mapLock.Release();
 		return;
 	}
 	else
-		Log.Success("LogonCommClient","Authentication succeeded.");
+		sLog.Success("LogonCommClient","Authentication succeeded.");
 
-	Log.Notice("LogonCommClient", "Registering Realms...");
+	sLog.Notice("LogonCommClient", "Registering Realms...");
 	logon->_id = server->ID;
 
 	RequestAddition(logon);
@@ -169,7 +169,7 @@ void LogonCommHandler::Connect()
 	{	// Don't wait more than 15 seconds for a registration, thats our ping timeout
 		if(getMSTime() >= st || bServerShutdown)
 		{
-			Log.Notice("LogonCommClient", "Realm registration timed out.");
+			sLog.Notice("LogonCommClient", "Realm registration timed out.");
 			logon->Disconnect();
 			logon = NULL;
 			break;
@@ -186,7 +186,7 @@ void LogonCommHandler::Connect()
 	// Wait for all realms to register
 	Delay(200);
 
-	Log.Success("LogonCommClient", "Logonserver latency is %ums.", logon->latency);
+	sLog.Success("LogonCommClient", "Logonserver latency is %ums.", logon->latency);
 
 	// We have connected, reset our attempt counter.
 	ReConCounter = 0;
@@ -210,7 +210,7 @@ void LogonCommHandler::UpdateSockets(uint32 diff)
 	{
 		if(logon->IsDeleted() || !logon->IsConnected())
 		{
-			Log.Error("LogonCommClient","Realm id %u lost connection.", (unsigned int)server->ID);
+			sLog.Error("LogonCommClient","Realm id %u lost connection.", (unsigned int)server->ID);
 			logon->_id = 0;
 			if(logon->IsConnected())
 				logon->Disconnect();
@@ -224,7 +224,7 @@ void LogonCommHandler::UpdateSockets(uint32 diff)
 			if(t - logon->last_ping > 15000)
 			{
 				// no ping for 15 seconds -> remove the socket
-				Log.Error("LogonCommClient","Realm id %u connection dropped due to pong timeout.", (unsigned int)server->ID);
+				sLog.Error("LogonCommClient","Realm id %u connection dropped due to pong timeout.", (unsigned int)server->ID);
 				logon->_id = 0;
 				logon->Disconnect();
 				logon = NULL;
@@ -253,7 +253,7 @@ void LogonCommHandler::ConnectionDropped()
 	if(logon != NULL)
 	{
 		if(!bServerShutdown)
-			Log.Error("LogonCommHandler"," Realm connection was dropped unexpectedly. reconnecting next loop.");
+			sLog.Error("LogonCommHandler"," Realm connection was dropped unexpectedly. reconnecting next loop.");
 		logon->_id = 0;
 		logon->Disconnect();
 		logon = NULL;
@@ -266,7 +266,7 @@ uint32 LogonCommHandler::ClientConnected(string AccountName, WorldSocket * Socke
 	uint32 request_id = next_request++;
 	size_t i = 0;
 	const char * acct = AccountName.c_str();
-	DEBUG_LOG( "LogonCommHandler","Sending request for account information: `%s` (request %u).", AccountName.c_str(), request_id);
+	sLog.Debug( "LogonCommHandler","Sending request for account information: `%s` (request %u).", AccountName.c_str(), request_id);
 
 	// Send request packet to server.
 	if(logon == NULL)

@@ -3,7 +3,7 @@
  */
 
 #include "DBC.h"
-#include "../../NGLog.h"
+#include "../../hearthstone_log.h"
 #include <math.h>
 
 class DBC;
@@ -22,7 +22,7 @@ void DBC::Load(const char *filename)
 	if(!f)
 	{
 		//printf("DBC %s Doesnt exist!\n",filename);
-		Log.Error("DBC", "DBC %s doesn't exist!\n", filename);
+		sLog.Error("DBC", "DBC %s doesn't exist!\n", filename);
 		return;
 	}
 
@@ -54,7 +54,7 @@ void DBC::Load(const char *filename)
 	fclose(f);
 	loaded = true;
 
-	Log.Notice("DBC", "Loaded %s (%u rows)", name, rows);
+	sLog.Notice("DBC", "Loaded %s (%u rows)", name, rows);
 }
 
 void DBC::Lookup(char* out, int row,int col,char isstr,bool onlystr)

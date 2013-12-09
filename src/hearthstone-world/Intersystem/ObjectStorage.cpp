@@ -170,7 +170,7 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
 			cn = CreatureProtoStorage.LookupEntry(entry);
 			if( cn == NULL )
 			{
-				Log.Warning("AIAgent", "Agent skipped, NPC %u does not exist.", fields[0].GetUInt32());
+				sLog.Warning("AIAgent", "Agent skipped, NPC %u does not exist.", fields[0].GetUInt32());
 				continue;
 			}
 
@@ -180,7 +180,7 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
 			{
 				if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 					WorldDatabase.Execute("DELETE FROM ai_agents where entry = '%u' AND spell = '%u'", entry, spellID);
-				Log.Warning("AIAgent", "Agent skipped, NPC %u tried to add non-existing Spell %u.", entry, spellID);
+				sLog.Warning("AIAgent", "Agent skipped, NPC %u tried to add non-existing Spell %u.", entry, spellID);
 				continue;
 			}
 
@@ -286,7 +286,7 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
 		}while( result->NextRow() );
 		delete result;
 		result = NULL;
-		Log.Notice("Storage", "%u AI agents loaded from the database.", count);
+		sLog.Notice("Storage", "%u AI agents loaded from the database.", count);
 	}
 
 	uint32 modecount = 0;
@@ -297,7 +297,7 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
 		loadmodes = true;
 		if(modechecks->GetFieldCount() != 18)
 		{
-			Log.Error("ObjectStorage", "Incorrect field count(%u/18) for table creature_proto_mode, mode loading is disabled.", modechecks->GetFieldCount());
+			sLog.Error("ObjectStorage", "Incorrect field count(%u/18) for table creature_proto_mode, mode loading is disabled.", modechecks->GetFieldCount());
 			loadmodes = false;
 		}delete modechecks;
 	}
@@ -325,7 +325,7 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
 				uint8 mode = fields[fieldcount++].GetUInt8();
 				if(mode > 3 || mode < 1)
 				{
-					Log.Warning("ObjectStorage","Incorrect instance mode %u for creature %u, instance mode 3 max.", mode, entry);
+					sLog.Warning("ObjectStorage","Incorrect instance mode %u for creature %u, instance mode 3 max.", mode, entry);
 
 					if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 						WorldDatabase.Execute("DELETE FROM creature_proto_mode WHERE entry = %u AND mode = %u;", entry, mode);
@@ -382,7 +382,7 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
 	}
 
 	// List what we've loaded.
-	Log.Notice("ObjectStorage","%u entries loaded from table creature_proto_mode", modecount);
+	sLog.Notice("ObjectStorage","%u entries loaded from table creature_proto_mode", modecount);
 }
 
 void ObjectMgr::LoadExtraItemStuff()

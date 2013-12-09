@@ -500,7 +500,7 @@ void Object::_Create( uint32 mapid, float x, float y, float z, float ang )
 
 uint32 Object::BuildCreateUpdateBlockForPlayer(ByteBuffer *data, Player* target)
 {
-//	OUT_DEBUG("Building update block for Player"); // Too heavy for the core.
+//	sLog.outDebug("Building update block for Player"); // Too heavy for the core.
 	uint16 flags = 0;
 	uint32 flags2 = 0;
 
@@ -1150,7 +1150,7 @@ bool Object::SetPosition(const LocationVector & v, bool allowPorting /* = false 
 	if (!allowPorting && v.z < -500)
 	{
 		m_position.z = 500;
-		OUT_DEBUG( "setPosition: fell through map; height ported" );
+		sLog.outDebug( "setPosition: fell through map; height ported" );
 		if(IsPlayer())
 			TO_PLAYER(this)->RepopAtGraveyard( GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId() );
 
@@ -1181,7 +1181,7 @@ bool Object::SetPosition( float newX, float newY, float newZ, float newOrientati
 	if (!allowPorting && newZ < -500)
 	{
 		m_position.z = 500;
-		OUT_DEBUG( "setPosition: fell through map; height ported" );
+		sLog.outDebug( "setPosition: fell through map; height ported" );
 		result = false;
 	}
 
@@ -1461,7 +1461,7 @@ void Object::PushToWorld(MapMgr* mgr)
 
 		if(IsPlayer())
 		{
-			Log.Error("Object","Kicking Player %s due to empty MapMgr;",TO_PLAYER(this)->GetName());
+			sLog.Error("Object","Kicking Player %s due to empty MapMgr;",TO_PLAYER(this)->GetName());
 			TO_PLAYER(this)->GetSession()->LogoutPlayer(false);
 		}
 		return; //instance add failed
@@ -2083,7 +2083,7 @@ bool Object::inArc(float Position1X, float Position1Y, float FOV, float Orientat
 	float angle = calcAngle( Position1X, Position1Y, Position2X, Position2Y );
 	float lborder = getEasyAngle( ( Orientation - (FOV*0.5f/*/2*/) ) );
 	float rborder = getEasyAngle( ( Orientation + (FOV*0.5f/*/2*/) ) );
-	//OUT_DEBUG("Orientation: %f Angle: %f LeftBorder: %f RightBorder %f",Orientation,angle,lborder,rborder);
+	//sLog.outDebug("Orientation: %f Angle: %f LeftBorder: %f RightBorder %f",Orientation,angle,lborder,rborder);
 	if(((angle >= lborder) && (angle <= rborder)) || ((lborder > rborder) && ((angle < rborder) || (angle > lborder))))
 	{
 		return true;
@@ -2880,7 +2880,7 @@ int32 Object::DealDamage(Unit* pVictim, uint32 damage, uint32 targetEvent, uint3
 			/* -------------------- REMOVE PET WHEN PLAYER DIES END---------------*/
 		}
 		else
-			OUT_DEBUG("DealDamage for Unknown Object.");
+			sLog.outDebug("DealDamage for Unknown Object.");
 
 		if(IsUnit())
 			sHookInterface.OnPostUnitDie(TO_UNIT(this), pVictim);

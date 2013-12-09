@@ -199,7 +199,7 @@ void MapMgr::Destruct()
 
 	m_battleground = NULLBATTLEGROUND;
 
-	Log.Notice("MapMgr", "Instance %u shut down. (%s)" , m_instanceID, GetBaseMap()->GetName());
+	sLog.Notice("MapMgr", "Instance %u shut down. (%s)" , m_instanceID, GetBaseMap()->GetName());
 }
 
 MapMgr::~MapMgr()
@@ -227,7 +227,7 @@ void MapMgr::PushObject(Object* obj)
 		plObj = TO_PLAYER( obj );
 		if(plObj == NULL)
 		{
-			DEBUG_LOG("MapMgr","Could not get a valid playerobject from object while trying to push to world");
+			sLog.Debug("MapMgr","Could not get a valid playerobject from object while trying to push to world");
 			return;
 		}
 		plObj->ClearInRangeSet();
@@ -235,7 +235,7 @@ void MapMgr::PushObject(Object* obj)
 		WorldSession * plSession = plObj->GetSession();
 		if(plSession == NULL)
 		{
-			DEBUG_LOG("MapMgr","Could not get a valid session for player while trying to push to world");
+			sLog.Debug("MapMgr","Could not get a valid session for player while trying to push to world");
 			return;
 		}
 	}
@@ -299,7 +299,7 @@ void MapMgr::PushObject(Object* obj)
 
 	if(plObj)
 	{
-		DEBUG_LOG("MapMgr","Creating player "I64FMT" for himself.", obj->GetGUID());
+		sLog.Debug("MapMgr","Creating player "I64FMT" for himself.", obj->GetGUID());
 		count = plObj->BuildCreateUpdateBlockForPlayer(&m_createBuffer, plObj);
 		plObj->PushCreationData(&m_createBuffer, count);
 		m_createBuffer.clear();
@@ -1094,7 +1094,7 @@ void MapMgr::UpdateAllCells(bool apply, uint32 areamask)
 	uint32 StartX = 0, EndX = 0, StartY = 0, EndY = 0;
 	GetBaseMap()->GetCellLimits(StartX, EndX, StartY, EndY);
 	if(!areamask)
-		Log.Notice("MapMgr", "Updating all cells for map %03u, server might lag.", _mapId);
+		sLog.Notice("MapMgr", "Updating all cells for map %03u, server might lag.", _mapId);
 	for( uint32 x = StartX ; x < EndX ; x ++ )
 	{
 		for( uint32 y = StartY ; y < EndY ; y ++ )
@@ -1124,7 +1124,7 @@ void MapMgr::UpdateAllCells(bool apply, uint32 areamask)
 					// There is no spoon. Err... cell.
 					cellInfo = Create( x , y );
 					cellInfo->Init( x , y , _mapId , this );
-					DEBUG_LOG("MapMgr","Created cell [%u,%u] on map %u (instance %u)." , x , y , _mapId , m_instanceID );
+					sLog.Debug("MapMgr","Created cell [%u,%u] on map %u (instance %u)." , x , y , _mapId , m_instanceID );
 				}
 
 				AddForcedCell(cellInfo, 0);
@@ -1145,7 +1145,7 @@ void MapMgr::UpdateAllCells(bool apply, uint32 areamask)
 		}
 	}
 	if(!areamask)
-		Log.Success("MapMgr", "Cell updating success for map %03u", _mapId);
+		sLog.Success("MapMgr", "Cell updating success for map %03u", _mapId);
 }
 
 void MapMgr::UpdateCellActivity(uint32 x, uint32 y, int radius)
@@ -1858,7 +1858,7 @@ void MapMgr::UnloadCell(uint32 x, uint32 y)
 	if(c == NULL || c->HasPlayers() || _CellActive(x,y) || !c->IsUnloadPending())
 		return;
 
-	DEBUG_LOG("MapMgr","Unloading Cell [%d][%d] on map %d (instance %d)...", x, y, _mapId, m_instanceID);
+	sLog.Debug("MapMgr","Unloading Cell [%d][%d] on map %d (instance %d)...", x, y, _mapId, m_instanceID);
 	c->Unload();
 }
 
@@ -2076,7 +2076,7 @@ GameObject* MapMgr::CreateGameObject(uint32 entry)
 	GameObjectInfo *goi = GameObjectNameStorage.LookupEntry( entry );
 	if( goi == NULL )
 	{
-		Log.Warning("MapMgr", "Skipping CreateGameObject for entry %u due to incomplete database.", entry);
+		sLog.Warning("MapMgr", "Skipping CreateGameObject for entry %u due to incomplete database.", entry);
 		if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
 			WorldDatabase.Execute("DELETE FROM gameobject_spawns WHERE entry = '%u';", entry);
 		return NULLGOB;

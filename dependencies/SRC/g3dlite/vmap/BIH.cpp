@@ -3,6 +3,7 @@
  */
 
 #include "../G3DAll.h"
+#include "VMapDefinitions.h"
 
 #ifdef _MSC_VER
   #define isnan _isnan
@@ -276,21 +277,21 @@ void BIH::BuildStats::updateLeaf(int depth, int n)
 
 void BIH::BuildStats::printStats()
 {
-    printf("Tree stats:\n");
-    printf("  * Nodes:          %d\n", numNodes);
-    printf("  * Leaves:         %d\n", numLeaves);
-    printf("  * Objects: min    %d\n", minObjects);
-    printf("             avg    %.2f\n", (float) sumObjects / numLeaves);
-    printf("           avg(n>0) %.2f\n", (float) sumObjects / (numLeaves - numLeavesN[0]));
-    printf("             max    %d\n", maxObjects);
-    printf("  * Depth:   min    %d\n", minDepth);
-    printf("             avg    %.2f\n", (float) sumDepth / numLeaves);
-    printf("             max    %d\n", maxDepth);
-    printf("  * Leaves w/: N=0  %3d%%\n", 100 * numLeavesN[0] / numLeaves);
-    printf("               N=1  %3d%%\n", 100 * numLeavesN[1] / numLeaves);
-    printf("               N=2  %3d%%\n", 100 * numLeavesN[2] / numLeaves);
-    printf("               N=3  %3d%%\n", 100 * numLeavesN[3] / numLeaves);
-    printf("               N=4  %3d%%\n", 100 * numLeavesN[4] / numLeaves);
-    printf("               N>4  %3d%%\n", 100 * numLeavesN[5] / numLeaves);
-    printf("  * BVH2 nodes:     %d (%3d%%)\n", numBVH2, 100 * numBVH2 / (numNodes + numLeaves - 2 * numBVH2));
+    bLog.outDebug("Tree stats:");
+    bLog.outDebug("  * Nodes:          %d", numNodes);
+    bLog.outDebug("  * Leaves:         %d", numLeaves);
+    bLog.outDebug("  * Objects: min    %d", minObjects);
+    bLog.outDebug("             avg    %.2f", (float) sumObjects / numLeaves);
+    bLog.outDebug("           avg(n>0) %.2f", (float) sumObjects / (numLeaves - numLeavesN[0]));
+    bLog.outDebug("             max    %d", maxObjects);
+    bLog.outDebug("  * Depth:   min    %d", minDepth);
+    bLog.outDebug("             avg    %.2f", (float) sumDepth / numLeaves);
+    bLog.outDebug("             max    %d", maxDepth);
+    bLog.outDebug("  * Leaves w/: N=0  %3d%%", 100 * numLeavesN[0] / numLeaves);
+    bLog.outDebug("               N=1  %3d%%", 100 * numLeavesN[1] / numLeaves);
+    bLog.outDebug("               N=2  %3d%%", 100 * numLeavesN[2] / numLeaves);
+    bLog.outDebug("               N=3  %3d%%", 100 * numLeavesN[3] / numLeaves);
+    bLog.outDebug("               N=4  %3d%%", 100 * numLeavesN[4] / numLeaves);
+    bLog.outDebug("               N>4  %3d%%", 100 * numLeavesN[5] / numLeaves);
+    bLog.outDebug("  * BVH2 nodes:     %d (%3d%%)", numBVH2, 100 * numBVH2 / (numNodes + numLeaves - 2 * numBVH2));
 }

@@ -6,6 +6,7 @@
 #define __LOGON_COMM_SERVER_H
 
 #include <RC4Engine.h>
+#include "WorldPacket.h"
 
 class LogonCommServerSocket : public TcpSocket
 {
