@@ -253,8 +253,6 @@ add_subdirectory(lacrimi)
 
 if(BUILD_TOOLS)
 add_subdirectory(tools)
-#Copy libmysql for tool usage
-FILE(COPY "${DEPENDENCY_DLLS}/libmysql.dll" DESTINATION "${OUTPUT_DIRECTORY}/Tools")
 endif()
 
 #Get the source directory for our code
