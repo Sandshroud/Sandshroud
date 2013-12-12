@@ -250,7 +250,7 @@ int finish(const char* message, int returnValue)
 int main(int argc, char** argv)
 {
     cLog = new basicLog();
-    cLog->Init(7);
+    cLog->Init(1);
 
     int threads = 3, mapnum = -1;
     float maxAngle = 55.0f;
