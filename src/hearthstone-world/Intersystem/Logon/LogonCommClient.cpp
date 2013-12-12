@@ -17,7 +17,7 @@ LogonCommClientSocket::LogonCommClientSocket(SOCKET fd, const sockaddr_in * peer
 	remaining = opcode = last_ping = 0;
 	_id = 0;
 	latency = 0;
-	use_crypto = rejected = authenticated = false;
+	rejected = authenticated = false;
 }
 
 void LogonCommClientSocket::OnRecvData()
@@ -33,11 +33,8 @@ void LogonCommClientSocket::OnRecvData()
 			Read(&opcode, 2);
 			Read(&remaining, 4);
 
-			if(use_crypto)
-			{
-				_recvCrypto.Process((unsigned char*)&opcode, (unsigned char*)&opcode, 2);
-				_recvCrypto.Process((unsigned char*)&remaining, (unsigned char*)&remaining, 4);
-			}
+			_recv.Process((unsigned char*)&opcode, (unsigned char*)&opcode, 2);
+			_recv.Process((unsigned char*)&remaining, (unsigned char*)&remaining, 4);
 
 			EndianConvert(opcode);
 			/* reverse byte order */
@@ -54,10 +51,8 @@ void LogonCommClientSocket::OnRecvData()
 		{
 			buff.resize(remaining);
 			Read((uint8*)buff.contents(), remaining);
+			_recv.Process((unsigned char*)buff.contents(), (unsigned char*)buff.contents(), remaining);
 		}
-
-		if(use_crypto && remaining)
-			_recvCrypto.Process((unsigned char*)buff.contents(), (unsigned char*)buff.contents(), remaining);
 
 		// handle the packet
 		HandlePacket(buff);
@@ -89,8 +84,6 @@ void LogonCommClientSocket::HandlePacket(WorldPacket & recvData)
 		NULL,												// RCMSG_TEST_CONSOLE_LOGIN
 		&LogonCommClientSocket::HandleConsoleAuthResult,	// RSMSG_CONSOLE_LOGIN_RESULT
 		NULL,												// RCMSG_MODIFY_DATABASE
-		&LogonCommClientSocket::HandleServerPing,			// RCMSG_SERVER_PING
-		NULL,												// RSMSG_SERVER_PONG
 	};
 
 	if(recvData.GetOpcode() >= RMSG_COUNT || Handlers[recvData.GetOpcode()] == 0)
@@ -146,12 +139,12 @@ void LogonCommClientSocket::HandleLatency(WorldPacket & recvData)
 	recvData >> latency;
 }
 
-void LogonCommClientSocket::SendPacket(WorldPacket * data, bool no_crypto)
+bool LogonCommClientSocket::SendPacket(WorldPacket * data)
 {
 	logonpacket header;
-	bool rv;
+	bool rv = false;
 	if(!m_connected || m_deleted)
-		return;
+		return rv;
 
 	LockWriteBuffer();
 
@@ -159,23 +152,18 @@ void LogonCommClientSocket::SendPacket(WorldPacket * data, bool no_crypto)
 	EndianConvert(header.opcode);
 	header.size = (uint32)data->size();
 	EndianConvertReverse(header.size);
-
-	if(use_crypto && !no_crypto)
-		_sendCrypto.Process((unsigned char*)&header, (unsigned char*)&header, 6);
-
+	_send.Process((unsigned char*)&header, (unsigned char*)&header, 6);
 	rv = WriteButHold((const uint8*)&header, 6);
-
 	if(data->size() > 0 && rv)
 	{
-		if(use_crypto && !no_crypto)
-			_sendCrypto.Process((unsigned char*)data->contents(), (unsigned char*)data->contents(), (unsigned int)data->size());
-
+		_send.Process((unsigned char*)data->contents(), (unsigned char*)data->contents(), (unsigned int)data->size());
 		rv = Write((const uint8*)data->contents(), (uint32)data->size());
 	}
 	else if(rv)
 		rv = ForceSend();
 
 	UnlockWriteBuffer();
+	return rv;
 }
 
 void LogonCommClientSocket::OnDisconnect()
@@ -194,28 +182,25 @@ LogonCommClientSocket::~LogonCommClientSocket()
 
 void LogonCommClientSocket::SendChallenge(std::string challenger)
 {
-	uint8 * key = sLogonCommHandler.sql_passhash;
-
-	_recvCrypto.Setup(key, 20);
-	_sendCrypto.Setup(key, 20);
-
-	/* packets are encrypted from now on */
-	use_crypto = true;
-
+	uint8 *key = sLogonCommHandler.sql_passhash;
 	WorldPacket data(RCMSG_AUTH_CHALLENGE, 20+challenger.length());
 	data.append(key, 20);
 	data << challenger;
-	SendPacket(&data, true);
+	SendPacket(&data);
 }
 
 void LogonCommClientSocket::HandleAuthResponse(WorldPacket & recvData)
 {
-	uint32 result = 0;
+	uint32 result;
 	recvData >> result;
-	use_crypto = authenticated = (result == 1);
+	authenticated = (result == 1);
 	rejected = (result == 2);
 	if(authenticated)
+	{
 		recvData >> realmID >> realmName;
+		_recv.Setup(sLogonCommHandler.sql_passhash, 20);
+		_send.Setup(sLogonCommHandler.sql_passhash, 20);
+	}
 }
 
 void LogonCommClientSocket::UpdateAccountCount(uint32 account_id, int8 add)
@@ -360,14 +345,4 @@ void LogonCommClientSocket::HandleConsoleAuthResult(WorldPacket & recvData)
 	recvData >> requestid >> result;
 
 	ConsoleAuthCallback(requestid, result);
-}
-
-void LogonCommClientSocket::HandleServerPing(WorldPacket &recvData)
-{
-	uint32 r;
-	recvData >> r;
-
-	WorldPacket data(RCMSG_SERVER_PONG, 4);
-	data << r;
-	SendPacket(&data, false);
 }

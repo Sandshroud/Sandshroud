@@ -402,7 +402,6 @@ Realm * InformationCore::AddRealm(uint32 realm_id, Realm * rlm)
 {
 	realmLock.Acquire();
 	m_realms.insert( make_pair( realm_id, rlm ) );
-	map<uint32, Realm*>::iterator itr = m_realms.find(realm_id);
 	realmLock.Release();
 	return rlm;
 }
@@ -413,9 +412,7 @@ Realm * InformationCore::GetRealm(uint32 realm_id)
 	realmLock.Acquire();
 	map<uint32, Realm*>::iterator itr = m_realms.find(realm_id);
 	if(itr != m_realms.end())
-	{
 		ret = itr->second;
-	}
 	realmLock.Release();
 	return ret;
 }
@@ -624,7 +621,7 @@ void InformationCore::TimeoutSockets()
 	{
 		s = *itr;
 		it2 = itr++;
-		if(s->removed)
+		if(s->removed || !s->authenticated)
 			continue;
 
 		if(t - s->last_pong > (15000+s->latency))

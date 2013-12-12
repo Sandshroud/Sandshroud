@@ -19,7 +19,6 @@ LogonCommServerSocket::LogonCommServerSocket(SOCKET fd, const sockaddr_in * peer
 	removed = true;
 
 	latency = 0;
-	use_crypto = false;
 	authenticated = 0;
 }
 
@@ -63,13 +62,9 @@ void LogonCommServerSocket::OnRecvData()
 			// read header
 			Read((uint8*)&opcode, 2);
 			Read((uint8*)&remaining, 4);
-
-			if(use_crypto)
-			{
-				// decrypt the packet
-				recvCrypto.Process((unsigned char*)&opcode, (unsigned char*)&opcode, 2);
-				recvCrypto.Process((unsigned char*)&remaining, (unsigned char*)&remaining, 4);
-			}
+			// decrypt the packet
+			_recv.Process((unsigned char*)&opcode, (unsigned char*)&opcode, 2);
+			_recv.Process((unsigned char*)&remaining, (unsigned char*)&remaining, 4);
 
 			EndianConvert(opcode);
 			/* reverse byte order */
@@ -86,10 +81,8 @@ void LogonCommServerSocket::OnRecvData()
 		{
 			buff.resize(remaining);
 			Read((uint8*)buff.contents(), remaining);
+			_recv.Process((unsigned char*)buff.contents(), (unsigned char*)buff.contents(), remaining);
 		}
-
-		if(use_crypto && remaining)
-			recvCrypto.Process((unsigned char*)buff.contents(), (unsigned char*)buff.contents(), remaining);
 
 		// handle the packet
 		HandlePacket(buff);
@@ -128,8 +121,6 @@ void LogonCommServerSocket::HandlePacket(WorldPacket & recvData)
 		&LogonCommServerSocket::HandleTestConsoleLogin,		// RCMSG_TEST_CONSOLE_LOGIN
 		NULL,												// RSMSG_CONSOLE_LOGIN_RESULT
 		&LogonCommServerSocket::HandleDatabaseModify,		// RCMSG_MODIFY_DATABASE
-		NULL,												// RSMSG_SERVER_PING
-		&LogonCommServerSocket::HandleServerPong,			// RCMSG_SERVER_PONG
 	};
 
 	if(recvData.GetOpcode() >= RMSG_COUNT || Handlers[recvData.GetOpcode()] == NULL)
@@ -277,17 +268,12 @@ void LogonCommServerSocket::SendPacket(WorldPacket * data)
 	EndianConvert(header.opcode);
 	header.size = (uint32)data->size();
 	EndianConvertReverse(header.size);
-
-	if(use_crypto)
-		sendCrypto.Process((unsigned char*)&header, (unsigned char*)&header, 6);
-
+	_send.Process((unsigned char*)&header, (unsigned char*)&header, 6);
 	rv = WriteButHold((uint8*)&header, 6);
 
 	if(data->size() > 0 && rv)
 	{
-		if(use_crypto)
-			sendCrypto.Process((unsigned char*)data->contents(), (unsigned char*)data->contents(), (uint32)data->size());
-
+		_send.Process((unsigned char*)data->contents(), (unsigned char*)data->contents(), (uint32)data->size());
 		rv = Write(data->contents(), (uint32)data->size());
 	}
 	else if(rv)
@@ -341,14 +327,6 @@ void LogonCommServerSocket::HandleAuthChallenge(WorldPacket & recvData)
 
 	sLog.Notice("LogonCommServer","Authentication request from %s, result %s.", GetIP(), result ? "OK" : "FAIL");
 
-	printf("Key: ");
-	for(int i = 0; i < 20; ++i)
-		printf("%.2X", key[i]);
-	printf("\n");
-
-	recvCrypto.Setup(key, 20);
-	sendCrypto.Setup(key, 20);	
-
 	/* send the response packet */
 	WorldPacket data(RSMSG_AUTH_RESPONSE, 8+challenger.length());
 	if(result)
@@ -363,18 +341,29 @@ void LogonCommServerSocket::HandleAuthChallenge(WorldPacket & recvData)
 			if(oldrealm->Flag == REALM_FLAG_OFFLINE)
 			{
 				sInfoCore.RemoveRealm(realmId);
-				sLog.Notice("LogonCommServer", "Challenge from %s to take place of %u, old realm dropped.", challenger.c_str(), realmId);
+				sLog.Notice("LogonCommServer", "Challenge from %s to take place of %u.", challenger.c_str(), realmId);
 			} // Set the result to failed
 			else result = 2;
 		}
 	}
 
 	/* packets are encrypted from now on */
-	use_crypto = authenticated = (result==1);
+	authenticated = (result==1);
 	data << result;
 	data << realmId;
 	data << challenger;
 	SendPacket(&data);
+
+	if(authenticated)
+	{
+		printf("Key: ");
+		for(int i = 0; i < 20; ++i)
+			printf("%.2X", key[i]);
+		printf("\n");
+
+		_recv.Setup(key, 20);
+		_send.Setup(key, 20);
+	}
 }
 
 void LogonCommServerSocket::HandleMappingReply(WorldPacket & recvData)
@@ -587,16 +576,4 @@ void LogonCommServerSocket::HandleDatabaseModify(WorldPacket& recvData)
 		}break;
 
 	}
-}
-
-void LogonCommServerSocket::SendRPing()
-{
-	WorldPacket data(RSMSG_SERVER_PING, 4);
-	data << uint32(getMSTime());
-	SendPacket(&data);
-}
-
-void LogonCommServerSocket::HandleServerPong(WorldPacket &recvData)
-{
-	// nothing
 }

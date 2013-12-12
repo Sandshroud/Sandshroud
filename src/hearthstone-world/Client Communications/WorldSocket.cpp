@@ -30,7 +30,7 @@ struct ServerPktHeader
 WorldSocket::WorldSocket(SOCKET fd, const sockaddr_in * peer) : TcpSocket(fd, WORLDSOCKET_SENDBUF_SIZE, WORLDSOCKET_RECVBUF_SIZE, false, peer)
 {
 	Authed = false;
-	mSize = mOpcode = mRemaining = 0;
+	mOpcode = mRemaining = 0;
 	_latency = 0;
 	mSession = NULL;
 	mSeed = RandomUInt();
@@ -529,7 +529,7 @@ void WorldSocket::OnRecvData()
 
 			// Decrypt the header
 			_crypt.DecryptRecv((uint8*)&Header, sizeof (ClientPktHeader));
-			mRemaining = mSize = ntohs(Header.size) - 4;
+			mRemaining = ntohs(Header.size) - 4;
 			mOpcode = Header.cmd;
 		}
 
@@ -542,16 +542,16 @@ void WorldSocket::OnRecvData()
 			}
 		}
 
-		WorldPacket *Packet = new WorldPacket(mOpcode, mSize);
+		WorldPacket *Packet = new WorldPacket(mOpcode, mRemaining);
 		if(mRemaining > 0)
 		{
 			Packet->resize(mRemaining);
 			Read((uint8*)Packet->contents(), mRemaining);
 
 			if(!bServerShutdown)
-				sWorld.NetworkStressIn += float(float(mSize+6)/1024);
+				sWorld.NetworkStressIn += float(float(mRemaining+6)/1024);
 		}
-		mRemaining = mSize = mOpcode = 0;
+		mRemaining = mOpcode = 0;
 
 		// Check for packets that we handle
 		switch(Packet->GetOpcode())

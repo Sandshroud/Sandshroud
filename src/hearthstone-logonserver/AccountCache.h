@@ -214,7 +214,7 @@ public:
 	InformationCore();
 
 	// Packets
-	void		  SendRealms(AuthSocket * Socket);
+	void SendRealms(AuthSocket * Socket);
 	
 	// Realm management
 	uint32 GenerateRealmID()
@@ -222,17 +222,17 @@ public:
 		return ++realmhigh;
 	}
 
-	Realm*		  AddRealm(uint32 realm_id, Realm * rlm);
-	Realm*		  GetRealm(uint32 realm_id);
-	int32		  GetRealmIdByName(string Name);
+	Realm* AddRealm(uint32 realm_id, Realm * rlm);
+	Realm* GetRealm(uint32 realm_id);
+	int32 GetRealmIdByName(string Name);
 	map<uint32, Realm*> GetRealmMap() { return m_realms; }
-	void		  RemoveRealm(uint32 realm_id);
-	bool		  FindRealmWithAdress(string Address);
-	void		  UpdateRealmPop(uint32 realm_id, uint32 population);
-	void		  SetRealmOffline(uint32 realm_id, LogonCommServerSocket *ss);
+	void RemoveRealm(uint32 realm_id);
+	bool FindRealmWithAdress(string Address);
+	void UpdateRealmPop(uint32 realm_id, uint32 population);
+	void SetRealmOffline(uint32 realm_id, LogonCommServerSocket *ss);
 
-	HEARTHSTONE_INLINE void   AddServerSocket(LogonCommServerSocket * sock) { serverSocketLock.Acquire(); m_serverSockets.insert( sock ); serverSocketLock.Release(); }
-	HEARTHSTONE_INLINE void   RemoveServerSocket(LogonCommServerSocket * sock) { serverSocketLock.Acquire(); m_serverSockets.erase( sock ); serverSocketLock.Release(); }
+	HEARTHSTONE_INLINE void AddServerSocket(LogonCommServerSocket * sock) { serverSocketLock.Acquire(); m_serverSockets.insert( sock ); serverSocketLock.Release(); }
+	HEARTHSTONE_INLINE void RemoveServerSocket(LogonCommServerSocket * sock) { serverSocketLock.Acquire(); m_serverSockets.erase( sock ); serverSocketLock.Release(); }
 
 	void TimeoutSockets();
 	void CheckServers();
