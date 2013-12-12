@@ -59,7 +59,6 @@ private:
 	uint8 K[40];
 	uint32 mOpcode;
 	uint32 mRemaining;
-	uint32 mSize;
 	uint32 mSeed;
 	uint32 mClientSeed;
 	uint32 mClientBuild;
