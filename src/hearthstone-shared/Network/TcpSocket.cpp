@@ -77,7 +77,7 @@ void TcpSocket::OnRead(size_t len)
 
 	if(WSARecv(m_fd, &buf, 1, &recved, &flags, &ov->m_ov, 0) == SOCKET_ERROR)
 	{
-        if(WSAGetLastError() != WSA_IO_PENDING)
+		if(WSAGetLastError() != WSA_IO_PENDING)
 			Disconnect();
 	}
 
@@ -95,7 +95,6 @@ void TcpSocket::OnRead(size_t len)
 		m_readBuffer->IncrementWritten(bytes);
 		OnRecvData();
 	}
-
 #endif
 }
 
@@ -110,6 +109,7 @@ void TcpSocket::OnWrite(size_t len)
 	/* Data has already been output to the socket, we can clear the buffer */
 	if(!len)
 	{
+		UnlockWriteBuffer();
 		Disconnect();
 		return;
 	}
@@ -182,7 +182,7 @@ bool TcpSocket::Write(const void * data, size_t bytes)
 #endif
 	}
 
-    return rv;
+	return rv;
 }
 
 void TcpSocket::Disconnect()

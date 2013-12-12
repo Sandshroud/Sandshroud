@@ -52,6 +52,9 @@ public:
     //  encryption and decryption.
     void Process(unsigned char * input, unsigned char * output, unsigned int len)
     {
+        if(!Initialized)
+            return;
+
         unsigned int i = 0;
         unsigned char j, k;
 

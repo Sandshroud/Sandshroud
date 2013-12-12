@@ -43,12 +43,8 @@ enum RealmListOpcodes
 	// DB modifying
 	RCMSG_MODIFY_DATABASE						= 18,
 
-	// S->C ping
-	RSMSG_SERVER_PING							= 21,
-	RCMSG_SERVER_PONG							= 22,
-
 	// count
-	RMSG_COUNT									= 23,
+	RMSG_COUNT									= 19,
 };
 
 SERVER_DECL extern NameTableEntry g_logonOpcodeNames[];

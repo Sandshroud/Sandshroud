@@ -281,8 +281,8 @@ uint32 LogonCommHandler::ClientConnected(string AccountName, WorldSocket * Socke
 	data << int32(-42);
 	data << server->ID;
 	data << request_id;
-    data << string(acct);
-	logon->SendPacket(&data, false);
+	data << string(acct);
+	logon->SendPacket(&data);
 
 	pendingLock.Acquire();
 	pending_logons[request_id] = Socket;
@@ -359,7 +359,7 @@ void LogonCommHandler::TestConsoleLogon(string& username, string& password, uint
 	data << newuser;
 	data.append(hash.GetDigest(), 20);
 
-	logon->SendPacket(&data, false);
+	logon->SendPacket(&data);
 }
 
 // db funcs
@@ -373,7 +373,7 @@ void LogonCommHandler::Account_SetBanned(const char * account, uint32 banned, co
 	data << string(account);
 	data << uint32(banned);
 	data << string(reason);
-	logon->SendPacket(&data, false);
+	logon->SendPacket(&data);
 }
 
 void LogonCommHandler::Account_SetGM(const char * account, const char * flags)
@@ -385,7 +385,7 @@ void LogonCommHandler::Account_SetGM(const char * account, const char * flags)
 	data << uint32(2);		// 2 = set gm
 	data << string(account);
 	data << string(flags);
-	logon->SendPacket(&data, false);
+	logon->SendPacket(&data);
 }
 
 void LogonCommHandler::Account_SetMute(const char * account, uint32 muted)
@@ -397,7 +397,7 @@ void LogonCommHandler::Account_SetMute(const char * account, uint32 muted)
 	data << uint32(3);		// 3 = mute
 	data << string(account);
 	data << uint32(muted);
-	logon->SendPacket(&data, false);
+	logon->SendPacket(&data);
 }
 
 void LogonCommHandler::IPBan_Add(const char * ip, uint32 duration, const char* reason)
@@ -410,7 +410,7 @@ void LogonCommHandler::IPBan_Add(const char * ip, uint32 duration, const char* r
 	data << string(ip);
 	data << uint32(duration);
 	data << string(reason);
-	logon->SendPacket(&data, false);
+	logon->SendPacket(&data);
 }
 
 void LogonCommHandler::IPBan_Remove(const char * ip)
@@ -421,5 +421,5 @@ void LogonCommHandler::IPBan_Remove(const char * ip)
 	WorldPacket data(RCMSG_MODIFY_DATABASE, 50);
 	data << uint32(5);		// 5 = ipban remove
 	data << string(ip);
-	logon->SendPacket(&data, false);
+	logon->SendPacket(&data);
 }
