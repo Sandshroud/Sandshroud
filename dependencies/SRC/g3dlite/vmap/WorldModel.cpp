@@ -254,8 +254,6 @@ namespace VMAP
         chunkSize = sizeof(G3D::g3d_uint32)+ sizeof(Vector3)*count;
         if (result && fwrite(&chunkSize, sizeof(G3D::g3d_uint32), 1, wf) != 1) result = false;
         if (result && fwrite(&count, sizeof(G3D::g3d_uint32), 1, wf) != 1) result = false;
-        if (!count) // models without (collision) geometry end here, unsure if they are useful
-            return result;
         if (result && fwrite(&vertices[0], sizeof(Vector3), count, wf) != count) result = false;
 
         // write triangle mesh
@@ -287,8 +285,8 @@ namespace VMAP
 
     bool GroupModel::readFromFile(FILE* rf)
     {
-        char chunk[8];
-        bool result = true;
+        char chunk[4];
+        std::string error;
         G3D::g3d_uint32 chunkSize = 0;
         G3D::g3d_uint32 count = 0;
         triangles.clear();
@@ -296,37 +294,61 @@ namespace VMAP
         delete iLiquid;
         iLiquid = NULL;
 
-        if (result && fread(&iBound, sizeof(G3D::AABox), 1, rf) != 1) result = false;
-        if (result && fread(&iMogpFlags, sizeof(G3D::g3d_uint32), 1, rf) != 1) result = false;
-        if (result && fread(&iGroupWMOID, sizeof(G3D::g3d_uint32), 1, rf) != 1) result = false;
+        if (!error.length() && fread(&iBound, sizeof(G3D::AABox), 1, rf) != 1)
+            error.append("AABox");
+        if (!error.length() && fread(&iMogpFlags, sizeof(G3D::g3d_uint32), 1, rf) != 1)
+            error.append("MOGP Flags");
+        if (!error.length() && fread(&iGroupWMOID, sizeof(G3D::g3d_uint32), 1, rf) != 1)
+            error.append("Group WMOID");
 
         // read vertices
-        if (result && !readChunk(rf, chunk, "VERT", 4)) result = false;
-        if (result && fread(&chunkSize, sizeof(G3D::g3d_uint32), 1, rf) != 1) result = false;
-        if (result && fread(&count, sizeof(G3D::g3d_uint32), 1, rf) != 1) result = false;
-        if (count)
+        if (!error.length() && !readChunk(rf, chunk, "VERT", 4))
+            error.append("VERT Chunk");
+        if (!error.length() && fread(&chunkSize, sizeof(G3D::g3d_uint32), 1, rf) != 1)
+            error.append("VERT Size");
+        if (!error.length() && fread(&count, sizeof(G3D::g3d_uint32), 1, rf) != 1)
+            error.append("VERT Count");
+        if (!error.length() && count)
         {
-            if (result) vertices.resize(count);
-            if (result && fread(&vertices[0], sizeof(Vector3), count, rf) != count) result = false;
+            vertices.resize(count);
+            if (fread(&vertices[0], sizeof(Vector3), count, rf) != count)
+                error.append("Vertices");
         }
 
         // read triangle mesh
-        if (result && !readChunk(rf, chunk, "TRIM", 4)) result = false;
-        if (result && fread(&chunkSize, sizeof(G3D::g3d_uint32), 1, rf) != 1) result = false;
-        if (result && fread(&count, sizeof(G3D::g3d_uint32), 1, rf) != 1) result = false;
-        if (result) triangles.resize(count);
-        if (result && fread(&triangles[0], sizeof(MeshTriangle), count, rf) != count) result = false;
+        if (!error.length() && !readChunk(rf, chunk, "TRIM", 4))
+            error.append("TRIM Chunk");
+        if (!error.length() && fread(&chunkSize, sizeof(G3D::g3d_uint32), 1, rf) != 1)
+            error.append("TRIM Size");
+        if (!error.length() && fread(&count, sizeof(G3D::g3d_uint32), 1, rf) != 1)
+            error.append("TRIM Count");
+        if (!error.length() && count)
+        {
+            triangles.resize(count);
+            if (fread(&triangles[0], sizeof(MeshTriangle), count, rf) != count)
+                error.append("TRIM Triangles");
+        }
 
         // read mesh BIH
-        if (result && !readChunk(rf, chunk, "MBIH", 4)) result = false;
-        if (result) result = meshTree.readFromFile(rf);
+        if (!error.length() && !readChunk(rf, chunk, "MBIH", 4))
+            error.append("MBIH Chunk");
+        if (!error.length() && !meshTree.readFromFile(rf))
+            error.append("Mesh Tree");
 
         // write liquid data
-        if (result && !readChunk(rf, chunk, "LIQU", 4)) result = false;
-        if (result && fread(&chunkSize, sizeof(G3D::g3d_uint32), 1, rf) != 1) result = false;
-        if (result && chunkSize > 0)
-            result = WmoLiquid::readFromFile(rf, iLiquid);
-        return result;
+        if (!error.length() && !readChunk(rf, chunk, "LIQU", 4))
+            error.append("LIQU Chunk");
+        if (!error.length() && fread(&chunkSize, sizeof(G3D::g3d_uint32), 1, rf) != 1)
+            error.append("LIQU Size");
+        if (!error.length() && chunkSize > 0)
+            if(!WmoLiquid::readFromFile(rf, iLiquid))
+                error.append("WMOLiquid");
+        if(error.length())
+        {
+            bLog.outDebug("GroupModel::readFile error while reading %s", error.c_str());
+            return false;
+        }
+        return true;
     }
 
     struct GModelRayCallback
@@ -484,7 +506,7 @@ namespace VMAP
             return false;
 
         G3D::g3d_uint32 chunkSize, count;
-        bool result = fwrite(VMAP_MAGIC, 1, 8, wf) == 8;
+        bool result = fwrite(VMAP_MAGIC, 10, 1, wf) > 0;
         if (result && fwrite("WMOD", 1, 4, wf) != 4) result = false;
         chunkSize = sizeof(G3D::g3d_uint32) + sizeof(G3D::g3d_uint32);
         if (result && fwrite(&chunkSize, sizeof(G3D::g3d_uint32), 1, wf) != 1) result = false;
@@ -516,33 +538,48 @@ namespace VMAP
         if (!rf)
             return false;
 
-        bool result = true;
+        std::string error;
         G3D::g3d_uint32 chunkSize = 0;
         G3D::g3d_uint32 count = 0;
-        char chunk[8];                          // Ignore the added magic header
-        if (!readChunk(rf, chunk, VMAP_MAGIC, 8)) result = false;
+        char chunk[10]; // Ignore the added magic header
+        if (!readChunk(rf, chunk, VMAP_MAGIC, 10))
+            error.append("Header");
 
-        if (result && !readChunk(rf, chunk, "WMOD", 4)) result = false;
-        if (result && fread(&chunkSize, sizeof(G3D::g3d_uint32), 1, rf) != 1) result = false;
-        if (result && fread(&RootWMOID, sizeof(G3D::g3d_uint32), 1, rf) != 1) result = false;
+        if (!error.length() && !readChunk(rf, chunk, "WMOD", 4))
+            error.append("WMOD Chunk");
+        if (!error.length() && fread(&chunkSize, sizeof(G3D::g3d_uint32), 1, rf) != 1)
+            error.append("Chunk size");
+        if (!error.length() && fread(&RootWMOID, sizeof(G3D::g3d_uint32), 1, rf) != 1)
+            error.append("Root WMOID");
 
         // read group models
-        if (result && readChunk(rf, chunk, "GMOD", 4))
+        if (!error.length() && readChunk(rf, chunk, "GMOD", 4))
         {
-            //if (fread(&chunkSize, sizeof(uint32), 1, rf) != 1) result = false;
+            if(!error.length())
+            {
+                if (!fread(&count, sizeof(G3D::g3d_uint32), 1, rf))
+                    error.append("GMOD Count");
+                else
+                    groupModels.resize(count);
+            }
 
-            if (result && fread(&count, sizeof(G3D::g3d_uint32), 1, rf) != 1) result = false;
-            if (result) groupModels.resize(count);
-            //if (result && fread(&groupModels[0], sizeof(GroupModel), count, rf) != count) result = false;
-            for (G3D::g3d_uint32 i=0; i<count && result; ++i)
-                result = groupModels[i].readFromFile(rf);
+            for (G3D::g3d_uint32 i=0; i<count && !error.length(); ++i)
+                if(!groupModels[i].readFromFile(rf))
+                    error.append("GroupModels");
 
             // read group BIH
-            if (result && !readChunk(rf, chunk, "GBIH", 4)) result = false;
-            if (result) result = groupTree.readFromFile(rf);
+            if (!error.length() && !readChunk(rf, chunk, "GBIH", 4))
+                error.append("WMOD Chunk");
+            if (!error.length() && !groupTree.readFromFile(rf))
+                error.append("GroupTree");
         }
 
         fclose(rf);
-        return result;
+        if(error.length())
+        {
+            bLog.outDebug("WorldModel::readFile error while reading %s", error.c_str());
+            return false;
+        }
+        return true;
     }
 }
