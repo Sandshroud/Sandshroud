@@ -228,8 +228,8 @@ namespace VMAP
             return false;
         /// @todo check magic number when implemented...
         char tiled;
-        char chunk[8];
-        if (!readChunk(rf, chunk, VMAP_MAGIC, 8) || fread(&tiled, sizeof(char), 1, rf) != 1)
+        char chunk[10];
+        if (!readChunk(rf, chunk, VMAP_MAGIC, 10) || fread(&tiled, sizeof(char), 1, rf) != 1)
         {
             fclose(rf);
             return false;
@@ -242,7 +242,7 @@ namespace VMAP
                 success = false;
             else
             {
-                if (!readChunk(tf, chunk, VMAP_MAGIC, 8))
+                if (!readChunk(tf, chunk, VMAP_MAGIC, 10))
                     success = false;
                 fclose(tf);
             }
@@ -262,23 +262,28 @@ namespace VMAP
         if (rf == NULL)
             return false;
 
-        char chunk[8];
+        char chunk[10];
+        if(!readChunk(rf, chunk, VMAP_MAGIC, 10))
+        {
+            bLog.outError("VMap magic does not match!");
+            return false;
+        }
+
         char tiled = '\0';
-        if (readChunk(rf, chunk, VMAP_MAGIC, 8) && fread(&tiled, sizeof(char), 1, rf) == 1 &&
-            readChunk(rf, chunk, "NODE", 4) && iTree.readFromFile(rf))
+        if ((success = fread(&tiled, sizeof(char), 1, rf)) && tiled == 1 && (success = readChunk(rf, chunk, "NODE", 4)) && iTree.readFromFile(rf))
         {
             iNTreeValues = iTree.primCount();
             iTreeValues = new ModelInstance[iNTreeValues];
-            success = readChunk(rf, chunk, "GOBJ", 4);
         }
-
         iIsTiled = bool(tiled);
+        if(success)
+            success = readChunk(rf, chunk, "GOBJ", 4);
 
         // global model spawns
         // only non-tiled maps have them, and if so exactly one (so far at least...)
         ModelSpawn spawn;
         bLog.outDetail("StaticMapTree::InitMap() : map isTiled: %u", static_cast<G3D::g3d_uint32>(iIsTiled));
-        if (!iIsTiled && ModelSpawn::readFromFile(rf, spawn))
+        if (success && !iIsTiled && ModelSpawn::readFromFile(rf, spawn))
         {
             WorldModel* model = vm->acquireModelInstance(spawn.name);
             bLog.outDetail("StaticMapTree::InitMap() : loading %s", spawn.name.c_str());
@@ -335,9 +340,8 @@ namespace VMAP
         FILE* tf = fopen(tilefile.c_str(), "rb");
         if (tf)
         {
-            char chunk[8];
-
-            if (!readChunk(tf, chunk, VMAP_MAGIC, 8))
+            char chunk[10];
+            if (!readChunk(tf, chunk, VMAP_MAGIC, 10))
                 result = false;
             G3D::g3d_uint32 numSpawns = 0;
             if (result && fread(&numSpawns, sizeof(G3D::g3d_uint32), 1, tf) != 1)
@@ -347,7 +351,9 @@ namespace VMAP
                 // read model spawns
                 ModelSpawn spawn;
                 result = ModelSpawn::readFromFile(tf, spawn);
-                if (result)
+                if(result == false)
+                    bLog.outDebug("StaticMapTree::LoadMapTile() : could not acquire WorldModel file [%u, %u]", tileX, tileY);
+                else
                 {
                     // acquire model instance
                     WorldModel* model = vm->acquireModelInstance(spawn.name);
@@ -409,8 +415,8 @@ namespace VMAP
             if (tf)
             {
                 bool result=true;
-                char chunk[8];
-                if (!readChunk(tf, chunk, VMAP_MAGIC, 8))
+                char chunk[10];
+                if (!readChunk(tf, chunk, VMAP_MAGIC, 10))
                     result = false;
                 G3D::g3d_uint32 numSpawns;
                 if (fread(&numSpawns, sizeof(G3D::g3d_uint32), 1, tf) != 1)

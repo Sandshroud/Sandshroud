@@ -99,7 +99,7 @@ namespace VMAP
             }
 
             //general info
-            if (success && fwrite(VMAP_MAGIC, 1, 8, mapfile) != 8) success = false;
+            if (success && fwrite(VMAP_MAGIC, 10, 1, mapfile) != 1) success = false;
             G3D::g3d_uint32 globalTileID = StaticMapTree::packTileID(65, 65);
             pair<TileMap::iterator, TileMap::iterator> globalRange = map_iter->second->TileEntries.equal_range(globalTileID);
             char isTiled = globalRange.first == globalRange.second; // only maps without terrain (tiles) have global WMO
@@ -109,10 +109,14 @@ namespace VMAP
             if (success) success = pTree.writeToFile(mapfile);
             // global map spawns (WDT), if any (most instances)
             if (success && fwrite("GOBJ", 4, 1, mapfile) != 1) success = false;
-
-            for (TileMap::iterator glob=globalRange.first; glob != globalRange.second && success; ++glob)
+            if(success)
             {
-                success = ModelSpawn::writeToFile(mapfile, map_iter->second->UniqueEntries[glob->second]);
+                for (TileMap::iterator glob=globalRange.first; glob != globalRange.second && success; ++glob)
+                {
+                    success = ModelSpawn::writeToFile(mapfile, map_iter->second->UniqueEntries[glob->second]);
+                    if(success == false)
+                        break;
+                }
             }
 
             fclose(mapfile);
@@ -136,7 +140,7 @@ namespace VMAP
                 tilefilename << std::setw(2) << x << '_' << std::setw(2) << y << ".vmtile";
                 FILE *tilefile = fopen(tilefilename.str().c_str(), "wb");
                 // file header
-                if (success && fwrite(VMAP_MAGIC, 1, 8, tilefile) != 8) success = false;
+                if (success && fwrite(VMAP_MAGIC, 10, 1, tilefile) != 1) success = false;
                 // write number of tile spawns
                 if (success && fwrite(&nSpawns, sizeof(G3D::g3d_uint32), 1, tilefile) != 1) success = false;
                 // write tile spawns
