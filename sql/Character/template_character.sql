@@ -608,7 +608,8 @@ CREATE TABLE `guilds` (
   `guildInfo` varchar(1024) COLLATE utf8_unicode_ci NOT NULL,
   `motd` varchar(1024) COLLATE utf8_unicode_ci NOT NULL,
   `createdate` int(30) NOT NULL DEFAULT '0',
-  `bankBalance` int(30) NOT NULL DEFAULT '0',
+  `balanceHigh` int(30) NOT NULL DEFAULT '0',
+  `balanceLow` int(30) NOT NULL DEFAULT '0',
   PRIMARY KEY (`guildId`),
   UNIQUE KEY `guildName` (`guildName`),
   UNIQUE KEY `leaderGuid` (`leaderGuid`)
