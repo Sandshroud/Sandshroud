@@ -30,6 +30,7 @@ public:
 	bool IsIncity(uint32 mapid, float x, float y, float z);
 	uint32 GetVmapAreaFlags(uint32 mapId, float x, float y, float z);
 	float GetHeight(uint32 mapId, uint32 instanceId, int32 m_phase, float x, float y, float z);
+	float GetWaterHeight(uint32 mapId, float x, float y, float z, uint16 &outType);
 
 	void LoadGameobjectModel(uint64 Guid, uint32 mapId, uint32 displayID, float scale, float posX, float posY, float posZ, float orientation, uint32 instanceId, int32 phasemask);
 	void UpdateObjectModel(uint64 Guid, uint32 mapId, uint32 instanceId, uint32 displayID);

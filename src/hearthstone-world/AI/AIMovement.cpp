@@ -430,11 +430,11 @@ void AI_Movement::Update(uint32 p_time)
 				Fx = m_Unit->GetPositionX() + (RandomFloat(20.f)+5.0f)*cosf(Fo);
 				Fy = m_Unit->GetPositionY() + (RandomFloat(20.f)+5.0f)*sinf(Fo);
 			}
+			Fz = m_Unit->GetCHeightForPosition(false); // We COULD check water height, but nah.
 
 			// Check if this point is in water.
-			float wl = m_Unit->GetMapMgr()->GetWaterHeight(Fx, Fy, NO_WATER_HEIGHT);
-			Fz = m_Unit->GetCHeightForPosition(false); // We COULD check water height, but nah.
-			if( fabs( m_Unit->GetPositionZ() - Fz ) > 3.5f || ( wl != 0.0f && Fz < wl ) )		// in water
+			float wl = m_Unit->GetMapMgr()->GetWaterHeight(Fx, Fy, Fz);
+			if( fabs( m_Unit->GetPositionZ() - Fz ) > 3.5f || ( wl != NO_WATER_HEIGHT && Fz < wl ) ) // in water
 			{
 				m_FearTimer = p_time + 500;
 			}

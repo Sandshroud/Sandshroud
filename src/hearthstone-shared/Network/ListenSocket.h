@@ -150,8 +150,9 @@ public:
 
 	void OnAccept(void * pointer)
 	{
-		sockaddr *local, *remote;
+		// Our socket was pushed to front of passback buffer
 		SOCKET fd = *(SOCKET*)pointer;
+		sockaddr *local, *remote;
 		int localOut = 0, remoteOut = 0;
 		GetAcceptExSockaddrs(((char*)pointer)+sizeof(SOCKET), 0, Length, Length, &local, &localOut, &remote, &remoteOut);
 
@@ -196,8 +197,7 @@ public:
 		ov->m_acceptBuffer = malloc(1024);
 		memset(ov->m_acceptBuffer, 0, 1024);
 
-		/*SOCKET s = socket(AF_INET, SOCK_STREAM, 0);*/
-		SOCKET s = WSASocket(AF_INET, SOCK_STREAM, 0, 0, 0, WSA_FLAG_OVERLAPPED);
+		SOCKET s = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, 0, 0, WSA_FLAG_OVERLAPPED);
 		*(SOCKET*)&((char*)ov->m_acceptBuffer)[0] = s;
 		DWORD bytes;
 

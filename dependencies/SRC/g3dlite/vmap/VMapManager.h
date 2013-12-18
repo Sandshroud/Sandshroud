@@ -114,7 +114,7 @@ namespace VMAP
             bool processCommand(char *) { return false; } // for debug and extensions
 
             bool getAreaInfo(unsigned int pMapId, float x, float y, float& z, G3D::g3d_uint32& flags, G3D::g3d_int32& adtId, G3D::g3d_int32& rootId, G3D::g3d_int32& groupId) const;
-            bool GetLiquidLevel(G3D::g3d_uint32 pMapId, float x, float y, float z, G3D::g3d_uint8 reqLiquidType, float& level, float& floor, G3D::g3d_uint32& type) const;
+            void GetLiquidData(G3D::g3d_uint32 pMapId, float x, float y, float z, G3D::g3d_uint16 &type, float &level) const;
 
             WorldModel* acquireModelInstance(const std::string& filename);
             void releaseModelInstance(const std::string& filename);

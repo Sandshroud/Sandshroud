@@ -1202,22 +1202,23 @@ void MapMgr::UpdateCellActivity(uint32 x, uint32 y, int radius)
 			}
 		}
 	}
+}
 
+void MapMgr::GetWaterData(float x, float y, float z, float &outHeight, uint16 &outType)
+{
+	uint16 vwaterType = 0;
+	uint16 mapWaterType = GetBaseMap()->GetWaterType(x, y);
+	float mapWaterheight = GetBaseMap()->GetWaterHeight(x, y, z);
+	float vmapWaterHeight = CollideInterface.GetWaterHeight(GetMapId(), x, y, z, vwaterType);
+	if(!(mapWaterType & 0x10) && vwaterType && vmapWaterHeight != NO_WMO_HEIGHT)
+	{ outHeight = vmapWaterHeight; outType = vwaterType; }
+	else
+	{ outHeight = mapWaterheight; outType = mapWaterType; }
 }
 
 float MapMgr::GetLandHeight(float x, float y)
 {
 	return GetBaseMap()->GetLandHeight(x, y);
-}
-
-float MapMgr::GetWaterHeight(float x, float y, float z)
-{
-	return GetBaseMap()->GetWaterHeight(x, y, z);
-}
-
-uint16 MapMgr::GetWaterType(float x, float y)
-{
-	return GetBaseMap()->GetWaterType(x, y);
 }
 
 uint8 MapMgr::GetWalkableState(float x, float y)

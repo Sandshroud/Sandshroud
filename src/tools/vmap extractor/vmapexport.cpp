@@ -339,6 +339,7 @@ bool fillArchiveNameVector(std::vector<std::string>& pArchiveNames)
     printf("Adding data files from locale directories.\n");
     for (std::vector<std::string>::iterator i = locales.begin(); i != locales.end(); ++i)
     {
+        pArchiveNames.push_back(in_path + *i + "/base-" + *i + ".MPQ");
         pArchiveNames.push_back(in_path + *i + "/locale-" + *i + ".MPQ");
         pArchiveNames.push_back(in_path + *i + "/expansion-locale-" + *i + ".MPQ");
         pArchiveNames.push_back(in_path + *i + "/lichking-locale-" + *i + ".MPQ");
