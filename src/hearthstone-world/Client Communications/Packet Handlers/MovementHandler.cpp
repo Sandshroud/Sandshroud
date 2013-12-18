@@ -90,9 +90,10 @@ void _HandleBreathing(MovementInfo &movement_info, Player* _player, WorldSession
 	if(!_player->IsInWorld())
 		return;
 
-	uint16 WaterType = _player->GetMapMgr()->GetWaterType(_player->GetPositionX(), _player->GetPositionY());
-	float WaterHeight = _player->GetMapMgr()->GetWaterHeight(_player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ());
-	if (!WaterType || WaterHeight == NO_WATER_HEIGHT)
+	uint16 WaterType = 0;
+	float WaterHeight = NO_WATER_HEIGHT;
+	_player->GetMapMgr()->GetWaterData(movement_info.x, movement_info.y, movement_info.z, WaterHeight, WaterType);
+	if (WaterHeight == NO_WATER_HEIGHT)
 	{
 		_player->m_UnderwaterState &= ~(UNDERWATERSTATE_UNDERWATER|UNDERWATERSTATE_FATIGUE|UNDERWATERSTATE_LAVA|UNDERWATERSTATE_SLIME);
 		return;

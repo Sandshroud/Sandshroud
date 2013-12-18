@@ -194,6 +194,55 @@ float CCollideInterface::GetHeight(uint32 mapId, uint32 instanceId, int32 m_phas
 	return res;
 }
 
+// DBC ids are stored in vmaps currently, so convert to terrain water flags
+// We could use DBC file, but this workaround is sufficient.
+uint16 convertWaterIDToFlags(uint16 wmoType)
+{
+	switch(wmoType)
+	{
+		// Mask these to Regular Water
+	case 1: case 5: case 9: case 13: case 17:
+	case 41: case 61: case 81: case 181:
+		return 0x01;
+		// Mask these to Ocean Water
+	case 2: case 6: case 10:
+	case 14: case 100:
+		return 0x02;
+		// Mask these to Regular Magma
+	case 3: case 7: case 11: case 15:
+	case 19: case 121: case 141:
+		return 0x04;
+		// Mask these to Regular Slime
+	case 4: case 8: case 12:
+	case 20: case 21:
+		return 0x08;
+	}
+	return 0;
+}
+
+float CCollideInterface::GetWaterHeight(uint32 mapId, float x, float y, float z, uint16 &outType)
+{
+	float res = NO_WMO_HEIGHT;
+	ASSERT(m_mapLocks[mapId] != NULL);
+	if( !CollisionMgr )
+		return res;
+
+	// get read lock
+	m_mapLocks[mapId]->m_lock.AcquireReadLock();
+
+	// get data
+	uint16 waterDBCId = 0;
+	CollisionMgr->GetLiquidData(mapId, x, y, z, waterDBCId, res);
+	if(waterDBCId)
+		outType = convertWaterIDToFlags(waterDBCId);
+
+	// release write lock
+	m_mapLocks[mapId]->m_lock.ReleaseReadLock();
+
+	// return
+	return res;
+}
+
 /* Crow: Systematic calculations based on Mangos, a big thank you to them! */
 bool CCollideInterface::IsIndoor(uint32 mapId, float x, float y, float z)
 {
