@@ -2227,11 +2227,10 @@ void Spell::SpellEffectSummonObject(uint32 i)
 		{
 			posx = px+r*co;
 			posy = py+r*si;
-			if( !(map->GetWaterType( posx, posy ) & 1) )//water
+			if(map->GetWaterHeight(posx, posy, pz) != NO_WATER_HEIGHT)//water
 				continue;
-			posz = map->GetWaterHeight( posx, posy, NO_WATER_HEIGHT );
-			if( posz > map->GetLandHeight( posx, posy ) )//water
-				break;
+			posz = map->GetLandHeight( posx, posy );
+			break;
 		}
 
 		posx = px + r * co;

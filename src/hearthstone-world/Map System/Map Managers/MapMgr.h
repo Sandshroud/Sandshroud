@@ -204,13 +204,19 @@ public:
 	void UpdateCellActivity(uint32 x, uint32 y, int radius);
 
 	// Terrain Functions
+	void GetWaterData(float x, float y, float z, float &outHeight, uint16 &outType);
 	float GetLandHeight(float x, float y);
-	float GetWaterHeight(float x, float y, float z);
-	uint16 GetWaterType(float x, float y);
 	uint8 GetWalkableState(float x, float y);
 	uint16 GetAreaID(float x, float y, float z = 0.0f);
-	HEARTHSTONE_INLINE uint32 GetMapId() { return _mapId; }
+	float GetWaterHeight(float x, float y, float z)
+	{
+		uint16 waterType = 0;
+		float res = NO_WATER_HEIGHT;
+		GetWaterData(x, y, z, res, waterType);
+		return res;
+	}
 
+	HEARTHSTONE_INLINE uint32 GetMapId() { return _mapId; }
 	void AddForcedCell(MapCell * c, uint32 range = 1);
 	void RemoveForcedCell(MapCell * c, uint32 range = 1);
 

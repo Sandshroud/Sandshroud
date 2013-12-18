@@ -367,7 +367,7 @@ namespace VMAP
         return false;
     }
 
-    bool VMapManager::GetLiquidLevel(G3D::g3d_uint32 mapId, float x, float y, float z, G3D::g3d_uint8 reqLiquidType, float& level, float& floor, G3D::g3d_uint32& type) const
+    void VMapManager::GetLiquidData(G3D::g3d_uint32 mapId, float x, float y, float z, G3D::g3d_uint16 &type, float &level) const
     {
         InstanceTreeMap::const_iterator instanceTree = iInstanceMapTrees.find(mapId);
         if (instanceTree != iInstanceMapTrees.end())
@@ -376,17 +376,10 @@ namespace VMAP
             Vector3 pos = convertPositionToInternalRep(x, y, z);
             if (instanceTree->second->GetLocationInfo(pos, info))
             {
-                floor = info.ground_Z;
-                assert(floor < std::numeric_limits<float>::max());
-                type = info.hitModel->GetLiquidType();  // entry from LiquidType.dbc
-//                if (reqLiquidType && !(GetLiquidFlags(type) & reqLiquidType))
-//                    return false;
-                if (info.hitInstance->GetLiquidLevel(pos, info, level))
-                    return true;
+                if(info.hitInstance->GetLiquidLevel(pos, info, level))
+                    type = info.hitModel->GetLiquidType();
             }
         }
-
-        return false;
     }
 
     WorldModel* VMapManager::acquireModelInstance(const std::string& filename)
