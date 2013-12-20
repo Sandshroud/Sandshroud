@@ -8,7 +8,7 @@ struct CollisionMap
 {
 	uint32 m_loadCount;
 	uint32 m_tileLoadCount[64][64];
-	RWLock m_lock;
+	Mutex m_lock;
 };
 
 SERVER_DECL CCollideInterface CollideInterface;
@@ -84,7 +84,7 @@ bool CCollideInterface::ActivateTile(uint32 mapId, uint32 tileX, uint32 tileY)
 		return false;
 
 	// acquire write lock
-	m_mapLocks[mapId]->m_lock.AcquireWriteLock();
+	m_mapLocks[mapId]->m_lock.Acquire();
 	if( m_mapLocks[mapId]->m_tileLoadCount[tileX][tileY] == 0 )
 	{
 		if(CollisionMgr->loadMap(mapId, tileX, tileY))
@@ -92,7 +92,7 @@ bool CCollideInterface::ActivateTile(uint32 mapId, uint32 tileX, uint32 tileY)
 		else
 		{
 			sLog.outDebug("Loading VMap [%u/%u] unsuccessful", tileX, tileY);
-			m_mapLocks[mapId]->m_lock.ReleaseWriteLock();
+			m_mapLocks[mapId]->m_lock.Release();
 			return false;
 		}
 	}
@@ -101,7 +101,7 @@ bool CCollideInterface::ActivateTile(uint32 mapId, uint32 tileX, uint32 tileY)
 	m_mapLocks[mapId]->m_tileLoadCount[tileX][tileY]++;
 
 	// release lock
-	m_mapLocks[mapId]->m_lock.ReleaseWriteLock();
+	m_mapLocks[mapId]->m_lock.Release();
 	return true;
 }
 
@@ -112,12 +112,12 @@ void CCollideInterface::DeactivateTile(uint32 mapId, uint32 tileX, uint32 tileY)
 		return;
 
 	// get write lock
-	m_mapLocks[mapId]->m_lock.AcquireWriteLock();
+	m_mapLocks[mapId]->m_lock.Acquire();
 	if( (--m_mapLocks[mapId]->m_tileLoadCount[tileX][tileY]) == 0 )
 		CollisionMgr->unloadMap(mapId, tileX, tileY);
 
 	// release write lock
-	m_mapLocks[mapId]->m_lock.ReleaseWriteLock();
+	m_mapLocks[mapId]->m_lock.Release();
 }
 
 bool CCollideInterface::IsActiveTile(uint32 mapId, uint32 tileX, uint32 tileY)
@@ -129,10 +129,10 @@ bool CCollideInterface::IsActiveTile(uint32 mapId, uint32 tileX, uint32 tileY)
 	bool isactive = false;
 
 	// acquire write lock
-	m_mapLocks[mapId]->m_lock.AcquireWriteLock();
+	m_mapLocks[mapId]->m_lock.Acquire();
 	if(m_mapLocks[mapId]->m_tileLoadCount[tileX][tileY])
 		isactive = true;
-	m_mapLocks[mapId]->m_lock.ReleaseWriteLock(); // release lock
+	m_mapLocks[mapId]->m_lock.Release(); // release lock
 
 	return isactive;
 }
@@ -144,13 +144,13 @@ bool CCollideInterface::CheckLOS(uint32 mapId, uint32 instanceId, int32 m_phase,
 		return true;
 
 	// get read lock
-	m_mapLocks[mapId]->m_lock.AcquireReadLock();
+	m_mapLocks[mapId]->m_lock.Acquire();
 
 	// get data
 	bool res = CollisionMgr ? CollisionMgr->isInLineOfSight(mapId, instanceId, m_phase, x1, y1, z1, x2, y2, z2) : true;
 
 	// release write lock
-	m_mapLocks[mapId]->m_lock.ReleaseReadLock();
+	m_mapLocks[mapId]->m_lock.Release();
 
 	// return
 	return res;
@@ -163,13 +163,13 @@ bool CCollideInterface::GetFirstPoint(uint32 mapId, uint32 instanceId, int32 m_p
 		return false;
 
 	// get read lock
-	m_mapLocks[mapId]->m_lock.AcquireReadLock();
+	m_mapLocks[mapId]->m_lock.Acquire();
 
 	// get data
 	bool res = (CollisionMgr ? CollisionMgr->getObjectHitPos(mapId, instanceId, m_phase, x1, y1, z1, x2, y2, z2, outx, outy, outz, distmod) : false);
 
 	// release write lock
-	m_mapLocks[mapId]->m_lock.ReleaseReadLock();
+	m_mapLocks[mapId]->m_lock.Release();
 
 	// return
 	return res;
@@ -182,13 +182,13 @@ float CCollideInterface::GetHeight(uint32 mapId, uint32 instanceId, int32 m_phas
 		return NO_WMO_HEIGHT;
 
 	// get read lock
-	m_mapLocks[mapId]->m_lock.AcquireReadLock();
+	m_mapLocks[mapId]->m_lock.Acquire();
 
 	// get data
 	float res = CollisionMgr ? CollisionMgr->getHeight(mapId, instanceId, m_phase, x, y, z, 10.0f) : NO_WMO_HEIGHT;
 
 	// release write lock
-	m_mapLocks[mapId]->m_lock.ReleaseReadLock();
+	m_mapLocks[mapId]->m_lock.Release();
 
 	// return
 	return res;
@@ -228,7 +228,7 @@ float CCollideInterface::GetWaterHeight(uint32 mapId, float x, float y, float z,
 		return res;
 
 	// get read lock
-	m_mapLocks[mapId]->m_lock.AcquireReadLock();
+	m_mapLocks[mapId]->m_lock.Acquire();
 
 	// get data
 	uint16 waterDBCId = 0;
@@ -237,7 +237,7 @@ float CCollideInterface::GetWaterHeight(uint32 mapId, float x, float y, float z,
 		outType = convertWaterIDToFlags(waterDBCId);
 
 	// release write lock
-	m_mapLocks[mapId]->m_lock.ReleaseReadLock();
+	m_mapLocks[mapId]->m_lock.Release();
 
 	// return
 	return res;
@@ -246,52 +246,52 @@ float CCollideInterface::GetWaterHeight(uint32 mapId, float x, float y, float z,
 /* Crow: Systematic calculations based on Mangos, a big thank you to them! */
 bool CCollideInterface::IsIndoor(uint32 mapId, float x, float y, float z)
 {
+	bool res = false;
 	ASSERT(m_mapLocks[mapId] != NULL);
 	if(!CollisionMgr)
-		return false;
+		return res;
+
+	// get read lock
+	m_mapLocks[mapId]->m_lock.Acquire();
 
 	uint32 flags = 0;
 	int32 adtId = 0, rootId = 0, groupid = 0;
 	if(CollisionMgr->getAreaInfo(mapId, x, y, z, flags, adtId, rootId, groupid))
 	{
-		bool indoor = false;
 		WMOAreaTableEntry * WMOEntry = GetWorldMapOverlayEntry(adtId, rootId, groupid);
 		if(WMOEntry != NULL)
 		{
 			AreaTable* ate = dbcArea.LookupEntry(WMOEntry->adtId);
 			if(ate != NULL)
 			{
-				if(ate->AreaFlags & AREA_OUTSIDE)
-					return false;
-				if(ate->AreaFlags & AREA_INSIDE)
-					return true;
+				if((ate->AreaFlags & AREA_INSIDE) && !(ate->AreaFlags & AREA_OUTSIDE))
+					res = true;
 			}
+			res = res || ((WMOEntry->Flags & 2) && !(WMOEntry->Flags & 4));
 		}
 
-		if( flags != 0 )
-			if(flags & VA_FLAG_INDOORS && !(flags & VA_FLAG_IN_CITY) && !(flags & VA_FLAG_OUTSIDE) && !(flags & VA_FLAG_IN_CITY2) && !(flags & VA_FLAG_IN_CITY3))
-				indoor = true;
-
-		if(WMOEntry != NULL)
-		{
-			if(WMOEntry->Flags & 4)
-				return false;
-
-			if((WMOEntry->Flags & 2) != 0)
-				indoor = true;
-		}
-
-		return indoor;
+		res = res || ((flags & VA_FLAG_INDOORS) &&
+			!(flags & VA_FLAG_OUTSIDE) &&
+			!(flags & VA_FLAG_IN_CITY) &&
+			!(flags & VA_FLAG_IN_CITY2) &&
+			!(flags & VA_FLAG_IN_CITY3));
 	}
 
-	return false; // If we have no info, then we are outside.
+	// release write lock
+	m_mapLocks[mapId]->m_lock.Release();
+
+	return res;
 }
 
 bool CCollideInterface::IsIncity(uint32 mapId, float x, float y, float z)
 {
+	bool res = false;
 	ASSERT(m_mapLocks[mapId] != NULL);
 	if(!CollisionMgr)
-		return false;
+		return res;
+
+	// get read lock
+	m_mapLocks[mapId]->m_lock.Acquire();
 
 	uint32 flags = 0;
 	int32 adtId = 0, rootId = 0, groupid = 0;
@@ -300,21 +300,47 @@ bool CCollideInterface::IsIncity(uint32 mapId, float x, float y, float z)
 		WMOAreaTableEntry * WMOEntry = GetWorldMapOverlayEntry(adtId, rootId, groupid);
 		if(WMOEntry != NULL)
 		{
-			AreaTable* ate = dbcArea.LookupEntry(WMOEntry->adtId);
+			AreaTable* ate = dbcArea.LookupEntry(WMOEntry->areaId);
 			if(ate != NULL)
 			{
-				if(ate->AreaFlags & AREA_CITY_AREA)
-					return true;
-				if(ate->AreaFlags & AREA_CITY)
-					return true;
+				if(ate->AreaFlags & AREA_CITY_AREA || ate->AreaFlags & AREA_CITY)
+					res = true;
 			}
 		}
 
 		if((flags & VA_FLAG_IN_CITY) || (flags & VA_FLAG_IN_CITY2) || (flags & VA_FLAG_IN_CITY3))
-			return true;
+			res = true;
 	}
 
-	return false; // If we have no info, then we are not in a city.
+	// release write lock
+	m_mapLocks[mapId]->m_lock.Release();
+
+	return res;
+}
+
+uint16 CCollideInterface::GetAreaID(uint32 mapId, float x, float y, float z)
+{
+	uint16 res = 0xFFFF;
+	ASSERT(m_mapLocks[mapId] != NULL);
+	if(!CollisionMgr)
+		return res;
+
+	// get read lock
+	m_mapLocks[mapId]->m_lock.Acquire();
+
+	uint32 flags = 0;
+	int32 adtId = 0, rootId = 0, groupid = 0;
+	if(CollisionMgr->getAreaInfo(mapId, x, y, z, flags, adtId, rootId, groupid))
+	{
+		WMOAreaTableEntry * WMOEntry = GetWorldMapOverlayEntry(adtId, rootId, groupid);
+		if(WMOEntry != NULL)
+			res = WMOEntry->areaId;
+	}
+
+	// release write lock
+	m_mapLocks[mapId]->m_lock.Release();
+
+	return res;
 }
 
 uint32 CCollideInterface::GetVmapAreaFlags(uint32 mapId, float x, float y, float z)
@@ -324,13 +350,13 @@ uint32 CCollideInterface::GetVmapAreaFlags(uint32 mapId, float x, float y, float
 		return 0;
 
 	// get read lock
-	m_mapLocks[mapId]->m_lock.AcquireReadLock();
+	m_mapLocks[mapId]->m_lock.Acquire();
 
 	// get data
 	uint32 flags = CollisionMgr ? CollisionMgr->GetVmapFlags(mapId, x, y, z) : 0;
 
 	// release write lock
-	m_mapLocks[mapId]->m_lock.ReleaseReadLock();
+	m_mapLocks[mapId]->m_lock.Release();
 
 	// return
 	return flags;
@@ -341,7 +367,13 @@ void CCollideInterface::LoadGameobjectModel(uint64 Guid, uint32 mapId, uint32 di
 	if( !CollisionMgr )
 		return;
 
+	// get read lock
+	m_mapLocks[mapId]->m_lock.Acquire();
+
 	CollisionMgr->loadObject(Guid, mapId, displayID, scale, posX, posY, posZ, orientation, instanceId, phasemask);
+
+	// release write lock
+	m_mapLocks[mapId]->m_lock.Release();
 }
 
 void CCollideInterface::UpdateObjectModel(uint64 Guid, uint32 mapId, uint32 instanceId, uint32 displayID)
@@ -349,7 +381,13 @@ void CCollideInterface::UpdateObjectModel(uint64 Guid, uint32 mapId, uint32 inst
 	if( !CollisionMgr )
 		return;
 
+	// get read lock
+	m_mapLocks[mapId]->m_lock.Acquire();
+
 	CollisionMgr->changeObjectModel(Guid, mapId, instanceId, displayID);
+
+	// release write lock
+	m_mapLocks[mapId]->m_lock.Release();
 }
 
 void CCollideInterface::UnLoadGameobjectModel(uint64 Guid, uint32 instanceId, uint32 mapId)
@@ -357,7 +395,13 @@ void CCollideInterface::UnLoadGameobjectModel(uint64 Guid, uint32 instanceId, ui
 	if( !CollisionMgr )
 		return;
 
+	// get read lock
+	m_mapLocks[mapId]->m_lock.Acquire();
+
 	CollisionMgr->unloadObject(mapId, instanceId, Guid);
+
+	// release write lock
+	m_mapLocks[mapId]->m_lock.Release();
 }
 
 void CCollideInterface::DeInit()

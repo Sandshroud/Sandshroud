@@ -19,32 +19,19 @@ void WorldSession::HandleChannelJoin(WorldPacket& recvPacket)
 	recvPacket >> channelname;
 	recvPacket >> pass;
 
-	if(!stricmp(channelname.c_str(), "LookingForGroup"))
+	if(dbc_id)
+		_player->EventDBCChatUpdate(dbc_id);
+	else
 	{
-		// make sure we have lfg dungeons
-		for(i = 0; i < 3; i++)
-			if(_player->LfgDungeonId[i] != 0)
-				break;
+		if( sWorld.GmClientChannel.size() && !stricmp(sWorld.GmClientChannel.c_str(), channelname.c_str()) && !GetPermissionCount())
+			return;
 
-		if(i == 3)
-			return;		// don't join lfg
+		chn = channelmgr.GetCreateChannel(channelname.c_str(), _player, dbc_id);
+		if(chn == NULL)
+			return;
+
+		chn->AttemptJoin(_player, pass.c_str());
 	}
-
-	if( sWorld.GmClientChannel.size() && !stricmp(sWorld.GmClientChannel.c_str(), channelname.c_str()) && !GetPermissionCount())
-		return;
-
-	if(dbc_id == 2)
-	{
-		_player->EventChatUpdate(true);
-		return;
-	}
-
-	chn = channelmgr.GetCreateChannel(channelname.c_str(), _player, dbc_id);
-	if(chn == NULL)
-		return;
-
-	chn->AttemptJoin(_player, pass.c_str());
-	sLog.Debug("ChannelJoin", "%s", channelname.c_str());
 }
 
 void WorldSession::HandleChannelLeave(WorldPacket& recvPacket)
