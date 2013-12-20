@@ -423,3 +423,17 @@ void LogonCommHandler::IPBan_Remove(const char * ip)
 	data << string(ip);
 	logon->SendPacket(&data);
 }
+
+void LogonCommHandler::SendCreateAccountRequest(const char *accountname, const char *password, const char *email, uint32 accountFlags)
+{
+	if(logon == NULL) // No valid logonserver is connected.
+		return;
+
+	WorldPacket data(RCMSG_MODIFY_DATABASE, 50);
+	data << uint32(6);		// 6 = create account
+	data << string(email);
+	data << string(password);
+	data << string(accountname);
+	data << accountFlags;
+	logon->SendPacket(&data);
+}
