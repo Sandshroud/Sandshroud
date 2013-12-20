@@ -402,7 +402,6 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 			if(sWorld.trade_world_chat && chn != NULL && chn->m_general == true && chn->pDBC && chn->pDBC->id == 2 && chn->pDBC->flags == 59)
 			{
 				char Message[512];
-
 				if( m_muted && m_muted >= (uint32)UNIXTIME )
 					return;
 

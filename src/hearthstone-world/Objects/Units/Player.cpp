@@ -1036,10 +1036,13 @@ void Player::Update( uint32 p_time )
 	}
 
 	// Exploration
-	if(mstime >= m_explorationTimer)
+	if(IsInWorld())
 	{
-		_EventExploration();
-		m_explorationTimer = mstime + 1500;
+		if(mstime >= m_explorationTimer)
+		{
+			_EventExploration();
+			m_explorationTimer = mstime + 1500;
+		}
 	}
 
 	if(m_pvpTimer)
@@ -1470,9 +1473,6 @@ void Player::EventAttackStop()
 void Player::_EventExploration()
 {
 	if (isDead())
-		return;
-
-	if (!IsInWorld())
 		return;
 
 	if(m_position.x > _maxX || m_position.x < _minX || m_position.y > _maxY || m_position.y < _minY)
@@ -9019,109 +9019,107 @@ void Player::ForceAreaUpdate()
 	CALL_INSTANCE_SCRIPT_EVENT( m_mapMgr, OnChangeArea )( this, m_zoneId, m_AreaID, oldareaid );
 }
 
-void Player::EventChatUpdate(bool TradeCheck)
+bool Player::AllowChannelAtLocation(uint32 dbcID, AreaTable *areaTable)
 {
-	AreaTable *at = dbcArea.LookupEntryForced(m_zoneId); // These maps need their own chat channels.
-	if(at != NULL)
+	bool result = true;
+	switch(dbcID)
 	{
-		for(DBCStorage<ChatChannelDBC>::iterator itr = dbcChatChannels.begin(); itr != dbcChatChannels.end(); ++itr)
+	case 2:
 		{
-			ChatChannelDBC* entry = (*itr);
-			if(TradeCheck == true)
-			{
-				if(entry->id != 2)
-					continue;
-				if(!sWorld.trade_world_chat)
-				{
-					if((at->AreaFlags & AREA_CITY_AREA) == 0 && (at->AreaFlags & AREA_CITY) == 0)
-					{
-						m_channelsbyDBCID.insert(make_pair(2, reinterpret_cast<Channel*>(NULL))); // Forced data
-						continue;
-					}
-				}
-
-				char* name = new char[255];
-				strcpy(name, format(entry->pattern, at->name).c_str());
-				Channel *chn = channelmgr.GetCreateChannel(name, this, entry->id);
-				if(chn == NULL || chn->HasMember(this))
-					continue;
-
-				chn->AttemptJoin(this, "");
-				sLog.Debug("ChannelJoin", "%s", name);
-			}
-			else
-			{
-				std::map<uint32, Channel*>::iterator itr2 = m_channelsbyDBCID.find(entry->id);
-				if(itr2 != m_channelsbyDBCID.end())
-				{
-					char* name = new char[255];
-					strcpy(name, format(entry->pattern, at->name).c_str());
-					if(!sWorld.trade_world_chat)
-					{
-						if(entry->id == 2)
-						{
-							if((at->AreaFlags & AREA_CITY_AREA) == 0 && (at->AreaFlags & AREA_CITY) == 0)
-							{
-								if(itr2->second)
-								{
-									itr2->second->Part(this, false, true); // Part with notice but keep data!
-									m_channelsbyDBCID.insert(make_pair(2, reinterpret_cast<Channel*>(NULL))); // Forced data
-								}
-								continue;
-							}
-						}
-					}
-
-					Channel *chn = channelmgr.GetCreateChannel(name, this, entry->id);
-					if(chn == NULL || chn->HasMember(this))
-						continue;
-
-					if(itr2->second && name != itr2->second->m_name)
-						itr2->second->Part(this, true);
-
-					chn->AttemptJoin(this, "");
-					sLog.Debug("ChannelJoin", "%s", name);
-				}
-			}
-		}
+			if(areaTable == NULL)
+				result = false;
+			else if(!sWorld.trade_world_chat)
+				result = ((areaTable->AreaFlags & AREA_CITY_AREA) || (areaTable->AreaFlags & AREA_CITY));
+		}break;
+	case 26:
+		{
+			result = (LfgDungeonId[0] > 0 || LfgDungeonId[1] > 0 || LfgDungeonId[2] > 0);
+		}break;
 	}
-	else
+	return result;
+}
+
+bool Player::UpdateChatChannel(const char* areaName, AreaTable *areaTable, ChatChannelDBC* entry, Channel* channel)
+{
+	if(!AllowChannelAtLocation(entry->id, areaTable))
 	{
-		if(!sWorld.trade_world_chat && TradeCheck)
+		if(channel)
+			channel->Part(this, false, true); // Part with notice but keep data!
+		return true;
+	}
+
+	const char* name = format(entry->pattern, areaName).c_str();
+	Channel *chn = channelmgr.GetCreateChannel(name, this, entry->id);
+	if(chn == NULL)
+	{
+		if(channel)
+			channel->Part(this, true);
+		return false;
+	}
+	else if(chn->HasMember(this))
+		return false;
+
+	if(channel && strcmp(name, channel->m_name.c_str()))
+		channel->Part(this, true);
+	chn->AttemptJoin(this, "");
+	sLog.Debug("ChannelJoin", "Player %s joined channel %s", GetName(), name);
+	return false;
+}
+
+void Player::EventDBCChatUpdate(uint32 dbcID)
+{
+	AreaTable *areaTable = dbcArea.LookupEntryForced(m_zoneId);
+	std::string areaName = areaTable ? areaTable->name : "";
+	if(areaTable == NULL && IsInWorld())
+	{
+		if(GetMapMgr()->GetMapInfo())
+			areaName = GetMapMgr()->GetMapInfo()->name;
+	}
+	if(!areaName.length())
+		areaName = format("City_%03u", GetMapId());
+
+	if(dbcID == 0xFFFFFFFF)
+	{
+		if(!m_channelsbyDBCID.size())
 			return;
 
 		for(DBCStorage<ChatChannelDBC>::iterator itr = dbcChatChannels.begin(); itr != dbcChatChannels.end(); ++itr)
 		{
+			Channel *channel = NULL;
 			ChatChannelDBC* entry = (*itr);
-			if(TradeCheck == true)
-			{
-				if(entry->id != 2)
-					continue;
-			}
+			if(m_channelsbyDBCID.find(entry->id) != m_channelsbyDBCID.end())
+				channel = m_channelsbyDBCID.at(entry->id);
+			if(UpdateChatChannel(areaName.c_str(), areaTable, entry, channel))
+				m_channelsbyDBCID.erase(entry->id);
+		}
+	}
+	else
+	{
+		ChatChannelDBC* entry = dbcChatChannels.LookupEntry(dbcID);
+		if(entry == NULL || !strlen(entry->pattern))
+			return;
 
-			std::map<uint32, Channel*>::iterator itr2 = m_channelsbyDBCID.find(entry->id);
-			if(itr2 != m_channelsbyDBCID.end())
-			{
-				char* name;
-				if(GetMapMgr()->GetMapInfo())
-					name = GetMapMgr()->GetMapInfo()->name;
-				else	// Keep our shit tight.
-				{
-					name = new char[255];
-					strcpy(name, format("City_%03u", GetMapId()).c_str());
-				}
+		std::map<uint32, Channel*>::iterator itr = m_channelsbyDBCID.find(dbcID);
+		if(itr != m_channelsbyDBCID.end())
+			UpdateChatChannel(areaName.c_str(), areaTable, entry, itr->second);
+		else if(itr != m_channelsbyDBCID.end() && itr->second != NULL)
+			itr->second->Part(this, false, true);
+		else if(itr == m_channelsbyDBCID.end())
+		{
+			if(!AllowChannelAtLocation(dbcID, areaTable))
+				return;
 
-				// general/changable (and not lfg)
-				Channel *chn = channelmgr.GetCreateChannel(name, this, entry->id);
-				if(chn == NULL || chn->HasMember(this))
-					continue;
+			char name[100];
+			if(entry->flags & 0x02)
+				strcpy(name, format(entry->pattern, areaName.c_str()).c_str());
+			else
+				strcpy(name, entry->pattern);
 
-				if(itr2->second && chn != itr2->second)
-					itr2->second->Part(this, true);
+			Channel *chn = channelmgr.GetCreateChannel(name, this, entry->id);
+			if(chn == NULL || chn->HasMember(this))
+				return;
 
-				chn->AttemptJoin(this, "");
-				sLog.Debug("ChannelJoin", "%s", name);
-			}
+			chn->AttemptJoin(this, "");
 		}
 	}
 }
@@ -9161,8 +9159,8 @@ void Player::ZoneUpdate(uint32 ZoneId)
 
 	// send new world states
 	ForceAreaUpdate();
-	EventChatUpdate(false);
-
+	if(oldzone != m_zoneId) // Only check chat channels when we update zone
+		EventDBCChatUpdate(0xFFFFFFFF);
 	if(m_FlyingAura)
 	{
 		AreaTable *at = NULL;

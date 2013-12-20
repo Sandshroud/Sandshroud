@@ -1228,6 +1228,9 @@ uint8 MapMgr::GetWalkableState(float x, float y)
 
 uint16 MapMgr::GetAreaID(float x, float y, float z)
 {
+	uint16 vAreaId = CollideInterface.GetAreaID(GetMapId(), x, y, z);
+	if(vAreaId && vAreaId != 0xFFFF)
+		return vAreaId;
 	uint16 aid = GetBaseMap()->GetAreaID(x, y, z);
 	if(_mapId == 571)
 	{

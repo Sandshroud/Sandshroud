@@ -882,7 +882,10 @@ public:
 
 
 public:
-	void EventChatUpdate(bool TradeCheck);
+	void EventDBCChatUpdate(uint32 dbcID);
+protected:
+	bool AllowChannelAtLocation(uint32 dbcID, AreaTable *areaTable);
+	bool UpdateChatChannel(const char* areaName, AreaTable *areaTable, ChatChannelDBC* entry, Channel* channel);
 
 protected:
 
