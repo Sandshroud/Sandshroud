@@ -207,12 +207,16 @@ bool HandleCreateAccountCommand(BaseConsole * pConsole, int argc, const char * a
 	if(argc < 5)
 		return false;
 
+	//<name> <pass> <email> <flags>
 	const char * username = argv[1];
 	const char * password = argv[2];
 	const char * email = argv[3];
+	const char * flags = argv[4];
 
-	if(strlen(username) == 0 || strlen(password) == 0 || strlen(email) == 0)
+	if(strlen(username) == 0 || strlen(password) == 0 || strlen(email) == 0 || strlen(flags) == 0)
 		return false;
+
+	sLogonCommHandler.SendCreateAccountRequest(username, password, email, atol(flags));
 	return true;
 }
 

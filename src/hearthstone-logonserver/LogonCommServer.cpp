@@ -498,82 +498,83 @@ void LogonCommServerSocket::HandleDatabaseModify(WorldPacket& recvData)
 			uint32 duration;
 			string reason;
 			recvData >> account >> duration >> reason;
-
 			// remember we expect this in uppercase
 			HEARTHSTONE_TOUPPER(account);
-
 			Account * pAccount = sAccountMgr.GetAccount(account);
 			if( pAccount == NULL )
 				return;
 
 			pAccount->Banned = duration;
-
 			// update it in the sql (duh)
 			sLogonSQL->Execute("UPDATE accounts SET banned = %u, banReason = \"%s\" WHERE login = \"%s\"", duration, sLogonSQL->EscapeString(reason).c_str(), 
 				sLogonSQL->EscapeString(account).c_str());
-
 		}break;
-
 	case 2:		// set gm
 		{
 			string account;
 			string gm;
 			recvData >> account >> gm;
-
 			// remember we expect this in uppercase
 			HEARTHSTONE_TOUPPER(account);
-
 			Account * pAccount = sAccountMgr.GetAccount(account);
 			if( pAccount == NULL )
 				return;
 
 			pAccount->SetGMFlags( account.c_str() );
-
 			// update it in the sql (duh)
 			sLogonSQL->Execute("UPDATE accounts SET gm = \"%s\" WHERE login = \"%s\"", sLogonSQL->EscapeString(gm).c_str(), sLogonSQL->EscapeString(account).c_str());
-
 		}break;
-
 	case 3:		// set mute
 		{
 			string account;
 			uint32 duration;
 			recvData >> account >> duration;
-
 			// remember we expect this in uppercase
 			HEARTHSTONE_TOUPPER(account);
-
 			Account * pAccount = sAccountMgr.GetAccount(account);
 			if( pAccount == NULL )
 				return;
 
 			pAccount->Muted = duration;
-
 			// update it in the sql (duh)
 			sLogonSQL->Execute("UPDATE accounts SET muted = %u WHERE login = \"%s\"", duration, sLogonSQL->EscapeString(account).c_str());
 		}break;
-
 	case 4:		// ip ban add
 		{
 			string ip;
 			string reason;
 			uint32 duration;
-
 			recvData >> ip >> duration >> reason;
-
 			if( sIPBanner.Add( ip.c_str(), duration ) )
 				sLogonSQL->Execute("INSERT INTO ipbans (ip, expire, banreason) VALUES(\"%s\", %u, \"%s\")", sLogonSQL->EscapeString(ip).c_str(), duration, sLogonSQL->EscapeString(reason).c_str() );
 		}break;
-
 	case 5:		// ip ban reomve
 		{
 			string ip;
 			recvData >> ip;
-
 			if( sIPBanner.Remove( ip.c_str() ) )
 				sLogonSQL->Execute("DELETE FROM ipbans WHERE ip = \"%s\"", sLogonSQL->EscapeString(ip).c_str());
-
 		}break;
+	case 6:
+		{
+			uint32 accountFlags;
+			std::string accountName, password, email;
+			recvData >> email >> password >> accountName >> accountFlags;
+			std::string safeAccountName = sLogonSQL->EscapeString(accountName);
+			// remember we expect this in uppercase
+			HEARTHSTONE_TOUPPER(safeAccountName);
+			Account * pAccount = sAccountMgr.GetAccount(safeAccountName);
+			if( pAccount != NULL )
+			{
+				sLog.outError("Request to create account %s, name already taken!");
+				return;
+			}
+			HEARTHSTONE_TOLOWER(safeAccountName);
+			safeAccountName[0] = (char)toupper(safeAccountName[0]);
 
+			sLog.outString("Account %s created by request of realm %u", safeAccountName.c_str(), realmID);
+			sLogonSQL->Execute("INSERT INTO accounts(login,password,flags,email) VALUES('%s', '%s', '%u', '%s')",
+				safeAccountName.c_str(), sLogonSQL->EscapeString(password).c_str(), accountFlags, sLogonSQL->EscapeString(email).c_str());
+		}break;
 	}
 }
