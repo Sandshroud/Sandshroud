@@ -83,6 +83,7 @@ public:
 	void Account_SetMute(const char * account, uint32 muted);
 	void IPBan_Add(const char * ip, uint32 duration, const char* reason);
 	void IPBan_Remove(const char * ip);
+	void SendCreateAccountRequest(const char *accountname, const char *password, const char *email, uint32 accountFlags);
 
 	void LoadRealmConfiguration();
 	void AddServer(string Name, string Address, uint32 Port);
