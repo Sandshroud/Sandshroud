@@ -21,23 +21,15 @@
 
 #include "G3DAll.h"
 #include "TileAssembler.h"
-#include "consolelog/log.h"
-
-basicLog *cLog = NULL;
-
-basicLog GetSingleLogFile()
-{
-    return *cLog;
-}
-
+#include "VMapDefinitions.h"
 
 #define WaitForInput() { char cmd[300]; memset( cmd, 0, sizeof( cmd ) ); fgets( cmd, 300, stdin ); }
 
 //=======================================================
 int main(int argc, char* argv[])
 {
-    cLog = new basicLog();
-    cLog->Init(7);
+    basicLog::InitializeBasicLog();
+    bLog.Init(7);
 
     if(argc != 3)
     {

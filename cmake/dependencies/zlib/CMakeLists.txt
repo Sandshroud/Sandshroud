@@ -12,5 +12,5 @@ include_directories( ${prefix} )
 add_library(${PROJECT_NAME} STATIC ${SRCS} )
 
 #Set it to the project name.
-set(ZLIB_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "zlib Libraries")
-SET_PROPERTY(TARGET zlib PROPERTY FOLDER "Dependencies")
+set(ZLIB_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "${PROJECT_NAME} Libraries")
+SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY FOLDER "Dependencies")

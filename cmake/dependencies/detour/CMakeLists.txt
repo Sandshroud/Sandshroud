@@ -12,5 +12,5 @@ include_directories( ${prefix} )
 add_library(${PROJECT_NAME} STATIC ${SRCS} )
 
 #Set it to the project name.
-set(DETOUR_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "detour Libraries")
-SET_PROPERTY(TARGET detour PROPERTY FOLDER "Dependencies")
+set(DETOUR_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "${PROJECT_NAME} Libraries")
+SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY FOLDER "Dependencies")

@@ -5,9 +5,6 @@
 #ifndef __ACCOUNTCACHE_H
 #define __ACCOUNTCACHE_H
 
-#include "Common.h"
-#include "../hearthstone-shared/DataStorage/DatabaseEnv.h"
-
 enum RealmColours
 {
     REALM_POP_MEDIUM        = 0,
@@ -32,7 +29,7 @@ struct Account
     uint32 Banned;
     uint8 SrpHash[20];
     uint8 * SessionKey;
-    string * UsernamePtr;
+    std::string * UsernamePtr;
     uint32 Muted;
 
     Account()
@@ -84,7 +81,7 @@ typedef struct IPBan
     unsigned int Mask;
     unsigned char Bytes;
     uint32 Expire;
-    string db_ip;
+    std::string db_ip;
 } IPBan;
 
 enum BAN_STATUS
@@ -106,7 +103,7 @@ public:
 
 protected:
     Mutex listBusy;
-    list<IPBan> banList;
+    std::list<IPBan> banList;
 };
 
 class AccountMgr : public Singleton < AccountMgr >
@@ -116,9 +113,9 @@ public:
     {
 
 #ifdef WIN32
-        for(HM_NAMESPACE::hash_map<string,Account*>::iterator itr = AccountDatabase.begin(); itr != AccountDatabase.end(); ++itr)
+        for(HM_NAMESPACE::hash_map<std::string, Account*>::iterator itr = AccountDatabase.begin(); itr != AccountDatabase.end(); ++itr)
 #else
-        for(map<string,Account*>::iterator itr = AccountDatabase.begin(); itr != AccountDatabase.end(); ++itr)
+        for(std::map<std::string,Account*>::iterator itr = AccountDatabase.begin(); itr != AccountDatabase.end(); ++itr)
 #endif
         {
             delete itr->second;
@@ -127,13 +124,13 @@ public:
 
     void AddAccount(Field* field);
 
-    Account* GetAccount(string Name)
+    Account* GetAccount(std::string Name)
     {
         setBusy.Acquire();
         Account * pAccount = NULL;
         // this should already be uppercase!
 #ifdef WIN32
-        HM_NAMESPACE::hash_map<string, Account*>::iterator itr = AccountDatabase.find(Name);
+        HM_NAMESPACE::hash_map<std::string, Account*>::iterator itr = AccountDatabase.find(Name);
 #else
         map<string, Account*>::iterator itr = AccountDatabase.find(Name);
 #endif
@@ -152,11 +149,11 @@ public:
     HEARTHSTONE_INLINE size_t GetCount() { return AccountDatabase.size(); }
 
 private:
-    Account* __GetAccount(string Name)
+    Account* __GetAccount(std::string Name)
     {
         // this should already be uppercase!
 #ifdef WIN32
-        HM_NAMESPACE::hash_map<string, Account*>::iterator itr = AccountDatabase.find(Name);
+        HM_NAMESPACE::hash_map<std::string, Account*>::iterator itr = AccountDatabase.find(Name);
 #else
         map<string, Account*>::iterator itr = AccountDatabase.find(Name);
 #endif
@@ -166,9 +163,9 @@ private:
     }
 
 #ifdef WIN32
-    HM_NAMESPACE::hash_map<string, Account*> AccountDatabase;
+    HM_NAMESPACE::hash_map<std::string, Account*> AccountDatabase;
 #else
-    std::map<string, Account*> AccountDatabase;
+    std::map<std::string, Account*> AccountDatabase;
 #endif
 
 protected:
@@ -177,8 +174,8 @@ protected:
 class LogonCommServerSocket;
 typedef struct Realm
 {
-    string Name;
-    string Address;
+    std::string Name;
+    std::string Address;
     uint8 Flag;
     uint8 Icon;
     uint8 WorldRegion;
@@ -199,8 +196,8 @@ class LogonCommServerSocket;
 
 class InformationCore : public Singleton<InformationCore>
 {
-    map<uint32, Realm*>       m_realms;
-    set<LogonCommServerSocket*> m_serverSockets;
+    std::map<uint32, Realm*>       m_realms;
+    std::set<LogonCommServerSocket*> m_serverSockets;
     Mutex serverSocketLock;
     Mutex realmLock;
 
@@ -224,10 +221,10 @@ public:
 
     Realm* AddRealm(uint32 realm_id, Realm * rlm);
     Realm* GetRealm(uint32 realm_id);
-    int32 GetRealmIdByName(string Name);
-    map<uint32, Realm*> GetRealmMap() { return m_realms; }
+    int32 GetRealmIdByName(std::string Name);
+    std::map<uint32, Realm*> GetRealmMap() { return m_realms; }
     void RemoveRealm(uint32 realm_id);
-    bool FindRealmWithAdress(string Address);
+    bool FindRealmWithAdress(std::string Address);
     void UpdateRealmPop(uint32 realm_id, uint32 population);
     void SetRealmOffline(uint32 realm_id, LogonCommServerSocket *ss);
 

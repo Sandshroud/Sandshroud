@@ -5,12 +5,6 @@
 #include "../G3DAll.h"
 #include "VMapDefinitions.h"
 
-#ifdef _MSC_VER
-  #define isnan _isnan
-#else
-  #define isnan std::isnan
-#endif
-
 void BIH::buildHierarchy(std::vector<g3d_uint32> &tempTree, buildData &dat, BuildStats &stats)
 {
     // create space for the first node

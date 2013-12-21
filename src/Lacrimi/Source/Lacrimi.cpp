@@ -132,7 +132,7 @@ bool Lacrimi::_StartDB()
     }
 
     // Create the DB
-    LacrimiDB = Database::Create();
+    LacrimiDB = DirectDatabase::Create();
 
     // Initialize it
     if( !LacrimiDB->Initialize(hostname.c_str(), uint(port), username.c_str(),

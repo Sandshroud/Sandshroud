@@ -153,8 +153,8 @@ void AuthSocket::HandleChallenge()
     if(m_challenge.I_len >= 0x50) { Disconnect(); return; }
     m_challenge.I[m_challenge.I_len] = 0;
     AccountName = (char*)&m_challenge.I;
-    string::size_type i = AccountName.rfind("#");
-    if( i != string::npos )
+    std::string::size_type i = AccountName.rfind("#");
+    if( i != std::string::npos )
     {
         printf("# ACCOUNTNAME!\n");
         return;

@@ -21,14 +21,12 @@
 #include "../hearthstone-shared/Config/IniFiles.h"
 #include <zlib/zlib.h>
 
-#include "../hearthstone-shared/DataStorage/DatabaseEnv.h"
-#include "../hearthstone-shared/DataStorage/DBC/DBCStores.h"
-#include "../hearthstone-shared/DataStorage/DBC/dbcfile.h"
+#include <threading/Threading.h>
+#include <database/Database.h>
 
 #include "../hearthstone-shared/Auth/BigNumber.h"
 #include "../hearthstone-shared/Auth/Sha1.h"
 #include "../hearthstone-shared/Auth/WowCrypt.h"
-#include "../hearthstone-shared/CrashHandler.h"
 #include "../hearthstone-shared/NameTables.h"
 
 #include "LogonOpcodes.h"
@@ -44,4 +42,4 @@
 #include "../hearthstone-shared/WorldPacket.h"
 
 // database decl
-extern Database* sLogonSQL;
+extern DirectDatabase* sLogonSQL;

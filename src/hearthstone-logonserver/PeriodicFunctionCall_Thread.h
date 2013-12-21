@@ -2,8 +2,6 @@
  * Demonstrike Core
  */
 
-#include "../hearthstone-shared/CallBack.h"
-
 template<class Type>
 class PeriodicFunctionCaller : public ThreadContext
 {

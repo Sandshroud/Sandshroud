@@ -1945,7 +1945,7 @@ void GuildMgr::Packet_DepositMoney(WorldSession* m_session, uint64 BankGuid, uin
     plr->ModUnsigned32Value(PLAYER_FIELD_COINAGE, -(int32)Amount);
 
     char buf[20];
-    snprintf(buf, 20, I64FMT, ((LLSI)(gInfo->m_bankBalance)));
+    snprintf(buf, 20, I64FMT, ((LLUI)(gInfo->m_bankBalance)));
     gInfo->m_GuildLock.Release();
 
     // broadcast guild event telling everyone the new balance
@@ -2035,7 +2035,7 @@ void GuildMgr::Packet_WithdrawMoney(WorldSession* m_session, uint64 BankGuid, ui
     gInfo->m_GuildStatus = GUILD_STATUS_DIRTY;
 
     char buf[20];
-    snprintf(buf, 20, I64FMT, ((LLSI)(gInfo->m_bankBalance)));
+    snprintf(buf, 20, I64FMT, ((LLUI)(gInfo->m_bankBalance)));
     gInfo->m_GuildLock.Release();
 
     // notify everyone with the new balance

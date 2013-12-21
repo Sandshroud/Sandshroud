@@ -12,5 +12,5 @@ include_directories( ${prefix} )
 add_library(${PROJECT_NAME} STATIC ${SRCS} )
 
 #Set it to the project name.
-set(BZIP2_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "bzip2 Libraries")
-SET_PROPERTY(TARGET bzip2 PROPERTY FOLDER "Dependencies")
+set(BZIP2_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "${PROJECT_NAME} Libraries")
+SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY FOLDER "Dependencies")

@@ -12,5 +12,5 @@ include_directories( ${prefix} )
 add_library(${PROJECT_NAME} STATIC ${SRCS} )
 
 #Set it to the project name.
-set(CONSOLELOG_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "consoleLog Libraries")
-SET_PROPERTY(TARGET consolelog PROPERTY FOLDER "Dependencies")
+set(CONSOLELOG_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "${PROJECT_NAME} Libraries")
+SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY FOLDER "Dependencies")

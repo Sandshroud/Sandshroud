@@ -18,14 +18,7 @@
 
 #include "PathCommon.h"
 #include "MapBuilder.h"
-#include "consolelog/log.h"
-
-basicLog *cLog = NULL;
-
-basicLog GetSingleLogFile()
-{
-    return *cLog;
-}
+#include "consolelog/consolelog.h"
 
 using namespace MMAP;
 
@@ -249,8 +242,8 @@ int finish(const char* message, int returnValue)
 
 int main(int argc, char** argv)
 {
-    cLog = new basicLog();
-    cLog->Init(1);
+    basicLog::InitializeBasicLog();
+    bLog.Init(1);
 
     int threads = 3, mapnum = -1;
     float maxAngle = 55.0f;
