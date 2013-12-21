@@ -7,7 +7,6 @@
 #define NUM_MAPS 750
 #define CL_BUILD_SUPPORT 12340
 
-class Database;
 class CBattleground;
 class CBattlegroundManager;
 class AlteracValley;
@@ -97,10 +96,10 @@ class StrandOfTheAncients;
 #define NULLMAPMGR NULL
 #define NULLINSTANCEMGR NULL
 
-SERVER_DECL extern Database* Database_Character;
-SERVER_DECL extern Database* Database_Account;
-SERVER_DECL extern Database* Database_World;
-SERVER_DECL extern Database* Database_Log;
+SERVER_DECL extern DirectDatabase* Database_Character;
+SERVER_DECL extern DirectDatabase* Database_Account;
+SERVER_DECL extern DirectDatabase* Database_World;
+SERVER_DECL extern DirectDatabase* Database_Log;
 
 SERVER_DECL bool Rand(float chance);
 SERVER_DECL bool Rand(uint32 chance);

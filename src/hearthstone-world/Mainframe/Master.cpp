@@ -13,9 +13,9 @@ bool crashed = false;
 volatile bool Master::m_stopEvent;
 
 // Database defines.
-SERVER_DECL Database* Database_Character;
-SERVER_DECL Database* Database_World;
-SERVER_DECL Database* Database_Log;
+SERVER_DECL DirectDatabase* Database_Character;
+SERVER_DECL DirectDatabase* Database_World;
+SERVER_DECL DirectDatabase* Database_Log;
 
 void Master::_OnSignal(int s)
 {
@@ -75,6 +75,8 @@ ThreadContext * GetConsoleListener();
 
 bool Master::Run(int argc, char ** argv)
 {
+    sLog.InitializeUnderlayingLog();
+
     m_stopEvent = false;
     char * config_file = (char*)default_config_file;
     int screen_log_level = DEF_VALUE_NOT_SET;
@@ -164,7 +166,7 @@ bool Master::Run(int argc, char ** argv)
 
     if(!_StartDB())
     {
-        Database::CleanupLibs();
+        DirectDatabase::CleanupLibs();
         return false;
     }
 
@@ -424,7 +426,7 @@ bool Master::_StartDB()
         return false;
     }
 
-    Database_World = Database::Create();
+    Database_World = DirectDatabase::Create();
     // Initialize it
     if( !WorldDatabase.Initialize(hostname.c_str(), uint(port), username.c_str(),
         password.c_str(), database.c_str(), mainIni->ReadInteger("WorldDatabase", "ConnectionCount", sysinfo.dwNumberOfProcessors), 16384 ) )
@@ -455,7 +457,7 @@ bool Master::_StartDB()
         return false;
     }
 
-    Database_Character = Database::Create();
+    Database_Character = DirectDatabase::Create();
     // Initialize it
     if( !CharacterDatabase.Initialize( hostname.c_str(), uint(port), username.c_str(),
         password.c_str(), database.c_str(), mainIni->ReadInteger( "CharacterDatabase", "ConnectionCount", sysinfo.dwNumberOfProcessors), 16384 ) )
@@ -490,7 +492,7 @@ bool Master::_StartDB()
             return false;
         }
 
-        Database_Log = Database::Create();
+        Database_Log = DirectDatabase::Create();
         // Initialize it
         if( !(LogDatabase.Initialize( hostname.c_str(), uint(port), username.c_str(),
             password.c_str(), database.c_str(), mainIni->ReadInteger( "LogDatabase", "ConnectionCount", 2 ), 16384 )) )

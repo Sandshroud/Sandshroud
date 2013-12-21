@@ -33,7 +33,7 @@ namespace ByteConverter
 template<typename T> inline void EndianConvert(T& val) { ByteConverter::apply<T>(&val); }
 template<typename T> inline void EndianConvertReverse(T&) { }
 
-template<typename T> void EndianConvert(T*val); { ByteConverter::apply<T>(val); }
+template<typename T> void EndianConvert(T*val) { ByteConverter::apply<T>(val); }
 template<typename T> void EndianConvertReverse(T*) { };
 
 #else

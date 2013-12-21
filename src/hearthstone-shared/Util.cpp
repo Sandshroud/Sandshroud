@@ -6,13 +6,6 @@
 
 using namespace std;
 
-createFileSingleton( hLog );
-
-basicLog GetSingleLogFile()
-{
-    return *sLog.getBasic();
-}
-
 SERVER_DECL time_t UNIXTIME;
 SERVER_DECL tm g_localTime;
 
@@ -30,57 +23,6 @@ vector<string> StrSplit(const string &src, const string &sep)
     }
     if (s.length()) r.push_back(s);
     return r;
-}
-
-void SetThreadName(const char* thread_name)
-{
-    char buffer[255];
-    strcpy(buffer, thread_name);
-
-    DWORD threadid = GetCurrentThreadId();
-
-    // This isn't supported on nix?
-#if PLATFORM == PLATFORM_WIN
-    THREADNAME_INFO info;
-    info.dwType = 0x1000;
-    info.dwThreadID = GetCurrentThreadId();
-    info.dwFlags = 0;
-    info.szName = buffer;
-
-    __try
-    {
-#ifdef _WIN64
-        RaiseException(0x406D1388, 0, sizeof(info)/sizeof(DWORD), (ULONG_PTR*)&info);
-#else
-        RaiseException(0x406D1388, 0, sizeof(info)/sizeof(DWORD), (DWORD*)&info);
-#endif
-    }
-    __except(EXCEPTION_CONTINUE_EXECUTION)
-    {
-
-    }
-#endif
-}
-
-string FormatOutputString(const char * Prefix, const char * Description, bool useTimeStamp)
-{
-
-    char p[MAX_PATH];
-    p[0] = 0;
-    time_t t = time(NULL);
-    tm * a = gmtime(&t);
-    strcat(p, Prefix);
-    strcat(p, "/");
-    strcat(p, Description);
-    if(useTimeStamp)
-    {
-        char ftime[100];
-        snprintf(ftime, 100, "-%-4d-%02d-%02d %02d-%02d-%02d", a->tm_year+1900, a->tm_mon+1, a->tm_mday, a->tm_hour, a->tm_min, a->tm_sec);
-        strcat(p, ftime);
-    }
-
-    strcat(p, ".log");
-    return string(p);
 }
 
 time_t convTimePeriod ( uint32 dLength, char dType )

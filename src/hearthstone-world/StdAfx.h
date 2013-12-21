@@ -49,10 +49,21 @@
 #include <cmath>
 #include <cstring>
 
+#include <threading/Threading.h>
+#include <database/Database.h>
+#include <network/Network.h>
+#include <dbclib/DBCLib.h>
 #include <zlib/zlib.h>
 extern "C" {
 #include <pcre/pcre.h>
 };
+
+#include <g3dlite/G3D.h>
+#include <recast/Recast.h>
+#include <detour/Detour.h>
+
+// Being very lazy here..
+using namespace std;
 
 #include "../hearthstone-shared/git_version.h"
 #include "../hearthstone-shared/Common.h"
@@ -66,23 +77,15 @@ extern "C" {
 #include "../hearthstone-shared/hashmap.h"
 #include "../hearthstone-shared/hearthstoneConfig.h"
 #include "../hearthstone-shared/RC4Engine.h"
-#include "../hearthstone-shared/DataStorage/DatabaseEnv.h"
-#include "../hearthstone-shared/DataStorage/DBC/DBCStores.h"
-#include "../hearthstone-shared/DataStorage/DBC/dbcfile.h"
-#include "../hearthstone-shared/Network/Network.h"
 #include "../hearthstone-shared/AuthCodes.h"
 #include "../hearthstone-shared/Auth/MD5.h"
 #include "../hearthstone-shared/Auth/BigNumber.h"
 #include "../hearthstone-shared/Auth/Sha1.h"
 #include "../hearthstone-shared/Auth/WowCrypt.h"
-#include "../hearthstone-shared/CrashHandler.h"
 #include "../hearthstone-shared/FastQueue.h"
 #include "../hearthstone-shared/CircularQueue.h"
-#include "../hearthstone-shared/Threading/RWLock.h"
-#include "../hearthstone-shared/Threading/Condition.h"
 #include "../hearthstone-shared/hearthstone_getopt.h"
 #include "../hearthstone-shared/NameTables.h"
-#include "../hearthstone-shared/CallBack.h"
 
 #include "Const.h"
 
@@ -90,14 +93,7 @@ extern "C" {
 #include "../hearthstone-shared/PerfCounters.h"
 #include "../hearthstone-logonserver/LogonOpcodes.h"
 
-#include "g3dlite/G3D.h"
-
-#include "recast/Recast.h"
-#include "detour/DetourCommon.h"
-#include "detour/DetourNavMesh.h"
-#include "detour/DetourNavMeshQuery.h"
-#include "detour/DetourNavMeshBuilder.h"
-
+#include "DBCStores.h"
 #include "NameTables.h"
 #include "UpdateFields.h"
 #include "UpdateMask.h"

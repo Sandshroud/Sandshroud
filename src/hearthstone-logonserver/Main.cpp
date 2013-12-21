@@ -14,15 +14,12 @@
 #endif
 
 // Database impl
-Database * sLogonSQL;
+DirectDatabase * sLogonSQL;
 initialiseSingleton(LogonServer);
 bool mrunning = true;
 bool m_encryptedPasswords;
 Mutex _authSocketLock;
-set<AuthSocket*> _authSockets;
-#ifdef WIN32
-CircularQueue<uint32,30> last_spells;
-#endif
+std::set<AuthSocket*> _authSockets;
 
 /*** Signal Handler ***/
 void _OnSignal(int s)
@@ -81,12 +78,12 @@ int main(int argc, char** argv)
 
 bool startdb()
 {
-    string error;
+    std::string error;
     // Configure Logon Database...
-    string lhostname = mainIni->ReadString("LogonDatabase", "Hostname", "ERROR");
-    string lusername = mainIni->ReadString("LogonDatabase", "Username", "ERROR");
-    string lpassword = mainIni->ReadString("LogonDatabase", "Password", "ERROR");
-    string ldatabase = mainIni->ReadString("LogonDatabase", "Name", "ERROR");
+    std::string lhostname = mainIni->ReadString("LogonDatabase", "Hostname", "ERROR");
+    std::string lusername = mainIni->ReadString("LogonDatabase", "Username", "ERROR");
+    std::string lpassword = mainIni->ReadString("LogonDatabase", "Password", "ERROR");
+    std::string ldatabase = mainIni->ReadString("LogonDatabase", "Name", "ERROR");
     int lport = mainIni->ReadInteger("LogonDatabase", "Port", 0);
     int ltype = mainIni->ReadInteger("LogonDatabase", "Type", 0);
     if(strcmp(lhostname.c_str(), "ERROR") == 0)
@@ -108,7 +105,7 @@ bool startdb()
     int loglevel = mainIni->ReadInteger("LogLevel", "Screen", 0);
     sLog.SetLoggingLevel(loglevel);
     sLog.SetCLoggingLevel(loglevel);
-    sLogonSQL = Database::Create();
+    sLogonSQL = DirectDatabase::Create();
 
     // Initialize it
     if(!sLogonSQL->Initialize(lhostname.c_str(), (unsigned int)lport, lusername.c_str(),
@@ -125,13 +122,13 @@ bool startdb()
 #define DEF_VALUE_NOT_SET 0xDEADBEEF
 
 Mutex m_allowedIpLock;
-vector<AllowedIP> m_allowedIps;
-vector<AllowedIP> m_allowedModIps;
+std::vector<AllowedIP> m_allowedIps;
+std::vector<AllowedIP> m_allowedModIps;
 
 bool IsServerAllowed(unsigned int IP)
 {
     m_allowedIpLock.Acquire();
-    for(vector<AllowedIP>::iterator itr = m_allowedIps.begin(); itr != m_allowedIps.end(); ++itr)
+    for(std::vector<AllowedIP>::iterator itr = m_allowedIps.begin(); itr != m_allowedIps.end(); ++itr)
     {
         if( ParseCIDRBan(IP, itr->IP, itr->Bytes) )
         {
@@ -146,7 +143,7 @@ bool IsServerAllowed(unsigned int IP)
 bool IsServerAllowedMod(unsigned int IP)
 {
     m_allowedIpLock.Acquire();
-    for(vector<AllowedIP>::iterator itr = m_allowedModIps.begin(); itr != m_allowedModIps.end(); ++itr)
+    for(std::vector<AllowedIP>::iterator itr = m_allowedModIps.begin(); itr != m_allowedModIps.end(); ++itr)
     {
         if( ParseCIDRBan(IP, itr->IP, itr->Bytes) )
         {
@@ -171,27 +168,27 @@ bool Rehash()
     m_encryptedPasswords = mainIni->ReadBoolean("LogonServer", "UseEncryptedPasswords", false);
 
     // re-set the allowed server IP's
-    string ips = mainIni->ReadString("LogonServer", "AllowedIPs", "");
-    string ipsmod = mainIni->ReadString("LogonServer", "AllowedModIPs", "");
+    std::string ips = mainIni->ReadString("LogonServer", "AllowedIPs", "");
+    std::string ipsmod = mainIni->ReadString("LogonServer", "AllowedModIPs", "");
 
-    vector<string> vips = StrSplit(ips, " ");
-    vector<string> vipsmod = StrSplit(ips, " ");
+    std::vector<std::string> vips = StrSplit(ips, " ");
+    std::vector<std::string> vipsmod = StrSplit(ips, " ");
 
     m_allowedIpLock.Acquire();
     m_allowedIps.clear();
     m_allowedModIps.clear();
-    vector<string>::iterator itr;
+    std::vector<std::string>::iterator itr;
     for(itr = vips.begin(); itr != vips.end(); ++itr)
     {
-        string::size_type i = itr->find("/");
-        if( i == string::npos )
+        std::string::size_type i = itr->find("/");
+        if( i == std::string::npos )
         {
             printf("IP: %s could not be parsed. Ignoring\n", itr->c_str());
             continue;
         }
 
-        string stmp = itr->substr(0, i);
-        string smask = itr->substr(i+1);
+        std::string stmp = itr->substr(0, i);
+        std::string smask = itr->substr(i+1);
 
         unsigned int ipraw = MakeIP(stmp.c_str());
         unsigned int ipmask = atoi(smask.c_str());
@@ -209,15 +206,15 @@ bool Rehash()
 
     for(itr = vipsmod.begin(); itr != vipsmod.end(); ++itr)
     {
-        string::size_type i = itr->find("/");
-        if( i == string::npos )
+        std::string::size_type i = itr->find("/");
+        if( i == std::string::npos )
         {
             printf("IP: %s could not be parsed. Ignoring\n", itr->c_str());
             continue;
         }
 
-        string stmp = itr->substr(0, i);
-        string smask = itr->substr(i+1);
+        std::string stmp = itr->substr(0, i);
+        std::string smask = itr->substr(i+1);
 
         unsigned int ipraw = MakeIP(stmp.c_str());
         unsigned int ipmask = atoi(smask.c_str());
@@ -249,6 +246,8 @@ static const char * default_config_file = (char*)CONFDIR "/hearthstone-logonserv
 
 void LogonServer::Run(int argc, char ** argv)
 {
+    sLog.InitializeUnderlayingLog();
+
     UNIXTIME = time(NULL);
     g_localTime = *localtime(&UNIXTIME);
     char *config_file = (char*)default_config_file;
@@ -326,7 +325,7 @@ void LogonServer::Run(int argc, char ** argv)
     sDBEngine.Init(false);
     if(!startdb())
     {
-        Database::CleanupLibs();
+        DirectDatabase::CleanupLibs();
         return;
     }
 
@@ -355,11 +354,11 @@ void LogonServer::Run(int argc, char ** argv)
     // Load conf settings..
     uint32 cport = mainIni->ReadInteger("Listen", "RealmListPort", 3724);
     uint32 sport = mainIni->ReadInteger("Listen", "ServerPort", 8093);
-    string host = mainIni->ReadString("Listen", "Host", "0.0.0.0");
-    string shost = mainIni->ReadString("Listen", "ISHost", host.c_str());
+    std::string host = mainIni->ReadString("Listen", "Host", "0.0.0.0");
+    std::string shost = mainIni->ReadString("Listen", "ISHost", host.c_str());
     min_build = mainIni->ReadInteger("Client", "MinBuild", 12340);
     max_build = mainIni->ReadInteger("Client", "MaxBuild", 12340);
-    string logon_pass = mainIni->ReadString("LogonServer", "RemotePassword", "r3m0t3b4d");
+    std::string logon_pass = mainIni->ReadString("LogonServer", "RemotePassword", "r3m0t3b4d");
     Sha1Hash hash;
     hash.UpdateData(logon_pass);
     hash.Finalize();
@@ -477,8 +476,8 @@ void LogonServer::CheckForDeadSockets()
     _authSocketLock.Acquire();
     time_t t = time(NULL);
     time_t diff;
-    set<AuthSocket*>::iterator itr = _authSockets.begin();
-    set<AuthSocket*>::iterator it2;
+    std::set<AuthSocket*>::iterator itr = _authSockets.begin();
+    std::set<AuthSocket*>::iterator it2;
     AuthSocket * s;
 
     for(itr = _authSockets.begin(); itr != _authSockets.end();)

@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Common.h"
-#include "Singleton.h"
 
 SERVER_DECL void InitRandomNumberGenerators();
 SERVER_DECL void ReseedRandomNumberGenerators();

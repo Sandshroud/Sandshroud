@@ -58,7 +58,7 @@ public:
     HEARTHSTONE_INLINE time_t GetLastRecv() { return last_recv; }
     bool removedFromSet;
     HEARTHSTONE_INLINE uint32 GetAccountID() { return m_account ? m_account->AccountId : 0; }
-    HEARTHSTONE_INLINE string GetAccountName() { return AccountName; }
+    HEARTHSTONE_INLINE std::string GetAccountName() { return AccountName; }
 
     uint8 GetClientExpansion() { return m_challenge.version[0]; };
     uint8 GetClientPatch() { return m_challenge.version[1]; };

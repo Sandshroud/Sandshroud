@@ -35,9 +35,7 @@ enum MsTimeVariables
 #define HEARTHSTONE_INLINE inline
 #endif
 
-#if defined(SHARED_LIB_BUILDER) || defined(_LOGON) || defined(_REALM) || defined(_GAME) // Game the lost just you?
 #include "hearthstoneConfig.h"
-#endif
 #include "format.h"
 
 #include <stdio.h>
@@ -296,7 +294,7 @@ using std::hash_set;
 using namespace std::tr1;
 using std::tr1::shared_ptr;
 #undef HM_NAMESPACE
-#define HM_NAMESPACE tr1
+#define HM_NAMESPACE std::tr1
 #define hash_map unordered_map
 #define TRHAX 1
 
@@ -305,7 +303,7 @@ using std::tr1::shared_ptr;
 using namespace std::tr1;
 using std::tr1::shared_ptr;
 #undef HM_NAMESPACE
-#define HM_NAMESPACE tr1
+#define HM_NAMESPACE std::tr1
 #define hash_map unordered_map
 #define ENABLE_SHITTY_STL_HACKS 1
 
@@ -318,7 +316,7 @@ using std::tr1::shared_ptr;
 using namespace std::tr1;
 using std::tr1::shared_ptr;
 #undef HM_NAMESPACE
-#define HM_NAMESPACE tr1
+#define HM_NAMESPACE std::tr1
 #define hash_map unordered_map
 #define TRHAX 1
 
@@ -333,7 +331,7 @@ using std::hash_set;
 using namespace std::tr1;
 using std::tr1::shared_ptr;
 #undef HM_NAMESPACE
-#define HM_NAMESPACE tr1
+#define HM_NAMESPACE std::tr1
 #define shared_ptr std::tr1::shared_ptr
 #define hash_map unordered_map
 #define TRHAX 1
@@ -421,7 +419,8 @@ namespace std
 /* Use correct types for x64 platforms, too */
 typedef unsigned int uint;
 typedef unsigned long ulong;
-typedef long long unsigned int LLSI;
+typedef long long signed int LLSI;
+typedef long long unsigned int LLUI;
 typedef char const* const* PackedString;
 #define UNORDERED_MAP std::tr1::unordered_map
 

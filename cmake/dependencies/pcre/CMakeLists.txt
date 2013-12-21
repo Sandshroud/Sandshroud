@@ -12,5 +12,5 @@ include_directories( ${prefix} )
 add_library(${PROJECT_NAME} STATIC ${SRCS} )
 
 #Set it to the project name.
-set(PCRE_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "pcre Libraries")
-SET_PROPERTY(TARGET pcre PROPERTY FOLDER "Dependencies")
+set(PCRE_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "${PROJECT_NAME} Libraries")
+SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY FOLDER "Dependencies")
