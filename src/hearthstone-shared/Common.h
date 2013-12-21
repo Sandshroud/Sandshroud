@@ -8,25 +8,25 @@
 #pragma warning(disable:4996)
 #define _CRT_SECURE_NO_DEPRECATE 1
 #define _CRT_SECURE_COPP_OVERLOAD_STANDARD_NAMES 1
-#pragma warning(disable:4251)		// dll-interface bullshit
+#pragma warning(disable:4251)       // dll-interface bullshit
 #endif
 
 enum TimeVariables
 {
-	TIME_SECOND = 1,
-	TIME_MINUTE = TIME_SECOND * 60,
-	TIME_HOUR   = TIME_MINUTE * 60,
-	TIME_DAY	= TIME_HOUR * 24,
-	TIME_MONTH	= TIME_DAY * 30,
-	TIME_YEAR	= TIME_MONTH * 12,
+    TIME_SECOND = 1,
+    TIME_MINUTE = TIME_SECOND * 60,
+    TIME_HOUR   = TIME_MINUTE * 60,
+    TIME_DAY    = TIME_HOUR * 24,
+    TIME_MONTH  = TIME_DAY * 30,
+    TIME_YEAR   = TIME_MONTH * 12,
 };
 
 enum MsTimeVariables
 {
-	MSTIME_SECOND = 1000,
-	MSTIME_MINUTE = MSTIME_SECOND * 60,
-	MSTIME_HOUR   = MSTIME_MINUTE * 60,
-	MSTIME_DAY	= MSTIME_HOUR * 24,
+    MSTIME_SECOND = 1000,
+    MSTIME_MINUTE = MSTIME_SECOND * 60,
+    MSTIME_HOUR   = MSTIME_MINUTE * 60,
+    MSTIME_DAY  = MSTIME_HOUR * 24,
 };
 
 #if defined(WIN32) || defined(_WIN64)
@@ -106,7 +106,7 @@ enum MsTimeVariables
 #endif
 
 #define COMPILER_MICROSOFT 0
-#define COMPILER_GNU	   1
+#define COMPILER_GNU       1
 #define COMPILER_BORLAND   2
 #define COMPILER_INTEL     3
 
@@ -173,23 +173,23 @@ enum MsTimeVariables
 #endif
 
 #if PLATFORM == PLATFORM_WIN
-	#define ASYNC_NET
+    #define ASYNC_NET
 #endif
 
 #ifdef USE_EPOLL
-	#define CONFIG_USE_EPOLL
+    #define CONFIG_USE_EPOLL
 #endif
 #ifdef USE_KQUEUE
-	#define CONFIG_USE_KQUEUE
+    #define CONFIG_USE_KQUEUE
 #endif
 #ifdef USE_KQUEUE_DFLY
-	#define CONFIG_USE_KQUEUE_DFLY
+    #define CONFIG_USE_KQUEUE_DFLY
 #endif
 #ifdef USE_SELECT
-	#define CONFIG_USE_SELECT
+    #define CONFIG_USE_SELECT
 #endif
 #ifdef USE_POLL
-	#define CONFIG_USE_POLL
+    #define CONFIG_USE_POLL
 #endif
 
 #ifdef min
@@ -211,25 +211,25 @@ enum MsTimeVariables
 
 #if defined (__GNUC__)
 #  define GCC_VERSION (__GNUC__ * 10000 \
-					   + __GNUC_MINOR__ * 100 \
-					   + __GNUC_PATCHLEVEL__)
+                       + __GNUC_MINOR__ * 100 \
+                       + __GNUC_PATCHLEVEL__)
 #endif
 
 
 #ifndef WIN32
 #ifndef _WIN64
 #  if defined (__GNUC__)
-#	if GCC_VERSION >= 30400
+#   if GCC_VERSION >= 30400
 #         ifdef HAVE_DARWIN
-#	      define __fastcall
+#         define __fastcall
 #         else
-#    	      define __fastcall __attribute__((__fastcall__))
+#             define __fastcall __attribute__((__fastcall__))
 #         endif
-#	else
-#	  define __fastcall __attribute__((__regparm__(3)))
-#	endif
+#   else
+#     define __fastcall __attribute__((__regparm__(3)))
+#   endif
 #  else
-#	define __fastcall __attribute__((__fastcall__))
+#   define __fastcall __attribute__((__fastcall__))
 #  endif
 #else
 #define __fastcall
@@ -339,23 +339,23 @@ using std::tr1::shared_ptr;
 #define TRHAX 1
 namespace std
 {
-	namespace tr1
-	{
-		template<> struct hash<const long long unsigned int> : public std::unary_function<const long long unsigned int, std::size_t>
-		{
-			std::size_t operator()(const long long unsigned int val) const
-			{
-				return static_cast<std::size_t>(val);
-			}
-		};
-		template<> struct hash<const unsigned int> : public std::unary_function<const unsigned int, std::size_t>
-		{
-			std::size_t operator()(const unsigned int val) const
-			{
-				return static_cast<std::size_t>(val);
-			}
-		};
-	}
+    namespace tr1
+    {
+        template<> struct hash<const long long unsigned int> : public std::unary_function<const long long unsigned int, std::size_t>
+        {
+            std::size_t operator()(const long long unsigned int val) const
+            {
+                return static_cast<std::size_t>(val);
+            }
+        };
+        template<> struct hash<const unsigned int> : public std::unary_function<const unsigned int, std::size_t>
+        {
+            std::size_t operator()(const unsigned int val) const
+            {
+                return static_cast<std::size_t>(val);
+            }
+        };
+    }
 }
 
 #elif COMPILER == COMPILER_GNU && __GNUC__ >= 3
@@ -366,14 +366,14 @@ using __gnu_cxx::hash_set;
 
 namespace __gnu_cxx
 {
-	template<> struct hash<unsigned long long>
-	{
-		size_t operator()(const unsigned long long &__x) const { return (size_t)__x; }
-	};
-	template<typename T> struct hash<T *>
-	{
-		size_t operator()(T * const &__x) const { return (size_t)__x; }
-	};
+    template<> struct hash<unsigned long long>
+    {
+        size_t operator()(const unsigned long long &__x) const { return (size_t)__x; }
+    };
+    template<typename T> struct hash<T *>
+    {
+        size_t operator()(T * const &__x) const { return (size_t)__x; }
+    };
 
 };
 #else
@@ -387,16 +387,16 @@ using std::hash_map;
 //GCC I HATE YOU!
 namespace std
 {
-	namespace tr1
-	{
-		template<> struct hash<long long unsigned int> : public std::unary_function<long long unsigned int, std::size_t>
-		{
-			std::size_t operator()(const long long unsigned int val) const
-			{
-				return static_cast<std::size_t>(val);
-			}
-		};
-	}
+    namespace tr1
+    {
+        template<> struct hash<long long unsigned int> : public std::unary_function<long long unsigned int, std::size_t>
+        {
+            std::size_t operator()(const long long unsigned int val) const
+            {
+                return static_cast<std::size_t>(val);
+            }
+        };
+    }
 }
 
 #endif
@@ -407,13 +407,13 @@ namespace std
 
 namespace std
 {
-	namespace tr1
-	{
-		template<typename T> struct hash<shared_ptr<T> >
-		{
-			size_t operator()(shared_ptr<T> const &__x) const { return (size_t)__x.get(); }
-		};
-	}
+    namespace tr1
+    {
+        template<typename T> struct hash<shared_ptr<T> >
+        {
+            size_t operator()(shared_ptr<T> const &__x) const { return (size_t)__x.get(); }
+        };
+    }
 }
 
 #endif
@@ -527,31 +527,31 @@ Scripting system exports/imports
 // fast int abs
 static inline int int32abs( const int value )
 {
-	return (value ^ (value >> 31)) - (value >> 31);
+    return (value ^ (value >> 31)) - (value >> 31);
 }
 
 // fast int abs and recast to unsigned
 static inline uint32 int32abs2uint32( const int value )
 {
-	return (uint32)(value ^ (value >> 31)) - (value >> 31);
+    return (uint32)(value ^ (value >> 31)) - (value >> 31);
 }
 
 /// Fastest Method of float2int32
 static inline int float2int32(const float value)
 {
 #if !defined(_WIN64) && COMPILER == COMPILER_MICROSOFT
-	int i;
-	__asm {
-		fld value
-		frndint
-		fistp i
-	}
-	return i;
+    int i;
+    __asm {
+        fld value
+        frndint
+        fistp i
+    }
+    return i;
 #else
-	union { int asInt[2]; double asDouble; } n;
-	n.asDouble = value + 6755399441055744.0;
+    union { int asInt[2]; double asDouble; } n;
+    n.asDouble = value + 6755399441055744.0;
 
-	return n.asInt [0];
+    return n.asInt [0];
 #endif
 }
 
@@ -559,13 +559,13 @@ static inline int float2int32(const float value)
 static inline int long2int32(const double value)
 {
 #if !defined(_WIN64) && COMPILER == COMPILER_MICROSOFT
-	int i;
-	__asm {
-		fld value
-		frndint
-		fistp i
-	}
-	return i;
+    int i;
+    __asm {
+        fld value
+        frndint
+        fistp i
+    }
+    return i;
 #else
   union { int asInt[2]; double asDouble; } n;
   n.asDouble = value + 6755399441055744.0;
@@ -585,7 +585,7 @@ static inline int long2int32(const double value)
 
 #ifndef WIN32
 #define FALSE   0
-#define TRUE	1
+#define TRUE    1
 #endif
 
 #ifndef WIN32
@@ -596,47 +596,47 @@ static inline int long2int32(const double value)
 
 struct ConditionalData
 {
-	ConditionalData(bool _EmoteOneShot = false, uint32 _EmoteID = 0, uint32 _SkinID = 0, uint32 _StandState = 0, uint32 _SpellToCast = 0, const char* _SayText = "")
-	{
-		EmoteOneShot = _EmoteOneShot;
-		EmoteID = _EmoteID;
-		SkinID = _SkinID;
-		StandState = _StandState;
-		SpellToCast = _SpellToCast;
-		SayText = _SayText;
-	}
+    ConditionalData(bool _EmoteOneShot = false, uint32 _EmoteID = 0, uint32 _SkinID = 0, uint32 _StandState = 0, uint32 _SpellToCast = 0, const char* _SayText = "")
+    {
+        EmoteOneShot = _EmoteOneShot;
+        EmoteID = _EmoteID;
+        SkinID = _SkinID;
+        StandState = _StandState;
+        SpellToCast = _SpellToCast;
+        SayText = _SayText;
+    }
 
-	bool EmoteOneShot;
-	uint32 EmoteID;
-	uint32 SkinID;
-	uint32 StandState;
-	uint32 SpellToCast;
-	std::string SayText;
+    bool EmoteOneShot;
+    uint32 EmoteID;
+    uint32 SkinID;
+    uint32 StandState;
+    uint32 SpellToCast;
+    std::string SayText;
 };
 
 #include "Util.h"
 
 struct WayPoint
 {
-	uint32 id;
-	float x, y, z;
-	float orientation;
-	uint32 waittime; //ms
-	uint32 flags;
-	uint16 count;
+    uint32 id;
+    float x, y, z;
+    float orientation;
+    uint32 waittime; //ms
+    uint32 flags;
+    uint16 count;
 
-	ConditionalData* forwardInfo;
-	ConditionalData* backwardInfo;
+    ConditionalData* forwardInfo;
+    ConditionalData* backwardInfo;
 };
 
 HEARTHSTONE_INLINE void reverse_array(uint8 * pointer, size_t count)
 {
-	size_t x;
-	uint8 * temp = (uint8*)malloc(count);
-	memcpy(temp, pointer, count);
-	for(x = 0; x < count; ++x)
-		pointer[x] = temp[count-x-1];
-	free(temp);
+    size_t x;
+    uint8 * temp = (uint8*)malloc(count);
+    memcpy(temp, pointer, count);
+    for(x = 0; x < count; ++x)
+        pointer[x] = temp[count-x-1];
+    free(temp);
 }
 
 typedef std::vector<WayPoint*> WayPointMap;
@@ -647,23 +647,23 @@ std::string ConvertTimeStampToDataTime(uint32 timestamp);
 
 HEARTHSTONE_INLINE void HEARTHSTONE_TOLOWER(std::string& str)
 {
-	for(size_t i = 0; i < str.length(); ++i)
-		str[i] = (char)tolower(str[i]);
+    for(size_t i = 0; i < str.length(); ++i)
+        str[i] = (char)tolower(str[i]);
 };
 
 HEARTHSTONE_INLINE void HEARTHSTONE_TOUPPER(std::string& str)
 {
-	for(size_t i = 0; i < str.length(); ++i)
-		str[i] = (char)toupper(str[i]);
+    for(size_t i = 0; i < str.length(); ++i)
+        str[i] = (char)toupper(str[i]);
 };
 
 HEARTHSTONE_INLINE std::string HEARTHSTONE_TOLOWER_RETURN(std::string str)
 {
-	std::string newname = str;
-	for(size_t i = 0; i < str.length(); ++i)
-		newname[i] = (char)tolower(str[i]);
+    std::string newname = str;
+    for(size_t i = 0; i < str.length(); ++i)
+        newname[i] = (char)tolower(str[i]);
 
-	return newname;
+    return newname;
 };
 
 // returns true if the ip hits the mask, otherwise false

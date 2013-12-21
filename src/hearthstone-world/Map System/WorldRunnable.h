@@ -11,10 +11,10 @@
 class WorldRunnable : public ThreadContext, public Singleton<WorldRunnable>
 {
 public:
-	WorldRunnable(EventableObjectHolder* m_Holder);
-	bool run();
+    WorldRunnable(EventableObjectHolder* m_Holder);
+    bool run();
 
-	EventableObjectHolder* eventHolder;
+    EventableObjectHolder* eventHolder;
 };
 
 #define sWorldRunnable WorldRunnable::getSingleton()

@@ -91,13 +91,13 @@ struct hostent;
 #endif /* HPUX */
 #if !defined(HAVE_GETHOSTBYNAME_R)
 struct hostent *my_gethostbyname_r(const char *name,
-				   struct hostent *result, char *buffer,
-				   int buflen, int *h_errnop);
+                   struct hostent *result, char *buffer,
+                   int buflen, int *h_errnop);
 void my_gethostbyname_r_free();
 #elif defined(HAVE_PTHREAD_ATTR_CREATE) || defined(_AIX) || defined(HAVE_GETHOSTBYNAME_R_GLIBC2_STYLE)
 struct hostent *my_gethostbyname_r(const char *name,
-				   struct hostent *result, char *buffer,
-				   int buflen, int *h_errnop);
+                   struct hostent *result, char *buffer,
+                   int buflen, int *h_errnop);
 #define my_gethostbyname_r_free()
 #if !defined(HAVE_GETHOSTBYNAME_R_GLIBC2_STYLE) && !defined(HPUX10)
 #define GETHOSTBYNAME_BUFF_SIZE sizeof(struct hostent_data)
@@ -106,8 +106,8 @@ struct hostent *my_gethostbyname_r(const char *name,
 #elif defined(HAVE_GETHOSTBYNAME_R_RETURN_INT)
 #define GETHOSTBYNAME_BUFF_SIZE sizeof(struct hostent_data)
 struct hostent *my_gethostbyname_r(const char *name,
-				   struct hostent *result, char *buffer,
-				   int buflen, int *h_errnop);
+                   struct hostent *result, char *buffer,
+                   int buflen, int *h_errnop);
 #define my_gethostbyname_r_free()
 #else
 #define my_gethostbyname_r(A,B,C,D,E) gethostbyname_r((A),(B),(C),(D),(E))

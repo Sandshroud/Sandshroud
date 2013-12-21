@@ -31,25 +31,25 @@
 #define DEFAULT_DROP_RATE 1
 #define DEFAULT_REST_XP_RATE 1
 #define DEFAULT_QUEST_XP_RATE 1
-#define DEFAULT_SAVE_RATE 300000	// 5mins
+#define DEFAULT_SAVE_RATE 300000    // 5mins
 
 class SERVER_DECL Master : public Singleton<Master>
 {
 public:
-	Master();
-	~Master();
-	bool Run(int argc, char ** argv);
+    Master();
+    ~Master();
+    bool Run(int argc, char ** argv);
 
-	static volatile bool m_stopEvent;
+    static volatile bool m_stopEvent;
 
 private:
-	bool _StartDB();
-	void _StopDB();
+    bool _StartDB();
+    void _StopDB();
 
-	void _HookSignals();
-	void _UnhookSignals();
+    void _HookSignals();
+    void _UnhookSignals();
 
-	static void _OnSignal(int s);
+    static void _OnSignal(int s);
 };
 
 #define sMaster Master::getSingleton()

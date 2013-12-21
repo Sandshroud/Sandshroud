@@ -71,7 +71,7 @@ public:
     bool culledBy(
                   const class Plane*  plane,
                   int                 numPlanes,
-                  g3d_int32&	          cullingPlaneIndex,
+                  g3d_int32&              cullingPlaneIndex,
                   const g3d_uint32        testMask,
                   g3d_uint32&             childMask) const;
     
@@ -88,18 +88,18 @@ public:
        See AABox::culledBy
     */
     bool culledBy(
-                  const Array<Plane>&		plane,
-                  g3d_int32&					cullingPlaneIndex,
-                  const g3d_uint32  			testMask,
+                  const Array<Plane>&       plane,
+                  g3d_int32&                    cullingPlaneIndex,
+                  const g3d_uint32              testMask,
                   g3d_uint32&                 childMask) const;
     
     /**
      Conservative culling test that does not produce a mask for children.
      */
     bool culledBy(
-                  const Array<Plane>&		plane,
-                  g3d_int32&					cullingPlaneIndex = dummy,
-                  const g3d_uint32  			testMask		  = 0xFFFFFFFF) const;
+                  const Array<Plane>&       plane,
+                  g3d_int32&                    cullingPlaneIndex = dummy,
+                  const g3d_uint32              testMask          = 0xFFFFFFFF) const;
 
     virtual std::string toString() const;
 

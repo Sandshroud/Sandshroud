@@ -10,12 +10,12 @@
 class ConsoleThread : public ThreadContext
 {
 protected:
-	bool m_isRunning;
+    bool m_isRunning;
 
 public:
-	ConsoleThread();
-	~ConsoleThread() {};
+    ConsoleThread();
+    ~ConsoleThread() {};
 
-	void terminate();
-	bool run();
+    void terminate();
+    bool run();
 };

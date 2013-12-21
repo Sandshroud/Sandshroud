@@ -33,8 +33,8 @@ C_MODE_START
 #define GET_SET       13
 #define GET_DOUBLE    14
 
-#define GET_ASK_ADDR	 128
-#define GET_TYPE_MASK	 127
+#define GET_ASK_ADDR     128
+#define GET_TYPE_MASK    127
 
 enum get_opt_arg_type { NO_ARG, OPT_ARG, REQUIRED_ARG };
 
@@ -67,11 +67,11 @@ extern my_bool my_getopt_skip_unknown;
 extern my_error_reporter my_getopt_error_reporter;
 
 extern int handle_options (int *argc, char ***argv, 
-			   const struct my_option *longopts, my_get_one_option);
+               const struct my_option *longopts, my_get_one_option);
 extern void my_print_help(const struct my_option *options);
 extern void my_print_variables(const struct my_option *options);
 extern void my_getopt_register_get_addr(uchar ** (*func_addr)(const char *, uint,
-							   const struct my_option *));
+                               const struct my_option *));
 
 ulonglong getopt_ull_limit_value(ulonglong num, const struct my_option *optp);
 my_bool getopt_compare_strings(const char *s, const char *t, uint length);

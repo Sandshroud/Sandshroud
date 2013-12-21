@@ -23,26 +23,26 @@
 
 class SERVER_DECL WarnSystem :  public Singleton < WarnSystem >
 {
-	friend class ChatHandler;
+    friend class ChatHandler;
 
 public:
-	void AddWarn(Player * Warner, Player * Warned, const char  *reason);
-	void AddWarn_Internal(std::string Warner, Player * Warned, const char  *reason);
-	void ReachedPunishmentLevel(Player * Warner, Player * Warned, uint32 NewWarnCnt, const char * reason);
-	void DelWarn(Player * Warner, Player * Warned, uint32 WarnID);
-	void ListWarns(Player * Warner, Player * Warned);
-	void ClearWarns(Player * Warner, Player * Warned);
+    void AddWarn(Player * Warner, Player * Warned, const char  *reason);
+    void AddWarn_Internal(std::string Warner, Player * Warned, const char  *reason);
+    void ReachedPunishmentLevel(Player * Warner, Player * Warned, uint32 NewWarnCnt, const char * reason);
+    void DelWarn(Player * Warner, Player * Warned, uint32 WarnID);
+    void ListWarns(Player * Warner, Player * Warned);
+    void ClearWarns(Player * Warner, Player * Warned);
 
-	void BroadcastToWorld(const char* Format, ...);
-	void BroadcastToGMs(const char* Format, ...);
+    void BroadcastToWorld(const char* Format, ...);
+    void BroadcastToGMs(const char* Format, ...);
 
 private:
-	uint32 GetWarnCountForAccount(std::string WarnedAcct);
-	void Punishment_PermBanAccount(Player * Warner, Player * Warned, uint32 NewWarnCnt, std::string);
-	void Punishment_BanCharacter(Player * Warner, Player * Warned, uint32 NewWarnCnt, std::string);
-	void Punishment_Kick(Player * Warner, Player * Warned, uint32 NewWarnCnt, std::string);
-	bool Punishment_TakeGold(Player * Warned, uint32 NewWarnCnt);
-	void Punishment_None();
+    uint32 GetWarnCountForAccount(std::string WarnedAcct);
+    void Punishment_PermBanAccount(Player * Warner, Player * Warned, uint32 NewWarnCnt, std::string);
+    void Punishment_BanCharacter(Player * Warner, Player * Warned, uint32 NewWarnCnt, std::string);
+    void Punishment_Kick(Player * Warner, Player * Warned, uint32 NewWarnCnt, std::string);
+    bool Punishment_TakeGold(Player * Warned, uint32 NewWarnCnt);
+    void Punishment_None();
 };
 
 #define sWarnSystem WarnSystem::getSingleton()

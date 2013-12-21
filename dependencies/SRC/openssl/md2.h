@@ -65,20 +65,20 @@
 #endif
 #include <stddef.h>
 
-#define MD2_DIGEST_LENGTH	16
-#define MD2_BLOCK       	16
+#define MD2_DIGEST_LENGTH   16
+#define MD2_BLOCK           16
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
 typedef struct MD2state_st
-	{
-	unsigned int num;
-	unsigned char data[MD2_BLOCK];
-	MD2_INT cksm[MD2_BLOCK];
-	MD2_INT state[MD2_BLOCK];
-	} MD2_CTX;
+    {
+    unsigned int num;
+    unsigned char data[MD2_BLOCK];
+    MD2_INT cksm[MD2_BLOCK];
+    MD2_INT state[MD2_BLOCK];
+    } MD2_CTX;
 
 const char *MD2_options(void);
 int MD2_Init(MD2_CTX *c);

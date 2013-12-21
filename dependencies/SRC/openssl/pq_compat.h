@@ -128,7 +128,7 @@
 
 #define pq_64bit_assign(x, y)        (*(x) = *(y))
 #define pq_64bit_assign_word(x, y)   (*(x) = y)
-#define pq_64bit_gt(x, y)	         (*(x) > *(y))
+#define pq_64bit_gt(x, y)            (*(x) > *(y))
 #define pq_64bit_eq(x, y)            (*(x) == *(y))
 #define pq_64bit_add_word(x, w)      (*(x) = (*(x) + (w)))
 #define pq_64bit_sub(r, x, y)        (*(r) = (*(x) - *(y)))

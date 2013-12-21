@@ -11,25 +11,25 @@
 
 class Sha1Hash
 {
-	public:
-		Sha1Hash();
-		~Sha1Hash();
+    public:
+        Sha1Hash();
+        ~Sha1Hash();
 
-		void UpdateFinalizeBigNumbers(BigNumber *bn0, ...);
-		void UpdateBigNumbers(BigNumber *bn0, ...);
+        void UpdateFinalizeBigNumbers(BigNumber *bn0, ...);
+        void UpdateBigNumbers(BigNumber *bn0, ...);
 
-		void UpdateData(const uint8 *dta, int len);
-		void UpdateData(const std::string &str);
+        void UpdateData(const uint8 *dta, int len);
+        void UpdateData(const std::string &str);
 
-		void Initialize();
-		void Finalize();
+        void Initialize();
+        void Finalize();
 
-		uint8 *GetDigest(void) { return mDigest; };
-		int GetLength(void) { return SHA_DIGEST_LENGTH; };
+        uint8 *GetDigest(void) { return mDigest; };
+        int GetLength(void) { return SHA_DIGEST_LENGTH; };
 
-		BigNumber GetBigNumber();
+        BigNumber GetBigNumber();
 
-	private:
-		SHA_CTX mC;
-		uint8 mDigest[SHA_DIGEST_LENGTH];
+    private:
+        SHA_CTX mC;
+        uint8 mDigest[SHA_DIGEST_LENGTH];
 };
