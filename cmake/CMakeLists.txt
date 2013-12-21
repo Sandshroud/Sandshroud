@@ -191,12 +191,13 @@ IF( NOT WIN32 )
 ENDIF()
 
 IF(WIN32)	#On windows, we have to specify the includes for libeay and mysql libs.
-	SET( GLOBAL_INCLUDE_DIRS ${GLOBAL_INCLUDE_DIRS} 
-	${DEPENDENCY_SOURCES}/openssl
-	${DEPENDENCY_SOURCES}/mysql )
-ELSE()	#On apple n linux, mysql.h should have been found.
-	SET( GLOBAL_INCLUDE_DIRS ${GLOBAL_INCLUDE_DIRS} ${MYSQL_INCLUDE_DIR} )
+	SET(GLOBAL_INCLUDE_DIRS ${GLOBAL_INCLUDE_DIRS} ${DEPENDENCY_SOURCES}/openssl)
+	SET(MYSQL_INCLUDE_DIR ${DEPENDENCY_SOURCES}/mysql )
+ELSE()
 ENDIF()
+
+#On apple n linux, mysql.h should have been found.
+SET( GLOBAL_INCLUDE_DIRS ${GLOBAL_INCLUDE_DIRS} ${MYSQL_INCLUDE_DIR} )
 
 #For windows, link to libeay and libmysql
 SET( EXTRA_LIBS)

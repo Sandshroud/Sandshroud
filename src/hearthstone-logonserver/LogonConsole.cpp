@@ -130,8 +130,8 @@ void LogonConsole::ListRealms(char *str)
     Realm* rlm = NULL;
     sLog.outString("\nConsole:------Listing Realms--------");
     sInfoCore.getRealmLock().Acquire();
-    map<uint32, Realm*> realms = sInfoCore.GetRealmMap();
-    map<uint32, Realm*>::iterator itr = realms.begin();
+    std::map<uint32, Realm*> realms = sInfoCore.GetRealmMap();
+    std::map<uint32, Realm*>::iterator itr = realms.begin();
     for(; itr != realms.end(); ++itr)
     {
         uint32 id = itr->first;

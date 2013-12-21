@@ -135,7 +135,7 @@ void LogonCommServerSocket::HandlePacket(WorldPacket & recvData)
 void LogonCommServerSocket::HandleRegister(WorldPacket & recvData)
 {
     uint32 realmid;
-    string realmName, address;
+    std::string realmName, address;
 
     recvData >> realmid >> realmName >> address;
     sLog.Notice("LogonCommServer","Registering realm `%s` under ID %u.", realmName.c_str(), realmid);
@@ -186,7 +186,7 @@ void LogonCommServerSocket::HandleRegister(WorldPacket & recvData)
 
 void LogonCommServerSocket::HandleSessionRequest(WorldPacket & recvData)
 {
-    string account_name;
+    std::string account_name;
     int32 identifier = 0;
     uint32 serverid = 0, request_id = 0;
     recvData >> identifier;
@@ -403,7 +403,7 @@ void LogonCommServerSocket::HandleMappingReply(WorldPacket & recvData)
         if(itr != realm->CharacterMap.end())
             itr->second = number_of_characters;
         else
-            realm->CharacterMap.insert( make_pair( account_id, number_of_characters ) );
+            realm->CharacterMap.insert( std::make_pair( account_id, number_of_characters ) );
     }
 
     sInfoCore.getRealmLock().Release();
@@ -433,7 +433,7 @@ void LogonCommServerSocket::HandleUpdateMapping(WorldPacket & recvData)
     {
         if(toadd < 0)
             toadd = 0;
-        realm->CharacterMap.insert( make_pair( account_id, toadd ) );
+        realm->CharacterMap.insert( std::make_pair( account_id, toadd ) );
     }
 
     sInfoCore.getRealmLock().Release();
@@ -443,7 +443,7 @@ void LogonCommServerSocket::HandleTestConsoleLogin(WorldPacket & recvData)
 {
     WorldPacket data(RSMSG_CONSOLE_LOGIN_RESULT, 8);
     uint32 request;
-    string accountname;
+    std::string accountname;
     uint8 key[20];
 
     recvData >> request;
@@ -494,9 +494,9 @@ void LogonCommServerSocket::HandleDatabaseModify(WorldPacket& recvData)
     {
     case 1:         // set account ban
         {
-            string account;
+            std::string account;
             uint32 duration;
-            string reason;
+            std::string reason;
             recvData >> account >> duration >> reason;
             // remember we expect this in uppercase
             HEARTHSTONE_TOUPPER(account);
@@ -511,8 +511,8 @@ void LogonCommServerSocket::HandleDatabaseModify(WorldPacket& recvData)
         }break;
     case 2:     // set gm
         {
-            string account;
-            string gm;
+            std::string account;
+            std::string gm;
             recvData >> account >> gm;
             // remember we expect this in uppercase
             HEARTHSTONE_TOUPPER(account);
@@ -526,7 +526,7 @@ void LogonCommServerSocket::HandleDatabaseModify(WorldPacket& recvData)
         }break;
     case 3:     // set mute
         {
-            string account;
+            std::string account;
             uint32 duration;
             recvData >> account >> duration;
             // remember we expect this in uppercase
@@ -541,8 +541,8 @@ void LogonCommServerSocket::HandleDatabaseModify(WorldPacket& recvData)
         }break;
     case 4:     // ip ban add
         {
-            string ip;
-            string reason;
+            std::string ip;
+            std::string reason;
             uint32 duration;
             recvData >> ip >> duration >> reason;
             if( sIPBanner.Add( ip.c_str(), duration ) )
@@ -550,7 +550,7 @@ void LogonCommServerSocket::HandleDatabaseModify(WorldPacket& recvData)
         }break;
     case 5:     // ip ban reomve
         {
-            string ip;
+            std::string ip;
             recvData >> ip;
             if( sIPBanner.Remove( ip.c_str() ) )
                 sLogonSQL->Execute("DELETE FROM ipbans WHERE ip = \"%s\"", sLogonSQL->EscapeString(ip).c_str());

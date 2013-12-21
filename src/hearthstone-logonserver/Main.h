@@ -2,14 +2,12 @@
  * Demonstrike Core
  */
 
-#include "../hearthstone-shared/Singleton.h"
-
 class AuthSocket;
 
 extern bool mrunning;
 extern Mutex _authSocketLock;
 extern bool m_encryptedPasswords;
-extern set<AuthSocket*> _authSockets;
+extern std::set<AuthSocket*> _authSockets;
 
 struct AllowedIP
 {

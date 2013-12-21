@@ -42,10 +42,10 @@ public:
     bool InitiatePatch(Patch * pPatch, AuthSocket * pClient);
 
 protected:
-    vector<Patch*> m_patches;
+    std::vector<Patch*> m_patches;
 
     Mutex m_patchJobLock;
-    list<PatchJob*> m_patchJobs;
+    std::list<PatchJob*> m_patchJobs;
 };
 
 #endif

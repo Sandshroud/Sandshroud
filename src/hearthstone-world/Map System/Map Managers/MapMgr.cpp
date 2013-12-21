@@ -90,8 +90,6 @@ void MapMgr::Init(bool Instance)
 
 void MapMgr::Destruct()
 {
-    SetThreadName("thread_proc");//free the name
-
     sEventMgr.RemoveEvents(this);
     sEventMgr.RemoveEventHolder(m_instanceID);
 

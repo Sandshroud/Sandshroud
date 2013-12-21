@@ -30,5 +30,5 @@ include_directories( ${prefix} )
 add_library(${PROJECT_NAME} STATIC ${SRCS} )
 
 #Set it to the project name.
-set(G3DLITE_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "g3dlite Libraries")
-SET_PROPERTY(TARGET g3dlite PROPERTY FOLDER "Dependencies")
+set(G3DLITE_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "${PROJECT_NAME} Libraries")
+SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY FOLDER "Dependencies")

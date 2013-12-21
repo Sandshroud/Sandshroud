@@ -170,7 +170,6 @@ void ExtractMapsFromMpq()
 
 
         // Calculate the estimated size.
-        float Estimated_Size = 16384.0f;
         uint32 TilesToExtract = 0;
         for(uint32 x = 0; x < 64; ++x)
         {
@@ -185,11 +184,7 @@ void ExtractMapsFromMpq()
         // Write the offsets to file
         printf("  Writing empty index to the beginning of the file...\n");
         fwrite(Offsets, sizeof(Offsets), 1, out_file);
-
-        Estimated_Size += 218128.0f * TilesToExtract;
-        Estimated_Size /= 1024.0f;
-        Estimated_Size /= 1024.0f;
-        if(Estimated_Size == 0.015625f)
+        if(TilesToExtract == 0)
         {
             CleanCache();
             fclose(out_file);
@@ -197,7 +192,10 @@ void ExtractMapsFromMpq()
             continue;
         }
 
-        printf("  %u of %u tiles are available. Estimated file size will be %.4fMB.\n", AvailableTiles, TotalTiles, Estimated_Size);
+        float Estimated_Size = (199692.0f * TilesToExtract)*1.024f;
+        Estimated_Size /= 1024.0f;
+        Estimated_Size /= 1024.0f;
+        printf("  %u of %u tiles are available. Estimated file size will be %uMB.\n", AvailableTiles, TotalTiles, uint32(Estimated_Size));
         printf("  %u passes in total have to be performed, it may take a while.\n", TilesToExtract);
         printf("  Extracting data(This takes 10 blocks)... ");
         uint32 start_time = getMSTime();

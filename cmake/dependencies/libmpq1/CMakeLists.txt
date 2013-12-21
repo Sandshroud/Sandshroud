@@ -15,5 +15,5 @@ add_dependencies( ${PROJECT_NAME} pcre zlib )
 target_link_libraries( ${PROJECT_NAME} ${ZLIB_LIBRARIES} ${PCRE_LIBRARIES} pcre zlib )
 
 #Set it to the project name.
-set(LIBMPQ1_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "libmpq1 Libraries")
-SET_PROPERTY(TARGET libmpq1 PROPERTY FOLDER "Dependencies")
+set(LIBMPQ1_LIBRARIES ${PROJECT_NAME} CACHE INTERNAL "${PROJECT_NAME} Libraries")
+SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY FOLDER "Dependencies")
