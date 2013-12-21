@@ -14,7 +14,7 @@ createFileSingleton( MemoryManager ) ;
 /// Catch memory leaks
 MemoryManager::MemoryManager( )
 {
-//	VLDEnable();
+//  VLDEnable();
 }
 
 #endif

@@ -7,18 +7,18 @@
 class SERVER_DECL SkillNameMgr
 {
 public:
-	char **SkillNames;
-	uint32 maxskill;
+    char **SkillNames;
+    uint32 maxskill;
 
-	SkillNameMgr();
+    SkillNameMgr();
 
-	~SkillNameMgr()
-	{
-		for(uint32 i = 0;i<=maxskill;++i)
-		{
-			if(SkillNames[i] != 0)
-				delete[] SkillNames[i];
-		}
-		delete[] SkillNames;
-	}
+    ~SkillNameMgr()
+    {
+        for(uint32 i = 0;i<=maxskill;++i)
+        {
+            if(SkillNames[i] != 0)
+                delete[] SkillNames[i];
+        }
+        delete[] SkillNames;
+    }
 };

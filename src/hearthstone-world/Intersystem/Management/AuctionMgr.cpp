@@ -8,55 +8,55 @@ initialiseSingleton( AuctionMgr );
 
 void AuctionMgr::LoadAuctionHouses()
 {
-	sLog.Notice("AuctionMgr", "Loading Auction Houses...");
+    sLog.Notice("AuctionMgr", "Loading Auction Houses...");
 
-	QueryResult* res = CharacterDatabase.Query("SELECT MAX(auctionId) FROM auctions");
-	if(res)
-	{
-		auctionHighGuid = res->Fetch()[0].GetUInt32();
-		delete res;
-	}
+    QueryResult* res = CharacterDatabase.Query("SELECT MAX(auctionId) FROM auctions");
+    if(res)
+    {
+        auctionHighGuid = res->Fetch()[0].GetUInt32();
+        delete res;
+    }
 
-	for(DBCStorage<AuctionHouseDBC>::iterator itr = dbcAuctionHouse.begin(); itr != dbcAuctionHouse.end(); ++itr)
-		auctionHouseMap.insert(make_pair((*itr)->id, new AuctionHouse((*itr)->id)));
+    for(DBCStorage<AuctionHouseDBC>::iterator itr = dbcAuctionHouse.begin(); itr != dbcAuctionHouse.end(); ++itr)
+        auctionHouseMap.insert(make_pair((*itr)->id, new AuctionHouse((*itr)->id)));
 
-	res = WorldDatabase.Query("SELECT * FROM auctionhouse");
-	if(res)
-	{
-		uint32 entry = 0;
-		do
-		{
-			if(CreatureAuctionTypes.find(res->Fetch()[0].GetUInt32()) != CreatureAuctionTypes.end())
-				continue;
+    res = WorldDatabase.Query("SELECT * FROM auctionhouse");
+    if(res)
+    {
+        uint32 entry = 0;
+        do
+        {
+            if(CreatureAuctionTypes.find(res->Fetch()[0].GetUInt32()) != CreatureAuctionTypes.end())
+                continue;
 
-			CreatureAuctionTypes.insert(make_pair(res->Fetch()[0].GetUInt32(), res->Fetch()[1].GetUInt8()));
-		}while(res->NextRow());
-		delete res;
-	}
+            CreatureAuctionTypes.insert(make_pair(res->Fetch()[0].GetUInt32(), res->Fetch()[1].GetUInt8()));
+        }while(res->NextRow());
+        delete res;
+    }
 }
 
 AuctionHouse * AuctionMgr::GetAuctionHouse(uint32 Entry)
 {
-	if(CreatureAuctionTypes.find(Entry) == CreatureAuctionTypes.end())
-		return NULL;
-	uint8 AHType = CreatureAuctionTypes.at(Entry);
-	if(auctionHouseMap.find(AHType) != auctionHouseMap.end())
-		return auctionHouseMap.at(AHType);
-	return NULL;
+    if(CreatureAuctionTypes.find(Entry) == CreatureAuctionTypes.end())
+        return NULL;
+    uint8 AHType = CreatureAuctionTypes.at(Entry);
+    if(auctionHouseMap.find(AHType) != auctionHouseMap.end())
+        return auctionHouseMap.at(AHType);
+    return NULL;
 }
 
 void AuctionMgr::Update()
 {
-	if((++loopcount % 100))
-		return;
+    if((++loopcount % 100))
+        return;
 
-	map<uint32, AuctionHouse*>::iterator itr = auctionHouseMap.begin();
-	for(; itr != auctionHouseMap.end(); itr++)
-	{
-		itr->second->UpdateDeletionQueue();
+    map<uint32, AuctionHouse*>::iterator itr = auctionHouseMap.begin();
+    for(; itr != auctionHouseMap.end(); itr++)
+    {
+        itr->second->UpdateDeletionQueue();
 
-		// Actual auction loop is on a seperate timer.
-		if(!(loopcount % 1200))
-			itr->second->UpdateAuctions();
-	}
+        // Actual auction loop is on a seperate timer.
+        if(!(loopcount % 1200))
+            itr->second->UpdateAuctions();
+    }
 }

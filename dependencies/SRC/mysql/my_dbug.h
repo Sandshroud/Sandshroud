@@ -16,43 +16,43 @@
 #ifndef _dbug_h
 #define _dbug_h
 
-#ifdef	__cplusplus
+#ifdef  __cplusplus
 extern "C" {
 #endif
 #if !defined(DBUG_OFF) && !defined(_lint)
 struct _db_code_state_;
-extern	int _db_keyword_(struct _db_code_state_ *cs, const char *keyword);
+extern  int _db_keyword_(struct _db_code_state_ *cs, const char *keyword);
 extern  int _db_strict_keyword_(const char *keyword);
 extern  int _db_explain_(struct _db_code_state_ *cs, char *buf, size_t len);
 extern  int _db_explain_init_(char *buf, size_t len);
-extern	void _db_setjmp_(void);
-extern	void _db_longjmp_(void);
+extern  void _db_setjmp_(void);
+extern  void _db_longjmp_(void);
 extern  void _db_process_(const char *name);
-extern	void _db_push_(const char *control);
-extern	void _db_pop_(void);
+extern  void _db_push_(const char *control);
+extern  void _db_pop_(void);
 extern  void _db_set_(struct _db_code_state_ *cs, const char *control);
 extern  void _db_set_init_(const char *control);
-extern	void _db_enter_(const char *_func_,const char *_file_,uint _line_,
-			const char **_sfunc_,const char **_sfile_,
-			uint *_slevel_, char ***);
-extern	void _db_return_(uint _line_,const char **_sfunc_,const char **_sfile_,
-			 uint *_slevel_);
-extern	void _db_pargs_(uint _line_,const char *keyword);
-extern	void _db_doprnt_ _VARARGS((const char *format,...))
+extern  void _db_enter_(const char *_func_,const char *_file_,uint _line_,
+            const char **_sfunc_,const char **_sfile_,
+            uint *_slevel_, char ***);
+extern  void _db_return_(uint _line_,const char **_sfunc_,const char **_sfile_,
+             uint *_slevel_);
+extern  void _db_pargs_(uint _line_,const char *keyword);
+extern  void _db_doprnt_ _VARARGS((const char *format,...))
   ATTRIBUTE_FORMAT(printf, 1, 2);
-extern	void _db_dump_(uint _line_,const char *keyword,
+extern  void _db_dump_(uint _line_,const char *keyword,
                        const unsigned char *memory, size_t length);
-extern	void _db_end_(void);
-extern	void _db_lock_file_(void);
-extern	void _db_unlock_file_(void);
+extern  void _db_end_(void);
+extern  void _db_lock_file_(void);
+extern  void _db_unlock_file_(void);
 extern FILE *_db_fp_(void);
 
 #define DBUG_ENTER(a) const char *_db_func_, *_db_file_; uint _db_level_; \
-	char **_db_framep_; \
-	_db_enter_ (a,__FILE__,__LINE__,&_db_func_,&_db_file_,&_db_level_, \
-		    &_db_framep_)
+    char **_db_framep_; \
+    _db_enter_ (a,__FILE__,__LINE__,&_db_func_,&_db_file_,&_db_level_, \
+            &_db_framep_)
 #define DBUG_LEAVE \
-	_db_return_ (__LINE__, &_db_func_, &_db_file_, &_db_level_)
+    _db_return_ (__LINE__, &_db_func_, &_db_file_, &_db_level_)
 #define DBUG_RETURN(a1) do {DBUG_LEAVE; return(a1);} while(0)
 #define DBUG_VOID_RETURN do {DBUG_LEAVE; return;} while(0)
 #define DBUG_EXECUTE(keyword,a1) \
@@ -81,7 +81,7 @@ extern FILE *_db_fp_(void);
 #define DBUG_EXPLAIN(buf,len) _db_explain_(0, (buf),(len))
 #define DBUG_EXPLAIN_INITIAL(buf,len) _db_explain_init_((buf),(len))
 #define IF_DBUG(A) A
-#else						/* No debugger */
+#else                       /* No debugger */
 
 #define DBUG_ENTER(a1)
 #define DBUG_LEAVE
@@ -109,7 +109,7 @@ extern FILE *_db_fp_(void);
 #define DBUG_EXPLAIN_INITIAL(buf,len)
 #define IF_DBUG(A)
 #endif
-#ifdef	__cplusplus
+#ifdef  __cplusplus
 }
 #endif
 #endif

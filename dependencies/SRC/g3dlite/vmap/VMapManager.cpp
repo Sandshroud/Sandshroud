@@ -249,7 +249,7 @@ namespace VMAP
 
     bool VMapManager::isInLineOfSight(unsigned int mapId, G3D::g3d_uint32 instanceId, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2)
     {
-		bool result = true;
+        bool result = true;
         if(x1 == x2 && y1 == y2 && z1 == z2)
             return result; // Save us some time.
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);

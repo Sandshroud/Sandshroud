@@ -8,5 +8,5 @@
 #include "Singleton.h"
 
 struct MemoryManager : public Singleton < MemoryManager > {
-	MemoryManager();
+    MemoryManager();
 };

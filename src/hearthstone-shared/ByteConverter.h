@@ -13,19 +13,19 @@
 
 namespace ByteConverter
 {
-	template<size_t T>
-	inline void convert(char *val)
-	{
-		std::swap(*val, *(val + T - 1));
-		convert<T - 2>(val + 1);
-	}
+    template<size_t T>
+    inline void convert(char *val)
+    {
+        std::swap(*val, *(val + T - 1));
+        convert<T - 2>(val + 1);
+    }
 
-	template<> inline void convert<0>(char *) {}
-	template<> inline void convert<1>(char *) {} // ignore central byte
-	template<typename T> inline void apply(T *val)
-	{
-		convert<sizeof(T)>((char *)(val));
-	}
+    template<> inline void convert<0>(char *) {}
+    template<> inline void convert<1>(char *) {} // ignore central byte
+    template<typename T> inline void apply(T *val)
+    {
+        convert<sizeof(T)>((char *)(val));
+    }
 }
 
 #ifdef USING_BIG_ENDIAN

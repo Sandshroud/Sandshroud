@@ -14,14 +14,14 @@
 class RSAHash
 {
 public:
-	RSAHash();
-	~RSAHash();
+    RSAHash();
+    ~RSAHash();
 
-	void Initialize();
+    void Initialize();
 
-	std::string RSAEncrypt(const std::string &str);
-	std::string RSADecrypt(const std::string &str);
+    std::string RSAEncrypt(const std::string &str);
+    std::string RSADecrypt(const std::string &str);
 
 private:
-	RSA* RSAInternal;
+    RSA* RSAInternal;
 };

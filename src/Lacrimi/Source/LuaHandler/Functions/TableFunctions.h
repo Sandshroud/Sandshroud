@@ -25,16 +25,16 @@
 // Crow: Some of the following functions are based off of functions created by Hypersniper of LuaHypeArc.
 // Areas where this applies, credit has been given in the form of a name declaration.
 
-/*	Empty Functions: Both of these are used as placeholders for the actual code
-	so we can have the functions, but they won't do anything. */
+/*  Empty Functions: Both of these are used as placeholders for the actual code
+    so we can have the functions, but they won't do anything. */
 template<typename T> int EmptyLuaFunction(lua_State * L, T*)
 {
-	return 1;
+    return 1;
 }
 
 int EmptyGlobalFunction(lua_State*L)
 {
-	return 1;
+    return 1;
 }
 
 // Crow: Some of the following functions are based off of functions created by Hypersniper of LuaHypeArc.

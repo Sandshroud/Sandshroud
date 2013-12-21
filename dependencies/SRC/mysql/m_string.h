@@ -21,7 +21,7 @@
 #ifndef _m_string_h
 #define _m_string_h
 #ifndef __USE_GNU
-#define __USE_GNU				/* We want to use stpcpy */
+#define __USE_GNU               /* We want to use stpcpy */
 #endif
 #if defined(HAVE_STRINGS_H)
 #include <strings.h>
@@ -48,13 +48,13 @@
 #endif
 
 #if !defined(HAVE_MEMCPY) && !defined(HAVE_MEMMOVE)
-# define memcpy(d, s, n)	bcopy ((s), (d), (n))
-# define memset(A,C,B)		bfill((A),(B),(C))
-# define memmove(d, s, n)	bmove ((d), (s), (n))
+# define memcpy(d, s, n)    bcopy ((s), (d), (n))
+# define memset(A,C,B)      bfill((A),(B),(C))
+# define memmove(d, s, n)   bmove ((d), (s), (n))
 #elif defined(HAVE_MEMMOVE)
-# define bmove(d, s, n)		memmove((d), (s), (n))
+# define bmove(d, s, n)     memmove((d), (s), (n))
 #else
-# define memmove(d, s, n)	bmove((d), (s), (n)) /* our bmove */
+# define memmove(d, s, n)   bmove((d), (s), (n)) /* our bmove */
 #endif
 
 /* Unixware 7 */
@@ -64,9 +64,9 @@
 #endif
 
 #if !defined(HAVE_BCMP)
-# define bcopy(s, d, n)		memcpy((d), (s), (n))
-# define bcmp(A,B,C)		memcmp((A),(B),(C))
-# define bzero(A,B)		memset((A),0,(B))
+# define bcopy(s, d, n)     memcpy((d), (s), (n))
+# define bcmp(A,B,C)        memcmp((A),(B),(C))
+# define bzero(A,B)     memset((A),0,(B))
 # define bmove_align(A,B,C)    memcpy((A),(B),(C))
 #endif
 
@@ -84,7 +84,7 @@ extern void (*my_str_free)(void *);
 #if defined(HAVE_STPCPY)
 #define strmov(A,B) stpcpy((A),(B))
 #ifndef stpcpy
-extern char *stpcpy(char *, const char *);	/* For AIX with gcc 2.95.3 */
+extern char *stpcpy(char *, const char *);  /* For AIX with gcc 2.95.3 */
 #endif
 #endif
 
@@ -102,7 +102,7 @@ extern const double log_10[309];
 #define strmake_overlapp(A,B,C) strmake(A,B,C)
 #endif
 
-#ifdef BAD_MEMCPY			/* Problem with gcc on Alpha */
+#ifdef BAD_MEMCPY           /* Problem with gcc on Alpha */
 #define memcpy_fixed(A,B,C) bmove((A),(B),(C))
 #else
 #define memcpy_fixed(A,B,C) memcpy((A),(B),(C))
@@ -112,62 +112,62 @@ extern const double log_10[309];
 #define bmove512(A,B,C) memcpy(A,B,C)
 #endif
 
-	/* Prototypes for string functions */
+    /* Prototypes for string functions */
 
 #if !defined(bfill) && !defined(HAVE_BFILL)
-extern	void bfill(uchar *dst,size_t len,pchar fill);
+extern  void bfill(uchar *dst,size_t len,pchar fill);
 #endif
 
 #if !defined(bzero) && !defined(HAVE_BZERO)
-extern	void bzero(uchar * dst,size_t len);
+extern  void bzero(uchar * dst,size_t len);
 #endif
 
 #if !defined(bcmp) && !defined(HAVE_BCMP)
-extern	size_t bcmp(const uchar *s1,const uchar *s2,size_t len);
+extern  size_t bcmp(const uchar *s1,const uchar *s2,size_t len);
 #endif
 #ifdef HAVE_purify
-extern	size_t my_bcmp(const uchar *s1,const uchar *s2,size_t len);
+extern  size_t my_bcmp(const uchar *s1,const uchar *s2,size_t len);
 #undef bcmp
 #define bcmp(A,B,C) my_bcmp((A),(B),(C))
 #endif
 
 #ifndef bmove512
-extern	void bmove512(uchar *dst,const uchar *src,size_t len);
+extern  void bmove512(uchar *dst,const uchar *src,size_t len);
 #endif
 
 #if !defined(HAVE_BMOVE) && !defined(bmove)
-extern	void bmove(uuchar *dst, const uchar *src,size_t len);
+extern  void bmove(uuchar *dst, const uchar *src,size_t len);
 #endif
 
-extern	void bmove_upp(uchar *dst,const uchar *src,size_t len);
-extern	void bchange(uchar *dst,size_t old_len,const uchar *src,
-		     size_t new_len,size_t tot_len);
-extern	void strappend(char *s,size_t len,pchar fill);
-extern	char *strend(const char *s);
+extern  void bmove_upp(uchar *dst,const uchar *src,size_t len);
+extern  void bchange(uchar *dst,size_t old_len,const uchar *src,
+             size_t new_len,size_t tot_len);
+extern  void strappend(char *s,size_t len,pchar fill);
+extern  char *strend(const char *s);
 extern  char *strcend(const char *, pchar);
-extern	char *strfield(char *src,int fields,int chars,int blanks,
-			   int tabch);
-extern	char *strfill(char * s,size_t len,pchar fill);
-extern	size_t strinstr(const char *str,const char *search);
+extern  char *strfield(char *src,int fields,int chars,int blanks,
+               int tabch);
+extern  char *strfill(char * s,size_t len,pchar fill);
+extern  size_t strinstr(const char *str,const char *search);
 extern  size_t r_strinstr(const char *str, size_t from, const char *search);
-extern	char *strkey(char *dst,char *head,char *tail,char *flags);
-extern	char *strmake(char *dst,const char *src,size_t length);
+extern  char *strkey(char *dst,char *head,char *tail,char *flags);
+extern  char *strmake(char *dst,const char *src,size_t length);
 #ifndef strmake_overlapp
-extern	char *strmake_overlapp(char *dst,const char *src, size_t length);
+extern  char *strmake_overlapp(char *dst,const char *src, size_t length);
 #endif
 
 #ifndef strmov
-extern	char *strmov(char *dst,const char *src);
+extern  char *strmov(char *dst,const char *src);
 #endif
-extern	char *strnmov(char *dst,const char *src,size_t n);
-extern	char *strsuff(const char *src,const char *suffix);
-extern	char *strcont(const char *src,const char *set);
-extern	char *strxcat _VARARGS((char *dst,const char *src, ...));
-extern	char *strxmov _VARARGS((char *dst,const char *src, ...));
-extern	char *strxcpy _VARARGS((char *dst,const char *src, ...));
-extern	char *strxncat _VARARGS((char *dst,size_t len, const char *src, ...));
-extern	char *strxnmov _VARARGS((char *dst,size_t len, const char *src, ...));
-extern	char *strxncpy _VARARGS((char *dst,size_t len, const char *src, ...));
+extern  char *strnmov(char *dst,const char *src,size_t n);
+extern  char *strsuff(const char *src,const char *suffix);
+extern  char *strcont(const char *src,const char *set);
+extern  char *strxcat _VARARGS((char *dst,const char *src, ...));
+extern  char *strxmov _VARARGS((char *dst,const char *src, ...));
+extern  char *strxcpy _VARARGS((char *dst,const char *src, ...));
+extern  char *strxncat _VARARGS((char *dst,size_t len, const char *src, ...));
+extern  char *strxnmov _VARARGS((char *dst,size_t len, const char *src, ...));
+extern  char *strxncpy _VARARGS((char *dst,size_t len, const char *src, ...));
 
 /* Prototypes of normal stringfunctions (with may ours) */
 
@@ -208,7 +208,7 @@ extern ulong strtoul(const char *str, char **ptr, int base);
 extern char *int2str(long val, char *dst, int radix, int upcase);
 extern char *int10_to_str(long val,char *dst,int radix);
 extern char *str2int(const char *src,int radix,long lower,long upper,
-			 long *val);
+             long *val);
 longlong my_strtoll10(const char *nptr, char **endptr, int *error);
 #if SIZEOF_LONG == SIZEOF_LONG_LONG
 #define longlong2str(A,B,C) int2str((A),(B),(C),1)

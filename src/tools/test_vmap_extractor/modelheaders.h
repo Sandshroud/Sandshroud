@@ -30,41 +30,41 @@ typedef int int32; */
 
 struct ModelHeader0
 {
-	char id[4];
-	uint8 version[4];
-	uint32 nameLength, nameOfs;
-	uint32 type;
-	uint32 nGlobalSequences, ofsGlobalSequences;
-	uint32 nAnimations, ofsAnimations;
-	uint32 nAnimationLookup, ofsAnimationLookup;
-	uint32 nD, ofsD;
-	uint32 nBones, ofsBones;
-	uint32 nKeyBoneLookup, ofsKeyBoneLookup;
-	uint32 nVertices, ofsVertices;
-	uint32 nViews, ofsViews;
-	uint32 nColors, ofsColors, nTextures, ofsTextures;
-	uint32 nTransparency, ofsTransparency, nI, ofsI;
-	uint32 nTextureanimations, ofsTextureanimations;
-	uint32 nTexReplace, ofsTexReplace;
-	uint32 nRenderFlags, ofsRenderFlags;
-	uint32 nBoneLookupTable, ofsBoneLookupTable;
-	uint32 nTexLookup, ofsTexLookup;
-	uint32 nTexUnits, ofsTexUnits;
-	uint32 nTransLookup, ofsTransLookup;
-	uint32 nTexAnimLookup, ofsTexAnimLookup;
-	float vertexbox1[3], vertexbox2[3], vertexradius;
-	float boundingbox1[3], boundingbox2[3], boundingradius;
-	uint32 nBoundingTriangles, ofsBoundingTriangles;
-	uint32 nBoundingVertices, ofsBoundingVertices;
-	uint32 nBoundingNormals, ofsBoundingNormals;
-	uint32 nAttachments, ofsAttachments;
-	uint32 nAttachLookup, ofsAttachLookup;
-	uint32 nAttachments_2, ofsAttachments_2;
-	uint32 nLights, ofsLights;
-	uint32 nCameras, ofsCameras;
-	uint32 nCameraLookup, ofsCameraLookup;
-	uint32 nRibbonEmitters, ofsRibbonEmitters;
-	uint32 nParticleEmitters, ofsParticleEmitters;
+    char id[4];
+    uint8 version[4];
+    uint32 nameLength, nameOfs;
+    uint32 type;
+    uint32 nGlobalSequences, ofsGlobalSequences;
+    uint32 nAnimations, ofsAnimations;
+    uint32 nAnimationLookup, ofsAnimationLookup;
+    uint32 nD, ofsD;
+    uint32 nBones, ofsBones;
+    uint32 nKeyBoneLookup, ofsKeyBoneLookup;
+    uint32 nVertices, ofsVertices;
+    uint32 nViews, ofsViews;
+    uint32 nColors, ofsColors, nTextures, ofsTextures;
+    uint32 nTransparency, ofsTransparency, nI, ofsI;
+    uint32 nTextureanimations, ofsTextureanimations;
+    uint32 nTexReplace, ofsTexReplace;
+    uint32 nRenderFlags, ofsRenderFlags;
+    uint32 nBoneLookupTable, ofsBoneLookupTable;
+    uint32 nTexLookup, ofsTexLookup;
+    uint32 nTexUnits, ofsTexUnits;
+    uint32 nTransLookup, ofsTransLookup;
+    uint32 nTexAnimLookup, ofsTexAnimLookup;
+    float vertexbox1[3], vertexbox2[3], vertexradius;
+    float boundingbox1[3], boundingbox2[3], boundingradius;
+    uint32 nBoundingTriangles, ofsBoundingTriangles;
+    uint32 nBoundingVertices, ofsBoundingVertices;
+    uint32 nBoundingNormals, ofsBoundingNormals;
+    uint32 nAttachments, ofsAttachments;
+    uint32 nAttachLookup, ofsAttachLookup;
+    uint32 nAttachments_2, ofsAttachments_2;
+    uint32 nLights, ofsLights;
+    uint32 nCameras, ofsCameras;
+    uint32 nCameraLookup, ofsCameraLookup;
+    uint32 nRibbonEmitters, ofsRibbonEmitters;
+    uint32 nParticleEmitters, ofsParticleEmitters;
 };
 
 struct ModelHeader
@@ -97,8 +97,8 @@ struct ModelHeader
 
     uint32 nTransparency;
     uint32 ofsTransparency;
-	uint32 nUVAnimation;
-	uint32 ofsUVAnimation;
+    uint32 nUVAnimation;
+    uint32 ofsUVAnimation;
     uint32 nTexReplace;
     uint32 ofsTexReplace;
 
@@ -153,25 +153,25 @@ struct MH20_Header { uint32 ofsInformation, layerCount, ofsRender; };
 struct MH2O_HeightMapData { float *heightMap; char *transparency; };
 struct MH20_Information
 {
-/*0x00*/int16	LiquidType;		//	Points to LiquidType.dbc
-/*0x02*/int16	flags;			//
-/*0x04*/float	heightLevel1;	//	The global liquid-height of this chunk. Which is always in there twice. Blizzard knows why.
-/*0x08*/float	heightLevel2;	//	(Actually these values are not always identical, I think they define the highest and lowest points in the heightmap)
-/*0x0C*/int8	xOffset;		//	The X offset of the liquid square (0-7)
-/*0x0D*/int8	yOffset;		//	The Y offset of the liquid square (0-7)
-/*0x0E*/int8	width;			//	The width of the liquid square (1-8)
-/*0x0F*/int8	height;			//	The height of the liquid square (1-8)
-/*0x10*/int32	ofsMask2;		//	Offset to some data.
-/*0x14*/int32	ofsHeightmap;	//	Offset to MH2O_HeightmapData structure for this chunk.
+/*0x00*/int16   LiquidType;     //  Points to LiquidType.dbc
+/*0x02*/int16   flags;          //
+/*0x04*/float   heightLevel1;   //  The global liquid-height of this chunk. Which is always in there twice. Blizzard knows why.
+/*0x08*/float   heightLevel2;   //  (Actually these values are not always identical, I think they define the highest and lowest points in the heightmap)
+/*0x0C*/int8    xOffset;        //  The X offset of the liquid square (0-7)
+/*0x0D*/int8    yOffset;        //  The Y offset of the liquid square (0-7)
+/*0x0E*/int8    width;          //  The width of the liquid square (1-8)
+/*0x0F*/int8    height;         //  The height of the liquid square (1-8)
+/*0x10*/int32   ofsMask2;       //  Offset to some data.
+/*0x14*/int32   ofsHeightmap;   //  Offset to MH2O_HeightmapData structure for this chunk.
 };
 
 struct LiquidHeader
 {
-	MH2O_HeightMapData heightMap;
-	MH20_Information info;
-	uint32 layerCount;
-	uint64 Render;
-	uint8 Mask2;
+    MH2O_HeightMapData heightMap;
+    MH20_Information info;
+    uint32 layerCount;
+    uint64 Render;
+    uint8 Mask2;
 };
 
 #pragma pack(pop)

@@ -6,11 +6,11 @@
 
 enum FactionMasks
 {
-	FACTION_MASK_NONE		= 0,
-	FACTION_MASK_PLAYER		= 1,
-	FACTION_MASK_ALLIANCE	= 2,
-	FACTION_MASK_HORDE		= 4,
-	FACTION_MASK_MONSTER	= 8
+    FACTION_MASK_NONE       = 0,
+    FACTION_MASK_PLAYER     = 1,
+    FACTION_MASK_ALLIANCE   = 2,
+    FACTION_MASK_HORDE      = 4,
+    FACTION_MASK_MONSTER    = 8
 };
 
 int intisAttackable(Object* objA, Object* objB, bool CheckStealth = true); // A can attack B?
@@ -22,16 +22,16 @@ SERVER_DECL bool CanEitherUnitAttack(Object* objA, Object* objB, bool CheckSteal
 
 HEARTHSTONE_INLINE bool isFriendly(Object* objA, Object* objB)// B is friendly to A if its not hostile
 {
-	return !isHostile(objA, objB);
+    return !isHostile(objA, objB);
 }
 
 HEARTHSTONE_INLINE bool isSameFaction(Object* objA, Object* objB)
 {
-	// shouldn't be necessary but still
-	if( objA->m_faction == NULL || objB->m_faction == NULL )
-		return false;
+    // shouldn't be necessary but still
+    if( objA->m_faction == NULL || objB->m_faction == NULL )
+        return false;
 
-	return (objB->m_faction->Faction == objA->m_faction->Faction);
+    return (objB->m_faction->Faction == objA->m_faction->Faction);
 }
 
 HEARTHSTONE_INLINE  Player* GetPlayerFromObject(Object* obj);

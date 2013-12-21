@@ -69,11 +69,11 @@
 typedef struct _pqueue *pqueue;
 
 typedef struct _pitem
-	{
-	PQ_64BIT priority;
-	void *data;
-	struct _pitem *next;
-	} pitem;
+    {
+    PQ_64BIT priority;
+    void *data;
+    struct _pitem *next;
+    } pitem;
 
 typedef struct _pitem *piterator;
 

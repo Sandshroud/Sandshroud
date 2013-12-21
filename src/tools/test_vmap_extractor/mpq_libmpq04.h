@@ -66,7 +66,7 @@ class MPQFile
     void operator=(const MPQFile& /*f*/) {}
 
 public:
-	const char* getfilename() { return f_name; };
+    const char* getfilename() { return f_name; };
     MPQFile(const char* filename);    // filenames are not case sensitive
     ~MPQFile() { close(); }
     size_t read(void* dest, size_t bytes);
@@ -80,7 +80,7 @@ public:
     void close();
 
 private:
-	const char* f_name;
+    const char* f_name;
 };
 
 inline void flipcc(char *fcc)

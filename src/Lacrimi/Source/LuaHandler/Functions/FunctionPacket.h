@@ -21,15 +21,15 @@
 #define _LUAPACKET_H
 
 /*
-	NORMAL OPERATIONS
-	*/
+    NORMAL OPERATIONS
+    */
 int LuaPacket_CreatePacket(lua_State * L, WorldPacket * packet);
 int LuaPacket_GetOpcode(lua_State *L, WorldPacket * packet);
 int LuaPacket_GetSize(lua_State *L, WorldPacket * packet);
 
 /*
-	READ OPERATIONS
-	*/
+    READ OPERATIONS
+    */
 int LuaPacket_ReadUByte(lua_State * L, WorldPacket * packet);
 int LuaPacket_ReadByte(lua_State * L, WorldPacket * packet);
 int LuaPacket_ReadShort(lua_State * L, WorldPacket * packet);
@@ -43,8 +43,8 @@ int LuaPacket_ReadWoWGuid(lua_State * L, WorldPacket * packet);
 int LuaPacket_ReadString(lua_State * L, WorldPacket * packet);
 
 /*
-	WRITE OPERATIONS
-	*/
+    WRITE OPERATIONS
+    */
 int LuaPacket_WriteByte(lua_State * L, WorldPacket * packet);
 int LuaPacket_WriteUByte(lua_State * L, WorldPacket * packet);
 int LuaPacket_WriteShort(lua_State * L, WorldPacket * packet);
@@ -61,4 +61,4 @@ int LuaPacket_GetObjectType(lua_State * L, WorldPacket * packet);
 #endif
 
 
-		
+        
