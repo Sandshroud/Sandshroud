@@ -9111,14 +9111,13 @@ void Player::EventDBCChatUpdate(uint32 dbcID)
 
             char name[100];
             if(entry->flags & 0x02)
-                strcpy(name, format(entry->pattern, areaName.c_str()).c_str());
+                sprintf(name, entry->pattern, areaName.c_str());
             else
-                strcpy(name, entry->pattern);
+                sprintf(name, "%s", entry->pattern);
 
             Channel *chn = channelmgr.GetCreateChannel(name, this, entry->id);
             if(chn == NULL || chn->HasMember(this))
                 return;
-
             chn->AttemptJoin(this, "");
         }
     }
