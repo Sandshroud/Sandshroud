@@ -24,9 +24,9 @@
 #endif
 
 #ifdef _MSC_VER
-	#define isnan(x) _isnan(x)
+    #define isnan(x) _isnan(x)
 #else
-	#define isnan(x) std::isnan(x)
+    #define isnan(x) std::isnan(x)
 #endif
 
 #include <list>

@@ -27,9 +27,9 @@
 
 struct LuaSpellEntry
 {
-	const char* name;
-	uint32 typeId; //0: int, 1: char*, 2: bool, 3: float
-	size_t offset;
+    const char* name;
+    uint32 typeId; //0: int, 1: char*, 2: bool, 3: float
+    size_t offset;
 };
 
 LuaSpellEntry luaSpellVars[];

@@ -29,7 +29,7 @@
 class basicLog
 {
 public:
-	void Init(int log_Level);
+    void Init(int log_Level);
     void SetLoggingLevel(int loglevel) { m_logLevel = loglevel; };
     void SetCLoggingLevel(int cloglevel) { m_clogLevel = cloglevel; };
     void SetAllLoggingLevel(int tloglevel) { m_logLevel = m_clogLevel = tloglevel; };
@@ -43,31 +43,31 @@ private:
     virtual void ReleaseLock() {};
 
 public: // String outputs
-	virtual void outString( const char * str, ... );
-	virtual void outError( const char * err, ... );
-	virtual void outDetail( const char * str, ... );
-	virtual void outDebug( const char * str, ... );
-	virtual void outDebugInLine( const char * str, ... );
-	virtual void outColor(int color, const char * str, ...);
+    virtual void outString( const char * str, ... );
+    virtual void outError( const char * err, ... );
+    virtual void outDetail( const char * str, ... );
+    virtual void outDebug( const char * str, ... );
+    virtual void outDebugInLine( const char * str, ... );
+    virtual void outColor(int color, const char * str, ...);
 
 public: // Console outputs
-	void Line();
-	void Notice(const char * source, const char * format, ...);
-	void Info(const char * source, const char * format, ...);
-	void Error(const char * source, const char * format, ...);
-	void Warning(const char * source, const char * format, ...);
-	void Success(const char * source, const char * format, ...);
-	void Debug(const char * source, const char * format, ...);
-	void CNotice(int color, const char * source, const char * message);
+    void Line();
+    void Notice(const char * source, const char * format, ...);
+    void Info(const char * source, const char * format, ...);
+    void Error(const char * source, const char * format, ...);
+    void Warning(const char * source, const char * format, ...);
+    void Success(const char * source, const char * format, ...);
+    void Debug(const char * source, const char * format, ...);
+    void CNotice(int color, const char * source, const char * message);
 
-	void LargeErrorMessage(int color, ...);
+    void LargeErrorMessage(int color, ...);
 
 private:
 #if PLATFORM == PLATFORM_WIN
-	HANDLE stdout_handle;
+    HANDLE stdout_handle;
 #endif
 
-	int m_logLevel, m_clogLevel;
+    int m_logLevel, m_clogLevel;
 };
 
 extern basicLog GetSingleLogFile();

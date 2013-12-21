@@ -25,4 +25,4 @@
   #define fseeko _fseeki64
 #endif
 
-#endif								/* _PLATFORM_H */
+#endif                              /* _PLATFORM_H */

@@ -14,66 +14,66 @@
 class SERVER_DECL Mutex
 {
 public:
-	friend class Condition;
+    friend class Condition;
 
-	/** Initializes a mutex class, with InitializeCriticalSection / pthread_mutex_init
-	 */
-	Mutex();
+    /** Initializes a mutex class, with InitializeCriticalSection / pthread_mutex_init
+     */
+    Mutex();
 
-	/** Deletes the associated critical section / mutex
-	 */
-	~Mutex();
+    /** Deletes the associated critical section / mutex
+     */
+    ~Mutex();
 
-	/** Acquires this mutex. If it cannot be acquired immediately, it will block.
-	 */
-	HEARTHSTONE_INLINE void Acquire()
-	{
+    /** Acquires this mutex. If it cannot be acquired immediately, it will block.
+     */
+    HEARTHSTONE_INLINE void Acquire()
+    {
 #if PLATFORM != PLATFORM_WIN
-		pthread_mutex_lock(&mutex);
+        pthread_mutex_lock(&mutex);
 #else
-		EnterCriticalSection(&cs);
+        EnterCriticalSection(&cs);
 #endif
-	}
+    }
 
-	/** Releases this mutex. No error checking performed
-	 */
-	HEARTHSTONE_INLINE void Release()
-	{
+    /** Releases this mutex. No error checking performed
+     */
+    HEARTHSTONE_INLINE void Release()
+    {
 #if PLATFORM != PLATFORM_WIN
-		pthread_mutex_unlock(&mutex);
+        pthread_mutex_unlock(&mutex);
 #else
-		LeaveCriticalSection(&cs);
+        LeaveCriticalSection(&cs);
 #endif
-	}
+    }
 
-	/** Attempts to acquire this mutex. If it cannot be acquired (held by another thread)
-	 * it will return false.
-	 * @return false if cannot be acquired, true if it was acquired.
-	 */
-	HEARTHSTONE_INLINE bool AttemptAcquire()
-	{
+    /** Attempts to acquire this mutex. If it cannot be acquired (held by another thread)
+     * it will return false.
+     * @return false if cannot be acquired, true if it was acquired.
+     */
+    HEARTHSTONE_INLINE bool AttemptAcquire()
+    {
 #if PLATFORM != PLATFORM_WIN
-		return (pthread_mutex_trylock(&mutex) == 0);
+        return (pthread_mutex_trylock(&mutex) == 0);
 #else
-		return (TryEnterCriticalSection(&cs) == TRUE ? true : false);
+        return (TryEnterCriticalSection(&cs) == TRUE ? true : false);
 #endif
-	}
+    }
 
 protected:
 #if PLATFORM == PLATFORM_WIN
-	/** Critical section used for system calls
-	 */
-	CRITICAL_SECTION cs;
+    /** Critical section used for system calls
+     */
+    CRITICAL_SECTION cs;
 
 #else
-	/** Static mutex attribute
-	 */
-	static bool attr_initalized;
-	static pthread_mutexattr_t attr;
+    /** Static mutex attribute
+     */
+    static bool attr_initalized;
+    static pthread_mutexattr_t attr;
 
-	/** pthread struct used in system calls
-	 */
-	pthread_mutex_t mutex;
+    /** pthread struct used in system calls
+     */
+    pthread_mutex_t mutex;
 #endif
 };
 
@@ -82,60 +82,60 @@ protected:
 class SERVER_DECL FastMutex
 {
 #pragma pack(push,8)
-	volatile long m_lock;
+    volatile long m_lock;
 #pragma pack(pop)
-	DWORD m_recursiveCount;
+    DWORD m_recursiveCount;
 
 public:
-	HEARTHSTONE_INLINE FastMutex() : m_lock(0),m_recursiveCount(0) {}
-	HEARTHSTONE_INLINE ~FastMutex() {}
+    HEARTHSTONE_INLINE FastMutex() : m_lock(0),m_recursiveCount(0) {}
+    HEARTHSTONE_INLINE ~FastMutex() {}
 
-	HEARTHSTONE_INLINE void Acquire()
-	{
-		DWORD thread_id = GetCurrentThreadId(), owner;
-		if(thread_id == (DWORD)m_lock)
-		{
-			++m_recursiveCount;
-			return;
-		}
+    HEARTHSTONE_INLINE void Acquire()
+    {
+        DWORD thread_id = GetCurrentThreadId(), owner;
+        if(thread_id == (DWORD)m_lock)
+        {
+            ++m_recursiveCount;
+            return;
+        }
 
-		for(;;)
-		{
-			owner = InterlockedCompareExchange(&m_lock, thread_id, 0);
-			if(owner == 0)
-				break;
+        for(;;)
+        {
+            owner = InterlockedCompareExchange(&m_lock, thread_id, 0);
+            if(owner == 0)
+                break;
 
-			if(!SwitchToThread())
-				printf("REPORT TO DEVS: Thread %u entered wait state at(no next thread found), possible lockup! m_recursiveCount = %u \n", thread_id, m_recursiveCount);
-		}
+            if(!SwitchToThread())
+                printf("REPORT TO DEVS: Thread %u entered wait state at(no next thread found), possible lockup! m_recursiveCount = %u \n", thread_id, m_recursiveCount);
+        }
 
-		++m_recursiveCount;
-	}
+        ++m_recursiveCount;
+    }
 
-	HEARTHSTONE_INLINE bool AttemptAcquire()
-	{
-		DWORD thread_id = GetCurrentThreadId();
-		if(thread_id == (DWORD)m_lock)
-		{
-			++m_recursiveCount;
-			return true;
-		}
+    HEARTHSTONE_INLINE bool AttemptAcquire()
+    {
+        DWORD thread_id = GetCurrentThreadId();
+        if(thread_id == (DWORD)m_lock)
+        {
+            ++m_recursiveCount;
+            return true;
+        }
 
-		DWORD owner = InterlockedCompareExchange(&m_lock, thread_id, 0);
-		if(owner == 0)
-		{
-			++m_recursiveCount;
-			return true;
-		}
+        DWORD owner = InterlockedCompareExchange(&m_lock, thread_id, 0);
+        if(owner == 0)
+        {
+            ++m_recursiveCount;
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	HEARTHSTONE_INLINE void Release()
-	{
-		if((--m_recursiveCount) == 0)
-			InterlockedExchange(&m_lock, 0);
-	}
+    HEARTHSTONE_INLINE void Release()
+    {
+        if((--m_recursiveCount) == 0)
+            InterlockedExchange(&m_lock, 0);
+    }
 };
 
 #else

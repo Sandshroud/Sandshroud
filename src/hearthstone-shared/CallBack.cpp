@@ -6,15 +6,15 @@
 
 void CallbackFP::operator()()
 {
-	mycallback();
+    mycallback();
 }
 
 void CallbackFP::execute()
 {
-	mycallback();
+    mycallback();
 }
 
 CallbackFP* CallbackFP::Create()
 {
-	return new CallbackFP(NULL);
+    return new CallbackFP(NULL);
 }

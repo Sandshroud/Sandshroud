@@ -6,23 +6,23 @@
 
 void Player::SendWorldStateUpdate(uint32 WorldState, uint32 Value)
 {
-	packetSMSG_WORLD_STATE_UPDATE pck;
-	pck.State = WorldState;
-	pck.Value = Value;
+    packetSMSG_WORLD_STATE_UPDATE pck;
+    pck.State = WorldState;
+    pck.Value = Value;
 
-	GetSession()->OutPacket(SMSG_UPDATE_WORLD_STATE, sizeof(packetSMSG_WORLD_STATE_UPDATE), (const char*)&pck);
+    GetSession()->OutPacket(SMSG_UPDATE_WORLD_STATE, sizeof(packetSMSG_WORLD_STATE_UPDATE), (const char*)&pck);
 }
 
 void Player::Gossip_SendPOI(float X, float Y, uint32 Icon, uint32 Flags, uint32 Data, const char* Name)
 {
-	WorldPacket data(SMSG_GOSSIP_POI, 50);
-	data << Flags;
-	data << X;
-	data << Y;
-	data << Icon;
-	data << Data;
-	data << Name;
-	GetSession()->SendPacket(&data);
+    WorldPacket data(SMSG_GOSSIP_POI, 50);
+    data << Flags;
+    data << X;
+    data << Y;
+    data << Icon;
+    data << Data;
+    data << Name;
+    GetSession()->SendPacket(&data);
 }
 
 void Player::SendLevelupInfo(uint32 level, uint32 Hp, uint32 Mana, uint32 Stat0, uint32 Stat1, uint32 Stat2, uint32 Stat3, uint32 Stat4)
@@ -37,7 +37,7 @@ void Player::SendLevelupInfo(uint32 level, uint32 Hp, uint32 Mana, uint32 Stat0,
     packet.unk1 = 0;
     packet.unk2 = 0;
     packet.unk3 = 0;
-	packet.unk4 = 0;
+    packet.unk4 = 0;
     packet.unk5 = 0;
 
     // Append stat differences
@@ -67,7 +67,7 @@ void Player::SendLogXPGain(uint64 guid, uint32 NormalXP, uint32 RestedXP, bool t
         packet.guid = 0; // does not need to be set for quest xp
         packet.xp = NormalXP;
         packet.type = (uint8)type;
-		packet.unk = 0;
+        packet.unk = 0;
         GetSession()->OutPacket(SMSG_LOG_XPGAIN, sizeof(packetSMSG_LOG_XP_GAIN),(const char*)&packet);
     }
 }
@@ -85,23 +85,23 @@ void Player::SendEnvironmentalDamageLog(const uint64 & guid, uint8 type, uint32 
 
 void Player::SendCastResult(uint32 SpellId, uint8 ErrorMessage, uint8 MultiCast, uint32 Extra)
 {
-	if( Extra )
-	{
-		packetSMSG_CASTRESULT_EXTRA pe;
-		pe.SpellId = SpellId;
-		pe.ErrorMessage = ErrorMessage;
-		pe.MultiCast = MultiCast;
-		pe.Extra = Extra;
-		m_session->OutPacket( SMSG_CAST_FAILED, sizeof( packetSMSG_CASTRESULT_EXTRA ), &pe );
-	}
-	else
-	{
-		packetSMSG_CASTRESULT pe;
-		pe.SpellId = SpellId;
-		pe.ErrorMessage = ErrorMessage;
-		pe.MultiCast = MultiCast;
-		m_session->OutPacket( SMSG_CAST_FAILED, sizeof( packetSMSG_CASTRESULT ), &pe );
-	}
+    if( Extra )
+    {
+        packetSMSG_CASTRESULT_EXTRA pe;
+        pe.SpellId = SpellId;
+        pe.ErrorMessage = ErrorMessage;
+        pe.MultiCast = MultiCast;
+        pe.Extra = Extra;
+        m_session->OutPacket( SMSG_CAST_FAILED, sizeof( packetSMSG_CASTRESULT_EXTRA ), &pe );
+    }
+    else
+    {
+        packetSMSG_CASTRESULT pe;
+        pe.SpellId = SpellId;
+        pe.ErrorMessage = ErrorMessage;
+        pe.MultiCast = MultiCast;
+        m_session->OutPacket( SMSG_CAST_FAILED, sizeof( packetSMSG_CASTRESULT ), &pe );
+    }
 }
 
 

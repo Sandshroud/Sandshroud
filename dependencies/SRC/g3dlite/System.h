@@ -404,7 +404,7 @@ public:
 
     /** Set an environment variable for the current process */
     static void setEnv(const std::string& name, const std::string& value);
-	
+    
     /** Get an environment variable for the current process.  Returns NULL if the variable doesn't exist. */
     static const char* getEnv(const std::string& name);
 
@@ -475,13 +475,13 @@ public:
 #elif defined(G3D_OSX)
 
     inline g3d_uint64 System::getCycleCount() {
-		//Note:  To put off extra processing until the end, this does not 
-		//return the actual clock cycle count.  It is a bus cycle count.
-		//When endCycleCount() is called, it converts the two into a difference
-		//of clock cycles
-		
+        //Note:  To put off extra processing until the end, this does not 
+        //return the actual clock cycle count.  It is a bus cycle count.
+        //When endCycleCount() is called, it converts the two into a difference
+        //of clock cycles
+        
         return (g3d_uint64) UnsignedWideToUInt64(UpTime());
-		//return (g3d_uint64) mach_absolute_time();
+        //return (g3d_uint64) mach_absolute_time();
     }
 
 #endif

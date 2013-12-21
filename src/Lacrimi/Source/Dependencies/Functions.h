@@ -18,10 +18,10 @@
 #define FUNCTIONS_H
 
 SCRIPT_DECL Creature* CreateAndLoadCreature(
-	MapMgr* mgr, uint32 entry, uint32 instancemode, float x, float y, float z, float o, int32 phase = 1, bool push = true);
+    MapMgr* mgr, uint32 entry, uint32 instancemode, float x, float y, float z, float o, int32 phase = 1, bool push = true);
 
 SCRIPT_DECL GameObject* CreateAndLoadGameObject(MapMgr* mgr, uint32 entry, float x, float y, float z, float o,
-												int32 phase = 1, bool push = true);
+                                                int32 phase = 1, bool push = true);
 
 SCRIPT_DECL void WaypointCreate(Creature *pCreature , float x, float y, float z, float o, uint32 waittime, uint32 flags, uint32 modelid);
 

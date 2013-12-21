@@ -104,36 +104,36 @@ void strToLower(char* str)
 // copied from contrib/extractor/System.cpp
 void ReadLiquidTypeTableDBC()
 {
-	switch(expansion)
-	{
-	case 0:
-		{
-			printf("Setting liquid types...");
-			LiqType = new uint16[21];
-			memset(LiqType, 0xff, (21)*sizeof(uint16));
-			LiqType[1] = 0;
-			LiqType[2] = 1;
-			LiqType[3] = 2;
-			LiqType[4] = 3;
-			LiqType[21] = 3;
-			printf("Done! (5 LiqTypes set)\n");
-		}break;
-	case 1:
-		{
-			printf("Setting liquid types...");
-			LiqType = new uint16[62];
-			memset(LiqType, 0xff, (62)*sizeof(uint16));
-			LiqType[1] = 0;
-			LiqType[2] = 1;
-			LiqType[3] = 2;
-			LiqType[4] = 3;
-			LiqType[21] = 3;
-			LiqType[41] = 0;
-			LiqType[61] = 0;
-			printf("Done! (7 LiqTypes set)\n");
-		}break;
-	default:
-		{
+    switch(expansion)
+    {
+    case 0:
+        {
+            printf("Setting liquid types...");
+            LiqType = new uint16[21];
+            memset(LiqType, 0xff, (21)*sizeof(uint16));
+            LiqType[1] = 0;
+            LiqType[2] = 1;
+            LiqType[3] = 2;
+            LiqType[4] = 3;
+            LiqType[21] = 3;
+            printf("Done! (5 LiqTypes set)\n");
+        }break;
+    case 1:
+        {
+            printf("Setting liquid types...");
+            LiqType = new uint16[62];
+            memset(LiqType, 0xff, (62)*sizeof(uint16));
+            LiqType[1] = 0;
+            LiqType[2] = 1;
+            LiqType[3] = 2;
+            LiqType[4] = 3;
+            LiqType[21] = 3;
+            LiqType[41] = 0;
+            LiqType[61] = 0;
+            printf("Done! (7 LiqTypes set)\n");
+        }break;
+    default:
+        {
             printf("Read LiquidType.dbc file...");
             DBCFile dbc("DBFilesClient\\LiquidType.dbc");
             if(!dbc.open())
@@ -151,8 +151,8 @@ void ReadLiquidTypeTableDBC()
                 LiqType[dbc.getRecord(x).getUInt(0)] = dbc.getRecord(x).getUInt(3);
 
                 printf("Done! (%u LiqTypes loaded)\n", (unsigned int)LiqType_count);
-		}break;
-	}
+        }break;
+    }
 }
 
 bool ExtractWmo()
@@ -359,114 +359,114 @@ bool fillArchiveNameVector(std::vector<std::string>& pArchiveNames)
 
     printf("\nGame path: %s\n", input_path);
 
-	FILE * tf = fopen("Data/base.MPQ", "r");
-	if(tf != NULL)
-		expansion = 0;
-	else
-	{
-		expansion = 1;
-		tf = fopen("Data/common-2.MPQ", "r");
-		if(tf != NULL)
-		{
-			fclose(tf);
-			expansion = 2;
-		}
-	}
+    FILE * tf = fopen("Data/base.MPQ", "r");
+    if(tf != NULL)
+        expansion = 0;
+    else
+    {
+        expansion = 1;
+        tf = fopen("Data/common-2.MPQ", "r");
+        if(tf != NULL)
+        {
+            fclose(tf);
+            expansion = 2;
+        }
+    }
 
-	if(expansion)
-	{
-		char path[512];
-		string in_path(input_path);
-		std::vector<std::string> locales, searchLocales;
+    if(expansion)
+    {
+        char path[512];
+        string in_path(input_path);
+        std::vector<std::string> locales, searchLocales;
 
-		searchLocales.push_back("enGB");
-		searchLocales.push_back("enUS");
-		searchLocales.push_back("deDE");
-		searchLocales.push_back("esES");
-		searchLocales.push_back("frFR");
-		searchLocales.push_back("koKR");
-		searchLocales.push_back("zhCN");
-		searchLocales.push_back("zhTW");
-		searchLocales.push_back("enCN");
-		searchLocales.push_back("enTW");
-		searchLocales.push_back("esMX");
-		searchLocales.push_back("ruRU");
+        searchLocales.push_back("enGB");
+        searchLocales.push_back("enUS");
+        searchLocales.push_back("deDE");
+        searchLocales.push_back("esES");
+        searchLocales.push_back("frFR");
+        searchLocales.push_back("koKR");
+        searchLocales.push_back("zhCN");
+        searchLocales.push_back("zhTW");
+        searchLocales.push_back("enCN");
+        searchLocales.push_back("enTW");
+        searchLocales.push_back("esMX");
+        searchLocales.push_back("ruRU");
 
-		for (std::vector<std::string>::iterator i = searchLocales.begin(); i != searchLocales.end(); ++i)
-		{
-			std::string localePath = in_path + *i;
-			// check if locale exists:
-			struct stat status;
-			if (stat(localePath.c_str(), &status))
-				continue;
-			if ((status.st_mode & S_IFDIR) == 0)
-				continue;
-			printf("Found locale '%s'\n", i->c_str());
-			locales.push_back(*i);
-		}
-		printf("\n");
+        for (std::vector<std::string>::iterator i = searchLocales.begin(); i != searchLocales.end(); ++i)
+        {
+            std::string localePath = in_path + *i;
+            // check if locale exists:
+            struct stat status;
+            if (stat(localePath.c_str(), &status))
+                continue;
+            if ((status.st_mode & S_IFDIR) == 0)
+                continue;
+            printf("Found locale '%s'\n", i->c_str());
+            locales.push_back(*i);
+        }
+        printf("\n");
 
 
-		// open locale expansion and common files
-		printf("Adding data files from locale directories.\n");
-		for (std::vector<std::string>::iterator i = locales.begin(); i != locales.end(); ++i)
-		{
-			pArchiveNames.push_back(in_path + *i + "/locale-" + *i + ".MPQ");
-			pArchiveNames.push_back(in_path + *i + "/expansion-locale-" + *i + ".MPQ");
-			if(expansion == 2)
-				pArchiveNames.push_back(in_path + *i + "/lichking-locale-" + *i + ".MPQ");
-		}
+        // open locale expansion and common files
+        printf("Adding data files from locale directories.\n");
+        for (std::vector<std::string>::iterator i = locales.begin(); i != locales.end(); ++i)
+        {
+            pArchiveNames.push_back(in_path + *i + "/locale-" + *i + ".MPQ");
+            pArchiveNames.push_back(in_path + *i + "/expansion-locale-" + *i + ".MPQ");
+            if(expansion == 2)
+                pArchiveNames.push_back(in_path + *i + "/lichking-locale-" + *i + ".MPQ");
+        }
 
-		// open expansion and common files
-		pArchiveNames.push_back(input_path + string("common.MPQ"));
-		pArchiveNames.push_back(input_path + string("expansion.MPQ"));
-		if(expansion == 2)
-		{
-			pArchiveNames.push_back(input_path + string("common-2.MPQ"));
-			pArchiveNames.push_back(input_path + string("lichking.MPQ"));
+        // open expansion and common files
+        pArchiveNames.push_back(input_path + string("common.MPQ"));
+        pArchiveNames.push_back(input_path + string("expansion.MPQ"));
+        if(expansion == 2)
+        {
+            pArchiveNames.push_back(input_path + string("common-2.MPQ"));
+            pArchiveNames.push_back(input_path + string("lichking.MPQ"));
 
-			// now, scan for the patch levels in the core dir
-			printf("Scanning patch levels from data directory.\n");
-			sprintf(path, "%spatch", input_path);
-			if (!scan_patches(path, pArchiveNames))
-				return(false);
+            // now, scan for the patch levels in the core dir
+            printf("Scanning patch levels from data directory.\n");
+            sprintf(path, "%spatch", input_path);
+            if (!scan_patches(path, pArchiveNames))
+                return(false);
 
-			// now, scan for the patch levels in locale dirs
-			printf("Scanning patch levels from locale directories.\n");
-			bool foundOne = false;
-			for (std::vector<std::string>::iterator i = locales.begin(); i != locales.end(); ++i)
-			{
-				printf("Locale: %s\n", i->c_str());
-				sprintf(path, "%s%s/patch-%s", input_path, i->c_str(), i->c_str());
-				if(scan_patches(path, pArchiveNames))
-					foundOne = true;
-			}
+            // now, scan for the patch levels in locale dirs
+            printf("Scanning patch levels from locale directories.\n");
+            bool foundOne = false;
+            for (std::vector<std::string>::iterator i = locales.begin(); i != locales.end(); ++i)
+            {
+                printf("Locale: %s\n", i->c_str());
+                sprintf(path, "%s%s/patch-%s", input_path, i->c_str(), i->c_str());
+                if(scan_patches(path, pArchiveNames))
+                    foundOne = true;
+            }
 
-			printf("\n");
+            printf("\n");
 
-			if(!foundOne)
-			{
-				printf("no locale found\n");
-				return false;
-			}
-		}
-		else
-		{
-			pArchiveNames.push_back(input_path + string("patch.MPQ"));
-			pArchiveNames.push_back(input_path + string("patch-2.MPQ"));
-		}
-	}
-	else
-	{
-		pArchiveNames.push_back(input_path + string("wmo.MPQ"));
-		pArchiveNames.push_back(input_path + string("dbc.MPQ"));
-		pArchiveNames.push_back(input_path + string("base.MPQ"));
-		pArchiveNames.push_back(input_path + string("model.MPQ"));
-		pArchiveNames.push_back(input_path + string("patch.MPQ"));
-		pArchiveNames.push_back(input_path + string("patch-2.MPQ"));
-		pArchiveNames.push_back(input_path + string("terrain.MPQ"));
-		pArchiveNames.push_back(input_path + string("texture.MPQ"));
-	}
+            if(!foundOne)
+            {
+                printf("no locale found\n");
+                return false;
+            }
+        }
+        else
+        {
+            pArchiveNames.push_back(input_path + string("patch.MPQ"));
+            pArchiveNames.push_back(input_path + string("patch-2.MPQ"));
+        }
+    }
+    else
+    {
+        pArchiveNames.push_back(input_path + string("wmo.MPQ"));
+        pArchiveNames.push_back(input_path + string("dbc.MPQ"));
+        pArchiveNames.push_back(input_path + string("base.MPQ"));
+        pArchiveNames.push_back(input_path + string("model.MPQ"));
+        pArchiveNames.push_back(input_path + string("patch.MPQ"));
+        pArchiveNames.push_back(input_path + string("patch-2.MPQ"));
+        pArchiveNames.push_back(input_path + string("terrain.MPQ"));
+        pArchiveNames.push_back(input_path + string("texture.MPQ"));
+    }
     return true;
 }
 

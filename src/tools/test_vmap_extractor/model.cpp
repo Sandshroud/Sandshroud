@@ -45,96 +45,96 @@ bool Model::open()
 
     _unload();
 
-	if(expansion == 0 || expansion == 1)
-	{
-		ModelHeader0 header0;
-		memcpy(&header0, f.getBuffer(), sizeof(ModelHeader0));
-		memcpy(&header.id, &header0.id, sizeof(char)*4);
-		memcpy(&header.version, &header0.version, sizeof(uint8)*4);
-		header.nameLength = header0.nameLength;
-		header.nameOfs = header0.nameOfs;
-		header.type = header0.type;
-		header.nGlobalSequences = header0.nGlobalSequences;
-		header.ofsGlobalSequences = header0.ofsGlobalSequences;
-		header.nAnimations = header0.nAnimations;
-		header.ofsAnimations = header0.ofsAnimations;
-		header.nAnimationLookup = header0.nAnimationLookup;
-		header.ofsAnimationLookup = header0.ofsAnimationLookup;
-		header.nBones = header0.nBones;
-		header.ofsBones = header0.ofsBones;
-		header.nKeyBoneLookup = header0.nKeyBoneLookup;
-		header.ofsKeyBoneLookup = header0.ofsKeyBoneLookup;
-		header.nVertices = header0.nVertices;
-		header.ofsVertices = header0.ofsVertices;
-		header.nViews = header0.nViews;
-		header.nColors = header0.nColors;
-		header.ofsColors = header0.ofsColors;
-		header.nTextures = header0.nTextures;
-		header.ofsTextures = header0.ofsTextures;
-		header.nTransparency = header0.nTransparency;
-		header.ofsTransparency = header0.ofsTransparency;
-		header.nUVAnimation = header0.nTextureanimations;
-		header.ofsUVAnimation = header0.ofsTextureanimations;
-		header.nTexReplace = header0.nTexReplace;
-		header.ofsTexReplace = header0.ofsTexReplace;
-		header.nRenderFlags = header0.nRenderFlags;
-		header.ofsRenderFlags = header0.ofsRenderFlags;
-		header.nBoneLookupTable = header0.nBoneLookupTable;
-		header.ofsBoneLookupTable = header0.ofsBoneLookupTable;
-		header.nTexLookup = header0.nTexLookup;
-		header.ofsTexLookup = header0.ofsTexLookup;
-		header.nTexUnitLookup = header0.nTexUnits;
-		header.ofsTexUnitLookup = header0.ofsTexUnits;
-		header.nTransparencyLookup = header0.nTransLookup;
-		header.ofsTransparencyLookup = header0.ofsTransLookup;
-		header.nUVAnimLookup = header0.nTexAnimLookup;
-		header.ofsUVAnimLookup = header0.ofsTexAnimLookup;
+    if(expansion == 0 || expansion == 1)
+    {
+        ModelHeader0 header0;
+        memcpy(&header0, f.getBuffer(), sizeof(ModelHeader0));
+        memcpy(&header.id, &header0.id, sizeof(char)*4);
+        memcpy(&header.version, &header0.version, sizeof(uint8)*4);
+        header.nameLength = header0.nameLength;
+        header.nameOfs = header0.nameOfs;
+        header.type = header0.type;
+        header.nGlobalSequences = header0.nGlobalSequences;
+        header.ofsGlobalSequences = header0.ofsGlobalSequences;
+        header.nAnimations = header0.nAnimations;
+        header.ofsAnimations = header0.ofsAnimations;
+        header.nAnimationLookup = header0.nAnimationLookup;
+        header.ofsAnimationLookup = header0.ofsAnimationLookup;
+        header.nBones = header0.nBones;
+        header.ofsBones = header0.ofsBones;
+        header.nKeyBoneLookup = header0.nKeyBoneLookup;
+        header.ofsKeyBoneLookup = header0.ofsKeyBoneLookup;
+        header.nVertices = header0.nVertices;
+        header.ofsVertices = header0.ofsVertices;
+        header.nViews = header0.nViews;
+        header.nColors = header0.nColors;
+        header.ofsColors = header0.ofsColors;
+        header.nTextures = header0.nTextures;
+        header.ofsTextures = header0.ofsTextures;
+        header.nTransparency = header0.nTransparency;
+        header.ofsTransparency = header0.ofsTransparency;
+        header.nUVAnimation = header0.nTextureanimations;
+        header.ofsUVAnimation = header0.ofsTextureanimations;
+        header.nTexReplace = header0.nTexReplace;
+        header.ofsTexReplace = header0.ofsTexReplace;
+        header.nRenderFlags = header0.nRenderFlags;
+        header.ofsRenderFlags = header0.ofsRenderFlags;
+        header.nBoneLookupTable = header0.nBoneLookupTable;
+        header.ofsBoneLookupTable = header0.ofsBoneLookupTable;
+        header.nTexLookup = header0.nTexLookup;
+        header.ofsTexLookup = header0.ofsTexLookup;
+        header.nTexUnitLookup = header0.nTexUnits;
+        header.ofsTexUnitLookup = header0.ofsTexUnits;
+        header.nTransparencyLookup = header0.nTransLookup;
+        header.ofsTransparencyLookup = header0.ofsTransLookup;
+        header.nUVAnimLookup = header0.nTexAnimLookup;
+        header.ofsUVAnimLookup = header0.ofsTexAnimLookup;
 
-		header.vertexbox1[0] = header0.vertexbox1[0];
-		header.vertexbox1[1] = header0.vertexbox1[1];
-		header.vertexbox1[2] = header0.vertexbox1[2];
+        header.vertexbox1[0] = header0.vertexbox1[0];
+        header.vertexbox1[1] = header0.vertexbox1[1];
+        header.vertexbox1[2] = header0.vertexbox1[2];
 
-		header.vertexbox2[0] = header0.vertexbox2[0];
-		header.vertexbox2[1] = header0.vertexbox2[1];
-		header.vertexbox2[2] = header0.vertexbox2[2];
+        header.vertexbox2[0] = header0.vertexbox2[0];
+        header.vertexbox2[1] = header0.vertexbox2[1];
+        header.vertexbox2[2] = header0.vertexbox2[2];
 
-		header.vertexradius = header0.vertexradius;
+        header.vertexradius = header0.vertexradius;
 
-		header.boundingbox1[0] = header0.boundingbox1[0];
-		header.boundingbox1[1] = header0.boundingbox1[1];
-		header.boundingbox1[2] = header0.boundingbox1[2];
+        header.boundingbox1[0] = header0.boundingbox1[0];
+        header.boundingbox1[1] = header0.boundingbox1[1];
+        header.boundingbox1[2] = header0.boundingbox1[2];
 
-		header.boundingbox2[0] = header0.boundingbox2[0];
-		header.boundingbox2[1] = header0.boundingbox2[1];
-		header.boundingbox2[2] = header0.boundingbox2[2];
+        header.boundingbox2[0] = header0.boundingbox2[0];
+        header.boundingbox2[1] = header0.boundingbox2[1];
+        header.boundingbox2[2] = header0.boundingbox2[2];
 
-		header.boundingradius = header0.boundingradius;
+        header.boundingradius = header0.boundingradius;
 
-		header.nBoundingTriangles = header0.nBoundingTriangles;
-		header.ofsBoundingTriangles = header0.ofsBoundingTriangles;
-		header.nBoundingVertices = header0.nBoundingVertices;
-		header.ofsBoundingVertices = header0.ofsBoundingVertices;
-		header.nBoundingNormals = header0.nBoundingNormals;
-		header.ofsBoundingNormals = header0.ofsBoundingNormals;
-		header.nAttachments = header0.nAttachments;
-		header.ofsAttachments = header0.ofsAttachments;
-		header.nAttachmentLookup = header0.nAttachLookup;
-		header.ofsAttachmentLookup = header0.ofsAttachLookup;
-		header.nEvents = header0.nAttachments_2;
-		header.ofsEvents = header0.ofsAttachments_2;
-		header.nLights = header0.nLights;
-		header.ofsLights = header0.ofsLights;
-		header.nCameras = header0.nCameras;
-		header.ofsCameras = header0.ofsCameras;
-		header.nCameraLookup = header0.nCameraLookup;
-		header.ofsCameraLookup = header0.ofsCameraLookup;
-		header.nRibbonEmitters = header0.nRibbonEmitters;
-		header.ofsRibbonEmitters = header0.ofsRibbonEmitters;
-		header.nParticleEmitters = header0.nParticleEmitters;
-		header.ofsParticleEmitters = header0.ofsParticleEmitters;
-	}
-	else
-		memcpy(&header, f.getBuffer(), sizeof(ModelHeader));
+        header.nBoundingTriangles = header0.nBoundingTriangles;
+        header.ofsBoundingTriangles = header0.ofsBoundingTriangles;
+        header.nBoundingVertices = header0.nBoundingVertices;
+        header.ofsBoundingVertices = header0.ofsBoundingVertices;
+        header.nBoundingNormals = header0.nBoundingNormals;
+        header.ofsBoundingNormals = header0.ofsBoundingNormals;
+        header.nAttachments = header0.nAttachments;
+        header.ofsAttachments = header0.ofsAttachments;
+        header.nAttachmentLookup = header0.nAttachLookup;
+        header.ofsAttachmentLookup = header0.ofsAttachLookup;
+        header.nEvents = header0.nAttachments_2;
+        header.ofsEvents = header0.ofsAttachments_2;
+        header.nLights = header0.nLights;
+        header.ofsLights = header0.ofsLights;
+        header.nCameras = header0.nCameras;
+        header.ofsCameras = header0.ofsCameras;
+        header.nCameraLookup = header0.nCameraLookup;
+        header.ofsCameraLookup = header0.ofsCameraLookup;
+        header.nRibbonEmitters = header0.nRibbonEmitters;
+        header.ofsRibbonEmitters = header0.ofsRibbonEmitters;
+        header.nParticleEmitters = header0.nParticleEmitters;
+        header.ofsParticleEmitters = header0.ofsParticleEmitters;
+    }
+    else
+        memcpy(&header, f.getBuffer(), sizeof(ModelHeader));
 
     if(header.nBoundingTriangles > 0)
     {

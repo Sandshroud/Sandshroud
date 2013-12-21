@@ -22,18 +22,18 @@ class LuaEngineMgr;
 class CleanupComponent;
 
 #define BuildEmptyMenu(textid) GossipMenu *Menu; \
-	objmgr.CreateGossipMenuForPlayer(&Menu, pObject->GetGUID(), textid, Plr)
+    objmgr.CreateGossipMenuForPlayer(&Menu, pObject->GetGUID(), textid, Plr)
 
 #define SendEmptyMenu(textid) objmgr.CreateGossipMenuForPlayer(&Menu, pObject->GetGUID(), textid, Plr); \
-	Menu->SendTo(Plr)
+    Menu->SendTo(Plr)
 
 #define BuildQuickMenu(textid) GossipMenu *Menu; \
-	objmgr.CreateGossipMenuForPlayer(&Menu, pObject->GetGUID(), textid, Plr); \
-	Menu->AddItem(0, "I was looking for something else.", 0)
+    objmgr.CreateGossipMenuForPlayer(&Menu, pObject->GetGUID(), textid, Plr); \
+    Menu->AddItem(0, "I was looking for something else.", 0)
 
 #define SendQuickMenu(textid) objmgr.CreateGossipMenuForPlayer(&Menu, pObject->GetGUID(), textid, Plr); \
-	Menu->AddItem(0, "I was looking for something else.", 0); \
-	Menu->SendTo(Plr)
+    Menu->AddItem(0, "I was looking for something else.", 0); \
+    Menu->SendTo(Plr)
 
 #define RegisterHook(hookid, script) sMgr->register_hook(hookid, (void *)&script)
 #define RegisterDummyAura(entry, script) sMgr->register_dummy_aura(entry, &script)
@@ -53,197 +53,197 @@ class CleanupComponent;
 class SCRIPT_DECL CleanupComponent
 {
 public:
-	CleanupComponent() { LastCall = 0; CallDelay = 5000; };
+    CleanupComponent() { LastCall = 0; CallDelay = 5000; };
 
-	virtual void CleanupFunction(uint32 p_time) {};
-	virtual void Destruct() { delete this; };
+    virtual void CleanupFunction(uint32 p_time) {};
+    virtual void Destruct() { delete this; };
 
-	uint32 LastCall;
-	uint32 CallDelay;
+    uint32 LastCall;
+    uint32 CallDelay;
 };
 
 class SCRIPT_DECL Lacrimi : public ThreadContext
 {
 private:
-	std::set<CleanupComponent*> CleanupComponents;
-	CIniFile *lacrimiIni;
-	Database* LacrimiDB;
-	ScriptMgr* sMgr;
-	bool dumpstats;
-	bool database;
-	bool config;
-	bool first;
+    std::set<CleanupComponent*> CleanupComponents;
+    CIniFile *lacrimiIni;
+    Database* LacrimiDB;
+    ScriptMgr* sMgr;
+    bool dumpstats;
+    bool database;
+    bool config;
+    bool first;
 
 public:
-	Lacrimi(ScriptMgr* mgr);
-	~Lacrimi();
+    Lacrimi(ScriptMgr* mgr);
+    ~Lacrimi();
 
-	bool run();
-	bool _StartDB();
-	void _StopDB();
-	void Cleanup();
-	void FinalCleanup();
-	ScriptMgr* GetScriptMgr() { return sMgr; };
-	std::string GetConfigString(char* configfamily, char* configoption, char* cdefault = "");
-	float GetConfigfloat(char* configfamily, char* configoption, float fdefault = 0.0f);
-	bool GetConfigBool(char* configfamily, char* configoption, bool bdefault = false);
-	int GetConfigInt(char* configfamily, char* configoption, int intdefault = 0);
-	Database* GetLDB() { if(database == true) return LacrimiDB; return NULL; };
+    bool run();
+    bool _StartDB();
+    void _StopDB();
+    void Cleanup();
+    void FinalCleanup();
+    ScriptMgr* GetScriptMgr() { return sMgr; };
+    std::string GetConfigString(char* configfamily, char* configoption, char* cdefault = "");
+    float GetConfigfloat(char* configfamily, char* configoption, float fdefault = 0.0f);
+    bool GetConfigBool(char* configfamily, char* configoption, bool bdefault = false);
+    int GetConfigInt(char* configfamily, char* configoption, int intdefault = 0);
+    Database* GetLDB() { if(database == true) return LacrimiDB; return NULL; };
 
 public: // Script Related
-	void SetupScripts();
-	void SetupCityScripts();
+    void SetupScripts();
+    void SetupCityScripts();
 
 public:
 ///////////////////
 ////// Spell Setups.
 ///////////////////
-	void SetupSpellScripts();
+    void SetupSpellScripts();
 
-	// Class Scripts
-	void SetupDeathKnightSpells();
-	void SetupDruidSpells();
-	void SetupHunterSpells();
-	void SetupMageSpells();
-	void SetupPaladinSpells();
-	void SetupPriestSpells();
-	void SetupRogueSpells();
-	void SetupShamanSpells();
-	void SetupWarlockSpells();
-	void SetupWarriorSpells();
+    // Class Scripts
+    void SetupDeathKnightSpells();
+    void SetupDruidSpells();
+    void SetupHunterSpells();
+    void SetupMageSpells();
+    void SetupPaladinSpells();
+    void SetupPriestSpells();
+    void SetupRogueSpells();
+    void SetupShamanSpells();
+    void SetupWarlockSpells();
+    void SetupWarriorSpells();
 
-	// Creature Scripts
+    // Creature Scripts
 
-	// Other
-	void SetupMiscSpells();
+    // Other
+    void SetupMiscSpells();
 
 public:
 ///////////////////
 ////// Zone Setups. // Level 0
 ///////////////////
-	void SetupZoneScripts();
+    void SetupZoneScripts();
 
-	// Eastern Kingdom
-	void SetupEasternKingdomScripts();
-	void SetupAlteracMountains();
-	void SetupArathiHighlands();
-	void SetupBlastedLands();
-	void SetupBurningSteppes();
-	void SetupDunMorogh();
-	void SetupDuskwood();
-	void SetupEasternPlaguelands();
-	void SetupElwynnForest();
-	void SetupEversongWoods();
-	void SetupGhostlands();
-	void SetupHinterlands();
-	void SetupIsleOfQuelDanas();
-	void SetupLochModan();
-	void SetupSearingGorge();
-	void SetupSilverpineForest();
-	void SetupStranglethornVale();
-	void SetupTrisfalGlades();
-	void SetupWesternPlaguelands();
-	void SetupWestfall();
-	void SetupWetlands();
+    // Eastern Kingdom
+    void SetupEasternKingdomScripts();
+    void SetupAlteracMountains();
+    void SetupArathiHighlands();
+    void SetupBlastedLands();
+    void SetupBurningSteppes();
+    void SetupDunMorogh();
+    void SetupDuskwood();
+    void SetupEasternPlaguelands();
+    void SetupElwynnForest();
+    void SetupEversongWoods();
+    void SetupGhostlands();
+    void SetupHinterlands();
+    void SetupIsleOfQuelDanas();
+    void SetupLochModan();
+    void SetupSearingGorge();
+    void SetupSilverpineForest();
+    void SetupStranglethornVale();
+    void SetupTrisfalGlades();
+    void SetupWesternPlaguelands();
+    void SetupWestfall();
+    void SetupWetlands();
 
-	// Kalimdor
-	void SetupKalimdorScripts();
-	void SetupAshenvale();
-	void SetupAzshara();
-	void SetupAzuremystIsle();
-	void SetupBloodmystIsle();
-	void SetupDarkshore();
-	void SetupDesolace();
-	void SetupDustwallowMarsh();
-	void SetupFelwood();
-	void SetupFeralas();
-	void SetupMoonglade();
-	void SetupMulgore();
-	void SetupSilithus();
-	void SetupStonetalonMountains();
-	void SetupTanaris();
-	void SetupTeldrassil();
-	void SetupTheBarrens();
-	void SetupThousandNeedles();
-	void SetupUngoroCrater();
-	void SetupWinterspring();
+    // Kalimdor
+    void SetupKalimdorScripts();
+    void SetupAshenvale();
+    void SetupAzshara();
+    void SetupAzuremystIsle();
+    void SetupBloodmystIsle();
+    void SetupDarkshore();
+    void SetupDesolace();
+    void SetupDustwallowMarsh();
+    void SetupFelwood();
+    void SetupFeralas();
+    void SetupMoonglade();
+    void SetupMulgore();
+    void SetupSilithus();
+    void SetupStonetalonMountains();
+    void SetupTanaris();
+    void SetupTeldrassil();
+    void SetupTheBarrens();
+    void SetupThousandNeedles();
+    void SetupUngoroCrater();
+    void SetupWinterspring();
 
-	// Outland
-	void SetupOutlandScripts();
-	void SetupBladesEdgeMountains();
-	void SetupHellfirePeninsula();
-	void SetupNagrand();
-	void SetupNetherstorm();
-	void SetupShadowmoonValley();
-	void SetupTerrokarForest();
-	void SetupZangarmarsh();
+    // Outland
+    void SetupOutlandScripts();
+    void SetupBladesEdgeMountains();
+    void SetupHellfirePeninsula();
+    void SetupNagrand();
+    void SetupNetherstorm();
+    void SetupShadowmoonValley();
+    void SetupTerrokarForest();
+    void SetupZangarmarsh();
 
-	// Northrend
-	void SetupNorthrendScripts();
-	void SetupWintergrasp();
-	void SetupBoreanTundra();
-	void SetupDragonblight();
-	void SetupGrizzlyHills();
-	void SetupHowlingFjord();
-	void SetupIcecrown();
-	void SetupSholazarBasin();
-	void SetupStormPeaks();
-	void SetupZulDrak();
+    // Northrend
+    void SetupNorthrendScripts();
+    void SetupWintergrasp();
+    void SetupBoreanTundra();
+    void SetupDragonblight();
+    void SetupGrizzlyHills();
+    void SetupHowlingFjord();
+    void SetupIcecrown();
+    void SetupSholazarBasin();
+    void SetupStormPeaks();
+    void SetupZulDrak();
 
-	// Ebon Hold
-	void SetupEbonHoldScripts();
-	void SetupEHPhaseOne();
-	void SetupEHPhaseTwo();
-	void SetupEHPhaseThree();
+    // Ebon Hold
+    void SetupEbonHoldScripts();
+    void SetupEHPhaseOne();
+    void SetupEHPhaseTwo();
+    void SetupEHPhaseThree();
 
 ///////////////////
 ////// City Setups.
 ///////////////////
 
-	// Eastern Kingdom
-	void SetupIronforge();
-	void SetupSilvermoon();
-	void SetupStormwind();
-	void SetupUndercity();
+    // Eastern Kingdom
+    void SetupIronforge();
+    void SetupSilvermoon();
+    void SetupStormwind();
+    void SetupUndercity();
 
-	// Kalimdor
-	void SetupDarnassus();
-	void SetupExodar();
-	void SetupOrgrimmar();
-	void SetupThunderbluff();
+    // Kalimdor
+    void SetupDarnassus();
+    void SetupExodar();
+    void SetupOrgrimmar();
+    void SetupThunderbluff();
 
-	// Outlands
-	void SetupShattrath();
+    // Outlands
+    void SetupShattrath();
 
-	// Northrend
-	void SetupDalaran();
+    // Northrend
+    void SetupDalaran();
 
 public: // Instance Scripts
-	void SetupInstanceScripts();
+    void SetupInstanceScripts();
 
 ///////////////////
 ////// Classic Scripts // Level 2
 ///////////////////
-	void SetupBlackfathomDeeps();
+    void SetupBlackfathomDeeps();
 
 public: // Custom Scripts
-	void SetupCustomScripts();
+    void SetupCustomScripts();
 
 ///////////////////
 ////// Custom Scripts
 ///////////////////
 
 public: // Stat Dumper
-	void DumpStats();
-	void GenerateUptimeString(char * Dest);
-	void FillOnlineTime(uint32 Time, char * Dest);
+    void DumpStats();
+    void GenerateUptimeString(char * Dest);
+    void FillOnlineTime(uint32 Time, char * Dest);
 
-	char Filename[MAX_PATH];
+    char Filename[MAX_PATH];
 
 public: // LuaEngine
-	LuaEngine* L_LuaEngine;
-	LuaEngineMgr* L_LuaEngineMgr;
-	bool LuaEngineIsStarting;
+    LuaEngine* L_LuaEngine;
+    LuaEngineMgr* L_LuaEngineMgr;
+    bool LuaEngineIsStarting;
 };
 
 #define sLacrimi (*sWorld.LacrimiPtr)

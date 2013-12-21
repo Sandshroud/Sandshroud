@@ -33,13 +33,13 @@ Vec3D fixCoordSystem(Vec3D v);
 class LiquidModelInstance
 {
 private:
-	LiquidHeader LiqHeader;
+    LiquidHeader LiqHeader;
 
 public:
-	bool Info;
+    bool Info;
 
     LiquidModelInstance() {}
     LiquidModelInstance(MPQFile &f, uint32 base_pos, uint32 tileID, MH20_Header* header, uint32 mapID, uint32 tileX, uint32 tileY, FILE *pDirfile);
 
-	bool ShouldWrite() { return Info; };
+    bool ShouldWrite() { return Info; };
 };

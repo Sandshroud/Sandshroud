@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
     if(argc != 3)
     {
         std::cout << "usage: " << argv[0] << " <raw data dir> <vmap dest dir>" << std::endl;
-		WaitForInput();
+        WaitForInput();
         return 1;
     }
 
@@ -57,12 +57,12 @@ int main(int argc, char* argv[])
     {
         std::cout << "exit with errors" << std::endl;
         delete ta;
-		WaitForInput();
+        WaitForInput();
         return 1;
     }
 
     delete ta;
     std::cout << "Ok, all done" << std::endl;
-	WaitForInput();
+    WaitForInput();
     return 0;
 }

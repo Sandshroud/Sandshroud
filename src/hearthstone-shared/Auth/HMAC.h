@@ -11,25 +11,25 @@
 
 class HMACHash
 {
-	public:
-		HMACHash();
-		~HMACHash();
+    public:
+        HMACHash();
+        ~HMACHash();
 
-		void UpdateFinalizeBigNumbers(BigNumber *bn0, ...);
-		void UpdateBigNumber(BigNumber *bn0, ...);
+        void UpdateFinalizeBigNumbers(BigNumber *bn0, ...);
+        void UpdateBigNumber(BigNumber *bn0, ...);
 
-		void UpdateData(const uint8 *dta, int len);
-		void UpdateData(const std::string &str);
+        void UpdateData(const uint8 *dta, int len);
+        void UpdateData(const std::string &str);
 
-		void Initialize(uint32 len, uint8 *seed);
-		void Finalize();
+        void Initialize(uint32 len, uint8 *seed);
+        void Finalize();
 
-		uint8 *GetDigest(void) { return mDigest; };
-		int GetLength(void) { return 20; };
+        uint8 *GetDigest(void) { return mDigest; };
+        int GetLength(void) { return 20; };
 
-		BigNumber GetBigNumber();
+        BigNumber GetBigNumber();
 
-	private:
-		HMAC_CTX mC;
-		uint8 mDigest[20];
+    private:
+        HMAC_CTX mC;
+        uint8 mDigest[20];
 };

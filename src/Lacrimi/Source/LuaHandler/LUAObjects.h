@@ -20,113 +20,113 @@
 class LuaGossip : public GossipScript
 {
 public:
-	LuaGossip() : GossipScript(), m_go_gossip_binding(NULL),m_item_gossip_binding(NULL),m_unit_gossip_binding(NULL) { LuaScript = true; }
-	~LuaGossip();
+    LuaGossip() : GossipScript(), m_go_gossip_binding(NULL),m_item_gossip_binding(NULL),m_unit_gossip_binding(NULL) { LuaScript = true; }
+    ~LuaGossip();
 
-	void GossipHello(Object* pObject, Player* Plr, bool AutoSend);
-	void GossipSelectOption(Object* pObject, Player* Plr, uint32 Id, uint32 IntId, const char * EnteredCode);
-	void GossipEnd(Object* pObject, Player* Plr);
+    void GossipHello(Object* pObject, Player* Plr, bool AutoSend);
+    void GossipSelectOption(Object* pObject, Player* Plr, uint32 Id, uint32 IntId, const char * EnteredCode);
+    void GossipEnd(Object* pObject, Player* Plr);
 
-	LuaUnitGossipBinding * m_unit_gossip_binding;
-	LuaItemGossipBinding * m_item_gossip_binding;
-	LuaGOGossipBinding * m_go_gossip_binding;
+    LuaUnitGossipBinding * m_unit_gossip_binding;
+    LuaItemGossipBinding * m_item_gossip_binding;
+    LuaGOGossipBinding * m_go_gossip_binding;
 };
 
 class LuaInstance : public MapManagerScript
 {
 public:
-	LuaInstance(MapMgr* pMapMgr) : MapManagerScript(pMapMgr), m_instanceId(pMapMgr->GetInstanceID()) {}
-	~LuaInstance() {}
+    LuaInstance(MapMgr* pMapMgr) : MapManagerScript(pMapMgr), m_instanceId(pMapMgr->GetInstanceID()) {}
+    ~LuaInstance() {}
 
-	// Player
-	void OnPlayerDeath(Player* pVictim, Unit* pKiller);
+    // Player
+    void OnPlayerDeath(Player* pVictim, Unit* pKiller);
 
-	// Area and AreaTrigger
-	void OnPlayerEnter(Player* pPlayer);
-	void OnAreaTrigger(Player* pPlayer, uint32 uAreaId);
-	void OnZoneChange(Player* pPlayer, uint32 uNewZone, uint32 uOldZone);
+    // Area and AreaTrigger
+    void OnPlayerEnter(Player* pPlayer);
+    void OnAreaTrigger(Player* pPlayer, uint32 uAreaId);
+    void OnZoneChange(Player* pPlayer, uint32 uNewZone, uint32 uOldZone);
 
-	// Creature / GameObject - part of it is simple reimplementation for easier use Creature / GO < --- > Script
-	void OnCreatureDeath(Creature* pVictim, Unit* pKiller);
-	void OnCreaturePushToWorld(Creature* pCreature);
-	void OnGameObjectActivate(GameObject* pGameObject, Player* pPlayer);
-	void OnGameObjectPushToWorld(GameObject* pGameObject);
+    // Creature / GameObject - part of it is simple reimplementation for easier use Creature / GO < --- > Script
+    void OnCreatureDeath(Creature* pVictim, Unit* pKiller);
+    void OnCreaturePushToWorld(Creature* pCreature);
+    void OnGameObjectActivate(GameObject* pGameObject, Player* pPlayer);
+    void OnGameObjectPushToWorld(GameObject* pGameObject);
 
-	// Standard virtual methods
-	void OnLoad();
-	void Destroy();
+    // Standard virtual methods
+    void OnLoad();
+    void Destroy();
 
-	uint32 m_instanceId;
-	LuaInstanceBinding* m_binding;
+    uint32 m_instanceId;
+    LuaInstanceBinding* m_binding;
 };
 
 class LuaCreature : public CreatureAIScript
 {
 public:
-	LuaCreature(Creature* creature) : CreatureAIScript(creature) { LuaScript = true; };
-	~LuaCreature() {};
+    LuaCreature(Creature* creature) : CreatureAIScript(creature) { LuaScript = true; };
+    ~LuaCreature() {};
 
-	void OnCombatStart(Unit* mTarget);
-	void OnCombatStop(Unit* mTarget);
-	void OnTargetDied(Unit* mTarget);
-	void OnDied(Unit *mKiller);
-	void OnTargetParried(Unit* mTarget);
-	void OnTargetDodged(Unit* mTarget);
-	void OnTargetBlocked(Unit* mTarget, int32 iAmount);
-	void OnTargetCritHit(Unit* mTarget, int32 fAmount);
-	void OnParried(Unit* mTarget);
-	void OnDodged(Unit* mTarget);
-	void OnBlocked(Unit* mTarget, int32 iAmount);
-	void OnCritHit(Unit* mTarget, int32 fAmount);
-	void OnHit(Unit* mTarget, float fAmount);
-	void OnAssistTargetDied(Unit* mAssistTarget);
-	void OnFear(Unit* mFeared, uint32 iSpellId);
-	void OnFlee(Unit* mFlee);
-	void OnCallForHelp();
-	void OnLoad();
-	void OnReachWP(uint32 iWaypointId, bool bForwards);
-	void OnLootTaken(Player* pPlayer, ItemPrototype *pItemPrototype);
-	void AIUpdate(MapManagerScript*, uint32 ptime);
-	void OnEmote(Player * pPlayer, EmoteType Emote);
-	void OnDamageTaken(Unit* mAttacker, float fAmount);
-	void StringFunctionCall(int fRef);
-	void Destroy();
+    void OnCombatStart(Unit* mTarget);
+    void OnCombatStop(Unit* mTarget);
+    void OnTargetDied(Unit* mTarget);
+    void OnDied(Unit *mKiller);
+    void OnTargetParried(Unit* mTarget);
+    void OnTargetDodged(Unit* mTarget);
+    void OnTargetBlocked(Unit* mTarget, int32 iAmount);
+    void OnTargetCritHit(Unit* mTarget, int32 fAmount);
+    void OnParried(Unit* mTarget);
+    void OnDodged(Unit* mTarget);
+    void OnBlocked(Unit* mTarget, int32 iAmount);
+    void OnCritHit(Unit* mTarget, int32 fAmount);
+    void OnHit(Unit* mTarget, float fAmount);
+    void OnAssistTargetDied(Unit* mAssistTarget);
+    void OnFear(Unit* mFeared, uint32 iSpellId);
+    void OnFlee(Unit* mFlee);
+    void OnCallForHelp();
+    void OnLoad();
+    void OnReachWP(uint32 iWaypointId, bool bForwards);
+    void OnLootTaken(Player* pPlayer, ItemPrototype *pItemPrototype);
+    void AIUpdate(MapManagerScript*, uint32 ptime);
+    void OnEmote(Player * pPlayer, EmoteType Emote);
+    void OnDamageTaken(Unit* mAttacker, float fAmount);
+    void StringFunctionCall(int fRef);
+    void Destroy();
 
-	LuaUnitBinding * m_binding;
+    LuaUnitBinding * m_binding;
 };
 
 class LuaGameObject : public GameObjectAIScript
 {
 public:
-	LuaGameObject(GameObject * go) : GameObjectAIScript(go) { LuaScript = true; }
-	~LuaGameObject() {}
+    LuaGameObject(GameObject * go) : GameObjectAIScript(go) { LuaScript = true; }
+    ~LuaGameObject() {}
 
-	void OnCreate();
-	void OnSpawn();
-	void OnDespawn();
-	void OnLootTaken(Player * pLooter, ItemPrototype *pItemInfo);
-	void OnActivate(Player * pPlayer);
-	void AIUpdate(MapManagerScript*, uint32 ptime);
-	void Destroy ();
+    void OnCreate();
+    void OnSpawn();
+    void OnDespawn();
+    void OnLootTaken(Player * pLooter, ItemPrototype *pItemInfo);
+    void OnActivate(Player * pPlayer);
+    void AIUpdate(MapManagerScript*, uint32 ptime);
+    void Destroy ();
 
-	LuaGameObjectBinding * m_binding;
+    LuaGameObjectBinding * m_binding;
 };
 
 class LuaQuest : public QuestScript
 {
 public:
-	LuaQuest() : QuestScript() { LuaScript = true; }
-	~LuaQuest() {}
+    LuaQuest() : QuestScript() { LuaScript = true; }
+    ~LuaQuest() {}
 
-	void OnQuestStart(Player* mTarget, QuestLogEntry *qLogEntry);
-	void OnQuestComplete(Player* mTarget, QuestLogEntry *qLogEntry);
-	void OnQuestCancel(Player* mTarget);
-	void OnGameObjectActivate(uint32 entry, Player* mTarget, QuestLogEntry *qLogEntry);
-	void OnCreatureKill(uint32 entry, Player* mTarget, QuestLogEntry *qLogEntry);
-	void OnExploreArea(uint32 areaId, Player* mTarget, QuestLogEntry *qLogEntry);
-	void OnPlayerItemPickup(uint32 itemId, uint32 totalCount, Player* mTarget, QuestLogEntry *qLogEntry);
+    void OnQuestStart(Player* mTarget, QuestLogEntry *qLogEntry);
+    void OnQuestComplete(Player* mTarget, QuestLogEntry *qLogEntry);
+    void OnQuestCancel(Player* mTarget);
+    void OnGameObjectActivate(uint32 entry, Player* mTarget, QuestLogEntry *qLogEntry);
+    void OnCreatureKill(uint32 entry, Player* mTarget, QuestLogEntry *qLogEntry);
+    void OnExploreArea(uint32 areaId, Player* mTarget, QuestLogEntry *qLogEntry);
+    void OnPlayerItemPickup(uint32 itemId, uint32 totalCount, Player* mTarget, QuestLogEntry *qLogEntry);
 
-	LuaQuestBinding * m_binding;
+    LuaQuestBinding * m_binding;
 };
 
 MapManagerScript* CreateLuaInstance(MapMgr* pMapMgr);
