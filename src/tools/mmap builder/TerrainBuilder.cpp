@@ -26,51 +26,6 @@
 #include "ModelInstance.h"
 #include <vector>
 
-// ******************************************
-// Map file format defines
-// ******************************************
-struct map_fileheader
-{
-    G3D::g3d_uint32 mapMagic;
-    G3D::g3d_uint32 versionMagic;
-    G3D::g3d_uint32 buildMagic;
-    G3D::g3d_uint32 areaMapOffset;
-    G3D::g3d_uint32 areaMapSize;
-    G3D::g3d_uint32 heightMapOffset;
-    G3D::g3d_uint32 heightMapSize;
-    G3D::g3d_uint32 liquidMapOffset;
-    G3D::g3d_uint32 liquidMapSize;
-    G3D::g3d_uint32 holesOffset;
-    G3D::g3d_uint32 holesSize;
-};
-
-#define MAP_HEIGHT_NO_HEIGHT  0x0001
-#define MAP_HEIGHT_AS_INT16   0x0002
-#define MAP_HEIGHT_AS_INT8    0x0004
-
-struct map_heightHeader
-{
-    G3D::g3d_uint32 fourcc;
-    G3D::g3d_uint32 flags;
-    float  gridHeight;
-    float  gridMaxHeight;
-};
-
-#define MAP_LIQUID_NO_TYPE    0x0001
-#define MAP_LIQUID_NO_HEIGHT  0x0002
-
-struct map_liquidHeader
-{
-    G3D::g3d_uint32 fourcc;
-    G3D::g3d_uint16 flags;
-    G3D::g3d_uint16 liquidType;
-    G3D::g3d_uint8  offsetX;
-    G3D::g3d_uint8  offsetY;
-    G3D::g3d_uint8  width;
-    G3D::g3d_uint8  height;
-    float  liquidLevel;
-};
-
 #define MAP_LIQUID_TYPE_NO_WATER    0x00
 #define MAP_LIQUID_TYPE_WATER       0x01
 #define MAP_LIQUID_TYPE_OCEAN       0x02
@@ -132,121 +87,68 @@ namespace MMAP
         }
     }
 
+    struct MapData
+    {
+        G3D::g3d_uint16 AreaInfo[256];
+        G3D::g3d_uint16 LiquidInfo[256];
+        float V8[V8_SIZE_SQ];
+        float V9[V9_SIZE_SQ];
+        float liquid_height[V9_SIZE_SQ];
+    };
+
     /**************************************************************************/
     bool TerrainBuilder::loadMap(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, MeshData &meshData, Spot portion)
     {
-        char mapFileName[255];
-        sprintf(mapFileName, "maps/%03u%02u%02u.map", mapID, tileY, tileX);
+        char FileName[255];
+        sprintf(FileName, "maps/Map_%03u.bin", mapID);
 
-        FILE* mapFile = fopen(mapFileName, "rb");
-        if (!mapFile)
+        FILE* mapFile = NULL;
+        fopen_s(&mapFile, FileName, "rb");
+        if(mapFile == NULL)
             return false;
 
-        map_fileheader fheader;
-        if (fread(&fheader, sizeof(map_fileheader), 1, mapFile) != 1 ||
-            fheader.versionMagic != *((G3D::g3d_uint32 const*)(MAP_VERSION_MAGIC)))
-        {
-            fclose(mapFile);
-            printf("%s is the wrong version, please extract new .map files\n", mapFileName);
+        fseek(mapFile, 0, SEEK_SET);
+        G3D::g3d_uint32 offsets[64][64];
+        if(fread(offsets, 1, 16384, mapFile) != 16384)
             return false;
-        }
-
-        map_heightHeader hheader;
-        fseek(mapFile, fheader.heightMapOffset, SEEK_SET);
-
-        bool haveTerrain = false;
-        bool haveLiquid = false;
-        if (fread(&hheader, sizeof(map_heightHeader), 1, mapFile) == 1)
-        {
-            haveTerrain = !(hheader.flags & MAP_HEIGHT_NO_HEIGHT);
-            haveLiquid = fheader.liquidMapOffset && !m_skipLiquid;
-        }
-
-        // no data in this map file
-        if (!haveTerrain && !haveLiquid)
-        {
-            fclose(mapFile);
+        if(offsets[tileX][tileY] == 0)
             return false;
-        }
 
-        // data used later
-        G3D::g3d_uint16 holes[16][16];
-        memset(holes, 0, sizeof(holes));
-        G3D::g3d_uint8 liquid_type[16][16];
-        memset(liquid_type, 0, sizeof(liquid_type));
+        // Go to our offset, skip the area info.
+        if(fseek(mapFile, offsets[tileX][tileY], SEEK_SET))
+            return false;
+
         G3D::Array<int> ltriangles;
         G3D::Array<int> ttriangles;
+        MapData *mapInfo = new MapData();
 
-        // terrain data
-        if (haveTerrain)
+        // Read from our file into this newly created struct.
+        fread(&mapInfo->AreaInfo, sizeof(G3D::g3d_uint16), 256, mapFile);
+        fread(&mapInfo->LiquidInfo, sizeof(G3D::g3d_uint16), 256, mapFile);
+        fread(&mapInfo->V8, sizeof(float), 16384, mapFile);
+        fread(&mapInfo->V9, sizeof(float), 16641, mapFile);
+        fread(&mapInfo->liquid_height, sizeof(float), 16641, mapFile);
+        fclose(mapFile);
+        // Parse values for skippage
+        bool allOcean = true;
+        for(int i = 0; i < 256; i++)
+            if(!(mapInfo->LiquidInfo[i]&0x20))
+                allOcean = false;
+        // We can skip tiles that are 100% ocean
+        if(allOcean)
         {
-            float heightMultiplier;
-            float V9[V9_SIZE_SQ], V8[V8_SIZE_SQ];
-            int expected = V9_SIZE_SQ + V8_SIZE_SQ;
+            delete mapInfo;
+            return false;
+        }
 
-            if (hheader.flags & MAP_HEIGHT_AS_INT8)
-            {
-                G3D::g3d_uint8 v9[V9_SIZE_SQ];
-                G3D::g3d_uint8 v8[V8_SIZE_SQ];
-                int count = 0;
-                count += fread(v9, sizeof(G3D::g3d_uint8), V9_SIZE_SQ, mapFile);
-                count += fread(v8, sizeof(G3D::g3d_uint8), V8_SIZE_SQ, mapFile);
-                if (count != expected)
-                    printf("TerrainBuilder::loadMap: Failed to read some data expected %d, read %d\n", expected, count);
-
-                heightMultiplier = (hheader.gridMaxHeight - hheader.gridHeight) / 255;
-
-                for (int i = 0; i < V9_SIZE_SQ; ++i)
-                    V9[i] = (float)v9[i]*heightMultiplier + hheader.gridHeight;
-
-                for (int i = 0; i < V8_SIZE_SQ; ++i)
-                    V8[i] = (float)v8[i]*heightMultiplier + hheader.gridHeight;
-            }
-            else if (hheader.flags & MAP_HEIGHT_AS_INT16)
-            {
-                G3D::g3d_uint16 v9[V9_SIZE_SQ];
-                G3D::g3d_uint16 v8[V8_SIZE_SQ];
-                int count = 0;
-                count += fread(v9, sizeof(G3D::g3d_uint16), V9_SIZE_SQ, mapFile);
-                count += fread(v8, sizeof(G3D::g3d_uint16), V8_SIZE_SQ, mapFile);
-                if (count != expected)
-                    printf("TerrainBuilder::loadMap: Failed to read some data expected %d, read %d\n", expected, count);
-
-                heightMultiplier = (hheader.gridMaxHeight - hheader.gridHeight) / 65535;
-
-                for (int i = 0; i < V9_SIZE_SQ; ++i)
-                    V9[i] = (float)v9[i]*heightMultiplier + hheader.gridHeight;
-
-                for (int i = 0; i < V8_SIZE_SQ; ++i)
-                    V8[i] = (float)v8[i]*heightMultiplier + hheader.gridHeight;
-            }
-            else
-            {
-                int count = 0;
-                count += fread(V9, sizeof(float), V9_SIZE_SQ, mapFile);
-                count += fread(V8, sizeof(float), V8_SIZE_SQ, mapFile);
-                if (count != expected)
-                    printf("TerrainBuilder::loadMap: Failed to read some data expected %d, read %d\n", expected, count);
-            }
-
-            // hole data
-            if (fheader.holesSize != 0)
-            {
-                memset(holes, 0, fheader.holesSize);
-                fseek(mapFile, fheader.holesOffset, SEEK_SET);
-                if (fread(holes, fheader.holesSize, 1, mapFile) != 1)
-                    printf("TerrainBuilder::loadMap: Failed to read some data expected 1, read 0\n");
-            }
-
+        float coord[3];
+        float xoffset = (float(tileX)-32)*GRID_SIZE;
+        float yoffset = (float(tileY)-32)*GRID_SIZE;
+        {
             int count = meshData.solidVerts.size() / 3;
-            float xoffset = (float(tileX)-32)*GRID_SIZE;
-            float yoffset = (float(tileY)-32)*GRID_SIZE;
-
-            float coord[3];
-
             for (int i = 0; i < V9_SIZE_SQ; ++i)
             {
-                getHeightCoord(i, GRID_V9, xoffset, yoffset, coord, V9);
+                getHeightCoord(i, GRID_V9, xoffset, yoffset, coord, mapInfo->V9);
                 meshData.solidVerts.append(coord[0]);
                 meshData.solidVerts.append(coord[2]);
                 meshData.solidVerts.append(coord[1]);
@@ -254,7 +156,7 @@ namespace MMAP
 
             for (int i = 0; i < V8_SIZE_SQ; ++i)
             {
-                getHeightCoord(i, GRID_V8, xoffset, yoffset, coord, V8);
+                getHeightCoord(i, GRID_V8, xoffset, yoffset, coord, mapInfo->V8);
                 meshData.solidVerts.append(coord[0]);
                 meshData.solidVerts.append(coord[2]);
                 meshData.solidVerts.append(coord[1]);
@@ -263,6 +165,7 @@ namespace MMAP
             int indices[] = { 0, 0, 0 }, loopStart = 0, loopEnd = 0, loopInc = 0;
             getLoopVars(portion, loopStart, loopEnd, loopInc);
             for (int i = loopStart; i < loopEnd; i+=loopInc)
+            {
                 for (int j = TOP; j <= BOTTOM; j+=1)
                 {
                     getHeightTriangle(i, Spot(j), indices);
@@ -270,92 +173,65 @@ namespace MMAP
                     ttriangles.append(indices[1] + count);
                     ttriangles.append(indices[0] + count);
                 }
+            }
         }
 
-        // liquid data
-        if (haveLiquid)
+        bool UsableWaterData = false;
+        for (int i = 0; i < V9_SIZE_SQ; ++i)
         {
-            map_liquidHeader lheader;
-            fseek(mapFile, fheader.liquidMapOffset, SEEK_SET);
-            if (fread(&lheader, sizeof(map_liquidHeader), 1, mapFile) != 1)
-                printf("TerrainBuilder::loadMap: Failed to read some data expected 1, read 0\n");
-
-
-            float* liquid_map = NULL;
-
-            if (!(lheader.flags & MAP_LIQUID_NO_TYPE))
-                if (fread(liquid_type, sizeof(liquid_type), 1, mapFile) != 1)
-                    printf("TerrainBuilder::loadMap: Failed to read some data expected 1, read 0\n");
-
-            if (!(lheader.flags & MAP_LIQUID_NO_HEIGHT))
+            coord[0] = (xoffset + i%(V9_SIZE)*GRID_PART_SIZE) * -1.f;
+            coord[1] = (yoffset + (int)(i/(V9_SIZE))*GRID_PART_SIZE) * -1.f;
+            G3D::g3d_uint16 liquidType = getLiquidType(coord[0], coord[1], mapInfo->LiquidInfo);
+            if(liquidType == 0)
+                continue;
+            else
             {
-                G3D::g3d_uint32 toRead = lheader.width * lheader.height;
-                liquid_map = new float [toRead];
-                if (fread(liquid_map, sizeof(float), toRead, mapFile) != toRead)
-                    printf("TerrainBuilder::loadMap: Failed to read some data expected 1, read 0\n");
+                getLiquidCoord(coord[0], coord[1], coord[2], mapInfo->liquid_height);
+                if(coord[2] == 0.0f && !(liquidType & 0x02))
+                    continue;
             }
 
-            if (liquid_map)
+            UsableWaterData = true;
+            break;
+        }
+
+        if(UsableWaterData)
+        {
+            int count = meshData.liquidVerts.size() / 3;
+            for (int i = 0, j = 0; i < V9_SIZE_SQ; ++i)
             {
-                int count = meshData.liquidVerts.size() / 3;
-                float xoffset = (float(tileX)-32)*GRID_SIZE;
-                float yoffset = (float(tileY)-32)*GRID_SIZE;
-
-                float coord[3];
-                int row, col;
-
-                // generate coordinates
-                if (!(lheader.flags & MAP_LIQUID_NO_HEIGHT))
-                {
-                    int j = 0;
-                    for (int i = 0; i < V9_SIZE_SQ; ++i)
-                    {
-                        row = i / V9_SIZE;
-                        col = i % V9_SIZE;
-
-                        if (row < lheader.offsetY || row >= lheader.offsetY + lheader.height ||
-                            col < lheader.offsetX || col >= lheader.offsetX + lheader.width)
-                        {
-                            // dummy vert using invalid height
-                            meshData.liquidVerts.append((xoffset+col*GRID_PART_SIZE)*-1, INVALID_MAP_LIQ_HEIGHT, (yoffset+row*GRID_PART_SIZE)*-1);
-                            continue;
-                        }
-
-                        getLiquidCoord(i, j, xoffset, yoffset, coord, liquid_map);
-                        meshData.liquidVerts.append(coord[0]);
-                        meshData.liquidVerts.append(coord[2]);
-                        meshData.liquidVerts.append(coord[1]);
-                        j++;
-                    }
-                }
+                coord[0] = (xoffset + i%(V9_SIZE)*GRID_PART_SIZE) * -1.f;
+                coord[1] = (yoffset + (int)(i/(V9_SIZE))*GRID_PART_SIZE) * -1.f;
+                G3D::g3d_uint16 liquidType = getLiquidType(coord[0], coord[1], mapInfo->LiquidInfo);
+                if(liquidType == 0)
+                    coord[2] = INVALID_MAP_LIQ_HEIGHT;
                 else
                 {
-                    for (int i = 0; i < V9_SIZE_SQ; ++i)
-                    {
-                        row = i / V9_SIZE;
-                        col = i % V9_SIZE;
-                        meshData.liquidVerts.append((xoffset+col*GRID_PART_SIZE)*-1, lheader.liquidLevel, (yoffset+row*GRID_PART_SIZE)*-1);
-                    }
+                    getLiquidCoord(coord[0], coord[1], coord[2], mapInfo->liquid_height);
+                    if(coord[2] == 0.0f && !(liquidType & 0x02))
+                        coord[2] = INVALID_MAP_LIQ_HEIGHT;
                 }
 
-                delete [] liquid_map;
+                meshData.liquidVerts.append(coord[0]);
+                meshData.liquidVerts.append(coord[2]);
+                meshData.liquidVerts.append(coord[1]);
+            }
 
-                int indices[] = { 0, 0, 0 }, loopStart = 0, loopEnd = 0, loopInc = 0, triInc = BOTTOM-TOP;
-                getLoopVars(portion, loopStart, loopEnd, loopInc);
+            int indices[] = { 0, 0, 0 }, loopStart = 0, loopEnd = 0, loopInc = 0, triInc = BOTTOM-TOP;
+            getLoopVars(portion, loopStart, loopEnd, loopInc);
 
-                // generate triangles
-                for (int i = loopStart; i < loopEnd; i+=loopInc)
-                    for (int j = TOP; j <= BOTTOM; j+= triInc)
-                    {
-                        getHeightTriangle(i, Spot(j), indices, true);
-                        ltriangles.append(indices[2] + count);
-                        ltriangles.append(indices[1] + count);
-                        ltriangles.append(indices[0] + count);
-                    }
+            // generate triangles
+            for (int i = loopStart; i < loopEnd; i+=loopInc)
+            {
+                for (int j = TOP; j <= BOTTOM; j+= triInc)
+                {
+                    getHeightTriangle(i, Spot(j), indices, true);
+                    ltriangles.append(indices[2] + count);
+                    ltriangles.append(indices[1] + count);
+                    ltriangles.append(indices[0] + count);
+                }
             }
         }
-
-        fclose(mapFile);
 
         // now that we have gathered the data, we can figure out which parts to keep:
         // liquid above ground, ground above liquid
@@ -369,7 +245,10 @@ namespace MMAP
         int* ttris = ttriangles.getCArray();
 
         if ((ltriangles.size() + ttriangles.size()) == 0)
+        {
+            delete mapInfo;
             return false;
+        }
 
         // make a copy of liquid vertices
         // used to pad right-bottom frame due to lost vertex data at extraction
@@ -388,7 +267,7 @@ namespace MMAP
                 // default is true, will change to false if needed
                 useTerrain = true;
                 useLiquid = true;
-                G3D::g3d_uint8 liquidType = MAP_LIQUID_TYPE_NO_WATER;
+                G3D::g3d_uint16 liquidType = MAP_LIQUID_TYPE_NO_WATER;
                 // FIXME: "warning: the address of ‘liquid_type’ will always evaluate as ‘true’"
 
                 // if there is no liquid, don't use liquid
@@ -396,29 +275,20 @@ namespace MMAP
                     useLiquid = false;
                 else
                 {
-                    liquidType = getLiquidType(i, liquid_type);
-                    switch (liquidType)
+                    liquidType = getLiquidType(i, mapInfo->LiquidInfo);
+                    if(liquidType & MAP_LIQUID_TYPE_DARK_WATER)
                     {
-                        default:
-                            useLiquid = false;
-                            break;
-                        case MAP_LIQUID_TYPE_WATER:
-                        case MAP_LIQUID_TYPE_OCEAN:
-                            // merge different types of water
-                            liquidType = NAV_WATER;
-                            break;
-                        case MAP_LIQUID_TYPE_MAGMA:
-                            liquidType = NAV_MAGMA;
-                            break;
-                        case MAP_LIQUID_TYPE_SLIME:
-                            liquidType = NAV_SLIME;
-                            break;
-                        case MAP_LIQUID_TYPE_DARK_WATER:
-                            // players should not be here, so logically neither should creatures
-                            useTerrain = false;
-                            useLiquid = false;
-                            break;
+                        useTerrain = false;
+                        useLiquid = false;
                     }
+                    else if(liquidType & MAP_LIQUID_TYPE_SLIME)
+                        liquidType = NAV_SLIME;
+                    else if(liquidType & MAP_LIQUID_TYPE_MAGMA)
+                        liquidType = NAV_MAGMA;
+                    else if(liquidType & MAP_LIQUID_TYPE_OCEAN|MAP_LIQUID_TYPE_WATER)
+                        liquidType = NAV_WATER;
+                    else
+                        useLiquid = false;
                 }
 
                 // if there is no terrain, don't use terrain
@@ -457,10 +327,6 @@ namespace MMAP
                     if (validCount == 0)
                         useLiquid = false;
                 }
-
-                // if there is a hole here, don't use the terrain
-                if (useTerrain && fheader.holesSize != 0)
-                    useTerrain = !isHole(i, holes);
 
                 // we use only one terrain kind per quad - pick higher one
                 if (useTerrain && useLiquid)
@@ -519,6 +385,7 @@ namespace MMAP
         if (lverts_copy)
             delete [] lverts_copy;
 
+        delete mapInfo;
         return meshData.solidTris.size() || meshData.liquidTris.size();
     }
 
@@ -586,7 +453,6 @@ namespace MMAP
                 break;                                              //           |   \ |
             default: break;                                         //           |    \|
         }                                                           //          258---259 ... 515
-
     }
 
     /**************************************************************************/
@@ -599,33 +465,62 @@ namespace MMAP
         coord[2] = v[index2];
     }
 
-    static G3D::g3d_uint16 holetab_h[4] = {0x1111, 0x2222, 0x4444, 0x8888};
-    static G3D::g3d_uint16 holetab_v[4] = {0x000F, 0x00F0, 0x0F00, 0xF000};
-
     /**************************************************************************/
-    bool TerrainBuilder::isHole(int square, const G3D::g3d_uint16 holes[16][16])
+    void TerrainBuilder::getLiquidCoord(float x, float y, float &coordz, float* v)
     {
-        int row = square / 128;
-        int col = square % 128;
-        int cellRow = row / 8;     // 8 squares per cell
-        int cellCol = col / 8;
-        int holeRow = row % 8 / 2;
-        int holeCol = (square - (row * 128 + cellCol * 8)) / 2;
-
-        G3D::g3d_uint16 hole = holes[cellRow][cellCol];
-
-        return (hole & holetab_h[holeCol] & holetab_v[holeRow]) != 0;
+        float vx = 128 * (32 - x / 533.3333333f);
+        float vy = 128 * (32 - y / 533.3333333f);
+        int cx_int = ((int)vx & (128 - 1));
+        int cy_int = ((int)vy & (128 - 1));
+        coordz = v[cx_int*129+cy_int];
     }
 
     /**************************************************************************/
-    G3D::g3d_uint8 TerrainBuilder::getLiquidType(int square, const G3D::g3d_uint8 liquid_type[16][16])
+    G3D::g3d_uint16 TerrainBuilder::getLiquidType(float x, float y, const G3D::g3d_uint16 liquid_type[256])
+    {
+        x = 16 * (32 - x / 533.3333333f);
+        y = 16 * (32 - y / 533.3333333f);
+        int lx = (int)x & 15;
+        int ly = (int)y & 15;
+        return liquid_type[lx * 16 + ly];
+    }
+
+    /**************************************************************************/
+    G3D::g3d_uint16 TerrainBuilder::getLiquidType(int square, const G3D::g3d_uint16 liquid_type[256])
     {
         int row = square / 128;
         int col = square % 128;
         int cellRow = row / 8;     // 8 squares per cell
         int cellCol = col / 8;
 
-        return liquid_type[cellRow][cellCol];
+        int index = cellRow*8+cellCol;
+        return liquid_type[index];
+    }
+
+    // DBC ids are stored in vmaps currently, so convert to terrain water flags
+    // We could use DBC file, but this workaround is sufficient.
+    G3D::g3d_uint16 convertWaterIDToFlags(G3D::g3d_uint16 wmoType)
+    {
+        switch(wmoType)
+        {
+            // Mask these to Regular Water
+        case 1: case 5: case 9: case 13: case 17:
+        case 41: case 61: case 81: case 181:
+            return 0x01;
+            // Mask these to Ocean Water
+        case 2: case 6: case 10:
+        case 14: case 100:
+            return 0x02;
+            // Mask these to Regular Magma
+        case 3: case 7: case 11: case 15:
+        case 19: case 121: case 141:
+            return 0x04;
+            // Mask these to Regular Slime
+        case 4: case 8: case 12:
+        case 20: case 21:
+            return 0x08;
+        }
+        return 0;
     }
 
     /**************************************************************************/
@@ -649,7 +544,6 @@ namespace MMAP
             ModelInstance* models = NULL;
             G3D::g3d_uint32 count = 0;
             instanceTrees[mapID]->getModelInstances(models, count);
-
             if (!models)
                 break;
 
@@ -710,16 +604,16 @@ namespace MMAP
                         G3D::g3d_uint8 type = NAV_EMPTY;
 
                         // convert liquid type to NavTerrain
-                        switch (liquid->GetType())
+                        switch (convertWaterIDToFlags(liquid->GetType()))
                         {
-                        case 0:
-                        case 1:
+                        case 0x1:
+                        case 0x2:
                             type = NAV_WATER;
                             break;
-                        case 2:
+                        case 0x04:
                             type = NAV_MAGMA;
                             break;
-                        case 3:
+                        case 0x08:
                             type = NAV_SLIME;
                             break;
                         }
@@ -732,6 +626,7 @@ namespace MMAP
 
                         G3D::Vector3 vert;
                         for (G3D::g3d_uint32 x = 0; x < vertsX; ++x)
+                        {
                             for (G3D::g3d_uint32 y = 0; y < vertsY; ++y)
                             {
                                 vert = G3D::Vector3(corner.x + x * GRID_PART_SIZE, corner.y + y * GRID_PART_SIZE, data[y*vertsX + x]);
@@ -740,38 +635,43 @@ namespace MMAP
                                 vert.y *= -1.f;
                                 liqVerts.push_back(vert);
                             }
+                        }
 
-                            int idx1, idx2, idx3, idx4;
-                            G3D::g3d_uint32 square;
-                            for (G3D::g3d_uint32 x = 0; x < tilesX; ++x)
-                                for (G3D::g3d_uint32 y = 0; y < tilesY; ++y)
-                                    if ((flags[x+y*tilesX] & 0x0f) != 0x0f)
-                                    {
-                                        square = x * tilesY + y;
-                                        idx1 = square+x;
-                                        idx2 = square+1+x;
-                                        idx3 = square+tilesY+1+1+x;
-                                        idx4 = square+tilesY+1+x;
+                        int idx1, idx2, idx3, idx4;
+                        G3D::g3d_uint32 square;
+                        for (G3D::g3d_uint32 x = 0; x < tilesX; ++x)
+                        {
+                            for (G3D::g3d_uint32 y = 0; y < tilesY; ++y)
+                            {
+                                if ((flags[x+y*tilesX] & 0x0f) != 0x0f)
+                                {
+                                    square = x * tilesY + y;
+                                    idx1 = square+x;
+                                    idx2 = square+1+x;
+                                    idx3 = square+tilesY+1+1+x;
+                                    idx4 = square+tilesY+1+x;
 
-                                        // top triangle
-                                        liqTris.push_back(idx3);
-                                        liqTris.push_back(idx2);
-                                        liqTris.push_back(idx1);
-                                        // bottom triangle
-                                        liqTris.push_back(idx4);
-                                        liqTris.push_back(idx3);
-                                        liqTris.push_back(idx1);
-                                    }
+                                    // top triangle
+                                    liqTris.push_back(idx3);
+                                    liqTris.push_back(idx2);
+                                    liqTris.push_back(idx1);
+                                    // bottom triangle
+                                    liqTris.push_back(idx4);
+                                    liqTris.push_back(idx3);
+                                    liqTris.push_back(idx1);
+                                }
+                            }
+                        }
 
-                                    G3D::g3d_uint32 liqOffset = meshData.liquidVerts.size() / 3;
-                                    for (G3D::g3d_uint32 i = 0; i < liqVerts.size(); ++i)
-                                        meshData.liquidVerts.append(liqVerts[i].y, liqVerts[i].z, liqVerts[i].x);
+                        G3D::g3d_uint32 liqOffset = meshData.liquidVerts.size() / 3;
+                        for (G3D::g3d_uint32 i = 0; i < liqVerts.size(); ++i)
+                            meshData.liquidVerts.append(liqVerts[i].y, liqVerts[i].z, liqVerts[i].x);
 
-                                    for (G3D::g3d_uint32 i = 0; i < liqTris.size() / 3; ++i)
-                                    {
-                                        meshData.liquidTris.append(liqTris[i*3+1] + liqOffset, liqTris[i*3+2] + liqOffset, liqTris[i*3] + liqOffset);
-                                        meshData.liquidType.append(type);
-                                    }
+                        for (G3D::g3d_uint32 i = 0; i < liqTris.size() / 3; ++i)
+                        {
+                            meshData.liquidTris.append(liqTris[i*3+1] + liqOffset, liqTris[i*3+2] + liqOffset, liqTris[i*3] + liqOffset);
+                            meshData.liquidType.append(type);
+                        }
                     }
                 }
             }
