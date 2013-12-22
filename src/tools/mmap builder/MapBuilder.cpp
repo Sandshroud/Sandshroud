@@ -86,13 +86,13 @@ namespace MMAP
         char filter[12];
 
         printf("Discovering maps... ");
-        getDirContents(files, "maps");
+        getDirContents(files, "maps", ".bin");
         for (G3D::g3d_uint32 i = 0; i < files.size(); ++i)
         {
-            mapID = G3D::g3d_uint32(atoi(files[i].substr(0,3).c_str()));
+            mapID = G3D::g3d_uint32(atoi(files[i].substr(4,3).c_str()));
             if (m_tiles.find(mapID) == m_tiles.end())
             {
-                m_tiles.insert(std::pair<G3D::g3d_uint32, std::set<G3D::g3d_uint32>*>(mapID, new std::set<G3D::g3d_uint32>));
+                m_tiles.insert(std::make_pair(mapID, new std::set<G3D::g3d_uint32>));
                 count++;
             }
         }
@@ -102,8 +102,11 @@ namespace MMAP
         for (G3D::g3d_uint32 i = 0; i < files.size(); ++i)
         {
             mapID = G3D::g3d_uint32(atoi(files[i].substr(0,3).c_str()));
-            m_tiles.insert(std::pair<G3D::g3d_uint32, std::set<G3D::g3d_uint32>*>(mapID, new std::set<G3D::g3d_uint32>));
-            count++;
+            if (m_tiles.find(mapID) == m_tiles.end())
+            {
+                m_tiles.insert(std::make_pair(mapID, new std::set<G3D::g3d_uint32>));
+                count++;
+            }
         }
         printf("found %u.\n", count);
 
@@ -111,8 +114,8 @@ namespace MMAP
         printf("Discovering tiles... ");
         for (TileList::iterator itr = m_tiles.begin(); itr != m_tiles.end(); ++itr)
         {
-            std::set<G3D::g3d_uint32>* tiles = (*itr).second;
             mapID = (*itr).first;
+            std::set<G3D::g3d_uint32>* tiles = itr->second;
 
             sprintf(filter, "%03u*.vmtile", mapID);
             files.clear();
@@ -127,17 +130,29 @@ namespace MMAP
                 count++;
             }
 
-            sprintf(filter, "%03u*", mapID);
-            files.clear();
-            getDirContents(files, "maps", filter);
-            for (G3D::g3d_uint32 i = 0; i < files.size(); ++i)
-            {
-                tileY = G3D::g3d_uint32(atoi(files[i].substr(3,2).c_str()));
-                tileX = G3D::g3d_uint32(atoi(files[i].substr(5,2).c_str()));
-                tileID = StaticMapTree::packTileID(tileX, tileY);
+            char FileName[255];
+            sprintf(FileName, "maps/Map_%03u.bin", mapID);
 
-                if (tiles->insert(tileID).second)
-                    count++;
+            FILE* mapFile = NULL;
+            fopen_s(&mapFile, FileName, "rb");
+            if(mapFile == NULL)
+                continue;
+
+            G3D::g3d_uint32 offsets[64][64];
+            if(fread(offsets, 1, 16384, mapFile) != 16384)
+                continue;
+
+            for(G3D::g3d_uint8 tileX = 0; tileX < 64; tileX++)
+            {
+                for(G3D::g3d_uint8 tileY = 0; tileY < 64; tileY++)
+                {
+                    if(!offsets[tileX][tileY])
+                        continue;
+
+                    tileID = StaticMapTree::packTileID(tileX, tileY);
+                    if (tiles->insert(tileID).second)
+                        count++;
+                }
             }
         }
         printf("found %u.\n\n", count);

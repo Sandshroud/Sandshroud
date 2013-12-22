@@ -130,7 +130,7 @@ void ExtractMapsFromMpq()
         printf("Converting maps for mapid %u [%s]...\n", map->id, map->name);
         // Create the container file
         char output_filename[50];
-        sprintf(output_filename, "maps\\Map_%u.bin", map->id);
+        sprintf(output_filename, "maps\\Map_%03u.bin", map->id);
         printf("  Creating output file %s.\n", output_filename);
         FILE * out_file = fopen(output_filename, "wb");
         if(!out_file)
