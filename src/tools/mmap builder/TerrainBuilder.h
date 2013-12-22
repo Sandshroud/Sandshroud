@@ -113,14 +113,17 @@ namespace MMAP
             /// Get the triangle's vector indices for a specific position
             void getHeightTriangle(int square, Spot triangle, int* indices, bool liquid = false);
 
-            /// Determines if the specific position's triangles should be rendered
-            bool isHole(int square, const G3D::g3d_uint16 holes[16][16]);
-
             /// Get the liquid vector coordinate for a specific position
             void getLiquidCoord(int index, int index2, float xOffset, float yOffset, float* coord, float* v);
 
+            /// Get the liquid vector coordinate for specific coords
+            void getLiquidCoord(float x, float y, float &coordz, float* v);
+
+            /// Get the liquid type for specific coords
+            G3D::g3d_uint16 getLiquidType(float x, float y, const G3D::g3d_uint16 liquid_type[256]);
+
             /// Get the liquid type for a specific position
-            G3D::g3d_uint8 getLiquidType(int square, const G3D::g3d_uint8 liquid_type[16][16]);
+            G3D::g3d_uint16 getLiquidType(int square, const G3D::g3d_uint16 liquid_type[256]);
 
             // hide parameterless and copy constructor
             TerrainBuilder();

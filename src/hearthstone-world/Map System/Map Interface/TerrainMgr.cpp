@@ -167,7 +167,7 @@ bool TerrainMgr::LoadTerrainHeader()
     // Create the path
     char File[200];
 
-    snprintf(File, 200, "%s/Map_%u.bin", mapPath.c_str(), (unsigned int)mapId);
+    snprintf(File, 200, "%s/Map_%03u.bin", mapPath.c_str(), (unsigned int)mapId);
 
     FileDescriptor = fopen(File, "rb");
     if(FileDescriptor == 0)
