@@ -28,6 +28,7 @@ Object::Object() : m_position(0,0,0,0), m_spawnLocation(0,0,0,0)
     OwnPhase = false;
     m_phaseMask = 1;
     m_mapId = -1;
+    m_areaId = 0;
     m_zoneId = 0;
 
     m_uint32Values = 0;
@@ -1340,19 +1341,7 @@ void Object::AddToWorld()
             return; //instance add failed
     }
 
-    uint32 AreaId = mapMgr->GetAreaID(GetPositionX(), GetPositionY(), GetPositionZ());
-    if(AreaId)
-    {
-        AreaTable* at = dbcArea.LookupEntry(AreaId);
-        if(at != NULL) // Set our Zone on add to world!
-        {
-            if(at->ZoneId)
-                m_zoneId = at->ZoneId;
-            else if(at->AreaId)
-                m_zoneId = at->AreaId;
-        }
-    }
-
+    UpdateAreaInfo(mapMgr);
     if( IsPlayer() )
     {
         // battleground checks
@@ -1370,8 +1359,6 @@ void Object::AddToWorld()
         // players who's group disbanded cannot remain in a raid instances alone(no soloing them:P)
         if( !p->triggerpass_cheat && p->GetGroup()== NULL && (mapMgr->GetdbcMap()->israid() || mapMgr->GetMapInfo()->type == INSTANCE_MULTIMODE))
             return;
-
-        p->SetAreaID(AreaId);
     }
 
     m_mapMgr = mapMgr;
@@ -1388,22 +1375,7 @@ void Object::AddToWorld(MapMgr* pMapMgr)
     if(!pMapMgr)
         return; //instance add failed
 
-    uint32 AreaId = pMapMgr->GetAreaID(GetPositionX(), GetPositionY(), GetPositionZ());
-    if(AreaId)
-    {
-        AreaTable* at = dbcArea.LookupEntry(AreaId);
-        if(at != NULL) // Set our Zone on add to world!
-        {
-            if(at->ZoneId)
-                m_zoneId = at->ZoneId;
-            else if(at->AreaId)
-                m_zoneId = at->AreaId;
-        }
-    }
-
-    if( IsPlayer() )
-        TO_PLAYER(this)->SetAreaID(AreaId);
-
+    UpdateAreaInfo(pMapMgr);
     m_mapMgr = pMapMgr;
     m_inQueue = true;
 
@@ -1470,22 +1442,7 @@ void Object::PushToWorld(MapMgr* mgr)
     m_mapId = mgr->GetMapId();
     m_instanceId = mgr->GetInstanceID();
 
-    uint32 AreaId = mgr->GetAreaID(GetPositionX(), GetPositionY(), GetPositionZ());
-    if(AreaId)
-    {
-        AreaTable* at = dbcArea.LookupEntry(AreaId);
-        if(at != NULL) // Set our Zone on add to world!
-        {
-            if(at->ZoneId)
-                m_zoneId = at->ZoneId;
-            else if(at->AreaId)
-                m_zoneId = at->AreaId;
-        }
-    }
-
-    if( IsPlayer() )
-        TO_PLAYER(this)->SetAreaID(AreaId);
-
+    UpdateAreaInfo(mgr);
     m_mapMgr = mgr;
     OnPrePushToWorld();
 
@@ -2552,10 +2509,7 @@ int32 Object::DealDamage(Unit* pVictim, uint32 damage, uint32 targetEvent, uint3
                         teamId = 1;
                     else
                         teamId = 0;
-                    uint32 AreaID = pVictim->GetAreaID();
-                    if(!AreaID)
-                        AreaID = pAttacker->GetZoneId(); // Failsafe for a shitty TerrainMgr
-
+                    uint32 AreaID = pVictim->GetAreaId();
                     if(AreaID)
                     {
                         WorldPacket data(SMSG_ZONE_UNDER_ATTACK, 4);
@@ -3407,30 +3361,37 @@ void Object::SetZoneId(uint32 newZone)
         TO_PLAYER(this)->GetGroup()->HandlePartialChange( PARTY_UPDATE_FLAG_ZONEID, TO_PLAYER(this) );
 }
 
-uint32 Object::GetAreaID(MapMgr* mgr)
+// These are our hardcoded values
+uint32 GetZoneForMap(uint32 mapid)
 {
-    if(mgr == NULL && IsInWorld())
-        mgr = GetMapMgr();
-    return (mgr ? mgr->GetAreaID(GetPositionX(),GetPositionY(),GetPositionZ()) : 0);
+    switch(mapid)
+    {
+        // These are hardcoded values to keep data in line
+    case 44: return 796;
+    case 169: return 1397;
+    case 449: return 1519;
+    case 450: return 1637;
+    case 598: return 4131;
+    }
+    return 0;
 }
 
-uint32 Object::GetAreaID(float x, float y, float z, int32 mapid, MapMgr* mgr)
+void Object::UpdateAreaInfo(MapMgr *mgr)
 {
-    if(mgr == NULL)
-        mgr = GetMapMgr();
-    if(mapid > -1)
+    if(mgr == NULL && !IsInWorld())
     {
-        if(uint32(mapid) != m_mapId)
-        {
-            uint32 areaid = 0;
-            MapMgr* mgr2 = sInstanceMgr.GetMapMgr(mapid);
-            if(mgr2 != NULL)
-                areaid = mgr2->GetAreaID(x, y, z);
-
-            return areaid;
-        }
+        m_zoneId = m_areaId = 0;
+        return;
     }
-    return (mgr ? mgr->GetAreaID(x, y, z) : 0);
+    else if(mgr == NULL)
+        mgr = GetMapMgr();
+
+    if(uint32 forcedZone = GetZoneForMap(mgr->GetMapId()))
+        m_zoneId = m_areaId = forcedZone;
+    else m_zoneId = m_areaId = mgr->GetAreaID(GetPositionX(), GetPositionY(), GetPositionZ());
+    AreaTable* at = dbcArea.LookupEntry(m_areaId);
+    if(at != NULL && at->ZoneId) // Set our Zone on add to world!
+        SetZoneId(at->ZoneId);
 }
 
 void Object::PlaySoundToPlayer( Player* plr, uint32 sound_entry )
@@ -3599,7 +3560,7 @@ bool Object::PhasedCanInteract(Object* pObj)
     // Hack for Acherus: Horde/Alliance can't see each other!
     if( pObjI && pObjII && ( ( GetMapId() == 609 && pObjI->GetTeam() != pObjII->GetTeam() ) || ( OwnPhase || pObjII->OwnPhase) ) )
         return false;
-    if( pObjI && pObjII && pObjI->GetPAreaID() != pObjII->GetPAreaID() )
+    if( pObjI && pObjII && pObjI->GetAreaId() != pObjII->GetAreaId() )
         return true;
 
     if( AllPhases || pObj->AllPhases )

@@ -258,7 +258,7 @@ int LuaGameObject_GetCreatureNearestCoords(lua_State * L, GameObject * ptr)
 int LuaGameObject_GetAreaId(lua_State * L, GameObject * ptr)
 {
     TEST_GO_RET_NULL();
-    lua_pushnumber(L, ptr->GetAreaID());
+    lua_pushnumber(L, ptr->GetAreaId());
     return 1;
 }
 

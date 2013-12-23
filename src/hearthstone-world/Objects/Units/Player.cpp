@@ -37,6 +37,9 @@ Player::~Player ( )
 void Player::Init()
 {
     Unit::Init();
+    m_lastAreaUpdateMap             = -1;
+    m_oldZone                       = 0;
+    m_oldArea                       = 0;
     m_mailBox                       = new Mailbox( GetUInt32Value(OBJECT_FIELD_GUID) );
     m_ItemInterface                 = new ItemInterface(this);
     m_achievementInterface          = new AchievementInterface(this);
@@ -245,8 +248,6 @@ void Player::Init()
 
     CurrentGossipMenu               = NULL;
     ResetHeartbeatCoords();
-    m_AreaID                        = 0;
-    m_areaDBC                       = NULL;
     m_actionsDirty                  = false;
     rageFromDamageDealt             = 0;
     m_honorToday                    = 0;
@@ -1099,7 +1100,7 @@ void Player::Update( uint32 p_time )
 
     if(mstime >= m_mallCheckTimer)
     {
-        if( sWorld.FunServerMall != -1 && GetAreaID() == uint32(sWorld.FunServerMall) )
+        if( sWorld.FunServerMall != -1 && GetAreaId() == uint32(sWorld.FunServerMall) )
             if( IsPvPFlagged() )
                 RemovePvPFlag();
         m_mallCheckTimer = mstime + 2000;
@@ -1472,44 +1473,98 @@ void Player::EventAttackStop()
 
 void Player::_EventExploration()
 {
-    if (isDead())
+    if(!IsInWorld())
         return;
-
     if(m_position.x > _maxX || m_position.x < _minX || m_position.y > _maxY || m_position.y < _minY)
         return;
-
     if(GetMapMgr()->GetCellByCoords(GetPositionX(),GetPositionY()) == NULL)
         return;
+    if(m_lastAreaUpdateMap == GetMapId() && m_lastAreaPosition.Distance(GetPosition()) < 5.0f)
+        return;
+
+    m_lastAreaUpdateMap = GetMapId();
+    m_lastAreaPosition = GetPosition();
+    m_oldZone = m_zoneId;
+    m_oldArea = m_areaId;
+    UpdateAreaInfo();
 
     bool restmap = false;
     World::RestedAreaInfo* restinfo = sWorld.GetRestedMapInfo(GetMapId());
-    if(restinfo != NULL)
-        if(restinfo->ReqTeam == -1 || restinfo->ReqTeam == GetTeam())
-            restmap = true;
+    if(restinfo != NULL && (restinfo->ReqTeam == -1 || restinfo->ReqTeam == GetTeam()))
+        restmap = true;
 
-    uint16 AreaId = GetAreaID();
-    if(!AreaId || AreaId == 0xFFFF)
+    if(m_zoneId == 0xFFFF)
+    {
+        // Clear our worldstates when we have no data.
+        if(m_oldZone != 0xFFFF)
+            GetMapMgr()->GetStateManager().ClearWorldStates(this);
+        // This must be called every update, to keep data fresh.
+        EventDBCChatUpdate(0xFFFFFFFF);
+    }
+    else if( m_oldZone != m_zoneId )
+    {
+        sWeatherMgr.SendWeather(this);
+
+        m_AuraInterface.RemoveAllAurasByInterruptFlag( AURA_INTERRUPT_ON_LEAVE_AREA );
+
+        m_playerInfo->lastZone = m_zoneId;
+
+        sHookInterface.OnZone(TO_PLAYER(this), m_zoneId, m_oldZone);
+        CALL_INSTANCE_SCRIPT_EVENT( GetMapMgr(), OnZoneChange )( TO_PLAYER(this), m_zoneId, m_oldZone );
+
+        EventDBCChatUpdate(0xFFFFFFFF);
+
+        GetMapMgr()->GetStateManager().SendWorldStates(this);
+    }
+
+    if(!m_areaId || m_areaId == 0xFFFF)
     {
         HandleRestedCalculations(restmap);
-        UpdateAreaAndZoneInfo(0, 0);
         return;
     }
 
-    AreaTable* at = dbcArea.LookupEntry(AreaId);
-    if(at == 0)
+    AreaTable* at = dbcArea.LookupEntry(m_areaId);
+    if(at == NULL)
+        at = dbcArea.LookupEntryForced(m_zoneId); // These maps need their own chat channels.
+    if(at == NULL)
     {
         HandleRestedCalculations(restmap);
-        UpdateAreaAndZoneInfo(0, 0);
         return;
     }
+
+    if(m_FlyingAura && (at == NULL || !(at->AreaFlags & AREA_FLYING_PERMITTED)))
+        RemoveAura(m_FlyingAura); // remove flying buff
+
+    UpdatePvPArea();
+
+    if(sWorld.IsSanctuaryArea(m_areaId))
+    {
+        Unit* pUnit = (GetSelection() == 0) ? NULLUNIT : (m_mapMgr ? m_mapMgr->GetUnit(GetSelection()) : NULLUNIT);
+        if(pUnit && !isAttackable(this, pUnit))
+        {
+            EventAttackStop();
+            smsg_AttackStop(pUnit);
+        }
+
+        if(DuelingWith != NULL)
+            DuelingWith->EndDuel(DUEL_WINNER_RETREAT);
+
+        if(m_currentSpell)
+        {
+            Unit* target = m_currentSpell->GetUnitTarget();
+            if(target && !isAttackable(this, target) && target != TO_PLAYER(this))
+                m_currentSpell->cancel();
+        }
+    }
+
+    sHookInterface.OnPlayerChangeArea(this, m_zoneId, m_areaId, m_oldArea);
+    CALL_INSTANCE_SCRIPT_EVENT( m_mapMgr, OnChangeArea )( this, m_zoneId, m_areaId, m_oldArea );
 
     uint32 offset = at->explorationFlag / 32;
     offset += PLAYER_EXPLORED_ZONES_1;
 
     uint32 val = (uint32)(1 << (at->explorationFlag % 32));
     uint32 currFields = GetUInt32Value(offset);
-
-    UpdateAreaAndZoneInfo(AreaId, at->ZoneId);
 
     // Check for a restable area
     bool rest_on = restmap;
@@ -3860,7 +3915,8 @@ uint32 Player::FindHighestRankingSpellWithNamehash(uint32 namehash)
 // Use instead of cold weather flying
 bool Player::CanFlyInCurrentZoneOrMap()
 {
-    if(GetAreaDBC() != NULL && !(GetAreaDBC()->AreaFlags & AREA_FLYING_PERMITTED))
+    AreaTable *area = dbcArea.LookupEntry(GetAreaId());
+    if(area == NULL || !(area->AreaFlags & AREA_FLYING_PERMITTED))
         return false; // can't fly in non-flying zones
 
     if(GetMapId() == 530)
@@ -4069,9 +4125,6 @@ void Player::OnPushToWorld()
         m_FirstLogin = false;
     }
 
-    // force area update (needed for world states)
-    ForceAreaUpdate();
-
     // send world states
     if( m_mapMgr != NULL )
         m_mapMgr->GetStateManager().SendWorldStates(TO_PLAYER(this));
@@ -4152,7 +4205,7 @@ void Player::OnPushToWorld()
 
         if(info != NULL && (info->phasehorde == 0 && info->phasealliance == 0 ))
             if(GetPhaseMask() == 1)
-                SetPhaseMask(GetPhaseForArea(GetAreaID()), false);
+                SetPhaseMask(GetPhaseForArea(GetAreaId()), false);
     }
 
     if(!sWorld.m_blockgmachievements || !GetSession()->HasGMPermissions())
@@ -4207,8 +4260,8 @@ void Player::RemoveFromWorld()
     load_health = m_uint32Values[UNIT_FIELD_HEALTH];
     load_mana = m_uint32Values[UNIT_FIELD_POWER1];
 
-    sHookInterface.OnPlayerChangeArea(this, 0, 0, m_AreaID);
-    CALL_INSTANCE_SCRIPT_EVENT( m_mapMgr, OnChangeArea )( this, 0, 0, m_AreaID );
+    sHookInterface.OnPlayerChangeArea(this, 0, 0, GetAreaId());
+    CALL_INSTANCE_SCRIPT_EVENT( m_mapMgr, OnChangeArea )( this, 0, 0, GetAreaId() );
 
     m_mapMgr->GetStateManager().ClearWorldStates(this);
 
@@ -6047,60 +6100,6 @@ void Player::UpdateStats()
 
     UpdateChances();
     CalcDamage();
-}
-
-// These are our hardcoded values
-uint32 GetZoneForMap(uint32 mapid)
-{
-    if(mapid == 44)
-        return 796;
-    else if(mapid == 169)
-        return 1397;
-    else if(mapid == 449)
-        return 1519;
-    else if(mapid == 450)
-        return 1637;
-    else if(mapid == 598)
-        return 4131;
-    return 0;
-}
-
-void Player::UpdateAreaAndZoneInfo(uint32 areaid, uint32 zoneid)
-{
-    if(areaid != m_AreaID)
-    {
-        SetPhaseMask(GetPhaseForArea(areaid));
-        m_AreaID = areaid;
-        m_areaDBC = dbcArea.LookupEntryForced(m_AreaID);
-        if (zoneid != 0)
-            m_areaDBC = dbcArea.LookupEntryForced(zoneid);
-        UpdatePvPArea();
-        if(GetGroup())
-            GetGroup()->UpdateOutOfRangePlayer(TO_PLAYER(this), 128, true, NULL);
-    }
-
-    if(m_zoneId == 0)
-    {
-        if(zoneid != 0)
-            ZoneUpdate(zoneid);
-        else if(areaid != 0)
-            ZoneUpdate(areaid);
-        else if((zoneid = GetZoneForMap(GetMapId())) != 0)
-            ZoneUpdate(zoneid);
-        else
-            ZoneUpdate(m_zoneId);
-    }
-    else
-    {
-        if(zoneid != 0 && m_zoneId != zoneid)
-            ZoneUpdate(zoneid);
-        else if(areaid != 0 && m_zoneId != areaid)
-            ZoneUpdate(areaid);
-        else if((zoneid = GetZoneForMap(GetMapId())) != 0)
-            ZoneUpdate(zoneid);
-        else if(zoneid == 0 && areaid == 0)
-            ZoneUpdate(0);
-    }
 }
 
 void Player::HandleRestedCalculations(bool rest_on)
@@ -8993,32 +8992,6 @@ void Player::Gossip_Complete()
     CleanupGossipMenu();
 }
 
-void Player::ForceAreaUpdate()
-{
-    // force update area id
-    if(m_position.x > _maxX || m_position.x < _minX || m_position.y > _maxY || m_position.y < _minY || !IsInWorld())
-        return;
-
-    uint32 oldareaid = m_AreaID;
-
-    m_areaDBC = NULL;
-    m_AreaID = GetAreaID();
-    if( m_AreaID == 0xffff )
-        m_AreaID = 0;
-    else
-        m_areaDBC = dbcArea.LookupEntryForced(m_AreaID);
-
-    if( m_areaDBC != NULL )
-    {
-        // parent id actually would be a better name
-        if( m_areaDBC->ZoneId && m_zoneId != m_areaDBC->ZoneId )
-            m_zoneId = m_areaDBC->ZoneId;
-    }
-
-    sHookInterface.OnPlayerChangeArea(this, m_zoneId, m_AreaID, oldareaid);
-    CALL_INSTANCE_SCRIPT_EVENT( m_mapMgr, OnChangeArea )( this, m_zoneId, m_AreaID, oldareaid );
-}
-
 bool Player::AllowChannelAtLocation(uint32 dbcID, AreaTable *areaTable)
 {
     bool result = true;
@@ -9048,7 +9021,10 @@ bool Player::UpdateChatChannel(const char* areaName, AreaTable *areaTable, ChatC
         return true;
     }
 
-    const char* name = format(entry->pattern, areaName).c_str();
+    char name[255];
+    sprintf(name, "%s", entry->pattern);
+    if(entry->flags & 0x02)
+        sprintf(name, entry->pattern, areaName);
     Channel *chn = channelmgr.GetCreateChannel(name, this, entry->id);
     if(chn == NULL)
     {
@@ -9068,15 +9044,15 @@ bool Player::UpdateChatChannel(const char* areaName, AreaTable *areaTable, ChatC
 
 void Player::EventDBCChatUpdate(uint32 dbcID)
 {
+    char areaName[255];
     AreaTable *areaTable = dbcArea.LookupEntryForced(m_zoneId);
-    std::string areaName = areaTable ? areaTable->name : "";
-    if(areaTable == NULL && IsInWorld())
-    {
-        if(GetMapMgr()->GetMapInfo())
-            areaName = GetMapMgr()->GetMapInfo()->name;
-    }
-    if(!areaName.length())
-        areaName = format("City_%03u", GetMapId());
+    if(areaTable == NULL)
+        areaTable = dbcArea.LookupEntry(m_areaId);
+    if(areaTable)
+        sprintf(areaName, "%s", areaTable->name);
+    else if(IsInWorld() && GetMapMgr()->GetMapInfo())
+        sprintf(areaName, "%s", GetMapMgr()->GetMapInfo()->name);
+    else sprintf(areaName, "City_%03u", GetMapId());
 
     if(dbcID == 0xFFFFFFFF)
     {
@@ -9089,7 +9065,7 @@ void Player::EventDBCChatUpdate(uint32 dbcID)
             ChatChannelDBC* entry = (*itr);
             if(m_channelsbyDBCID.find(entry->id) != m_channelsbyDBCID.end())
                 channel = m_channelsbyDBCID.at(entry->id);
-            if(UpdateChatChannel(areaName.c_str(), areaTable, entry, channel))
+            if(UpdateChatChannel(areaName, areaTable, entry, channel))
                 m_channelsbyDBCID.erase(entry->id);
         }
     }
@@ -9101,7 +9077,10 @@ void Player::EventDBCChatUpdate(uint32 dbcID)
 
         std::map<uint32, Channel*>::iterator itr = m_channelsbyDBCID.find(dbcID);
         if(itr != m_channelsbyDBCID.end())
-            UpdateChatChannel(areaName.c_str(), areaTable, entry, itr->second);
+        {
+            if(UpdateChatChannel(areaName, areaTable, entry, itr->second))
+                m_channelsbyDBCID.erase(entry->id);
+        }
         else if(itr != m_channelsbyDBCID.end() && itr->second != NULL)
             itr->second->Part(this, false, true);
         else if(itr == m_channelsbyDBCID.end())
@@ -9109,70 +9088,15 @@ void Player::EventDBCChatUpdate(uint32 dbcID)
             if(!AllowChannelAtLocation(dbcID, areaTable))
                 return;
 
-            char name[100];
+            char name[255];
             if(entry->flags & 0x02)
-                sprintf(name, entry->pattern, areaName.c_str());
-            else
-                sprintf(name, "%s", entry->pattern);
-
+                sprintf(name, entry->pattern, areaName);
             Channel *chn = channelmgr.GetCreateChannel(name, this, entry->id);
             if(chn == NULL || chn->HasMember(this))
                 return;
             chn->AttemptJoin(this, "");
         }
     }
-}
-
-void Player::ZoneUpdate(uint32 ZoneId)
-{
-    uint32 oldzone = m_zoneId;
-    if( m_zoneId != ZoneId )
-    {
-        m_zoneId = ZoneId;
-        m_AuraInterface.RemoveAllAurasByInterruptFlag( AURA_INTERRUPT_ON_LEAVE_AREA );
-    }
-
-    m_playerInfo->lastZone = ZoneId;
-    sHookInterface.OnZone(TO_PLAYER(this), ZoneId, oldzone);
-    CALL_INSTANCE_SCRIPT_EVENT( m_mapMgr, OnZoneChange )( TO_PLAYER(this), ZoneId, oldzone );
-
-    if((GetPAreaID() && sWorld.IsSanctuaryArea(GetPAreaID())) || sWorld.IsSanctuaryMap(GetMapId()) )
-    {
-        Unit* pUnit = (GetSelection() == 0) ? NULLUNIT : (m_mapMgr ? m_mapMgr->GetUnit(GetSelection()) : NULLUNIT);
-        if(pUnit && !isAttackable(this, pUnit))
-        {
-            EventAttackStop();
-            smsg_AttackStop(pUnit);
-        }
-
-        if(DuelingWith != NULL)
-            DuelingWith->EndDuel(DUEL_WINNER_RETREAT);
-
-        if(m_currentSpell)
-        {
-            Unit* target = m_currentSpell->GetUnitTarget();
-            if(target && !isAttackable(this, target) && target != TO_PLAYER(this))
-                m_currentSpell->cancel();
-        }
-    }
-
-    // send new world states
-    ForceAreaUpdate();
-    if(oldzone != m_zoneId) // Only check chat channels when we update zone
-        EventDBCChatUpdate(0xFFFFFFFF);
-    if(m_FlyingAura)
-    {
-        AreaTable *at = NULL;
-        if(GetZoneForMap(GetMapId()) == 0)
-            at = dbcArea.LookupEntryForced(m_zoneId); // These maps need their own chat channels.
-        if( at == NULL || !(at->AreaFlags & AREA_FLYING_PERMITTED) )
-            RemoveAura(m_FlyingAura); // remove flying buff
-    }
-
-    UpdatePvPArea();
-
-    if( IsInWorld() && oldzone != m_zoneId )    // should be
-        m_mapMgr->GetStateManager().SendWorldStates(this);
 }
 
 void Player::SendTradeUpdate()
@@ -9231,7 +9155,7 @@ void Player::SendTradeUpdate()
 
 void Player::RequestDuel(Player* pTarget)
 {
-    if( sWorld.FunServerMall != -1 && GetAreaID() == (uint32)sWorld.FunServerMall )
+    if( sWorld.FunServerMall != -1 && GetAreaId() == (uint32)sWorld.FunServerMall )
         return;
 
     // We Already Dueling or have already Requested a Duel
@@ -9279,7 +9203,7 @@ void Player::RequestDuel(Player* pTarget)
 
 void Player::DuelCountdown()
 {
-    if( sWorld.FunServerMall != -1 && GetAreaID() == (uint32)sWorld.FunServerMall )
+    if( sWorld.FunServerMall != -1 && GetAreaId() == (uint32)sWorld.FunServerMall )
         return;
 
     if( DuelingWith == NULL )
@@ -9310,7 +9234,7 @@ void Player::DuelCountdown()
 
 void Player::DuelBoundaryTest()
 {
-    if( sWorld.FunServerMall != -1 && GetAreaID() == (uint32)sWorld.FunServerMall )
+    if( sWorld.FunServerMall != -1 && GetAreaId() == (uint32)sWorld.FunServerMall )
         return;
 
     //check if in bounds
@@ -9640,11 +9564,6 @@ bool Player::SafeTeleport(uint32 MapID, uint32 InstanceID, LocationVector vec, i
     if (m_UnderwaterState & UNDERWATERSTATE_UNDERWATER)
         m_UnderwaterState &= ~UNDERWATERSTATE_UNDERWATER;
 
-    int32 phase2 = GetPhaseForArea(GetAreaID(vec.x, vec.y, vec.z, MapID));
-    if(phase2 != 1)
-        phase = phase2;
-    SetPhaseMask(phase, false);
-
     //all set...relocate
     _Relocate(MapID, vec, true, force_new_world, InstanceID);
 
@@ -9672,7 +9591,7 @@ void Player::SafeTeleport(MapMgr* mgr, LocationVector vec, int32 phase)
     SetPosition(vec);
     ResetHeartbeatCoords();
 
-    int32 phase2 = GetPhaseForArea(GetAreaID());
+    int32 phase2 = GetPhaseForArea(GetAreaId());
     if(phase2 != 1 && phase == 1)
         phase = phase2;
     SetPhaseMask(phase, false);
@@ -9709,17 +9628,17 @@ void Player::SetGuildRank(uint32 guildRank)
 
 void Player::UpdatePvPArea()
 {
-    ForceAreaUpdate();
-
-    if( m_areaDBC == NULL )
+    AreaTable *areaDBC = dbcArea.LookupEntry(GetAreaId()), *zoneDBC = dbcArea.LookupEntry(GetZoneId());
+    if(areaDBC == NULL)
+    {
+        RemoveFFAPvPFlag();
+        RemovePvPFlag();
+        StopPvPTimer();
         return;
-
-    AreaTable * zoneDBC = NULL;
-    if(m_areaDBC->ZoneId)
-        zoneDBC = dbcArea.LookupEntry(m_areaDBC->ZoneId);
+    }
 
     // This is where all the magic happens :P
-    if((m_areaDBC->category == AREAC_ALLIANCE_TERRITORY && GetTeam() == 0) || (m_areaDBC->category == AREAC_HORDE_TERRITORY && GetTeam() == 1) ||
+    if((areaDBC->category == AREAC_ALLIANCE_TERRITORY && GetTeam() == 0) || (areaDBC->category == AREAC_HORDE_TERRITORY && GetTeam() == 1) ||
         zoneDBC && ((zoneDBC->category == AREAC_ALLIANCE_TERRITORY && GetTeam() == 0) || (zoneDBC->category == AREAC_HORDE_TERRITORY && GetTeam() == 1)))
     {
         if(!HasFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE) && !m_pvpTimer)
@@ -9732,21 +9651,21 @@ void Player::UpdatePvPArea()
     else
     {
         //Enemy city check
-        if(m_areaDBC->AreaFlags & AREA_CITY_AREA || m_areaDBC->AreaFlags & AREA_CITY)
+        if(areaDBC->AreaFlags & AREA_CITY_AREA || areaDBC->AreaFlags & AREA_CITY)
         {
-            if((m_areaDBC->category == AREAC_ALLIANCE_TERRITORY && GetTeam() == 1) || (m_areaDBC->category == AREAC_HORDE_TERRITORY && GetTeam() == 0) ||
+            if((areaDBC->category == AREAC_ALLIANCE_TERRITORY && GetTeam() == 1) || (areaDBC->category == AREAC_HORDE_TERRITORY && GetTeam() == 0) ||
                 zoneDBC && ((zoneDBC->category == AREAC_ALLIANCE_TERRITORY && GetTeam() == 1) || (zoneDBC->category == AREAC_HORDE_TERRITORY && GetTeam() == 0)))
             {
                 if(!IsPvPFlagged())
                     SetPvPFlag();
-                    StopPvPTimer();
+                StopPvPTimer();
                 return;
             }
         }
 
         // I just walked into either an enemies town, or a contested zone.
         // Force flag me if i'm not already.
-        if(sWorld.IsSanctuaryArea(m_areaDBC->AreaId) || sWorld.IsSanctuaryMap(GetMapId()))
+        if(sWorld.IsSanctuaryArea(areaDBC->AreaId) || sWorld.IsSanctuaryMap(GetMapId()))
         {
             if(IsPvPFlagged())
                 RemovePvPFlag();
@@ -9778,7 +9697,8 @@ void Player::UpdatePvPArea()
         }
     }
 
-    if(m_areaDBC->AreaFlags & AREA_PVP_ARENA)           /* ffa pvp arenas will come later */
+    /* ffa pvp arenas will come later */
+    if(areaDBC->AreaFlags & AREA_PVP_ARENA)
     {
         if(!IsPvPFlagged())
             SetPvPFlag();
@@ -9826,9 +9746,10 @@ void Player::LoginPvPSetup()
 
 void Player::PvPToggle()
 {
-    if( sWorld.FunServerMall != -1 && GetAreaID() == (uint32)sWorld.FunServerMall )
+    if( sWorld.FunServerMall != -1 && GetAreaId() == (uint32)sWorld.FunServerMall )
         return;
 
+    AreaTable* at = dbcArea.LookupEntry(GetAreaId());
     if(!sWorld.IsPvPRealm)
     {
         if(m_pvpTimer > 0)
@@ -9845,9 +9766,9 @@ void Player::PvPToggle()
         {
             if(IsPvPFlagged())
             {
-                if(m_areaDBC != NULL && ( m_areaDBC->AreaFlags & AREA_CITY_AREA || m_areaDBC->AreaFlags & AREA_CITY) )
+                if(at != NULL && ( at->AreaFlags & AREA_CITY_AREA || at->AreaFlags & AREA_CITY) )
                 {
-                    if(!(m_areaDBC->category == AREAC_ALLIANCE_TERRITORY && GetTeam() == 1) || (m_areaDBC->category == AREAC_HORDE_TERRITORY && GetTeam() == 0))
+                    if(!(at->category == AREAC_ALLIANCE_TERRITORY && GetTeam() == 1) || (at->category == AREAC_HORDE_TERRITORY && GetTeam() == 0))
                     {
                         // Start the "cooldown" timer.
                         ResetPvPTimer();
@@ -9872,12 +9793,8 @@ void Player::PvPToggle()
     }
     else
     {
-        ForceAreaUpdate();
-        if(m_areaDBC == NULL)
-            return;
-
         // This is where all the magic happens :P
-        if((m_areaDBC->category == AREAC_ALLIANCE_TERRITORY && GetTeam() == ALLIANCE) || (m_areaDBC->category == AREAC_HORDE_TERRITORY && GetTeam() == HORDE))
+        if((at->category == AREAC_ALLIANCE_TERRITORY && GetTeam() == ALLIANCE) || (at->category == AREAC_HORDE_TERRITORY && GetTeam() == HORDE))
         {
             if(m_pvpTimer > 0)
             {
@@ -10050,7 +9967,7 @@ void Player::OnWorldPortAck()
         }
         if(info != NULL && (pPMapinfo->phasehorde == 0 && pPMapinfo->phasealliance == 0 ))
             if(GetPhaseMask() == 1)
-                SetPhaseMask(GetPhaseForArea(GetAreaID()), false);
+                SetPhaseMask(GetPhaseForArea(GetAreaId()), false);
 
         if(pPMapinfo->HasFlag(WMI_INSTANCE_WELCOME) && GetMapMgr())
         {
@@ -12289,7 +12206,7 @@ void Player::Social_TellOnlineStatus(bool online)
     if(online)
     {
         data << uint8( FRIEND_ONLINE ) << GetGUID() << uint8(GetChatTag());
-        data << GetAreaID() << getLevel() << uint32(getClass());
+        data << GetAreaId() << getLevel() << uint32(getClass());
     }
     else
         data << uint8( FRIEND_OFFLINE ) << GetGUID() << uint8( 0 );
@@ -13098,21 +13015,21 @@ void Player::SetPhaseMask(int32 phase, bool save)
     if(IS_INSTANCE(GetMapId()))
         return; // Don't save instance phases.
 
-    if(areaphases[GetAreaID()] != NULL)
-        areaphases[GetAreaID()]->phase = phase;
+    if(areaphases[GetAreaId()] != NULL)
+        areaphases[GetAreaId()]->phase = phase;
     else if(save && phase != 1)
     {
         AreaPhaseData* APD = new AreaPhaseData();
         APD->phase = phase;
-        areaphases[GetAreaID()] = APD;
+        areaphases[GetAreaId()] = APD;
     }
 
     if(phase == 1) // Phase is reset, no point in saving it.
     {
-        if(areaphases[GetAreaID()])
+        if(areaphases[GetAreaId()])
         {
-            delete areaphases[GetAreaID()];
-            areaphases.erase(GetAreaID());
+            delete areaphases[GetAreaId()];
+            areaphases.erase(GetAreaId());
         }
     }
 }
@@ -13125,21 +13042,21 @@ void Player::EnablePhase(int32 phaseMode, bool save)
         return; // Don't save instance phases.
 
     int32 phase = GetPhaseMask();
-    if(areaphases[GetAreaID()] != NULL)
-        areaphases[GetAreaID()]->phase = phase;
+    if(areaphases[GetAreaId()] != NULL)
+        areaphases[GetAreaId()]->phase = phase;
     else if(save && phase != 1)
     {
         AreaPhaseData* APD = new AreaPhaseData();
         APD->phase = phase;
-        areaphases[GetAreaID()] = APD;
+        areaphases[GetAreaId()] = APD;
     }
 
     if(phase == 1) // Phase is reset, no point in saving it.
     {
-        if(areaphases[GetAreaID()])
+        if(areaphases[GetAreaId()])
         {
-            delete areaphases[GetAreaID()];
-            areaphases.erase(GetAreaID());
+            delete areaphases[GetAreaId()];
+            areaphases.erase(GetAreaId());
         }
     }
 }
@@ -13152,21 +13069,21 @@ void Player::DisablePhase(int32 phaseMode, bool save)
         return; // Don't save instance phases.
 
     int32 phase = GetPhaseMask();
-    if(areaphases[GetAreaID()] != NULL)
-        areaphases[GetAreaID()]->phase = phase;
+    if(areaphases[GetAreaId()] != NULL)
+        areaphases[GetAreaId()]->phase = phase;
     else if(save && phase != 1)
     {
         AreaPhaseData* APD = new AreaPhaseData();
         APD->phase = GetPhaseMask();
-        areaphases[GetAreaID()] = APD;
+        areaphases[GetAreaId()] = APD;
     }
 
     if(phase == 1) // Phase is reset, no point in saving it.
     {
-        if(areaphases[GetAreaID()])
+        if(areaphases[GetAreaId()])
         {
-            delete areaphases[GetAreaID()];
-            areaphases.erase(GetAreaID());
+            delete areaphases[GetAreaId()];
+            areaphases.erase(GetAreaId());
         }
     }
 }
@@ -13187,10 +13104,10 @@ void Player::SetPhaseForArea(uint32 areaid, int32 phase)
 
     if(phase == 1) // Phase is reset, no point in saving it.
     {
-        if(areaphases[GetAreaID()])
+        if(areaphases[areaid])
         {
-            delete areaphases[GetAreaID()];
-            areaphases.erase(GetAreaID());
+            delete areaphases[areaid];
+            areaphases.erase(areaid);
         }
     }
 }

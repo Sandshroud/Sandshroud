@@ -318,7 +318,7 @@ uint16 TerrainMgr::GetWaterType(float x, float y)
     uint32 TileY = ConvertGlobalYCoordinate(y);
 
     if(!AreTilesValid(TileX, TileY))
-        return false;
+        return 0;
 
     uint32 OffsetTileX = TileX-TileStartX;
     uint32 OffsetTileY = TileY-TileStartY;
@@ -383,14 +383,14 @@ uint8 TerrainMgr::GetWalkableState(float x, float y)
 uint16 TerrainMgr::GetAreaID(float x, float y, float z)
 {
     if(!AreCoordinatesValid(x, y))
-        return 0;
+        return 0xFFFF;
 
     // Convert the co-ordinates to tiles.
     uint32 TileX = ConvertGlobalXCoordinate(x);
     uint32 TileY = ConvertGlobalYCoordinate(y);
 
     if(!AreTilesValid(TileX, TileY))
-        return false;
+        return 0xFFFF;
 
     uint32 OffsetTileX = TileX-TileStartX;
     uint32 OffsetTileY = TileY-TileStartY;
@@ -399,7 +399,7 @@ uint16 TerrainMgr::GetAreaID(float x, float y, float z)
     if(!TileInformationLoaded(OffsetTileX, OffsetTileY))
     {
         mutex.Release();
-        return 0;
+        return 0xFFFF;
     }
 
     // Find the offset in the 2d array.

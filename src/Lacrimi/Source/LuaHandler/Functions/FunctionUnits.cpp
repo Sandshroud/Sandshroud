@@ -4334,7 +4334,7 @@ int LuaUnit_HasAchievement(lua_State * L, Unit * ptr)
 int LuaUnit_GetAreaId(lua_State * L, Unit * ptr)
 {
     TEST_UNITPLAYER_RET();
-    RET_NUMBER(ptr->GetAreaID(ptr->GetPositionX(), ptr->GetPositionY(), ptr->GetPositionZ() ) );
+    RET_NUMBER(ptr->GetAreaId());
 }
 
 int LuaUnit_ResetPetTalents(lua_State * L, Unit * ptr)
