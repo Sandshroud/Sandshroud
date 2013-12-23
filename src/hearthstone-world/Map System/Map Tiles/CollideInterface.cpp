@@ -258,7 +258,7 @@ bool CCollideInterface::IsIndoor(uint32 mapId, float x, float y, float z)
     int32 adtId = 0, rootId = 0, groupid = 0;
     if(CollisionMgr->getAreaInfo(mapId, x, y, z, flags, adtId, rootId, groupid))
     {
-        WMOAreaTableEntry * WMOEntry = GetWorldMapOverlayEntry(adtId, rootId, groupid);
+        WMOAreaTableEntry * WMOEntry = objmgr.GetWMOAreaTable(adtId, rootId, groupid);
         if(WMOEntry != NULL)
         {
             AreaTable* ate = dbcArea.LookupEntry(WMOEntry->adtId);
@@ -297,7 +297,7 @@ bool CCollideInterface::IsIncity(uint32 mapId, float x, float y, float z)
     int32 adtId = 0, rootId = 0, groupid = 0;
     if(CollisionMgr->getAreaInfo(mapId, x, y, z, flags, adtId, rootId, groupid))
     {
-        WMOAreaTableEntry * WMOEntry = GetWorldMapOverlayEntry(adtId, rootId, groupid);
+        WMOAreaTableEntry * WMOEntry = objmgr.GetWMOAreaTable(adtId, rootId, groupid);
         if(WMOEntry != NULL)
         {
             AreaTable* ate = dbcArea.LookupEntry(WMOEntry->areaId);
@@ -332,7 +332,7 @@ uint16 CCollideInterface::GetAreaID(uint32 mapId, float x, float y, float z)
     int32 adtId = 0, rootId = 0, groupid = 0;
     if(CollisionMgr->getAreaInfo(mapId, x, y, z, flags, adtId, rootId, groupid))
     {
-        WMOAreaTableEntry * WMOEntry = GetWorldMapOverlayEntry(adtId, rootId, groupid);
+        WMOAreaTableEntry * WMOEntry = objmgr.GetWMOAreaTable(adtId, rootId, groupid);
         if(WMOEntry != NULL)
             res = WMOEntry->areaId;
     }

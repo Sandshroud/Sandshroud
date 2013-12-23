@@ -1867,23 +1867,3 @@ HEARTHSTONE_INLINE uint32 GetscalestatSpellBonus(ScalingStatValuesEntry *ssvrow)
 {
     return ssvrow->spellBonus;
 }
-
-HEARTHSTONE_INLINE WMOAreaTableEntry* GetWorldMapOverlayEntry( int32 adtid, int32 rootid, int32 groupid)
-{
-    DBCStorage<WMOAreaTableEntry>::iterator itr;
-    if(dbcWMOAreaTable.begin() != dbcWMOAreaTable.end()) // NO DATERS
-    {
-        WMOAreaTableEntry* WMOentry = NULL;
-        for(itr = dbcWMOAreaTable.begin(); itr != dbcWMOAreaTable.end(); ++itr)
-        {
-            WMOentry = (*itr);
-            if(WMOentry->adtId == adtid && WMOentry->rootId == rootid && WMOentry->groupId == groupid)
-                return WMOentry;
-        }
-    }
-#ifdef SAFE_DBC_CODE_RETURNS
-    return dbcWMOAreaTable.LookupRow(1);
-#else
-    return NULL;
-#endif
-}
