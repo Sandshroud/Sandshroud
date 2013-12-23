@@ -583,7 +583,7 @@ void Lacrimi::DumpStats()
                 fprintf(f, "      <pvprank>%u</pvprank>\n", (unsigned int)plr->GetPVPRank());
                 fprintf(f, "      <level>%u</level>\n", (unsigned int)plr->GetUInt32Value(UNIT_FIELD_LEVEL));
                 fprintf(f, "      <map>%u</map>\n", (unsigned int)plr->GetMapId());
-                fprintf(f, "      <areaid>%u</areaid>\n", (unsigned int)plr->GetAreaID());
+                fprintf(f, "      <areaid>%u</areaid>\n", (unsigned int)plr->GetAreaId());
                 fprintf(f, "      <ontime>%s</ontime>\n", otime);
                 fprintf(f, "      <latency>%u</latency>\n", (unsigned int)plr->GetSession()->GetLatency());
                 fprintf(f, "      <permissions>%s</permissions>\n", plr->GetSession()->GetPermissions());
@@ -616,7 +616,7 @@ void Lacrimi::DumpStats()
                 fprintf(f, "      <pvprank>%u</pvprank>\n", (unsigned int)plr->GetPVPRank());
                 fprintf(f, "      <level>%u</level>\n", (unsigned int)plr->GetUInt32Value(UNIT_FIELD_LEVEL));
                 fprintf(f, "      <map>%u</map>\n", (unsigned int)plr->GetMapId());
-                fprintf(f, "      <areaid>%u</areaid>\n", (unsigned int)plr->GetAreaID());
+                fprintf(f, "      <areaid>%u</areaid>\n", (unsigned int)plr->GetAreaId());
                 //requested by Zdarkside for he's online map. I hope it does not screw up any parser. If so, then make a better one :P
                 fprintf(f, "      <xpos>%f</xpos>\n", plr->GetPositionX ());
                 fprintf(f, "      <ypos>%f</ypos>\n", plr->GetPositionY());

@@ -2237,7 +2237,7 @@ void Spell::SpellEffectSummonObject(uint32 i)
         posy = py + r * si;
 
         // Todo / Fix me: This should be loaded / cached
-        uint32 zone = p_caster->GetPAreaID();
+        uint32 zone = p_caster->GetAreaId();
         if( zone == 0 ) // If the player's area ID is 0, use the zone ID instead
             zone = p_caster->GetZoneId();
 
@@ -3057,7 +3057,7 @@ void Spell::SpellEffectDuel(uint32 i) // Duel
     if( p_caster == NULL  || !p_caster->isAlive() || playerTarget == p_caster )
         return;
 
-    uint32 areaId = p_caster->GetAreaID();
+    uint32 areaId = p_caster->GetAreaId();
     AreaTable * at = dbcArea.LookupEntryForced(areaId);
     if( sWorld.FunServerMall != -1 && areaId == (uint32)sWorld.FunServerMall )
     {
@@ -3068,7 +3068,7 @@ void Spell::SpellEffectDuel(uint32 i) // Duel
         return;
     }
 
-    if((p_caster->GetAreaID() && sWorld.IsSanctuaryArea(p_caster->GetAreaID())) || sWorld.IsSanctuaryMap(p_caster->GetMapId()))
+    if((p_caster->GetAreaId() && sWorld.IsSanctuaryArea(p_caster->GetAreaId())) || sWorld.IsSanctuaryMap(p_caster->GetMapId()))
     {
         SendCastResult(SPELL_FAILED_NO_DUELING);
         return;

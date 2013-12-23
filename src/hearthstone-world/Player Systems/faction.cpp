@@ -17,7 +17,7 @@ int intisAttackable(Object* objA, Object* objB, bool CheckStealth)// A can attac
 
     MapMgr* mgr = objA->GetMapMgr();
 
-    uint32 AreaIDobjA = objA->GetAreaID(mgr), AreaIDobjB = objB->GetAreaID(mgr);
+    uint32 AreaIDobjA = objA->GetAreaId(), AreaIDobjB = objB->GetAreaId();
 
     // can't attack corpses neither...
     if( objA->GetTypeId() == TYPEID_CORPSE || objB->GetTypeId() == TYPEID_CORPSE )
@@ -222,7 +222,7 @@ int intisAttackable(Object* objA, Object* objB, bool CheckStealth)// A can attac
             return 0;
 
         //These area's are sanctuaries
-        if( sWorld.IsSanctuaryArea(player_objA->GetPAreaID()) || sWorld.IsSanctuaryArea(player_objB->GetPAreaID()) )
+        if( sWorld.IsSanctuaryArea(player_objA->GetAreaId()) || sWorld.IsSanctuaryArea(player_objB->GetAreaId()) )
             return 0;
 
         if(player_objA->IsFFAPvPFlagged() && player_objB->IsFFAPvPFlagged())
@@ -305,7 +305,7 @@ bool CanEitherUnitAttack(Object* objA, Object* objB, bool CheckStealth)// A can 
 
     MapMgr* mgr = objA->GetMapMgr();
 
-    uint32 AreaIDobjA = objA->GetAreaID(mgr), AreaIDobjB = objB->GetAreaID(mgr);
+    uint32 AreaIDobjA = objA->GetAreaId(), AreaIDobjB = objB->GetAreaId();
 
     // We do need all factiondata for this
     if( (objB->m_factionDBC == NULL || objA->m_factionDBC == NULL || objB->m_faction == NULL || objA->m_faction == NULL) || (

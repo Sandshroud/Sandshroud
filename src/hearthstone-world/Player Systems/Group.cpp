@@ -911,7 +911,7 @@ void Group::UpdateOutOfRangePlayer(Player* pPlayer, uint32 Flags, bool Distribut
         *data << uint16(pPlayer->getLevel());
 
     if(Flags & GROUP_UPDATE_FLAG_ZONEID)
-        *data << uint16(pPlayer->GetPAreaID());
+        *data << uint16(pPlayer->GetAreaId());
 
 
     if(Flags & GROUP_UPDATE_FLAG_POSITION)

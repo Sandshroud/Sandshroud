@@ -425,22 +425,13 @@ void GameObject::UseFishingNode(Player* player)
         return;
     }
 
-    FishingZoneEntry *entry = NULL;
-
-    uint32 zone = player->GetPAreaID();
-    if(zone != 0)
+    FishingZoneEntry *entry = FishingZoneStorage.LookupEntry( GetAreaId() );
+    if( entry == NULL ) // No fishing information found for area, log an error
     {
-        entry = FishingZoneStorage.LookupEntry( zone );
-        if( entry == NULL ) // No fishing information found for area, log an error
-            sLog.outDebug( "ERROR: Fishing area information for area %d not found!", zone );
-    }
-    if(zone == 0 || entry == NULL)
-    {
-        zone = player->GetZoneId();
-        entry = FishingZoneStorage.LookupEntry( zone );
+        entry = FishingZoneStorage.LookupEntry( GetZoneId() );
         if( entry == NULL ) // No fishing information found for area, log an error
         {
-            sLog.outDebug( "ERROR: Fishing zone information for zone %d not found!", zone );
+            sLog.outDebug( "ERROR: Fishing zone information for zone %d not found!", GetZoneId() );
             EndFishing( player, true );
             return;
         }
@@ -455,7 +446,7 @@ void GameObject::UseFishingNode(Player* player)
     // Open loot on success, otherwise FISH_ESCAPED.
     if( Rand(((player->_GetSkillLineCurrent( SKILL_FISHING, true ) - minskill) * 100) / maxskill) )
     {
-        lootmgr.FillFishingLoot( &m_loot, zone );
+        lootmgr.FillFishingLoot( &m_loot, entry->ZoneID );
         player->SendLoot( GetGUID(), GetMapId(), LOOT_FISHING );
         EndFishing( player, false );
     }

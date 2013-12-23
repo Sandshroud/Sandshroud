@@ -470,7 +470,7 @@ void AIInterface::CallGuards()
     if( getMSTime() > m_guardTimer && !IS_INSTANCE(m_Unit->GetMapId()) )
     {
         m_guardTimer = getMSTime() + 15000;
-        uint16 AreaId = m_Creature->GetAreaID();
+        uint16 AreaId = m_Creature->GetAreaId();
         AreaTable * at = dbcArea.LookupEntry(AreaId);
         if(at == NULL)
             return;

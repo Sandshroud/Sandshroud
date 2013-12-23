@@ -1472,9 +1472,6 @@ public:
     //Base stats calculations
     //void CalcBaseStats();
 
-    // Areas
-    void UpdateAreaAndZoneInfo(uint32 areaid, uint32 zoneid);
-
     // Rest
     void HandleRestedCalculations(bool rest_on);
     uint32 SubtractRestXP(uint32 amount);
@@ -1730,10 +1727,9 @@ public:
     bool CastTimeCheat;
     bool PowerCheat;
     bool FlyCheat;
-    void ZoneUpdate(uint32 ZoneId);
-    HEARTHSTONE_INLINE uint32 GetPAreaID() { return m_AreaID; }
-    void SetAreaID(uint32 area) { m_AreaID = area; m_areaDBC = dbcArea.LookupEntryForced(m_AreaID); }
-    HEARTHSTONE_INLINE AreaTable *GetAreaDBC() { return m_areaDBC; }
+
+    int32 m_lastAreaUpdateMap;
+    uint32 m_oldZone, m_oldArea;
 
     // Phase stuff
     void _LoadAreaPhaseInfo(QueryResult *result);
@@ -2088,8 +2084,6 @@ protected:
     // Character Ban
     uint32      m_banned;
     string      m_banreason;
-    uint32      m_AreaID;
-    AreaTable  *m_areaDBC;
     Pet*        m_Summon;
     uint32      m_PetNumberMax;
     uint32      m_invitersGuid; // It is guild inviters guid, 0 when its not used
@@ -2226,9 +2220,6 @@ public:
 
     // grounding totem
     Aura* m_magnetAura;
-
-    // area update for worldstates, etc.
-    void ForceAreaUpdate();
 
     // mage invisibility
     bool m_mageInvisibility;
