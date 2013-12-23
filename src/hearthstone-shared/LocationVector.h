@@ -90,8 +90,7 @@ public:
         float dy = fabs(dest.y - y);
         if(dy != 0.0f)
             return atan2(dy, dx);
-        else
-            return 0.0f;
+        return 0.0f;
     }
 
     float CalcAngFrom(const LocationVector & src)
@@ -100,8 +99,7 @@ public:
         float dy = fabs(y - src.y);
         if(dy != 0.0f)
             return atan2(dy, dx);
-        else
-            return 0.0f;
+        return 0.0f;
     }
 
     void ChangeCoords(float X, float Y, float Z, float O)
@@ -151,8 +149,7 @@ public:
     {
         if(eq.x == x && eq.y == y && eq.z == z)
             return true;
-        else
-            return false;
+        return false;
     }
 
     bool operator != (const LocationVector & eq)

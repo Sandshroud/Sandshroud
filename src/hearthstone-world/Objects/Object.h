@@ -239,14 +239,12 @@ public:
     HEARTHSTONE_INLINE MapMgr* GetMapMgr() const { return m_mapMgr; }
 
     HEARTHSTONE_INLINE void SetMapId(uint32 newMap) { m_mapId = newMap; }
-    void SetZoneId(uint32 newZone);
-
     HEARTHSTONE_INLINE const uint32 GetMapId( ) const { return m_mapId; }
-    HEARTHSTONE_INLINE const uint32& GetZoneId( ) const { return m_zoneId; }
 
-    // Area id
-    uint32 GetAreaID(MapMgr* mgr = NULL); // Finds the area id for the object.
-    uint32 GetAreaID(float x, float y, float z = 0.0f, int32 mapid = -1, MapMgr* mgr = NULL);
+    void SetZoneId(uint32 newZone);
+    void UpdateAreaInfo(MapMgr *mgr = NULL);
+    HEARTHSTONE_INLINE const uint32& GetAreaId( ) const { return m_areaId; }
+    HEARTHSTONE_INLINE const uint32& GetZoneId( ) const { return m_zoneId; }
 
     //! Get uint16 property
     HEARTHSTONE_INLINE const uint16& GetUInt16Value(uint16 index, uint8 offset) const { ASSERT( index < m_valuesCount ); ASSERT( offset < 2 ); return *(((uint16*)&m_uint32Values[index])+offset); }
@@ -571,6 +569,8 @@ protected:
 
     //! Zone id.
     uint32 m_zoneId;
+    //! Area id.
+    uint32 m_areaId;
     //! Continent/map id.
     int32 m_mapId;
     //! Map manager

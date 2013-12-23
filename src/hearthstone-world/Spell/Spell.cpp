@@ -2300,7 +2300,7 @@ void Spell::SendCastResult(uint8 result)
         {
             if( GetSpellProto()->AreaGroupId > 0 )
             {
-                uint16 area_id = plr->GetAreaID();
+                uint16 area_id = plr->GetAreaId();
                 AreaGroup *GroupEntry = dbcAreaGroup.LookupEntry( GetSpellProto()->AreaGroupId );
 
                 for( uint8 i = 0; i < 7; i++ )
@@ -3288,7 +3288,7 @@ uint8 Spell::CanCast(bool tolerate)
     {
         if( GetSpellProto()->Id == 51721 )
         {
-            if(p_caster->GetPAreaID() != 4281)
+            if(p_caster->GetAreaId() != 4281)
                 return SPELL_FAILED_NOT_HERE;
         }
 
@@ -3443,9 +3443,7 @@ uint8 Spell::CanCast(bool tolerate)
             }
             else
             {
-                AreaTable* at = dbcArea.LookupEntry( p_caster->GetPAreaID() );
-                if(at == NULL)
-                    at = dbcArea.LookupEntry( p_caster->GetAreaID() );
+                AreaTable* at = dbcArea.LookupEntry( p_caster->GetAreaId() );
                 if(at == NULL)
                     at = dbcArea.LookupEntry( p_caster->GetZoneId() );
 
@@ -3716,7 +3714,7 @@ uint8 Spell::CanCast(bool tolerate)
         if( GetSpellProto()->AreaGroupId > 0)
         {
             bool found = false;
-            uint16 area_id = p_caster->GetAreaID();
+            uint16 area_id = p_caster->GetAreaId();
             uint32 zone_id = p_caster->GetZoneId();
 
             AreaGroup const* groupEntry = dbcAreaGroup.LookupEntry( GetSpellProto()->AreaGroupId );
@@ -3971,8 +3969,8 @@ uint8 Spell::CanCast(bool tolerate)
                     // allow attacks in duels
                     if( p_caster->DuelingWith != target && !isFriendly( p_caster, target ) )
                     {
-                        AreaTable* atCaster = dbcArea.LookupEntry( p_caster->GetPAreaID() );
-                        AreaTable* atTarget = dbcArea.LookupEntry( TO_PLAYER( target )->GetPAreaID() );
+                        AreaTable* atCaster = dbcArea.LookupEntry( p_caster->GetAreaId() );
+                        AreaTable* atTarget = dbcArea.LookupEntry( target->GetAreaId() );
                         if( atCaster != NULL && atTarget != NULL )
                             if( atCaster->AreaFlags & 0x800 || atTarget->AreaFlags & 0x800 )
                                 return SPELL_FAILED_NOT_HERE;

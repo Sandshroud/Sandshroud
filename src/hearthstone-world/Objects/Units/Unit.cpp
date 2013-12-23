@@ -126,6 +126,7 @@ Unit::Unit()
             SpellDmgDoneByAttribute[x][i] = 0;
     }
 
+    m_AreaUpdateTimer = 0;
     m_emoteState = 0;
     m_oldEmote = 0;
     m_charmtemp = 0;
@@ -363,6 +364,21 @@ void Unit::Update( uint32 p_time )
 
     if(!isDead())
     {
+        if(!IsPlayer())
+        {
+            m_AreaUpdateTimer += p_time;
+            if(m_AreaUpdateTimer > 2000)
+            {
+                if(m_lastAreaPosition.Distance(GetPosition()) > 5.0f)
+                {
+                    // Update our area id and position
+                    UpdateAreaInfo();
+                    m_lastAreaPosition = GetPosition();
+                }
+                m_AreaUpdateTimer = 0;
+            }
+        }
+
         CombatStatus.UpdateTargets();
 
         /*-----------------------POWER & HP REGENERATION-----------------*/
@@ -396,35 +412,34 @@ void Unit::Update( uint32 p_time )
             }
         }
 
-
         if(m_aiInterface != NULL && m_useAI)
             m_aiInterface->Update(p_time);
+    }
 
-        if(m_diminishActive)
+    if(m_diminishActive)
+    {
+        uint32 count = 0;
+        for(uint32 x = 0; x < DIMINISH_GROUPS; ++x)
         {
-            uint32 count = 0;
-            for(uint32 x = 0; x < DIMINISH_GROUPS; ++x)
+            // diminishing return stuff
+            if(m_diminishTimer[x] && !m_diminishAuraCount[x])
             {
-                // diminishing return stuff
-                if(m_diminishTimer[x] && !m_diminishAuraCount[x])
+                if(p_time >= m_diminishTimer[x])
                 {
-                    if(p_time >= m_diminishTimer[x])
-                    {
-                        // resetting after 15 sec
-                        m_diminishTimer[x] = 0;
-                        m_diminishCount[x] = 0;
-                    }
-                    else
-                    {
-                        // reducing, still.
-                        m_diminishTimer[x] -= p_time;
-                        ++count;
-                    }
+                    // resetting after 15 sec
+                    m_diminishTimer[x] = 0;
+                    m_diminishCount[x] = 0;
+                }
+                else
+                {
+                    // reducing, still.
+                    m_diminishTimer[x] -= p_time;
+                    ++count;
                 }
             }
-            if(!count)
-                m_diminishActive = false;
         }
+        if(!count)
+            m_diminishActive = false;
     }
 }
 

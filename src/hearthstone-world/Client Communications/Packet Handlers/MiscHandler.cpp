@@ -746,11 +746,7 @@ void WorldSession::HandleZoneUpdateOpcode( WorldPacket & recv_data )
     uint32 newZone;
     recv_data >> newZone;
 
-    if (GetPlayer()->GetZoneId() == newZone)
-        return;
-
-    sWeatherMgr.SendWeather(GetPlayer());
-    _player->ZoneUpdate(newZone);
+    _player->_EventExploration();
 
     //clear buyback
     _player->GetItemInterface()->EmptyBuyBack();
@@ -1090,7 +1086,7 @@ void WorldSession::HandleSetWatchedFactionIndexOpcode(WorldPacket &recvPacket)
 void WorldSession::HandleTogglePVPOpcode(WorldPacket& recv_data)
 {
     CHECK_INWORLD_RETURN();
-    uint32 areaId = _player->GetAreaID();
+    uint32 areaId = _player->GetAreaId();
     AreaTable * at = dbcArea.LookupEntryForced(areaId);
     if(sWorld.FunServerMall != -1 && areaId == (uint32)sWorld.FunServerMall)
     {
@@ -1113,7 +1109,7 @@ void WorldSession::HandleTogglePVPOpcode(WorldPacket& recv_data)
         sChatHandler.ColorSystemMessage(this, MSG_COLOR_WHITE, "You cannot do that here.");
     else if( at == NULL)
         _player->PvPToggle(); // Crow: Should be a delayed pvp flag
-    else if(_player->GetAreaID() && !sWorld.IsSanctuaryArea(_player->GetAreaID()))
+    else if(!sWorld.IsSanctuaryArea(areaId))
         _player->PvPToggle();
     else
         sChatHandler.ColorSystemMessage(this, MSG_COLOR_WHITE, "You cannot do that here.");

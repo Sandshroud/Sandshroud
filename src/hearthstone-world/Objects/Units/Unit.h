@@ -1494,6 +1494,10 @@ protected:
     /* Preallocated buffers for movement handlers */
     uint8 movement_packet[90];
 
+protected:
+    LocationVector m_lastAreaPosition;
+    uint32 m_AreaUpdateTimer;
+
 public:
     uint32 m_meleespell;
     uint8 m_meleespell_cn;

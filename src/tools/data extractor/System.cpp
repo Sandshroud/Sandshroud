@@ -168,7 +168,6 @@ void ExtractMapsFromMpq()
             }
         }
 
-
         // Calculate the estimated size.
         uint32 TilesToExtract = 0;
         for(uint32 x = 0; x < 64; ++x)

@@ -36,7 +36,7 @@ Channel::Channel(const char * name, uint32 team, uint32 type_id, uint32 id)
     m_announce = true;
     m_muted = false;
     m_general = false;
-    m_name = string(name);
+    m_name = std::string(name);
     m_team = team;
     m_typeId = type_id;
     m_channelId = id;
