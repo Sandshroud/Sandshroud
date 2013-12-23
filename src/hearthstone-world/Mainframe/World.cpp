@@ -472,6 +472,7 @@ bool World::SetInitialWorldSettings()
     MAKE_TASK(AddonMgr,  LoadFromDB);
     MAKE_TASK(ObjectMgr, SetHighestGuids);
     MAKE_TASK(ObjectMgr, ListGuidAmounts);
+    MAKE_TASK(ObjectMgr, HashWMOAreaTables);
     MAKE_TASK(ObjectMgr, LoadReputationModifiers);
     MAKE_TASK(ObjectMgr, LoadMonsterSay);
     MAKE_TASK(WeatherMgr,LoadFromDB);
