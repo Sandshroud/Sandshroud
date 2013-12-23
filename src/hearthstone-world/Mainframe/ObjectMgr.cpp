@@ -2493,6 +2493,23 @@ void ObjectMgr::ReloadDisabledSpells()
     LoadDisabledSpells();
 }
 
+void ObjectMgr::HashWMOAreaTables()
+{
+    for(DBCStorage<WMOAreaTableEntry>::iterator itr = dbcWMOAreaTable.begin(); itr != dbcWMOAreaTable.end(); ++itr)
+    {
+        std::pair<uint32, std::pair<uint32, uint32> > WMOID((*itr)->groupId, std::make_pair((*itr)->rootId, (*itr)->adtId));
+        WMOAreaTables.insert(std::make_pair(WMOID, *itr));
+    }
+}
+
+WMOAreaTableEntry* ObjectMgr::GetWMOAreaTable(int32 adtid, int32 rootid, int32 groupid)
+{
+    std::pair<uint32, std::pair<uint32, uint32> > WMOIDs(groupid, std::make_pair(rootid, adtid));
+    if(WMOAreaTables.find(WMOIDs) != WMOAreaTables.end())
+        return WMOAreaTables.at(WMOIDs);
+    return NULL;
+}
+
 void ObjectMgr::LoadGroups()
 {
     QueryResult * result = CharacterDatabase.Query("SELECT * FROM groups");

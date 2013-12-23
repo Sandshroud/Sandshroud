@@ -390,6 +390,9 @@ public:
     typedef std::map<uint32, SpellEntry*>                                       TotemSpellMap;
     typedef std::map<uint32, AchievementCriteriaSet*>                           AchievementCriteriaMap;
 
+    // WMO tables
+    typedef std::map<std::pair<uint32, std::pair<uint32, uint32> >, WMOAreaTableEntry*> WMOAreaTableMap;
+
     // object holders
     GmTicketList        GM_TicketList;
     TotemSpellMap       m_totemSpells;
@@ -640,7 +643,11 @@ public:
     std::set<ProfessionDiscovery*> ProfessionDiscoveryTable;
     map<uint32, uint32> ItemsInSets;
 
+    void HashWMOAreaTables();
+    WMOAreaTableEntry* GetWMOAreaTable(int32 adtid, int32 rootid, int32 groupid);
+
 protected:
+    WMOAreaTableMap WMOAreaTables;
     RWLock playernamelock;
     uint32 m_mailid;
     uint64 m_ticketid;
