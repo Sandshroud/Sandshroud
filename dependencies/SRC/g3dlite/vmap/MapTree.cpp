@@ -270,33 +270,41 @@ namespace VMAP
         }
 
         char tiled = '\0';
-        if ((success = fread(&tiled, sizeof(char), 1, rf)) && tiled == 1 && (success = readChunk(rf, chunk, "NODE", 4)) && iTree.readFromFile(rf))
+        if ((success = fread(&tiled, sizeof(char), 1, rf)) && (success = readChunk(rf, chunk, "NODE", 4)) && iTree.readFromFile(rf))
         {
             iNTreeValues = iTree.primCount();
             iTreeValues = new ModelInstance[iNTreeValues];
         }
+
         iIsTiled = bool(tiled);
         if(success)
             success = readChunk(rf, chunk, "GOBJ", 4);
-
-        // global model spawns
-        // only non-tiled maps have them, and if so exactly one (so far at least...)
-        ModelSpawn spawn;
-        bLog.outDetail("StaticMapTree::InitMap() : map isTiled: %u", static_cast<G3D::g3d_uint32>(iIsTiled));
-        if (success && !iIsTiled && ModelSpawn::readFromFile(rf, spawn))
+        if(!success)
+            bLog.outError("StaticMapTree::InitMap() : failed reading data!");
+        else
         {
-            WorldModel* model = vm->acquireModelInstance(spawn.name);
-            bLog.outDetail("StaticMapTree::InitMap() : loading %s", spawn.name.c_str());
-            if (model)
+            // global model spawns
+            // only non-tiled maps have them, and if so exactly one (so far at least...)
+            bLog.outDetail("StaticMapTree::InitMap() : map isTiled: %u", static_cast<G3D::g3d_uint32>(iIsTiled));
+            if(!iIsTiled)
             {
-                // assume that global model always is the first and only tree value (could be improved...)
-                iTreeValues[0] = ModelInstance(spawn, model);
-                iLoadedSpawns[0] = 1;
-            }
-            else
-            {
-                success = false;
-                bLog.outDetail("StaticMapTree::InitMap() : could not acquire WorldModel pointer for '%s'", spawn.name.c_str());
+                ModelSpawn spawn;
+                if (success = ModelSpawn::readFromFile(rf, spawn))
+                {
+                    WorldModel* model = vm->acquireModelInstance(spawn.name);
+                    bLog.outDetail("StaticMapTree::InitMap() : loading %s", spawn.name.c_str());
+                    if (model)
+                    {
+                        // assume that global model always is the first and only tree value (could be improved...)
+                        iTreeValues[0] = ModelInstance(spawn, model);
+                        iLoadedSpawns[0] = 1;
+                    }
+                    else
+                    {
+                        success = false;
+                        bLog.outDetail("StaticMapTree::InitMap() : could not acquire WorldModel pointer for '%s'", spawn.name.c_str());
+                    }
+                }
             }
         }
 

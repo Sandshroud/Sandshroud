@@ -44,7 +44,7 @@ bool WMORoot::open()
     MPQFile f(filename.c_str());
     if(f.isEof ())
     {
-        printf("No such file.\n");
+        printf("%s: No such file.\n", filename.c_str());
         return false;
     }
 
@@ -152,7 +152,7 @@ bool WMOGroup::open()
     MPQFile f(filename.c_str());
     if(f.isEof ())
     {
-        printf("No such file.\n");
+        printf("%s: No such file.\n", filename.c_str());
         return false;
     }
     uint32 size;
@@ -506,12 +506,10 @@ WMOInstance::WMOInstance(MPQFile& f, char const* WmoInstName, uint32 mapID, uint
 
     char tempname[512];
     sprintf(tempname, "%s/%s", szWorkDirWmo, WmoInstName);
-    FILE *input;
-    input = fopen(tempname, "r+b");
-
+    FILE *input = fopen(tempname, "r+b");
     if(!input)
     {
-        printf("WMOInstance::WMOInstance: couldn't open %s\n", tempname);
+        printf("WMOInstance::couldn't open %s\n", tempname);
         return;
     }
 
@@ -523,9 +521,7 @@ WMOInstance::WMOInstance(MPQFile& f, char const* WmoInstName, uint32 mapID, uint
     if (count != 1 || nVertices == 0)
         return;
 
-    float x,z;
-    x = pos.x;
-    z = pos.z;
+    float x = pos.x, z = pos.z;
     if(x==0 && z == 0)
     {
         pos.x = 533.33333f*32;
