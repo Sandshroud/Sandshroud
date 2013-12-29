@@ -113,3 +113,12 @@ typedef unsigned __int8 uint8;
 #define SI64FMTD "%lld"
 
 #endif
+
+HEARTHSTONE_INLINE uint32 hearthstone_GetThreadId()
+{
+#if PLATFORM == PLATFORM_WIN
+    return GetCurrentThreadId();
+#else
+    return pthread_self();
+#endif
+}

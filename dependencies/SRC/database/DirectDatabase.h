@@ -10,7 +10,7 @@ class DirectDatabase;
 
 struct DatabaseConnection
 {
-    FastMutex Busy;
+    SmartMutex Busy;
     MYSQL *conn;
 };
 

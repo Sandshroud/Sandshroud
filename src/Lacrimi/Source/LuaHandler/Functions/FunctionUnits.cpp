@@ -4165,8 +4165,6 @@ int LuaUnit_GetPlayerMovementVector(lua_State * L, Unit * ptr)
         lua_pushstring(L, "o");
         lua_pushnumber(L, movement_info->orientation);
         lua_rawset(L, -3);
-        delete movement_info;
-        movement_info = NULL;
     }
     else
         lua_pushnil(L);
@@ -4178,11 +4176,7 @@ int LuaUnit_GetPlayerMovementFlags(lua_State * L, Unit * ptr)
     TEST_PLAYER();
     MovementInfo * move_info = TO_PLAYER(ptr)->GetMovementInfo();
     if (move_info != NULL)
-    {
         lua_pushnumber(L, move_info->flags);
-        delete move_info;
-        move_info = NULL;
-    }
     else
         RET_NIL(true)
     return 1;

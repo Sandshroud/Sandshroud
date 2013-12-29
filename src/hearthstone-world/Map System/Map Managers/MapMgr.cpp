@@ -71,11 +71,6 @@ MapMgr::MapMgr(Map *map, uint32 mapId, uint32 instanceid) : ThreadContext(), Cel
     _sqlids_gameobjects.clear();
     _reusable_guids_creature.clear();
     _reusable_guids_vehicle.clear();
-
-    if(sWorld.Collision)
-        SetCollision(true);
-    else
-        SetCollision(false);
 }
 
 void MapMgr::Init(bool Instance)
@@ -1092,7 +1087,7 @@ void MapMgr::UpdateAllCells(bool apply, uint32 areamask)
     uint32 StartX = 0, EndX = 0, StartY = 0, EndY = 0;
     GetBaseMap()->GetCellLimits(StartX, EndX, StartY, EndY);
     if(!areamask)
-        sLog.Notice("MapMgr", "Updating all cells for map %03u, server might lag.", _mapId);
+        sLog.Info("MapMgr", "Updating all cells for map %03u, server might lag.", _mapId);
     for( uint32 x = StartX ; x < EndX ; x ++ )
     {
         for( uint32 y = StartY ; y < EndY ; y ++ )
@@ -1427,10 +1422,18 @@ bool MapMgr::Do()
     CALL_INSTANCE_SCRIPT_EVENT( this, OnLoad )();
 
     if( GetMapInfo()->type == INSTANCE_NULL )
+    {
         sHookInterface.OnContinentCreate(this);
 
-    if(sWorld.ServerPreloading && _mapId == 0)
-        UpdateAllCells(true);
+        if(sWorld.ServerPreloading == 2)
+        {
+#ifdef _WIN64
+            UpdateAllCells(true);
+#else
+            sLog.Error("MapMgr", "Server cell preloading defined but version is %s, preloading is not supported.", ARCH);
+#endif
+        }
+    }
 
     // always declare local variables outside of the loop!
     // otherwise theres a lot of sub esp; going on.
@@ -1628,7 +1631,7 @@ Object* MapMgr::GetObjectClosestToCoords(uint32 entry, float x, float y, float z
 
 bool MapMgr::CanUseCollision(Object* obj)
 {
-    if(collision)
+    if(GetBaseMap()->IsCollisionEnabled())
     {
         uint32 tileX = (GetPosX(obj->GetPositionX())/8);
         uint32 tileY = (GetPosY(obj->GetPositionY())/8);

@@ -228,9 +228,6 @@ public:
     HEARTHSTONE_INLINE uint32 GetInstanceID() { return m_instanceID; }
     HEARTHSTONE_INLINE MapInfo *GetMapInfo() { return pMapInfo; }
     HEARTHSTONE_INLINE MapEntry *GetdbcMap() { return pdbcMap; }
-
-    HEARTHSTONE_INLINE void SetCollision(bool enable) { collision = enable; }
-    HEARTHSTONE_INLINE bool IsCollisionEnabled() { return collision; }
     bool CanUseCollision(Object* obj);
 
     HEARTHSTONE_INLINE MapManagerScript *GetMapScript() { return _script; }
@@ -312,7 +309,6 @@ public:
 
 private:
     /* Map Information */
-    bool collision;
     MapInfo *pMapInfo;
     MapEntry* pdbcMap;
     uint32 m_instanceID;
@@ -320,7 +316,7 @@ private:
     MapManagerScript *_script;
 
     /* Update System */
-    FastMutex m_updateMutex;        // use a user-mode mutex for extra speed
+    Mutex m_updateMutex;
     UpdateQueue _updates;
     PUpdateQueue _processQueue;
 

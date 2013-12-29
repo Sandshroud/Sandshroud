@@ -55,7 +55,7 @@ public:
 protected:
 
     int32 m_event_Instanceid;
-    FastMutex m_lock;
+    SmartMutex m_lock; // Smart mutex, in case some function calls internal event
     EventMap m_events;
     EventableObjectHolder * m_holder;
 

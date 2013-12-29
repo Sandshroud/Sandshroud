@@ -10,76 +10,36 @@
 void AIInterface::_UpdateCombat(uint32 p_time)
 {
     ASSERT(m_Unit != NULL);
+    if(!m_Unit->isAlive())
+        return;
     if( m_AIType != AITYPE_PET && disable_combat )
         return;
 
-    // Check if our target is attackable, if not, change to the most hated.
-    if(!FactionSystem::CanEitherUnitAttack(m_Unit, m_nextTarget, false))
+    if(m_nextTarget)
     {
-        SetNextTarget(GetMostHated());
-
-        // Check if our new target is unattackable, or doesn't exist
+        // Check if our target is attackable, if not, change to the most hated.
         if(!FactionSystem::CanEitherUnitAttack(m_Unit, m_nextTarget, false))
-            SetNextTarget(FindTarget());
-    }
+        {
+            SetNextTarget(GetMostHated());
 
-    if( m_AIType != AITYPE_PET && (m_outOfCombatRange && m_Unit->GetDistanceSq(GetReturnPos()) > m_outOfCombatRange)
-        && m_AIState != STATE_EVADE && m_AIState != STATE_SCRIPTMOVE && !m_fleeTimer && !m_is_in_instance)
-    {
-        HandleEvent( EVENT_LEAVECOMBAT, m_Unit, 0 );
-        return;
-    }
-    else if( m_nextTarget == NULL && m_AIState != STATE_FOLLOWING && m_AIState != STATE_SCRIPTMOVE && !m_fleeTimer )
-    {
-        SetNextTarget(GetMostHated());
-        if( m_nextTarget == NULL )
+            // Check if our new target is unattackable, or doesn't exist
+            if(!FactionSystem::CanEitherUnitAttack(m_Unit, m_nextTarget, false))
+                SetNextTarget(FindTarget());
+        }
+
+        if( m_AIType != AITYPE_PET && (m_outOfCombatRange && m_Unit->GetDistanceSq(GetReturnPos()) > m_outOfCombatRange)
+            && m_AIState != STATE_EVADE && m_AIState != STATE_SCRIPTMOVE && !m_fleeTimer && !m_is_in_instance)
         {
             HandleEvent( EVENT_LEAVECOMBAT, m_Unit, 0 );
             return;
         }
-    }
-
-    if(GetNextTarget()->canFly())
-    {
-        if(m_Unit->GetMapMgr() != NULL && GetNextTarget() != NULL && m_Unit->GetMapMgr()->CanUseCollision(m_Unit) && !IS_INSTANCE(m_Unit->GetMapId()))
+        else if( m_nextTarget == NULL && m_AIState != STATE_FOLLOWING && m_AIState != STATE_SCRIPTMOVE && !m_fleeTimer )
         {
-            if(!MovementHandler.m_moveFly)
+            SetNextTarget(GetMostHated());
+            if( m_nextTarget == NULL )
             {
-                float target_land_z = m_nextTarget->GetCHeightForPosition();
-                if(target_land_z)
-                {
-                    if((fabs(m_nextTarget->GetPositionZ() - target_land_z) > _CalcCombatRange(m_nextTarget, false)) && fabs(m_nextTarget->GetPositionZ() - target_land_z) < 100.0f)
-                    {
-                        if ( m_nextTarget->GetTypeId() != TYPEID_PLAYER )
-                        {
-                            if ( target_land_z > m_Unit->GetMapMgr()->GetWaterHeight(m_nextTarget->GetPositionX(), m_nextTarget->GetPositionY(), m_nextTarget->GetPositionZ()) )
-                            {
-                                HandleEvent( EVENT_LEAVECOMBAT, m_Unit, 0);
-                                return;
-                            }
-                        }
-                        else if (TO_PLAYER(m_nextTarget)->GetSession() != NULL)
-                        {
-                            MovementInfo* mi = TO_PLAYER(m_nextTarget)->GetMovementInfo();
-                            if ( mi != NULL && !(mi->flags & MOVEFLAG_REDIRECTED) && !(mi->flags & MOVEFLAG_FALLING) && !(mi->flags & MOVEFLAG_SWIMMING) && !(mi->flags & MOVEFLAG_LEVITATE))
-                            {
-                                if(TO_PLAYER(m_nextTarget)->m_FlyingAura || TO_PLAYER(m_nextTarget)->m_setflycheat)
-                                {
-                                    HandleEvent( EVENT_LEAVECOMBAT, m_Unit, 0);
-                                    return;
-                                }
-                            }
-
-                            delete mi;
-                            mi = NULL;
-                        }
-                    }
-                    else if(fabs(m_nextTarget->GetPositionZ() - target_land_z) > 100.0f) // Cliff or Netherstorm breaks.
-                    {
-                        HandleEvent( EVENT_LEAVECOMBAT, m_Unit, 0);
-                        return;
-                    }
-                }
+                HandleEvent( EVENT_LEAVECOMBAT, m_Unit, 0 );
+                return;
             }
         }
     }
@@ -102,38 +62,54 @@ void AIInterface::_UpdateCombat(uint32 p_time)
                 //Try our chance at casting a spell (Will actually be cast on next ai update, so we just
                 //schedule it. This is needed to avoid next dealt melee damage while we cast the spell.)
                 AI_Spell* Spell = NULL;
-                float ChanceRoll = RandomFloat(100), ChanceTotal = 0;
                 for( map<uint32, AI_Spell*>::iterator SpellIter = m_spells.begin(); SpellIter != m_spells.end(); ++SpellIter )
                 {
                     Spell = SpellIter->second;
                     if( Spell->m_AI_Spell_disabled )
                         continue;
-
-                    if( Spell->perctrigger == 0 )
+                    if( Spell->perctrigger == 0.0f )
                         continue;
-
-                    //Check if spell won the roll
+                    if(!CanCastAISpell(Spell, currentTime))
+                        continue;
+                    // Check if spell won the roll
                     Unit* pTarget = GetTargetForSpell(Spell);
                     if(pTarget == NULL)
                         continue;
 
-                    if((Spell->perctrigger == 100.0f || (ChanceRoll >= ChanceTotal && ChanceRoll < ChanceTotal + Spell->perctrigger)))
+                    if(Spell->perctrigger != 100.0f)
                     {
-                        if(CanCastFuckingSpell(pTarget, Spell, currentTime))
-                        {
-                            unitBehavior = Behavior_Spell;
-                            if(pTarget != GetNextTarget())
-                                SetNextTarget(pTarget);
-                            m_CastNext = Spell;
-                            break;
-                        }
+                        float ChanceRoll = RandomFloat(100.0f);
+                        if(Spell->perctrigger < ChanceRoll)
+                            continue;
                     }
-                    else if( Spell->perctrigger != 100 )
-                        ChanceTotal += Spell->perctrigger;  //Only add spells that aren't 100% chance of casting
+
+                    if(pTarget == m_Unit)
+                        CastAISpell(m_Unit, Spell, currentTime);
+                    else
+                    {
+                        unitBehavior = Behavior_Spell;
+                        if(pTarget != GetNextTarget())
+                            SetNextTarget(pTarget);
+                        m_CastNext = Spell;
+                        break;
+                    }
                 }
             }
         }
     }
+
+    if(m_AIState == STATE_IDLE || m_AIState == STATE_FOLLOWING
+        || m_AIState == STATE_FEAR || m_AIState == STATE_WANDER
+        || m_AIState == STATE_SCRIPTMOVE)
+        return;
+    if(m_AIType == AITYPE_PET && m_Unit->IsPet())
+    {
+        Pet* pPet = TO_PET(m_Unit);
+        if(pPet->GetPetAction() != PET_ACTION_ATTACK || pPet->GetPetState() == PET_STATE_PASSIVE)
+            return;
+    }
+    if(!m_Unit->CombatStatus.IsInCombat())
+        return;
 
     BehaviorType LastBehavior = unitBehavior;
     if( m_nextTarget != NULL && m_nextTarget->isAlive() && m_AIState != STATE_EVADE && !m_Unit->isCasting())
@@ -143,9 +119,9 @@ void AIInterface::_UpdateCombat(uint32 p_time)
             if(m_Unit->IsPet() && !m_CastNext)
             {
                 AI_Spell* PetSpell = TO_PET(m_Unit)->HandleAutoCastEvent();
-                if(PetSpell)
+                if(PetSpell && CanCastAISpell(PetSpell, getMSTime()))
                 {
-                    if(CanCastFuckingSpell(m_nextTarget, PetSpell, getMSTime()))
+                    if(IsValidUnitTarget(m_nextTarget, PetSpell))
                     {
                         unitBehavior = Behavior_Spell;
                         m_CastNext = PetSpell;
@@ -256,7 +232,7 @@ void AIInterface::_UpdateCombat(uint32 p_time)
                 }
                 else if(m_CastNext != NULL)
                 {
-                    if(!IsValidUnitTarget(m_nextTarget, m_CastNext->TargetFilter, m_CastNext->mindist2cast, m_CastNext->maxdist2cast))
+                    if(!IsValidUnitTarget(m_nextTarget, m_CastNext))
                     {
                         m_CastNext = NULL;
                         LastBehavior = Behavior_Melee;
@@ -415,8 +391,8 @@ void AIInterface::_UpdateCombat(uint32 p_time)
                     uint32 currentTime = getMSTime();
 
                     // DO OUR BARREL SPELLS
-                    if(CanCastFuckingSpell(m_nextTarget, m_CastNext, currentTime))
-                        CastFuckingAISpell(m_nextTarget, m_CastNext, currentTime);
+                    if(IsValidUnitTarget(m_nextTarget, m_CastNext) && CanCastAISpell(m_CastNext, currentTime))
+                        CastAISpell(m_nextTarget, m_CastNext, currentTime);
                 }
             }break;
         }
@@ -441,6 +417,20 @@ void AIInterface::_UpdateCombat(uint32 p_time)
     }
 }
 
+void AIInterface::CheckNextTargetFlyingStatus()
+{
+    if(m_nextTarget == NULL || !m_nextTarget->canFly())
+        return;
+
+    bool LeaveCombat = false;
+    if(!IS_INSTANCE(m_Unit->GetMapId()) && !MovementHandler.m_moveFly)
+    {
+        float target_land_z = m_nextTarget->GetCHeightForPosition();
+        if(target_land_z+_CalcCombatRange(m_nextTarget, m_canRangedAttack) < m_nextTarget->GetPositionZ())
+            HandleEvent( EVENT_LEAVECOMBAT, m_Unit, 0);
+    }
+}
+
 void AIInterface::_UpdateTargets(uint32 p_time)
 {
     if( m_Unit->IsPlayer() || disable_targeting )
@@ -457,6 +447,8 @@ void AIInterface::_UpdateTargets(uint32 p_time)
         else if(m_AIState != STATE_IDLE && m_AIState != STATE_SCRIPTIDLE)
             FindFriends(16.0f/*4.0f*/);
     }
+
+    CheckNextTargetFlyingStatus();
 
     if(m_updateTargetsTimer > p_time)
         m_updateTargetsTimer -= p_time;
@@ -510,15 +502,13 @@ void AIInterface::_UpdateTargets(uint32 p_time)
 Unit* AIInterface::FindTarget()
 {
     ASSERT(m_Unit != NULL);
+    // Faction check
+    if(m_Unit->m_faction == NULL)
+        return NULLUNIT;
     // find nearest hostile Target to attack
     if( !m_AllowedToEnterCombat || m_fleeTimer || m_Unit->isDead() )
         return NULLUNIT;
 
-    // Check our faction
-    if(!m_Unit->m_faction || !m_Unit->m_faction->FactionMask)
-        return NULLUNIT;
-
-    unordered_set<Unit* >::iterator itr, it2;
     Unit *target = NULLUNIT, *critterTarget = NULLUNIT, *pUnit = NULLUNIT;
     float distance = 999999.0f, crange = 0.0f, z_diff = 0.0f, dist = 0.0f; // that should do it.. :p
 
@@ -526,89 +516,61 @@ Unit* AIInterface::FindTarget()
     if(m_Unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
         return NULLUNIT;
 
-    for( itr = m_Unit->GetInRangeUnitSetBegin(); itr != m_Unit->GetInRangeUnitSetEnd(); )
+    for( unordered_set<Unit* >::iterator itr = m_Unit->GetInRangeUnitSetBegin(); itr != m_Unit->GetInRangeUnitSetEnd(); )
     {
-        it2 = itr++;
-        pUnit = (*it2);
-        if( pUnit->isDead() )
+        pUnit = (*itr++);
+        if( pUnit->isDead() || pUnit->m_invisible ) // skip invisible units
             continue;
-
-        if( pUnit->IsPlayer() )
-        {
-            if(TO_PLAYER(pUnit)->GetTaxiState() )     // skip players on taxi
-                continue;
-            if(TO_PLAYER(pUnit)->GetPlayerStatus() == TRANSFER_PENDING)
-                continue;
-        }
-
-        // We can't attack him, but he can attack us? Fuck that.
-        if(!FactionSystem::CanEitherUnitAttack(m_Unit, pUnit, true))
+        // Check the aggro range
+        dist = m_Unit->GetDistanceSq(pUnit);
+        if(dist > _CalcAggroRange(pUnit))  // we want to find the CLOSEST target
             continue;
-
-        //do not agro units that are faking death. Should this be based on chance ?
-        if( pUnit->HasFlag( UNIT_FIELD_FLAGS, UNIT_FLAG_FEIGN_DEATH ) )
+        // Get the closest target available
+        if(distance < dist)
             continue;
-
-        // Calculate range!
+        // Check the z height difference
         crange = _CalcCombatRange(pUnit, false);
         if(m_isGuard)
             crange *= 4;
-
         z_diff = fabs(m_Unit->GetPositionZ() - pUnit->GetPositionZ());
         if(z_diff > crange)
             continue;
-
-        if(!m_Unit->PhasedCanInteract(pUnit))
+        //do not agro units that are faking death. Should this be based on chance ?
+        if( pUnit->HasFlag( UNIT_FIELD_FLAGS, UNIT_FLAG_FEIGN_DEATH ) )
             continue;
-
-        if(pUnit->m_invisible) // skip invisible units
+        // Check if units can engage in combat
+        if(!FactionSystem::CanEitherUnitAttack(m_Unit, pUnit, true))
             continue;
-
-        if(m_Unit->GetUInt64Value(UNIT_FIELD_CREATEDBY) == pUnit->GetGUID())
+        // Check LOS if we're in range
+        if( !m_Unit->IsInLineOfSight(pUnit) )
             continue;
-
-        dist = m_Unit->GetDistanceSq(pUnit);
-        if(!pUnit->m_faction || !pUnit->m_factionDBC)
-            continue;
-
-        if(pUnit->m_faction->Faction == 28)// only Attack a critter if there is no other Enemy in range
+        // If it's a critter, set the critter target.
+        if(pUnit->m_faction->Faction == 28)
         {
-            if(dist < 225.0f)   // was 10
-                critterTarget = pUnit;
+            if(critterTarget && m_Unit->GetDistanceSq(critterTarget) < m_Unit->GetDistanceSq(pUnit))
+                continue;
+            critterTarget = pUnit;
             continue;
         }
 
-        if(dist > distance)  // we want to find the CLOSEST target
-            continue;
-
-        if(dist <= _CalcAggroRange(pUnit) )
-        {
-            if( m_Unit->IsInLineOfSight(pUnit) )
-            {
-                distance = dist;
-                target = pUnit;
-            }
-        }
+        distance = dist;
+        target = pUnit;
     }
 
-    if( !target )
+    if(!target && critterTarget)
         target = critterTarget;
 
     if( target )
     {
         AttackReaction(target, 1, 0);
+
         WorldPacket data(SMSG_AI_REACTION, 12);
         data << m_Unit->GetGUID() << uint32(2);     // Aggro sound
         m_Unit->SendMessageToSet(&data, false);
-
-        if(target->GetUInt32Value(UNIT_FIELD_CREATEDBY) != 0)
-        {
-            Unit* target2 = m_Unit->GetMapMgr()->GetPlayer(target->GetUInt32Value(UNIT_FIELD_CREATEDBY));
-            if(target2)
-            {
-                AttackReaction(target2, 1, 0);
-            }
-        }
+        if(target->IsPet())
+            AttackReaction(TO_PET(target)->GetOwner(), 1, 0);
+        else if(target->IsSummon() && TO_SUMMON(target)->GetSummonOwner()->IsUnit())
+            AttackReaction(TO_UNIT(TO_SUMMON(target)->GetSummonOwner()), 1, 0);
     }
     return target;
 }
@@ -646,7 +608,7 @@ Unit* AIInterface::GetMostHated(AI_Spell* sp)
         if(itr->second == 0)
             continue; // Ignore non combat targets
 
-        if(!IsValidUnitTarget(itr->first, (sp == NULL ? TargetFilter_None : sp->TargetFilter), (sp == NULL ? 0.0f : sp->mindist2cast), (sp == NULL ? m_outOfCombatRange : sp->maxdist2cast)))
+        if(!IsValidUnitTarget(itr->first, (sp == NULL ? NULL : sp->info), (sp == NULL ? TargetFilter_None : sp->TargetFilter), (sp == NULL ? 0.0f : sp->mindist2cast), (sp == NULL ? m_outOfCombatRange : sp->maxdist2cast)))
             continue;
 
         if((itr->second + itr->first->GetThreatModifier()) > CurrentThreat)
@@ -693,7 +655,7 @@ Unit* AIInterface::GetSecondHated(AI_Spell* sp)
         if(itr->second == 0)
             continue; // Ignore non combat targets
 
-        if(!IsValidUnitTarget(itr->first, (sp == NULL ? TargetFilter_None : sp->TargetFilter), (sp == NULL ? 0.0f : sp->mindist2cast), (sp == NULL ? m_outOfCombatRange : sp->maxdist2cast)))
+        if(!IsValidUnitTarget(itr->first, (sp == NULL ? NULL : sp->info), (sp == NULL ? TargetFilter_None : sp->TargetFilter), (sp == NULL ? 0.0f : sp->mindist2cast), (sp == NULL ? m_outOfCombatRange : sp->maxdist2cast)))
             continue;
 
         if((itr->second + itr->first->GetThreatModifier()) > currentTarget.second &&

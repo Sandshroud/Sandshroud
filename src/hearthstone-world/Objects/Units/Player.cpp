@@ -954,14 +954,14 @@ void Player::Update( uint32 p_time )
     if (isAlive())
     {
         m_P_regenTimer += p_time;
-        if(p_time < m_interruptedRegenTime)
+        if(p_time < m_p_DelayTimer)
         {
-            m_interruptedRegenTime -= p_time;
+            m_p_DelayTimer -= p_time;
             PlayerRegeneratePower(true);
         }
         else
         {
-            m_interruptedRegenTime = 0;
+            m_p_DelayTimer = 0;
             PlayerRegeneratePower(false);
         }
         m_P_regenTimer = 0;
@@ -1481,9 +1481,9 @@ void Player::_EventExploration()
         return;
     if(m_lastAreaUpdateMap == GetMapId() && m_lastAreaPosition.Distance(GetPosition()) < 5.0f)
         return;
-
     m_lastAreaUpdateMap = GetMapId();
     m_lastAreaPosition = GetPosition();
+
     m_oldZone = m_zoneId;
     m_oldArea = m_areaId;
     UpdateAreaInfo();
@@ -1519,6 +1519,8 @@ void Player::_EventExploration()
 
     if(!m_areaId || m_areaId == 0xFFFF)
     {
+        if(m_FlyingAura)
+            RemoveAura(m_FlyingAura); // remove flying buff
         HandleRestedCalculations(restmap);
         return;
     }
@@ -1528,11 +1530,13 @@ void Player::_EventExploration()
         at = dbcArea.LookupEntryForced(m_zoneId); // These maps need their own chat channels.
     if(at == NULL)
     {
+        if(m_FlyingAura)
+            RemoveAura(m_FlyingAura); // remove flying buff
         HandleRestedCalculations(restmap);
         return;
     }
 
-    if(m_FlyingAura && (at == NULL || !(at->AreaFlags & AREA_FLYING_PERMITTED)))
+    if(m_FlyingAura && !(at->AreaFlags & AREA_FLYING_PERMITTED))
         RemoveAura(m_FlyingAura); // remove flying buff
 
     UpdatePvPArea();

@@ -127,6 +127,7 @@ Unit::Unit()
     }
 
     m_AreaUpdateTimer = 0;
+    m_lastAreaPosition.ChangeCoords(0.0f, 0.0f, 0.0f);
     m_emoteState = 0;
     m_oldEmote = 0;
     m_charmtemp = 0;
@@ -201,7 +202,7 @@ Unit::Unit()
     m_procCounter = 0;
     m_damgeShieldsInUse = false;
     m_temp_summon=false;
-    m_interruptedRegenTime = 0;
+    m_p_DelayTimer = 0;
     mAngerManagement = false;
     mRecentlyBandaged = false;
 
@@ -367,7 +368,7 @@ void Unit::Update( uint32 p_time )
         if(!IsPlayer())
         {
             m_AreaUpdateTimer += p_time;
-            if(m_AreaUpdateTimer > 2000)
+            if(m_AreaUpdateTimer >= 2000)
             {
                 if(m_lastAreaPosition.Distance(GetPosition()) > 5.0f)
                 {
@@ -389,27 +390,13 @@ void Unit::Update( uint32 p_time )
 
         if(!IsPlayer())
         {
-            if( p_time >= m_P_regenTimer )
-            {
-                if( p_time >= m_p_DelayTimer )
-                {
-                    RegeneratePower( false );
-                    m_interruptedRegenTime = 0;
-                }
-                else m_p_DelayTimer -= p_time;
-            }
-            else
-            {
-                m_P_regenTimer -= p_time;
+            if(m_p_DelayTimer > p_time)
                 m_p_DelayTimer -= p_time;
-                if (m_interruptedRegenTime)
-                {
-                    if(p_time >= m_interruptedRegenTime)
-                        RegeneratePower( true );
-                    else
-                        m_interruptedRegenTime -= p_time;
-                }
-            }
+            else m_p_DelayTimer = 0;
+
+            if( p_time < m_P_regenTimer )
+                RegeneratePower( m_p_DelayTimer > 0 );
+            else m_P_regenTimer -= p_time;
         }
 
         if(m_aiInterface != NULL && m_useAI)
@@ -2618,10 +2605,7 @@ void Unit::RegeneratePower(bool isinterrupted)
     else
     {
         // This is only 100 IF the power is not rage
-        if (isinterrupted)
-            m_interruptedRegenTime = 100;
-        else
-            m_P_regenTimer = 100; //set next regen time
+        m_P_regenTimer = 100; //set next regen time
 
         uint32 powertype = GetPowerType();
         switch(powertype)
