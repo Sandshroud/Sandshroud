@@ -1318,7 +1318,7 @@ void Player::_EventAttack( bool offhand )
         pVictim = GetMapMgr()->GetUnit(m_curSelection);
 
     // Can't find victim, stop attacking
-    if (!pVictim || !isAttackable( this, pVictim ) )
+    if (!pVictim || !FactionSystem::isAttackable( this, pVictim ) )
     {
         sLog.outDebug("Player::Update:  No valid current selection to attack, stopping attack.");
         smsg_AttackStop(pVictim);
@@ -1537,10 +1537,10 @@ void Player::_EventExploration()
 
     UpdatePvPArea();
 
-    if(sWorld.IsSanctuaryArea(m_areaId))
+    if(HasAreaFlag(OBJECT_AREA_FLAG_INSANCTUARY))
     {
         Unit* pUnit = (GetSelection() == 0) ? NULLUNIT : (m_mapMgr ? m_mapMgr->GetUnit(GetSelection()) : NULLUNIT);
-        if(pUnit && !isAttackable(this, pUnit))
+        if(pUnit && !FactionSystem::isAttackable(this, pUnit))
         {
             EventAttackStop();
             smsg_AttackStop(pUnit);
@@ -1552,7 +1552,7 @@ void Player::_EventExploration()
         if(m_currentSpell)
         {
             Unit* target = m_currentSpell->GetUnitTarget();
-            if(target && !isAttackable(this, target) && target != TO_PLAYER(this))
+            if(target && !FactionSystem::isAttackable(this, target) && target != TO_PLAYER(this))
                 m_currentSpell->cancel();
         }
     }
@@ -7103,7 +7103,7 @@ void Player::EventRepeatSpell()
         return;
 
     Unit* target = GetMapMgr()->GetUnit( m_curSelection );
-    if( target == NULL || !isAttackable(this, target))
+    if( target == NULL || !FactionSystem::isAttackable(this, target))
     {
         m_AutoShotAttackTimer = 0; //avoid flooding client with error messages
         m_onAutoShot = false;
@@ -8999,10 +8999,8 @@ bool Player::AllowChannelAtLocation(uint32 dbcID, AreaTable *areaTable)
     {
     case 2:
         {
-            if(areaTable == NULL)
-                result = false;
-            else if(!sWorld.trade_world_chat)
-                result = ((areaTable->AreaFlags & AREA_CITY_AREA) || (areaTable->AreaFlags & AREA_CITY));
+            if(sWorld.trade_world_chat == 0)
+                result = areaTable ? ((areaTable->AreaFlags & AREA_CITY_AREA) || (areaTable->AreaFlags & AREA_CITY)) : false;
         }break;
     case 26:
         {
@@ -9025,7 +9023,7 @@ bool Player::UpdateChatChannel(const char* areaName, AreaTable *areaTable, ChatC
     sprintf(name, "%s", entry->pattern);
     if(entry->flags & 0x02)
         sprintf(name, entry->pattern, areaName);
-    Channel *chn = channelmgr.GetCreateChannel(name, this, entry->id);
+    Channel *chn = channelmgr.GetCreateDBCChannel(name, this, entry->id);
     if(chn == NULL)
     {
         if(channel)
@@ -9089,9 +9087,10 @@ void Player::EventDBCChatUpdate(uint32 dbcID)
                 return;
 
             char name[255];
+            sprintf(name, "%s", entry->pattern);
             if(entry->flags & 0x02)
                 sprintf(name, entry->pattern, areaName);
-            Channel *chn = channelmgr.GetCreateChannel(name, this, entry->id);
+            Channel *chn = channelmgr.GetCreateDBCChannel(name, this, entry->id);
             if(chn == NULL || chn->HasMember(this))
                 return;
             chn->AttemptJoin(this, "");
@@ -9665,7 +9664,7 @@ void Player::UpdatePvPArea()
 
         // I just walked into either an enemies town, or a contested zone.
         // Force flag me if i'm not already.
-        if(sWorld.IsSanctuaryArea(areaDBC->AreaId) || sWorld.IsSanctuaryMap(GetMapId()))
+        if(HasAreaFlag(OBJECT_AREA_FLAG_INSANCTUARY))
         {
             if(IsPvPFlagged())
                 RemovePvPFlag();

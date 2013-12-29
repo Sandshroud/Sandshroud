@@ -50,7 +50,7 @@ void WorldSession::HandleAttackSwingOpcode( WorldPacket & recv_data )
                 return;
             }
 
-            int attackablestatus = intisAttackable( GetPlayer(), pEnemy, false );
+            int attackablestatus = FactionSystem::intisAttackable( GetPlayer(), pEnemy, false );
             if((attackablestatus < 1) && !pEnemy->IsInRangeOppFactSet(_player) &&
                 !pEnemy->CombatStatus.DidDamageTo(_player->GetGUID()))
             {

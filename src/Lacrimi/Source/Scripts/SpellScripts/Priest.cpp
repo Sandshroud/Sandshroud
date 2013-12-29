@@ -43,7 +43,7 @@ bool Penance(uint32 i, Spell* pSpell)
             break;
         }
 
-        if( isAttackable(pSpell->p_caster, unitTarget) ) // Do holy damage
+        if( FactionSystem::isAttackable(pSpell->p_caster, unitTarget) ) // Do holy damage
         {
             // First tick is instant.
             pSpell->p_caster->CastSpell(unitTarget, hostileSpell[0], true);
@@ -67,7 +67,7 @@ bool HolyNova(uint32 i, Spell* pSpell)
         uint32 friendlySpell = pSpell->GetSpellProto()->EffectTriggerSpell[1];
 
         // Do holy damage
-        if(isAttackable(pSpell->m_caster, unitTarget))
+        if(FactionSystem::isAttackable(pSpell->m_caster, unitTarget))
             pSpell->m_caster->CastSpell(unitTarget, hostileSpell, true);
         else
             pSpell->m_caster->CastSpell(unitTarget, friendlySpell, true);

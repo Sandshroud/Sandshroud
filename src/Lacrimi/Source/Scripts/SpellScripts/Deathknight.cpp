@@ -27,7 +27,7 @@ bool DeathCoil(uint32 i, Spell* pSpell)
     {
         if(pSpell->GetSpellProto()->Id == 52375)
             pSpell->damage = pSpell->damage * 2 / 5;    // 40% for rank 1
-        if(isAttackable(pSpell->u_caster, unitTarget, false))
+        if(FactionSystem::isAttackable(pSpell->u_caster, unitTarget, false))
             pSpell->TotalDamage += pSpell->u_caster->SpellNonMeleeDamageLog(unitTarget, pSpell->GetSpellProto()->Id, pSpell->damage, true);
         if(unitTarget->GetCreatureType() == UNDEAD)
         {

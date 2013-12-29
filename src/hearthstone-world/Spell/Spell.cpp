@@ -432,7 +432,7 @@ void Spell::FillSpecifiedTargetsInArea(uint32 i,float srcx,float srcy,float srcz
             {
                 if( (*itr)->IsUnit() )
                 {
-                    if( isAttackable( u_caster, TO_UNIT( *itr ),!(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))
+                    if( FactionSystem::isAttackable( u_caster, TO_UNIT( *itr ),!(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))
                     {
                         _AddTarget((TO_UNIT(*itr)), i);
                     }
@@ -446,7 +446,7 @@ void Spell::FillSpecifiedTargetsInArea(uint32 i,float srcx,float srcy,float srcz
             {
                 if( (*itr)->IsUnit() )
                 {
-                    if( isAttackable( u_caster, TO_UNIT( *itr ),!(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))
+                    if( FactionSystem::isAttackable( u_caster, TO_UNIT( *itr ),!(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))
                     {
                         _AddTarget((TO_UNIT(*itr)), i);
                     }
@@ -458,7 +458,7 @@ void Spell::FillSpecifiedTargetsInArea(uint32 i,float srcx,float srcy,float srcz
                 {
                     if((*itr)->IsUnit())
                     {   //trap, check not to attack owner and friendly
-                        if(isAttackable(g_caster->m_summoner,TO_UNIT(*itr),!(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))
+                        if(FactionSystem::isAttackable(g_caster->m_summoner,TO_UNIT(*itr),!(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))
                             _AddTarget((TO_UNIT(*itr)), i);
                     }
                 }
@@ -510,7 +510,7 @@ void Spell::FillAllTargetsInArea(uint32 i,float srcx,float srcy,float srcz, floa
             {
                 if( (*itr)->IsUnit() )
                 {
-                    if( isAttackable( m_caster, TO_UNIT( *itr ),!(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))
+                    if( FactionSystem::isAttackable( m_caster, TO_UNIT( *itr ),!(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))
                     {
                         ChainTargetContainer.push_back(*itr);
                         placeholder++;
@@ -526,7 +526,7 @@ void Spell::FillAllTargetsInArea(uint32 i,float srcx,float srcy,float srcz, floa
             {
                 if( (*itr)->IsUnit() )
                 {
-                    if( isAttackable( u_caster, TO_UNIT( *itr ),!(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))
+                    if( FactionSystem::isAttackable( u_caster, TO_UNIT( *itr ),!(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))
                     {
                         ChainTargetContainer.push_back(*itr);
                         placeholder++;
@@ -539,7 +539,7 @@ void Spell::FillAllTargetsInArea(uint32 i,float srcx,float srcy,float srcz, floa
                 {
                     if((*itr)->IsUnit())
                     {   //trap, check not to attack owner and friendly
-                        if(isAttackable(g_caster->m_summoner,TO_UNIT(*itr),!(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))
+                        if(FactionSystem::isAttackable(g_caster->m_summoner,TO_UNIT(*itr),!(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))
                         {
                             ChainTargetContainer.push_back(*itr);
                             placeholder++;
@@ -607,7 +607,7 @@ void Spell::FillAllFriendlyInArea( uint32 i, float srcx, float srcy, float srcz,
         {
             if( u_caster != NULL )
             {
-                if( isAttackable( u_caster, (*itr), !(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED) ) )
+                if( FactionSystem::isAttackable( u_caster, (*itr), !(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED) ) )
                 {
                     if((*itr)->IsUnit())
                         _AddTarget((TO_UNIT(*itr)), i);
@@ -622,7 +622,7 @@ void Spell::FillAllFriendlyInArea( uint32 i, float srcx, float srcy, float srcz,
                 if( g_caster != NULL && g_caster->GetUInt32Value( OBJECT_FIELD_CREATED_BY ) && g_caster->m_summoner != NULL )
                 {
                     //trap, check not to attack owner and friendly
-                    if( isAttackable( g_caster->m_summoner, TO_UNIT(*itr), !(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED) ) )
+                    if( FactionSystem::isAttackable( g_caster->m_summoner, TO_UNIT(*itr), !(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED) ) )
                         _AddTarget((TO_UNIT(*itr)), i);
                 }
                 else
@@ -685,7 +685,7 @@ uint64 Spell::GetSinglePossibleEnemy(uint32 i,float prange)
         {
             if( u_caster != NULL || (g_caster && g_caster->GetType() == GAMEOBJECT_TYPE_TRAP) )
             {
-                if(isAttackable(u_caster, TO_UNIT(*itr),!(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)) && _DidHit(i, TO_UNIT(*itr), reflect)==SPELL_DID_HIT_SUCCESS)
+                if(FactionSystem::isAttackable(u_caster, TO_UNIT(*itr),!(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)) && _DidHit(i, TO_UNIT(*itr), reflect)==SPELL_DID_HIT_SUCCESS)
                     return (*itr)->GetGUID(); 
             }
             else //cast from GO
@@ -693,7 +693,7 @@ uint64 Spell::GetSinglePossibleEnemy(uint32 i,float prange)
                 if(g_caster && g_caster->GetUInt32Value(OBJECT_FIELD_CREATED_BY) && g_caster->m_summoner)
                 {
                     //trap, check not to attack owner and friendly
-                    if( isAttackable( g_caster->m_summoner, TO_UNIT(*itr),!(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))
+                    if( FactionSystem::isAttackable( g_caster->m_summoner, TO_UNIT(*itr),!(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))
                         return (*itr)->GetGUID();
                 }
             }
@@ -732,7 +732,7 @@ uint64 Spell::GetSinglePossibleFriend(uint32 i,float prange)
         {
             if( u_caster != NULL )
             {
-                if( isFriendly( u_caster, TO_UNIT(*itr) ) && _DidHit(i, TO_UNIT(*itr), reflect)==SPELL_DID_HIT_SUCCESS)
+                if( FactionSystem::isFriendly( u_caster, TO_UNIT(*itr) ) && _DidHit(i, TO_UNIT(*itr), reflect)==SPELL_DID_HIT_SUCCESS)
                     return (*itr)->GetGUID(); 
             }
             else //cast from GO
@@ -740,7 +740,7 @@ uint64 Spell::GetSinglePossibleFriend(uint32 i,float prange)
                 if(g_caster && g_caster->GetUInt32Value(OBJECT_FIELD_CREATED_BY) && g_caster->m_summoner)
                 {
                     //trap, check not to attack owner and friendly
-                    if( isFriendly( g_caster->m_summoner, TO_UNIT(*itr) ) )
+                    if( FactionSystem::isFriendly( g_caster->m_summoner, TO_UNIT(*itr) ) )
                         return (*itr)->GetGUID();
                 }
             }
@@ -1820,7 +1820,7 @@ void Spell::cast(bool check)
                 ))
             {
                 Unit* u_target = p_caster->GetMapMgr()->GetUnit(m_targets.m_unitTarget);
-                if( u_target && u_target != u_caster && isAttackable( u_target, u_caster ) )
+                if( u_target && u_target != u_caster && FactionSystem::isAttackable( u_target, u_caster ) )
                 {
                     uint32 chance = p_caster->GetDummyAura(SPELL_HASH_DEADLY_BREW)->RankNumber == 1 ? 50 : 100;
                     if( Rand( chance ) )
@@ -3332,7 +3332,7 @@ uint8 Spell::CanCast(bool tolerate)
 
         if( GetSpellProto()->NameHash == SPELL_HASH_HUNTER_S_MARK )
         {
-            if( GetUnitTarget() && !isHostile( GetUnitTarget(), m_caster ))
+            if( GetUnitTarget() && !FactionSystem::isHostile( GetUnitTarget(), m_caster ))
                 return SPELL_FAILED_BAD_TARGETS;
         }
 
@@ -3867,7 +3867,7 @@ uint8 Spell::CanCast(bool tolerate)
     // set up our max Range
     float maxRange = GetSpellProto()->base_range_or_radius;
     if(m_targets.m_unitTarget && m_caster && m_caster->IsInWorld())
-        if(isCombatSupport(u_caster, m_caster->GetMapMgr()->GetUnit(m_targets.m_unitTarget)))
+        if(FactionSystem::isCombatSupport(u_caster, m_caster->GetMapMgr()->GetUnit(m_targets.m_unitTarget)))
             maxRange = GetSpellProto()->base_range_or_radius_friendly;
 
     if( GetSpellProto()->SpellGroupType && u_caster != NULL )
@@ -3967,7 +3967,7 @@ uint8 Spell::CanCast(bool tolerate)
                 {
                     // disallow spell casting in sanctuary zones
                     // allow attacks in duels
-                    if( p_caster->DuelingWith != target && !isFriendly( p_caster, target ) )
+                    if( p_caster->DuelingWith != target && !FactionSystem::isFriendly( p_caster, target ) )
                     {
                         AreaTable* atCaster = dbcArea.LookupEntry( p_caster->GetAreaId() );
                         AreaTable* atTarget = dbcArea.LookupEntry( target->GetAreaId() );
@@ -4761,7 +4761,7 @@ void Spell::Heal(int32 amount)
                 unordered_set<Object* >::iterator itr;
                 for( itr = unitTarget->GetInRangeSetBegin(); itr != unitTarget->GetInRangeSetEnd(); itr++ )
                 {
-                    if( !(*itr)->IsUnit() || !TO_UNIT(*itr)->isAlive() || isAttackable(u_caster, (*itr), true) )
+                    if( !(*itr)->IsUnit() || !TO_UNIT(*itr)->isAlive() || FactionSystem::isAttackable(u_caster, (*itr), true) )
                         continue;
 
                     if( targetcnt > 4 )

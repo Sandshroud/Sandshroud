@@ -1349,7 +1349,7 @@ void AchievementInterface::HandleAchievementCriteriaDoEmote(uint32 emoteId, Unit
         // Script individual ones here...
         if( ace->ID == 2379 ) // Make Love, Not Warcraft
         {
-            if( !pTarget || !pTarget->IsPlayer() || !pTarget->isDead() || !isHostile(pTarget, m_player) )
+            if( !pTarget || !pTarget->IsPlayer() || !pTarget->isDead() || !FactionSystem::isHostile(pTarget, m_player) )
                 SCRIPTOK_FALSE
 
             scriptOk = true;

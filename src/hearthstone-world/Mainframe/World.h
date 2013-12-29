@@ -520,7 +520,7 @@ public:
 
     uint32 mQueueUpdateInterval;
     bool cross_faction_world;
-    bool trade_world_chat;
+    uint32 trade_world_chat;
     uint32 m_deathKnightReqLevel;
     bool m_deathKnightOnePerAccount;
     bool EnableFatigue;
@@ -556,25 +556,13 @@ public:
     float NetworkStressIn;
     float NetworkStressOut;
 
-    bool CheckSanctuary(uint32 MapId, uint32 areaA, uint32 areaB)
+    bool CheckSanctuary(uint32 MapId, uint32 zone, uint32 area)
     {
-        if(FunServerMall != -1)
-            if(areaA == FunServerMall || areaB == FunServerMall)
-                return true;
-
-        std::set<uint32>::iterator end = Sanctuaries.end();
-        if(areaA == areaB)
-        {
-            if(Sanctuaries.find(areaA) != end)
-                return true;
-        }
-        else
-        {
-            if(Sanctuaries.find(areaA) != end)
-                return true;
-            if(Sanctuaries.find(areaB) != end)
-                return true;
-        }
+        if(FunServerMall != -1 && (zone == FunServerMall || area == FunServerMall))
+            return true;
+        if(Sanctuaries.find(zone) != Sanctuaries.end()
+            || Sanctuaries.find(area) != Sanctuaries.end())
+            return true;
         return SanctuaryMaps.find(MapId) != SanctuaryMaps.end();
     }
 

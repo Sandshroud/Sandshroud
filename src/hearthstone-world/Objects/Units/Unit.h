@@ -1329,7 +1329,7 @@ public:
 
     uint32 m_vampiricTouch;
 
-    void CancelSpell(Spell* ptr);
+    void EventCancelSpell(Spell* ptr);
     void EventStrikeWithAbility(uint64 guid, SpellEntry * sp, uint32 damage);
 
     /////////////////////////////////////////////////////// Unit properties ///////////////////////////////////////////////////
