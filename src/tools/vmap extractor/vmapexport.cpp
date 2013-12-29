@@ -127,6 +127,7 @@ bool ExtractWmo()
 
     //const char* ParsArchiveNames[] = {"patch-2.MPQ", "patch.MPQ", "common.MPQ", "expansion.MPQ"};
 
+    printf("\n");
     for (ArchiveSet::const_iterator ar_itr = gOpenArchives.begin(); ar_itr != gOpenArchives.end() && success; ++ar_itr)
     {
         vector<string> filelist;
@@ -140,8 +141,9 @@ bool ExtractWmo()
     }
 
     if (success)
-        printf("\nExtract wmo complete (No (fatal) errors)\n");
+        printf("Extract wmo complete (No (fatal) errors) %25s\r", "");
 
+    printf("\n");
     return success;
 }
 
@@ -176,11 +178,11 @@ bool ExtractSingleWmo(std::string& fname)
         return true;
 
     bool file_ok = true;
-    std::cout << "Extracting " << fname << std::endl;
+    printf("Extracting %55s\r", plain_name);
     WMORoot froot(fname);
     if(!froot.open())
     {
-        printf("Couldn't open RootWmo!!!\n");
+        printf("Couldn't open RootWmo!!!\n", fname.c_str());
         return true;
     }
     FILE *output = fopen(szLocalFile,"wb");
@@ -514,9 +516,8 @@ int main(int argc, char ** argv)
         {
             map_ids[x].id=dbc->getRecord (x).getUInt(0);
             strcpy(map_ids[x].name,dbc->getRecord(x).getString(1));
-            printf("Map - %s\n",map_ids[x].name);
+            printf("Map %u - %s\n", map_ids[x].id, map_ids[x].name);
         }
-
 
         delete dbc;
         ParsMapFiles();

@@ -147,82 +147,21 @@ public:
     uint32 CreatureSpawnCount;
     TerrainMgr* GetMapTerrain() { return _terrain; };
 
-    HEARTHSTONE_INLINE void LoadAllTerrain()
-    {
-        if(_terrain)
-            _terrain->LoadAllTerrain();
-    }
+    HEARTHSTONE_INLINE void LoadAllTerrain() { _terrain->LoadAllTerrain(); }
+    HEARTHSTONE_INLINE void UnloadAllTerrain() { _terrain->UnloadAllTerrain(); }
 
-    HEARTHSTONE_INLINE void UnloadAllTerrain()
-    {
-        if(_terrain)
-            _terrain->UnloadAllTerrain();
-    }
+    HEARTHSTONE_INLINE float GetLandHeight(float x, float y) { return _terrain->GetLandHeight(x, y); }
+    HEARTHSTONE_INLINE float GetWaterHeight(float x, float y, float z) { return _terrain->GetWaterHeight(x, y, z); }
+    HEARTHSTONE_INLINE uint16 GetWaterType(float x, float y) { return _terrain->GetWaterType(x, y); }
+    HEARTHSTONE_INLINE uint8 GetWalkableState(float x, float y) { return _terrain->GetWalkableState(x, y); }
 
-    HEARTHSTONE_INLINE float  GetLandHeight(float x, float y)
-    {
-        if(_terrain)
-            return _terrain->GetLandHeight(x, y);
-        return NO_LAND_HEIGHT;
-    }
-
-    HEARTHSTONE_INLINE float  GetWaterHeight(float x, float y, float z)
-    {
-        if(_terrain)
-            return _terrain->GetWaterHeight(x, y, z);
-        return NO_WATER_HEIGHT;
-    }
-
-    HEARTHSTONE_INLINE uint16  GetWaterType(float x, float y)
-    {
-        if(_terrain)
-            return _terrain->GetWaterType(x, y);
-        return 0;
-    }
-
-    HEARTHSTONE_INLINE uint8  GetWalkableState(float x, float y)
-    {
-        if(_terrain)
-            return _terrain->GetWalkableState(x, y);
-        return 1;
-    }
-
-    HEARTHSTONE_INLINE uint16 GetAreaID(float x, float y, float z)
-    {
-        if(_terrain)
-            return _terrain->GetAreaID(x, y, z);
-        return 0xFFFF;
-    }
-
-    HEARTHSTONE_INLINE void GetCellLimits(uint32 &StartX, uint32 &EndX, uint32 &StartY, uint32 &EndY)
-    {
-        if(_terrain)
-            _terrain->GetCellLimits(StartX, EndX, StartY, EndY);
-    }
-
-    HEARTHSTONE_INLINE bool CellHasAreaID(uint32 x, uint32 y, uint16 &AreaID)
-    {
-        if(_terrain)
-            return _terrain->CellHasAreaID(x, y, AreaID);
-        return false;
-    }
+    HEARTHSTONE_INLINE uint16 GetAreaID(float x, float y, float z) { return _terrain->GetAreaID(x, y, z); }
+    HEARTHSTONE_INLINE void GetCellLimits(uint32 &StartX, uint32 &EndX, uint32 &StartY, uint32 &EndY) { _terrain->GetCellLimits(StartX, EndX, StartY, EndY); }
+    HEARTHSTONE_INLINE bool CellHasAreaID(uint32 x, uint32 y, uint16 &AreaID) { return _terrain->CellHasAreaID(x, y, AreaID); }
 
     HEARTHSTONE_INLINE bool IsCollisionEnabled() { return Collision; }
-    HEARTHSTONE_INLINE void CellGoneActive(uint32 x, uint32 y)
-    {
-        if(_terrain)
-        {
-            _terrain->CellGoneActive(x,y);
-        }
-    }
-
-    HEARTHSTONE_INLINE void CellGoneIdle(uint32 x,uint32 y)
-    {
-        if(_terrain)
-        {
-            _terrain->CellGoneIdle(x,y);
-        }
-    }
+    HEARTHSTONE_INLINE void CellGoneActive(uint32 x, uint32 y) { _terrain->CellGoneActive(x,y); }
+    HEARTHSTONE_INLINE void CellGoneIdle(uint32 x,uint32 y) { _terrain->CellGoneIdle(x,y); }
 
 private:
     bool Collision;

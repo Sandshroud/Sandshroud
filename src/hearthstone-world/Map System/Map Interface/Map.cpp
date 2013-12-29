@@ -20,11 +20,7 @@ Map::Map(uint32 mapid, MapInfo * inf)
 
     // Setup terrain
     _terrain = new TerrainMgr(sWorld.MapPath, _mapId, !(inf->type == INSTANCE_NULL), Collision);
-    if(!_terrain->LoadTerrainHeader())
-    {
-        delete _terrain;
-        _terrain = NULL;
-    }
+    _terrain->LoadTerrainHeader();
 
     // get our name
     me = dbcMap.LookupEntry(_mapId);
@@ -94,7 +90,7 @@ Map::~Map()
     m_spawns.clear();
 
     // collision
-    if (sWorld.Collision)
+    if (Collision)
         CollideInterface.DeactivateMap(_mapId);
 }
 
