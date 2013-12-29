@@ -544,7 +544,7 @@ public:
     bool Collision;
     bool PathFinding;
 
-    bool ServerPreloading;
+    uint32 ServerPreloading;
 
     bool AHEnabled;
     bool DisableBufferSaving;

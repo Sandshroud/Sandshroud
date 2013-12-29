@@ -585,7 +585,7 @@ MapMgr* InstanceMgr::_CreateInstance(uint32 mapid, uint32 instanceid)
         sLog.Debug("InstanceMgr", "Created transport map %u.", mapid);
     else
     {
-        if(ret->IsCollisionEnabled())
+        if(m_maps[mapid]->IsCollisionEnabled())
             sLog.Notice("InstanceMgr", "Created Collision continent %s.", name);
         else
             sLog.Notice("InstanceMgr", "Created continent %s.", name);
@@ -660,6 +660,9 @@ void InstanceMgr::_CreateMap(uint32 mapid)
         return;
 
     m_maps[mapid] = new Map(mapid, inf);
+    if(sWorld.ServerPreloading)
+        m_maps[mapid]->LoadAllTerrain();
+
     if(inf->type == INSTANCE_NULL)
     {
         // we're a continent, create the instance.

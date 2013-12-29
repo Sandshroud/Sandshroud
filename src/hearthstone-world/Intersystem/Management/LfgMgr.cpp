@@ -9,26 +9,19 @@ initialiseSingleton( LfgMgr );
 LfgMgr::LfgMgr()
 {
     MaxDungeonID = 0;
-    uint32 levelgroup[2];
-    levelgroup[0] = LFG_LEVELGROUP_NONE;
-    levelgroup[1] = LFG_LEVELGROUP_NONE;
     DBCStorage<LookingForGroup>::iterator itr;
     for(itr = dbcLookingForGroup.begin(); itr != dbcLookingForGroup.end(); ++itr)
     {
-        if((*itr)->ID > MaxDungeonID)
+        if(MaxDungeonID < (*itr)->ID)
             MaxDungeonID = (*itr)->ID;
 
-        levelgroup[0] = GetPlayerLevelGroup((*itr)->minlevel);
-        if(levelgroup[0] != LFG_LEVELGROUP_NONE)
-            DungeonsByLevel[levelgroup[0]].insert((*itr)->ID);
+        uint32 levelgroup = GetPlayerLevelGroup((*itr)->minlevel);
+        if(levelgroup != LFG_LEVELGROUP_NONE)
+            DungeonsByLevel[levelgroup].insert((*itr)->ID);
 
-        levelgroup[1] = GetPlayerLevelGroup((*itr)->maxlevel);
-        if(levelgroup[1] != LFG_LEVELGROUP_NONE)
-            if(levelgroup[0] != levelgroup[1])
-                DungeonsByLevel[levelgroup[1]].insert((*itr)->ID);
-
-        levelgroup[0] = LFG_LEVELGROUP_NONE;
-        levelgroup[1] = LFG_LEVELGROUP_NONE;
+        if(uint32 levelgroup2 = GetPlayerLevelGroup((*itr)->maxlevel))
+            if(levelgroup != levelgroup2)
+                DungeonsByLevel[levelgroup2].insert((*itr)->ID);
     }
 }
 
@@ -51,7 +44,6 @@ void LfgMgr::LoadRandomDungeonRewards()
                 continue;
 
             uint32 questid[2], moneyreward[2], XPreward[2];
-            questid[0] = questid[1] = moneyreward[0] = moneyreward[1] = XPreward[0] = XPreward[1] = 0;
 
             // First Reward
             questid[0] = fields[2].GetUInt32();
@@ -63,8 +55,7 @@ void LfgMgr::LoadRandomDungeonRewards()
             moneyreward[1] = fields[6].GetUInt32();
             XPreward[1] = fields[7].GetUInt32();
 
-            LfgReward* reward = new LfgReward(questid[0], moneyreward[0], XPreward[0], questid[1], moneyreward[1], XPreward[1]);
-            DungeonRewards[dungeonid] = reward;
+            DungeonRewards[dungeonid] = new LfgReward(questid[0], moneyreward[0], XPreward[0], questid[1], moneyreward[1], XPreward[1]);
             count++;
         }while(result->NextRow());
     }

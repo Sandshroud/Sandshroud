@@ -4,7 +4,7 @@
 
 #include "StdAfx.h"
 
-TerrainMgr::TerrainMgr(string MapPath, uint32 MapId, bool Instanced) : mapPath(MapPath), mapId(MapId), Instance(Instanced)
+TerrainMgr::TerrainMgr(string MapPath, uint32 MapId, bool Instanced, bool collisionMap) : mapPath(MapPath), mapId(MapId), Instance(Instanced), m_CollisionMap(collisionMap)
 {
     TileCountX = TileCountY = 0;
     TileStartX = TileEndX = 0;
@@ -283,18 +283,15 @@ bool TerrainMgr::LoadTileInformation(uint32 x, uint32 y)
         return false;
 }
 
-bool TerrainMgr::UnloadTileInformation(uint32 x, uint32 y)
+void TerrainMgr::UnloadTileInformation(uint32 x, uint32 y)
 {
-    uint32 Start = getMSTime();
-
-    assert(!Instance);
-
     mutex.Acquire();
 
     uint32 offsX = x-TileStartX, offsY = y-TileStartY;
     // Find our information pointer.
-    TileTerrainInformation * ptr = TileInformation[offsX][offsY];
-    assert(ptr != 0);
+    TileTerrainInformation *ptr = TileInformation[offsX][offsY];
+    if(ptr == NULL)
+        return;
 
     // Set the spot to unloaded (null).
     TileInformation[offsX][offsY] = 0;
@@ -303,9 +300,8 @@ bool TerrainMgr::UnloadTileInformation(uint32 x, uint32 y)
     delete ptr;
     mutex.Release();
 
-    sLog.Debug("TerrainMgr","Unloaded tile information for tile [%u][%u] in %ums.", x, y, getMSTime() - Start);
-    // Success
-    return true;
+    sLog.Debug("TerrainMgr","Unloaded tile information for tile [%u][%u]", x, y);
+    return;
 }
 
 uint16 TerrainMgr::GetWaterType(float x, float y)
@@ -494,8 +490,12 @@ void TerrainMgr::CellGoneActive(uint32 x, uint32 y)
 {
     uint32 tileX = x/8, tileY = y/8;
     mutex.Acquire();
-    LoadCounter[tileX][tileY]++;
 
+    LoadCounter[tileX][tileY]++;
+    if(m_CollisionMap)
+        CollideInterface.ActivateTile(mapId, tileX, tileY);
+    if(sWorld.PathFinding)
+        NavMeshInterface.LoadNavMesh(mapId, tileX, tileY);
     if(!AreTilesValid(tileX, tileY))
     {
         mutex.Release();
@@ -521,7 +521,10 @@ void TerrainMgr::CellGoneIdle(uint32 x, uint32 y)
     uint32 tileX = x/8, tileY = y/8;
     mutex.Acquire();
     LoadCounter[tileX][tileY]--;
-
+    if(m_CollisionMap)
+        CollideInterface.DeactivateTile(mapId, tileX, tileY);
+    if(sWorld.PathFinding)
+        NavMeshInterface.UnloadNavMesh(mapId, tileX, tileY);
     if(!AreTilesValid(tileX, tileY))
     {
         mutex.Release();
@@ -540,4 +543,30 @@ void TerrainMgr::CellGoneIdle(uint32 x, uint32 y)
     // If we're not an instance, unload our Tile info.
     if(LoadCounter[tileX][tileY] == 0)
         UnloadTileInformation(tileX, tileY);
+}
+
+void TerrainMgr::LoadAllTerrain()
+{
+    sLog.Debug("TerrainMgr", "[%u]: Loading all terrain", mapId);
+    for(uint32 x = TileStartX; x < TileEndX; x++)
+    {
+        for(uint32 y = TileStartY; y < TileEndY; y++)
+        {
+            LoadCounter[x][y]++;
+            LoadTileInformation(x, y);
+        }
+    }
+    sLog.Debug("TerrainMgr", "[%u]: All terrain loaded", mapId);
+}
+
+void TerrainMgr::UnloadAllTerrain()
+{
+    for(uint32 x = 0; x < 64; x++)
+    {
+        for(uint32 y = 0; y < 64; y++)
+        {
+            LoadCounter[x][y]--;
+            UnloadTileInformation(x, y);
+        }
+    }
 }

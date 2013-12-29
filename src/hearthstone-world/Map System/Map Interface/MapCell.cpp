@@ -58,13 +58,6 @@ void MapCell::SetActivity(bool state)
 
         if(_unloadpending)
             CancelPendingUnload();
-
-        if (_mapmgr->IsCollisionEnabled())
-        {
-            if(CollideInterface.ActivateTile(_mapmgr->GetMapId(), x, y))
-                if(sWorld.PathFinding)
-                    NavMeshInterface.LoadNavMesh(_mapmgr->GetMapId(), x, y);
-        }
     }
     else if(_active && !state)
     {
@@ -77,14 +70,6 @@ void MapCell::SetActivity(bool state)
 
         if(!_unloadpending)
             QueueUnloadPending();
-
-        if (_mapmgr->IsCollisionEnabled())
-        {
-            CollideInterface.DeactivateTile(_mapmgr->GetMapId(), x, y);
-
-            if(sWorld.PathFinding)
-                NavMeshInterface.UnloadNavMesh(_mapmgr->GetMapId(), x, y);
-        }
     }
 
     _active = state;

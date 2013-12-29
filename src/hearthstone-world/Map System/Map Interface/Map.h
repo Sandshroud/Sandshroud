@@ -147,6 +147,18 @@ public:
     uint32 CreatureSpawnCount;
     TerrainMgr* GetMapTerrain() { return _terrain; };
 
+    HEARTHSTONE_INLINE void LoadAllTerrain()
+    {
+        if(_terrain)
+            _terrain->LoadAllTerrain();
+    }
+
+    HEARTHSTONE_INLINE void UnloadAllTerrain()
+    {
+        if(_terrain)
+            _terrain->UnloadAllTerrain();
+    }
+
     HEARTHSTONE_INLINE float  GetLandHeight(float x, float y)
     {
         if(_terrain)
@@ -195,6 +207,7 @@ public:
         return false;
     }
 
+    HEARTHSTONE_INLINE bool IsCollisionEnabled() { return Collision; }
     HEARTHSTONE_INLINE void CellGoneActive(uint32 x, uint32 y)
     {
         if(_terrain)
@@ -212,6 +225,7 @@ public:
     }
 
 private:
+    bool Collision;
     TerrainMgr *_terrain;
     MapInfo *_mapInfo;
     uint32 _mapId;

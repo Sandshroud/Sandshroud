@@ -14,7 +14,7 @@ enum CThreadState
     THREADSTATE_SELF_TERMINATE = 5,
 };
 
-class  ThreadContext
+class SERVER_DECL ThreadContext
 {
 public:
     ThreadContext()

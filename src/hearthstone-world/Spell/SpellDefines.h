@@ -1495,20 +1495,20 @@ HEARTHSTONE_INLINE bool IsDamagingSpell(SpellEntry *sp)
     {
         switch (sp->Effect[i])
         {
-            case SPELL_EFFECT_SCHOOL_DAMAGE:
-            case SPELL_EFFECT_ENVIRONMENTAL_DAMAGE:
-            case SPELL_EFFECT_HEALTH_LEECH:
-            case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
-            case SPELL_EFFECT_ADD_EXTRA_ATTACKS:
-            case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
-            case SPELL_EFFECT_WEAPON_DAMAGE:
-            case SPELL_EFFECT_POWER_BURN:
-            case SPELL_EFFECT_ATTACK:
-            case SPELL_EFFECT_DUMMYMELEE:
-                return true;
+        case SPELL_EFFECT_SCHOOL_DAMAGE:
+        case SPELL_EFFECT_ENVIRONMENTAL_DAMAGE:
+        case SPELL_EFFECT_HEALTH_LEECH:
+        case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
+        case SPELL_EFFECT_ADD_EXTRA_ATTACKS:
+        case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
+        case SPELL_EFFECT_WEAPON_DAMAGE:
+        case SPELL_EFFECT_POWER_BURN:
+        case SPELL_EFFECT_ATTACK:
+        case SPELL_EFFECT_DUMMYMELEE:
+            return true;
 
-            case SPELL_EFFECT_APPLY_AURA:
-            case SPELL_EFFECT_APPLY_AREA_AURA:
+        case SPELL_EFFECT_APPLY_AURA:
+        case SPELL_EFFECT_APPLY_AREA_AURA:
             {
                 switch (sp->EffectApplyAuraName[i])
                 {

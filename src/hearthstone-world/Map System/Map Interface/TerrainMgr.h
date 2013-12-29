@@ -44,7 +44,7 @@ public:
                     in use.
        No return value.
       */
-    TerrainMgr(string MapPath, uint32 MapId, bool Instanced);
+    TerrainMgr(string MapPath, uint32 MapId, bool Instanced, bool collisionMap);
 
     /* Cleans up all arrays, and unloads any pending tile information.
        No parameters.
@@ -67,6 +67,16 @@ public:
       */
     void CellGoneActive(uint32 x, uint32 y);
 
+    /* Loads all tile information
+       No return value.
+      */
+    void LoadAllTerrain();
+
+    /* Unloads all tile information
+       No return value.
+      */
+    void UnloadAllTerrain();
+
     /* Information retrieval functions
        These functions all take the same input values, an x and y global co-ordinate.
        They will all return 0 if the tile information is not loaded or does not exist,
@@ -88,7 +98,7 @@ private:
     uint32 mapId;
 
     /// Are we an instance?
-    bool Instance;
+    bool Instance, m_CollisionMap;
 
     /// We don't want to be reading from a file from more than one thread at once
     Mutex mutex;
@@ -146,9 +156,9 @@ protected:
     /* Unloads the tile data at the specified co-ordinates and frees the memory.
        Parameter 1: x co-ordinate of the tile information to free.
        Parameter 2: y co-ordinate of the tile information to free.
-       Returns true if the free was successful, otherwise false.
+       No return value.
       */
-    bool UnloadTileInformation(uint32 x, uint32 y);
+    void UnloadTileInformation(uint32 x, uint32 y);
 
     /* Gets a tile information pointer so that another function can access its data.
        Parameter 1: tile x co-ordinate.

@@ -11,18 +11,18 @@
 #include <Windows.h>
 #endif
 
-class SERVER_DECL Mutex
+class SERVER_DECL EasyMutex
 {
 public:
     friend class Condition;
 
     /** Initializes a mutex class, with InitializeCriticalSection / pthread_mutex_init
      */
-    Mutex();
+    EasyMutex();
 
     /** Deletes the associated critical section / mutex
      */
-    ~Mutex();
+    ~EasyMutex();
 
     /** Acquires this mutex. If it cannot be acquired immediately, it will block.
      */
@@ -77,69 +77,105 @@ protected:
 #endif
 };
 
-#if PLATFORM == PLATFORM_WIN
-
-class SERVER_DECL FastMutex
+class SERVER_DECL SmartMutex
 {
-#pragma pack(push,8)
-    volatile long m_lock;
-#pragma pack(pop)
-    DWORD m_recursiveCount;
-
 public:
-    HEARTHSTONE_INLINE FastMutex() : m_lock(0),m_recursiveCount(0) {}
-    HEARTHSTONE_INLINE ~FastMutex() {}
+    friend class Condition;
 
-    HEARTHSTONE_INLINE void Acquire()
+    /** Initializes a mutex class, with InitializeCriticalSection / pthread_mutex_init
+     */
+    SmartMutex();
+
+    /** Deletes the associated critical section / mutex
+     */
+    ~SmartMutex();
+
+    /** Acquires this mutex. If it cannot be acquired immediately, it will block.
+     */
+    HEARTHSTONE_INLINE void Acquire(bool RestrictUnlocking = false)
     {
-        DWORD thread_id = GetCurrentThreadId(), owner;
-        if(thread_id == (DWORD)m_lock)
+        if(hearthstone_GetThreadId() == m_activeThread)
         {
-            ++m_recursiveCount;
+            m_ThreadCalls++;
             return;
         }
 
-        for(;;)
-        {
-            owner = InterlockedCompareExchange(&m_lock, thread_id, 0);
-            if(owner == 0)
-                break;
-
-            if(!SwitchToThread())
-                printf("REPORT TO DEVS: Thread %u entered wait state at(no next thread found), possible lockup! m_recursiveCount = %u \n", thread_id, m_recursiveCount);
-        }
-
-        ++m_recursiveCount;
+#if PLATFORM != PLATFORM_WIN
+        pthread_mutex_lock(&mutex);
+#else
+        EnterCriticalSection(&cs);
+#endif
+        m_ThreadCalls++;
+        m_activeThread = hearthstone_GetThreadId();
+        LockReleaseToThread = RestrictUnlocking;
     }
 
-    HEARTHSTONE_INLINE bool AttemptAcquire()
+    /** Releases this mutex. No error checking performed
+     */
+    HEARTHSTONE_INLINE void Release()
     {
-        DWORD thread_id = GetCurrentThreadId();
-        if(thread_id == (DWORD)m_lock)
+        // If we're locked to this specific thread, and we're unlocked from another thread, error
+        if(LockReleaseToThread && hearthstone_GetThreadId() != m_activeThread)
+            ASSERT(false && "MUTEX RELEASE CALLED FROM NONACTIVE THREAD!");
+
+        m_ThreadCalls--;
+        if(m_ThreadCalls == 0)
         {
-            ++m_recursiveCount;
+            m_activeThread = 0;
+#if PLATFORM != PLATFORM_WIN
+            pthread_mutex_unlock(&mutex);
+#else
+            LeaveCriticalSection(&cs);
+#endif
+        }
+    }
+
+    /** Attempts to acquire this mutex. If it cannot be acquired (held by another thread)
+     * it will return false.
+     * @return false if cannot be acquired, true if it was acquired.
+     */
+    HEARTHSTONE_INLINE bool AttemptAcquire(bool RestrictUnlocking = false)
+    {
+        if(hearthstone_GetThreadId() == m_activeThread)
+        {
+            m_ThreadCalls++;
             return true;
         }
 
-        DWORD owner = InterlockedCompareExchange(&m_lock, thread_id, 0);
-        if(owner == 0)
+#if PLATFORM != PLATFORM_WIN
+        if(pthread_mutex_trylock(&mutex) == 0)
+#else
+        if(TryEnterCriticalSection(&cs) == TRUE)
+#endif
         {
-            ++m_recursiveCount;
+            m_ThreadCalls++;
+            m_activeThread = hearthstone_GetThreadId();
+            LockReleaseToThread = RestrictUnlocking;
             return true;
         }
-
         return false;
     }
 
-    HEARTHSTONE_INLINE void Release()
-    {
-        if((--m_recursiveCount) == 0)
-            InterlockedExchange(&m_lock, 0);
-    }
-};
+protected:
+    bool LockReleaseToThread;
+    uint32 m_activeThread;
+    uint32 m_ThreadCalls;
+
+#if PLATFORM == PLATFORM_WIN
+    /** Critical section used for system calls
+     */
+    CRITICAL_SECTION cs;
 
 #else
+    /** Static mutex attribute
+     */
+    static bool attr_initalized;
+    static pthread_mutexattr_t attr;
 
-#define FastMutex Mutex
-
+    /** pthread struct used in system calls
+     */
+    pthread_mutex_t mutex;
 #endif
+};
+
+#define Mutex EasyMutex

@@ -947,12 +947,6 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint32 flags, uint32 movefl
             rotation = TO_GAMEOBJECT(this)->m_rotation;
         *data << uint64(rotation); //blizz 64bit rotation
     }
-
-    if(moveinfo != NULL)
-    {
-        delete moveinfo;
-        moveinfo = NULL;
-    }
 }
 
 //=======================================================================================
@@ -1342,8 +1336,9 @@ void Object::AddToWorld()
             return; //instance add failed
     }
 
-    UpdateAreaInfo(mapMgr);
-    if( IsPlayer() )
+    if(!IsPlayer())
+        UpdateAreaInfo(mapMgr);
+    else
     {
         // battleground checks
         Player* p = TO_PLAYER(this);
@@ -1376,7 +1371,8 @@ void Object::AddToWorld(MapMgr* pMapMgr)
     if(!pMapMgr)
         return; //instance add failed
 
-    UpdateAreaInfo(pMapMgr);
+    if(!IsPlayer())
+        UpdateAreaInfo(pMapMgr);
     m_mapMgr = pMapMgr;
     m_inQueue = true;
 
@@ -1443,7 +1439,8 @@ void Object::PushToWorld(MapMgr* mgr)
     m_mapId = mgr->GetMapId();
     m_instanceId = mgr->GetInstanceID();
 
-    UpdateAreaInfo(mgr);
+    if(!IsPlayer())
+        UpdateAreaInfo(mgr);
     m_mapMgr = mgr;
     OnPrePushToWorld();
 

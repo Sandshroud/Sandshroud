@@ -143,12 +143,18 @@ public:
     Unit *GetNearestTargetInSet(set<Unit*> pTargetSet);
     Unit *GetSecondMostHatedTargetInSet(set<Unit*> pTargetSet );
     Unit *ChooseBestTargetInSet(set<Unit*> pTargetSet, uint32 pTargetFilter);
-    Unit *GetBestUnitTarget( uint32 pTargetFilter, float pMinRange, float pMaxRange);
-    Unit *GetBestPlayerTarget( uint32 pTargetFilter, float pMinRange, float pMaxRange);
+    Unit *GetBestUnitTarget( SpellEntry *info, uint32 pTargetFilter, float pMinRange, float pMaxRange);
+    Unit *GetBestPlayerTarget( SpellEntry *info, uint32 pTargetFilter, float pMinRange, float pMaxRange);
 
-    bool CanCastFuckingSpell(Unit* Target, AI_Spell* toCast, uint32 currentTime);
-    void CastFuckingAISpell(Unit* Target, AI_Spell* toCast, uint32 currentTime);
-    bool IsValidUnitTarget( Object *pObject, uint32 pFilter, float pMinRange = 0.0f, float pMaxRange = 0.0f  );
+    bool CanCastAISpell(AI_Spell* toCast, uint32 currentTime);
+    void CastAISpell(Unit* Target, AI_Spell* toCast, uint32 currentTime);
+    bool IsValidUnitTarget( Object *pObject, SpellEntry *info, uint32 pFilter, float pMinRange = 0.0f, float pMaxRange = 0.0f  );
+    bool IsValidUnitTarget( Object *pObject, AI_Spell* pSpell)
+    {
+        if(pObject == NULL || pSpell == NULL)
+            return false;
+        return IsValidUnitTarget(pObject, pSpell->info, pSpell->TargetFilter, pSpell->mindist2cast, pSpell->maxdist2cast);
+    }
 
     void ResetProcCounts(bool all = false);
 
@@ -157,6 +163,7 @@ public:
     void setGuardTimer(uint32 timer) { m_guardTimer = timer; }
     uint32 m_guardCallTimer;
     void _UpdateCombat(uint32 p_time);
+    void CheckNextTargetFlyingStatus();
 
 protected:
     bool m_AllowedToEnterCombat;
