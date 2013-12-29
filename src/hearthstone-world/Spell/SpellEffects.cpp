@@ -453,7 +453,7 @@ void Spell::SpellEffectTeleportUnits( uint32 i )  // Teleport Units
         {
             /* try to get a selection */
             pTarget = m_caster->GetMapMgr()->GetUnit(p_caster->GetSelection());
-            if( (pTarget == NULL ) || !isAttackable(p_caster, pTarget, !(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED) ) || (pTarget->CalcDistance(p_caster) > 30.0f))
+            if( (pTarget == NULL ) || !FactionSystem::isAttackable(p_caster, pTarget, !(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED) ) || (pTarget->CalcDistance(p_caster) > 30.0f))
                 return;
         }
 
@@ -1934,7 +1934,7 @@ void Spell::SpellEffectDispel(uint32 i) // Dispel
         return;
 
     uint32 start,end;
-    if(isAttackable(u_caster,unitTarget))
+    if(FactionSystem::isAttackable(u_caster,unitTarget))
     {
         start=0;
         end=MAX_POSITIVE_AURAS;
@@ -3068,7 +3068,7 @@ void Spell::SpellEffectDuel(uint32 i) // Duel
         return;
     }
 
-    if((p_caster->GetAreaId() && sWorld.IsSanctuaryArea(p_caster->GetAreaId())) || sWorld.IsSanctuaryMap(p_caster->GetMapId()))
+    if(p_caster->HasAreaFlag(OBJECT_AREA_FLAG_INSANCTUARY))
     {
         SendCastResult(SPELL_FAILED_NO_DUELING);
         return;
@@ -3652,7 +3652,7 @@ void Spell::SpellEffectDispelMechanic(uint32 i)
         return;
 
     int32 sMisc = (int32)GetSpellProto()->EffectMiscValue[i];
-    unitTarget->m_AuraInterface.AttemptDispel(u_caster, sMisc, (unitTarget == u_caster || !isAttackable( u_caster, unitTarget )));
+    unitTarget->m_AuraInterface.AttemptDispel(u_caster, sMisc, (unitTarget == u_caster || !FactionSystem::isAttackable( u_caster, unitTarget )));
 
     if( playerTarget && GetSpellProto()->NameHash == SPELL_HASH_DAZED && playerTarget->IsMounted() )
         TO_UNIT(playerTarget)->Dismount();
@@ -4042,7 +4042,7 @@ void Spell::SpellEffectSpellSteal( uint32 i )
         }
     }
 
-    if(!isAttackable(u_caster,unitTarget))
+    if(!FactionSystem::isAttackable(u_caster,unitTarget))
         return;
 
     unitTarget->m_AuraInterface.SpellStealAuras(u_caster, damage);

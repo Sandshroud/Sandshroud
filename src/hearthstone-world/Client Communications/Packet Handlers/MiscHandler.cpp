@@ -1086,33 +1086,27 @@ void WorldSession::HandleSetWatchedFactionIndexOpcode(WorldPacket &recvPacket)
 void WorldSession::HandleTogglePVPOpcode(WorldPacket& recv_data)
 {
     CHECK_INWORLD_RETURN();
+    std::string error;
     uint32 areaId = _player->GetAreaId();
-    AreaTable * at = dbcArea.LookupEntryForced(areaId);
     if(sWorld.FunServerMall != -1 && areaId == (uint32)sWorld.FunServerMall)
     {
-        if(at != NULL)
-            sChatHandler.ColorSystemMessage(this, MSG_COLOR_WHITE, "You cannot flag for PvP while in the area: %s.", at->name);
-        else
-            sChatHandler.ColorSystemMessage(this, MSG_COLOR_WHITE, "You cannot do that here.");
-
-        if( _player->IsFFAPvPFlagged() || _player->IsPvPFlagged() )
+        if(AreaTable *at = dbcArea.LookupEntryForced(areaId))
         {
-            if( _player->IsPvPFlagged() )
-                _player->RemovePvPFlag();
-            if( _player->IsFFAPvPFlagged() )
-                _player->RemoveFFAPvPFlag();
+            error.append("You cannot flag for PvP while in the area: ");
+            error.append(at->name);
+            error.append(".");
         }
+        else
+            error.append("You cannot do that here.");
         return;
     }
+    else if(_player->HasAreaFlag(OBJECT_AREA_FLAG_INSANCTUARY))
+        error.append("You cannot do that here.");
 
-    if(sWorld.IsSanctuaryMap(_player->GetMapId()))
-        sChatHandler.ColorSystemMessage(this, MSG_COLOR_WHITE, "You cannot do that here.");
-    else if( at == NULL)
+    if(!error.length())
         _player->PvPToggle(); // Crow: Should be a delayed pvp flag
-    else if(!sWorld.IsSanctuaryArea(areaId))
-        _player->PvPToggle();
     else
-        sChatHandler.ColorSystemMessage(this, MSG_COLOR_WHITE, "You cannot do that here.");
+        sChatHandler.ColorSystemMessage(this, MSG_COLOR_WHITE, error.c_str());
 }
 
 void WorldSession::HandleAmmoSetOpcode(WorldPacket & recv_data)

@@ -64,6 +64,15 @@ Channel::Channel(const char * name, uint32 team, uint32 type_id, uint32 id)
         m_flags = 0x01;
 }
 
+Channel::~Channel()
+{
+    m_lock.Acquire();
+    for(MemberMap::iterator itr = m_members.begin(); itr != m_members.end(); itr++)
+        itr->first->LeftChannel(this);
+    m_lock.Release();
+    m_deleted = true;
+}
+
 void Channel::UserListJoinNotify(Player* plr)
 {
     WorldPacket data(SMSG_USERLIST_ADD, 8+1+1+4+m_name.size()+1);
@@ -800,6 +809,25 @@ void Channel::GetOwner(Player* plr)
         }
     }
 }
+
+void Channel::SendToAll(WorldPacket * data, Player* plr)
+{
+    Guard guard(m_lock);
+    for(MemberMap::iterator itr = m_members.begin(); itr != m_members.end(); itr++)
+    {
+        if(plr != NULL && itr->first == plr)
+            continue;
+
+        if ( itr->first->GetSession() )
+            itr->first->GetSession()->SendPacket(data);
+    }
+}
+
+ChannelMgr::ChannelMgr()
+{
+    m_idHigh = 0;
+}
+
 ChannelMgr::~ChannelMgr()
 {
     for(int i = 0; i < 2; i++)
@@ -813,43 +841,13 @@ ChannelMgr::~ChannelMgr()
     }
 }
 
-Channel::~Channel()
+Channel * ChannelMgr::GetCreateChannel(const char *name, Player* p)
 {
-    m_lock.Acquire();
-    for(MemberMap::iterator itr = m_members.begin(); itr != m_members.end(); itr++)
-        itr->first->LeftChannel(this);
-    m_lock.Release();
-    m_deleted = true;
-}
-
-void Channel::SendToAll(WorldPacket * data)
-{
-    Guard guard(m_lock);
-    for(MemberMap::iterator itr = m_members.begin(); itr != m_members.end(); itr++)
-    {
-        if( itr->first->GetSession() )
-            itr->first->GetSession()->SendPacket(data);
-    }
-}
-
-void Channel::SendToAll(WorldPacket * data, Player* plr)
-{
-    Guard guard(m_lock);
-    for(MemberMap::iterator itr = m_members.begin(); itr != m_members.end(); itr++)
-    {
-        if ( itr->first != plr && itr->first->GetSession() )
-            itr->first->GetSession()->SendPacket(data);
-    }
-}
-
-Channel * ChannelMgr::GetCreateChannel(const char *name, Player* p, uint32 type_id)
-{
+    uint32 rTeam = seperatechannels && p != NULL ? p->GetTeam() : 0;
     ChannelList::iterator itr;
-    ChannelList * cl = &Channels[0];
+    ChannelList * cl = &Channels[rTeam];
     Channel * chn;
     uint32 cid;
-    if( seperatechannels && p != NULL )
-        cl = &Channels[p->GetTeam()];
 
     lock.Acquire();
     for(itr = cl->begin(); itr != cl->end(); itr++)
@@ -875,19 +873,44 @@ Channel * ChannelMgr::GetCreateChannel(const char *name, Player* p, uint32 type_
     m_confSettingLock.Release();
 
     cid = ++m_idHigh;
-    chn = new Channel(name, ( seperatechannels && p != NULL ) ? p->GetTeam() : 0, type_id, cid);
+    chn = new Channel(name, rTeam, 0, cid);
     cl->insert(make_pair(chn->m_name, chn));
     m_idToChannel.insert(make_pair(cid, chn));
     lock.Release();
     return chn;
 }
 
+Channel * ChannelMgr::GetCreateDBCChannel(const char *name, Player* p, uint32 type_id)
+{
+    uint32 rTeam = seperatechannels && p != NULL ? p->GetTeam() : 0;
+    uint32 cid;
+    Channel *chn;
+    DBCChannelMap * dbcChannel = &DBCChannels[rTeam];
+    DBCChannelBounds channelBounds = dbcChannel->equal_range(type_id);
+
+    lock.Acquire();
+    for(DBCChannelMap::iterator itr = channelBounds.first; itr != channelBounds.second; itr++)
+    {
+        if(!stricmp(name, itr->second.first.c_str()))
+        {
+            lock.Release();
+            return itr->second.second;
+        }
+    }
+
+    cid = ++m_idHigh;
+    chn = new Channel(name, rTeam, type_id, cid);
+    dbcChannel->insert(std::make_pair(type_id, std::make_pair(chn->m_name, chn)));
+    m_idToChannel.insert(std::make_pair(cid, chn));
+    lock.Release();
+    return chn;
+}
+
 Channel * ChannelMgr::GetChannel(const char *name, Player* p, bool requiresIn)
 {
+    uint32 rteam = seperatechannels && p != NULL ? p->GetTeam() : 0;
     ChannelList::iterator itr;
-    ChannelList * cl = &Channels[0];
-    if(seperatechannels)
-        cl = &Channels[p->GetTeam()];
+    ChannelList * cl = &Channels[rteam];
 
     lock.Acquire();
     for(itr = cl->begin(); itr != cl->end(); itr++)
@@ -902,17 +925,29 @@ Channel * ChannelMgr::GetChannel(const char *name, Player* p, bool requiresIn)
         }
     }
 
+    DBCChannelMap::iterator itr2;
+    DBCChannelMap *dbcchannel = &DBCChannels[rteam];
+    for(itr2 = dbcchannel->begin(); itr2 != dbcchannel->end(); itr2++)
+    {
+        if(!stricmp(name, itr2->second.first.c_str()))
+        {
+            if(requiresIn && !itr2->second.second->HasMember(p))
+                continue;
+
+            lock.Release();
+            return itr2->second.second;
+        }
+    }
+
     lock.Release();
     return NULL;
 }
 
 Channel * ChannelMgr::GetChannel(uint32 id)
 {
-    ChannelMap::iterator itr;
-    Channel *ret = NULL;
-
     lock.Acquire();
-    itr = m_idToChannel.find(id);
+    Channel *ret = NULL;
+    ChannelMap::iterator itr = m_idToChannel.find(id);
     if( itr != m_idToChannel.end() )
         ret = itr->second;
 
@@ -922,18 +957,27 @@ Channel * ChannelMgr::GetChannel(uint32 id)
 
 Channel * ChannelMgr::GetChannel(const char *name, uint32 team)
 {
-    ChannelList::iterator itr;
-    ChannelList * cl = &Channels[0];
-    if(seperatechannels)
-        cl = &Channels[team];
+    uint32 rteam = seperatechannels ? team : 0;
 
     lock.Acquire();
-    for(itr = cl->begin(); itr != cl->end(); itr++)
+    ChannelList * cl = &Channels[rteam];
+    for(ChannelList::iterator itr = cl->begin(); itr != cl->end(); itr++)
     {
         if(!stricmp(name, itr->first.c_str()))
         {
             lock.Release();
             return itr->second;
+        }
+    }
+
+    DBCChannelMap::iterator itr2;
+    DBCChannelMap *dbcchannel = &DBCChannels[rteam];
+    for(itr2 = dbcchannel->begin(); itr2 != dbcchannel->end(); itr2++)
+    {
+        if(!stricmp(name, itr2->second.first.c_str()))
+        {
+            lock.Release();
+            return itr2->second.second;
         }
     }
 
@@ -944,9 +988,9 @@ Channel * ChannelMgr::GetChannel(const char *name, uint32 team)
 void ChannelMgr::RemoveChannel(Channel * chn)
 {
     ChannelList::iterator itr;
-    ChannelList * cl = &Channels[0];
-    if(seperatechannels)
-        cl = &Channels[chn->m_team];
+    ChannelList * cl = &Channels[chn->m_team];
+    DBCChannelMap::iterator itr2;
+    DBCChannelMap *dbcchannel = &DBCChannels[chn->m_team];
 
     lock.Acquire();
     m_idToChannel.erase(chn->m_channelId);
@@ -962,10 +1006,28 @@ void ChannelMgr::RemoveChannel(Channel * chn)
         }
     }
 
+    for(itr2 = dbcchannel->begin(); itr2 != dbcchannel->end(); itr2++)
+    {
+        if(itr2->second.second == chn)
+        {
+            dbcchannel->erase(itr2);
+            chn->m_lock.Release();
+            delete chn;
+            lock.Release();
+            return;
+        }
+    }
+
     lock.Release();
 }
 
-ChannelMgr::ChannelMgr()
+void ChannelMgr::BroadcastToDBCChannels(uint32 dbc_id, Player* plr, const char * message)
 {
-    m_idHigh = 0;
+    uint32 team = seperatechannels && plr != NULL ? plr->GetTeam() : 0;
+    DBCChannelMap * dbcChannel = &DBCChannels[team];
+    DBCChannelBounds channelBounds = dbcChannel->equal_range(dbc_id);
+    lock.Acquire();
+    for(DBCChannelMap::iterator itr = channelBounds.first; itr != channelBounds.second; itr++)
+        itr->second.second->Say(plr, message, NULL, true);
+    lock.Release();
 }

@@ -146,9 +146,9 @@ bool Spell::AddTarget(uint32 i, uint32 TargetType, Object* obj)
     if(u_caster != NULL && u_caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_9) && ((obj->IsPlayer() || obj->IsPet()) || (p_caster != NULL || m_caster->IsPet())))
         return false;
 
-    if(TargetType & SPELL_TARGET_REQUIRE_FRIENDLY && !isFriendly(m_caster, obj))
+    if(TargetType & SPELL_TARGET_REQUIRE_FRIENDLY && !FactionSystem::isFriendly(m_caster, obj))
         return false;
-    if(TargetType & SPELL_TARGET_REQUIRE_ATTACKABLE && !isAttackable(m_caster, obj))
+    if(TargetType & SPELL_TARGET_REQUIRE_ATTACKABLE && !FactionSystem::isAttackable(m_caster, obj))
         return false;
     if(TargetType & SPELL_TARGET_OBJECT_TARCLASS)
     {

@@ -394,7 +394,7 @@ Aura::Aura( SpellEntry* proto, int32 duration, Object* caster, Unit* target )
             SM_PIValue(TO_UNIT(caster)->SM[SMT_CHARGES][1], (int32*)&procCharges, m_spellProto->SpellGroupType);
         }
 
-        if( isAttackable( TO_UNIT(caster), target, false ) )
+        if( FactionSystem::isAttackable( TO_UNIT(caster), target, false ) )
         {
             SetNegative();
             if( target->InStealth() && target != caster )
@@ -773,7 +773,7 @@ void Aura::EventUpdateCreatureAA(float r)
             else
                 continue;
 
-            if( isHostile( m_caster, target ) )
+            if( FactionSystem::isHostile( m_caster, target ) )
                 continue;
 
             if( !(target->isAlive() && target->GetDistanceSq(m_caster) <= r && !target->m_AuraInterface.HasActiveAura(m_spellProto->Id)) )
@@ -816,7 +816,7 @@ void Aura::EventUpdateCreatureAA(float r)
             else
                 continue;
 
-            if( !isHostile( m_caster, target ) )
+            if( !FactionSystem::isHostile( m_caster, target ) )
                 continue;
 
             if( !(target->isAlive() && target->GetDistanceSq(m_caster) <= r && !target->m_AuraInterface.HasActiveAura(m_spellProto->Id)) )
@@ -860,7 +860,7 @@ void Aura::EventRelocateRandomTarget()
         if( !(*itr)->IsUnit() )
             continue;
 
-        if( !isHostile( m_caster, *itr ) )
+        if( !FactionSystem::isHostile( m_caster, *itr ) )
             continue;
 
         // Too far away or dead, or I can't see him!
@@ -1039,7 +1039,7 @@ void Aura::EventUpdatePlayerAA(float r)
             else
                 continue;
 
-            if( isHostile( m_caster, target ) )
+            if( FactionSystem::isHostile( m_caster, target ) )
                 continue;
 
             if( !(target->isAlive() && target->GetDistanceSq(m_caster) <= r && !target->m_AuraInterface.HasActiveAura(m_spellProto->Id)) )
@@ -1081,7 +1081,7 @@ void Aura::EventUpdatePlayerAA(float r)
             else
                 continue;
 
-            if( !isHostile( m_caster, target ) )
+            if( !FactionSystem::isHostile( m_caster, target ) )
                 continue;
 
             if( !(target->isAlive() && target->GetDistanceSq(m_caster) <= r && !target->m_AuraInterface.HasActiveAura(m_spellProto->Id)) )
@@ -4881,7 +4881,7 @@ void Aura::SpellAuraModSchoolImmunity(bool apply)
         Unit * m_caster = GetUnitCaster();
         if(m_caster!=NULL)
         {
-            if(isAttackable(m_caster,m_target))
+            if(FactionSystem::isAttackable(m_caster,m_target))
                 SetNegative();
             else
                 SetPositive();
@@ -5953,9 +5953,11 @@ void Aura::SpellAuraFeignDeath(bool apply)
                         {
                             TO_PLAYER( (*itr) )->SetSelection(0); //lose selection
                             TO_PLAYER( (*itr) )->SetUInt64Value(UNIT_FIELD_TARGET, 0);
+
+                            if( TO_PLAYER( pObject )->isCasting() && TO_PLAYER( pObject )->GetCurrentSpell() )
+                                sEventMgr.AddEvent(TO_UNIT(pObject), &Unit::EventCancelSpell, TO_PLAYER( pObject )->GetCurrentSpell(), EVENT_UNK, 1, 1, EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT);
+
                         }
-                        if( TO_PLAYER( pObject )->isCasting() && TO_PLAYER( pObject )->GetCurrentSpell()->GetSpellProto() != m_spellProto )
-                            TO_PLAYER( pObject )->CancelSpell( NULLSPELL ); //cancel current casting spell
 
                         TO_PLAYER( pObject )->GetSession()->SendPacket( &data );
                     }

@@ -582,7 +582,7 @@ bool World::SetInitialWorldSettings()
         if(areaentry == NULL)
             continue;
 
-        if(!IsSanctuaryArea(areaentry->AreaId))
+        if(Sanctuaries.find(areaentry->AreaId) == Sanctuaries.end())
         {
             if(areaentry->category == AREAC_SANCTUARY || areaentry->AreaFlags & AREA_SANCTUARY)
                 Sanctuaries.insert(areaentry->AreaId);
@@ -1284,7 +1284,7 @@ void World::Rehash(bool load)
     channelmgr.seperatechannels = mainIni->ReadBoolean("ServerSettings", "SeperateChatChannels", true);
     gm_force_robes = mainIni->ReadBoolean("ServerSettings", "ForceRobesForGM", false);
     CalculatedHeightChecks = mainIni->ReadBoolean("ServerSettings", "CHeightChecks", false);
-    trade_world_chat = mainIni->ReadBoolean("ServerSettings", "TradeWorldChat", false);
+    trade_world_chat = mainIni->ReadInteger("ServerSettings", "TradeWorldChat", 0);
     SetPlayerLimit(mainIni->ReadInteger("ServerSettings", "PlayerLimit", 1000));
     FunServerMall = mainIni->ReadInteger("ServerSettings", "MallAreaID", -1);
     LogoutDelay = mainIni->ReadInteger("ServerSettings", "Logout_Delay", 20);

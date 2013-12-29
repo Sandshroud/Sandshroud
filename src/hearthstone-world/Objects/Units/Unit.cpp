@@ -2293,7 +2293,7 @@ uint32 Unit::HandleProc( uint32 flag, uint32 flag2, Unit* victim, SpellEntry* Ca
 
                     case 60064: // Sundial of the Exiled
                         {
-                            if(!victim || !isAttackable(this, victim, false))   // harmful spells
+                            if(!victim || !FactionSystem::isAttackable(this, victim, false))   // harmful spells
                                 continue;
                         }break;
 
@@ -4132,7 +4132,7 @@ int32 Unit::Strike( Unit* pVictim, uint32 weapon_damage_type, SpellEntry* abilit
                 if (!(*itr) || (*itr) == pVictim || !(*itr)->IsUnit())
                     continue;
 
-                if(CalcDistance(*itr) < 5.0f && isAttackable(TO_UNIT(this), (*itr)) && isTargetInFront(*itr) && !TO_UNIT(*itr)->IsPacified())
+                if(CalcDistance(*itr) < 5.0f && FactionSystem::isAttackable(TO_UNIT(this), (*itr)) && isTargetInFront(*itr) && !TO_UNIT(*itr)->IsPacified())
                 {
                     // Sweeping Strikes hits cannot be dodged, missed or parried (from wowhead)
                     bool skip_hit_check = ex->spell_info->Id == 12328 ? true : false;
@@ -4202,28 +4202,22 @@ void Unit::smsg_AttackStart(Unit* pVictim)
 void Unit::_UpdateSpells( uint32 time )
 {
     if(m_currentSpell != NULL)
-    {
-        m_spellsbusy=true;
         m_currentSpell->update(time);
-        m_spellsbusy=false;
-    }
 
     uint32 MSTime = getMSTime();
-    for(std::set<Spell*>::iterator itr = DelayedSpells.begin(), itr2; itr != DelayedSpells.end(); itr)
-        if((*(itr2 = itr++))->HandleDestTargetHit(GetGUID(), MSTime))
-            DelayedSpells.erase(itr2);
+    for(std::set<Spell*>::iterator itr = DelayedSpells.begin(); itr != DelayedSpells.end();)
+    {
+        if((*itr)->HandleDestTargetHit(GetGUID(), MSTime))
+            itr = DelayedSpells.erase(itr);
+        else itr++;
+    }
 }
 
 void Unit::CastSpell( Spell* pSpell )
 {
     // check if we have a spell already casting etc
     if(m_currentSpell && pSpell != m_currentSpell)
-    {
-        if(m_spellsbusy) // shouldn't really happen. but due to spell sytem bugs there are some cases where this can happen.
-            sEventMgr.AddEvent(TO_UNIT(this), &Unit::CancelSpell, m_currentSpell, EVENT_UNK, 1, 1, EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT);
-        else
-            m_currentSpell->cancel();
-    }
+        sEventMgr.AddEvent(TO_UNIT(this), &Unit::EventCancelSpell, m_currentSpell, EVENT_UNK, 1, 1, EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT);
 
     m_currentSpell = pSpell;
     pLastSpell = pSpell->m_spellInfo;
@@ -4561,7 +4555,7 @@ void Unit::AddInRangeObject(Object* pObj)
 {
     if((pObj->GetTypeId() == TYPEID_UNIT) || (pObj->IsPlayer()))
     {
-        if( isHostile( TO_OBJECT(this), pObj ) )
+        if( FactionSystem::isHostile( TO_OBJECT(this), pObj ) )
             m_oppFactsInRange.insert(pObj);
     }
 
@@ -5921,12 +5915,12 @@ void Unit::InheritSMMods(Unit* inherit_from)
     }
 }
 
-void Unit::CancelSpell(Spell* ptr)
+void Unit::EventCancelSpell(Spell* ptr)
 {
-    if(ptr)
+    if(ptr != NULL)
         ptr->cancel();
-    else if(m_currentSpell)
-        m_currentSpell->cancel();
+    if(ptr == m_currentSpell)
+        m_currentSpell = NULL;
 }
 
 void Unit::EventStrikeWithAbility(uint64 guid, SpellEntry * sp, uint32 damage)
@@ -6698,7 +6692,7 @@ bool Unit::CanEnterVehicle(Player * requester)
     if(requester->CalcDistance(this) >= GetModelHalfSize()+5.0f)
         return false;
 
-    if(isHostile(this, requester))
+    if(FactionSystem::isHostile(this, requester))
         return false;
 
     if(requester->m_CurrentCharm)

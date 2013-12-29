@@ -169,7 +169,7 @@ void GameObject::Update(uint32 p_time)
                         ExpireAndDelete();
                         return;
                     }
-                    if(!isAttackable(m_summoner,pUnit))
+                    if(!FactionSystem::isAttackable(m_summoner,pUnit))
                         continue;
                 }
 

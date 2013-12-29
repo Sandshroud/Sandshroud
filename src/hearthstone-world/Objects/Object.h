@@ -91,6 +91,17 @@ enum OBJECT_UPDATE_TYPE {
     //  8 bytes - GUID
 };
 
+enum ObjectAreaFlags
+{
+    OBJECT_AREA_FLAG_NONE           = 0x00,
+    OBJECT_AREA_FLAG_INCITY         = 0x01,
+    OBJECT_AREA_FLAG_INSANCTUARY    = 0x02,
+    OBJECT_AREA_FLAG_CONTESTED      = 0x04,
+    OBJECT_AREA_FLAG_ALLIANCE_ZONE  = 0x08,
+    OBJECT_AREA_FLAG_HORDE_ZONE     = 0x10,
+    OBJECT_AREA_FLAG_ARENA_ZONE     = 0x20
+};
+
 typedef struct
 {
     uint32 school_type;
@@ -537,6 +548,10 @@ public:
     Aura* m_phaseAura;
     bool OwnPhase; // Players only really.
 
+    // Area flags
+    bool HasAreaFlag(uint8 areaFlag) { return (m_areaFlags & areaFlag); };
+    uint8 const GetAreaFlags() { return m_areaFlags; };
+
 protected:
     Object (  );
 
@@ -564,13 +579,15 @@ protected:
     //! WoWGuid class
     WoWGuid m_wowGuid;
 
-     //! Type id.
+    //! Type id.
     uint8 m_objectTypeId;
 
     //! Zone id.
     uint32 m_zoneId;
     //! Area id.
     uint32 m_areaId;
+    //! Area Flags.
+    uint8 m_areaFlags;
     //! Continent/map id.
     int32 m_mapId;
     //! Map manager

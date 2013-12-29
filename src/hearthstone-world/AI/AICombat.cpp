@@ -14,12 +14,12 @@ void AIInterface::_UpdateCombat(uint32 p_time)
         return;
 
     // Check if our target is attackable, if not, change to the most hated.
-    if(!isAttackable(m_Unit, m_nextTarget, false))
+    if(!FactionSystem::CanEitherUnitAttack(m_Unit, m_nextTarget, false))
     {
         SetNextTarget(GetMostHated());
 
         // Check if our new target is unattackable, or doesn't exist
-        if(!isAttackable(m_Unit, m_nextTarget, false))
+        if(!FactionSystem::CanEitherUnitAttack(m_Unit, m_nextTarget, false))
             SetNextTarget(FindTarget());
     }
 
@@ -469,7 +469,7 @@ void AIInterface::_UpdateTargets(uint32 p_time)
             it2 = itr++;
 
             if( it2->first->event_GetCurrentInstanceId() != m_Unit->event_GetCurrentInstanceId() || !m_Unit->PhasedCanInteract(it2->first) ||
-                !isAttackable(m_Unit, it2->first) || m_Unit->GetDistanceSq(it2->first) >= 6400.0f)
+                !FactionSystem::CanEitherUnitAttack(m_Unit, it2->first) || m_Unit->GetDistanceSq(it2->first) >= 6400.0f)
             {
                 m_aiTargets.erase( it2 );
             }
@@ -542,7 +542,7 @@ Unit* AIInterface::FindTarget()
         }
 
         // We can't attack him, but he can attack us? Fuck that.
-        if(!CanEitherUnitAttack(m_Unit, pUnit, true))
+        if(!FactionSystem::CanEitherUnitAttack(m_Unit, pUnit, true))
             continue;
 
         //do not agro units that are faking death. Should this be based on chance ?
@@ -637,7 +637,7 @@ Unit* AIInterface::GetMostHated(AI_Spell* sp)
         ++it2;
 
         /* check the target is valid */
-        if(itr->first->event_GetCurrentInstanceId() != m_Unit->event_GetCurrentInstanceId() || !itr->first->isAlive() || !isAttackable(m_Unit, itr->first))
+        if(itr->first->event_GetCurrentInstanceId() != m_Unit->event_GetCurrentInstanceId() || !itr->first->isAlive() || !FactionSystem::CanEitherUnitAttack(m_Unit, itr->first))
         {
             m_aiTargets.erase(itr);
             continue;
@@ -684,7 +684,7 @@ Unit* AIInterface::GetSecondHated(AI_Spell* sp)
         ++it2;
 
         /* check the target is valid */
-        if(itr->first->GetInstanceID() != m_Unit->GetInstanceID() || !itr->first->isAlive() || !isAttackable(m_Unit, itr->first))
+        if(itr->first->GetInstanceID() != m_Unit->GetInstanceID() || !itr->first->isAlive() || !FactionSystem::isAttackable(m_Unit, itr->first))
         {
             m_aiTargets.erase(itr);
             continue;
@@ -993,7 +993,7 @@ bool AIInterface::taunt(Unit* caster, bool apply)
         }
 
         //check if we can attack taunter. Maybe it's a hack or a bug if we fail this test
-        if(isHostile(m_Unit, caster))
+        if(FactionSystem::isHostile(m_Unit, caster))
         {
             //check if we have to add him to our agro list
             //GetMostHated(); //update our most hated list/ Note that at this point we do not have a taunter yet. If we would have then this funtion will not give real mosthated
@@ -1103,7 +1103,7 @@ uint32 AIInterface::_CalcThreat(uint32 damage, SpellEntry * sp, Unit* Attacker)
 {
     ASSERT(m_Unit != NULL);
 
-    if (isSameFaction(m_Unit,Attacker))
+    if (FactionSystem::isSameFaction(m_Unit,Attacker))
         return 0;
 
     int32 mod = 0;
