@@ -13,25 +13,33 @@ enum FactionMasks
     FACTION_MASK_MONSTER    = 8
 };
 
-int intisAttackable(Object* objA, Object* objB, bool CheckStealth = true); // A can attack B?
-SERVER_DECL bool isHostile(Object* objA, Object* objB); // B is hostile for A?
-SERVER_DECL bool isAttackable(Object* objA, Object* objB, bool CheckStealth = true);
-SERVER_DECL bool isCombatSupport(Object* objA, Object* objB); // B combat supports A?;
-SERVER_DECL bool isAlliance(Object* objA); // A is alliance?
-SERVER_DECL bool CanEitherUnitAttack(Object* objA, Object* objB, bool CheckStealth = true);
-
-HEARTHSTONE_INLINE bool isFriendly(Object* objA, Object* objB)// B is friendly to A if its not hostile
+namespace FactionSystem
 {
-    return !isHostile(objA, objB);
-}
+    // 0 - friendly, 1 - hostile
+    SERVER_DECL int GetFactionsInteractStatus(Unit *unitA, Unit *unitB);
 
-HEARTHSTONE_INLINE bool isSameFaction(Object* objA, Object* objB)
-{
-    // shouldn't be necessary but still
-    if( objA->m_faction == NULL || objB->m_faction == NULL )
-        return false;
+    // System checks
+    SERVER_DECL bool isHostile(Object* objA, Object* objB);
+    SERVER_DECL bool isAttackable(Object* objA, Object* objB, bool CheckStealth = true);
+    SERVER_DECL bool isCombatSupport(Object* objA, Object* objB); // B combat supports A?;
+    SERVER_DECL bool isAlliance(Object* objA); // A is alliance?
+    SERVER_DECL bool CanEitherUnitAttack(Object* objA, Object* objB, bool CheckStealth = true);
 
-    return (objB->m_faction->Faction == objA->m_faction->Faction);
-}
+    HEARTHSTONE_INLINE bool isFriendly(Object* objA, Object* objB)// B is friendly to A if its not hostile
+    {
+        return !FactionSystem::isHostile(objA, objB);
+    }
 
-HEARTHSTONE_INLINE  Player* GetPlayerFromObject(Object* obj);
+    HEARTHSTONE_INLINE bool isSameFaction(Object* objA, Object* objB)
+    {
+        // shouldn't be necessary but still
+        if( objA->m_faction == NULL || objB->m_faction == NULL )
+            return false;
+
+        return (objB->m_faction->Faction == objA->m_faction->Faction);
+    }
+
+    Player* GetPlayerFromObject(Object* obj);
+
+    SERVER_DECL int intisAttackable(Object* objA, Object* objB, bool CheckStealth);
+};

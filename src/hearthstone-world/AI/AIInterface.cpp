@@ -162,7 +162,7 @@ void AIInterface::Update(uint32 p_time)
             if(!m_nextTarget || (m_nextTarget && (!m_Unit->GetMapMgr()->GetUnit(m_nextTarget->GetGUID()) || !m_nextTarget->isAlive()
                 || (m_nextTarget->GetTypeId() == TYPEID_UNIT && TO_CREATURE(m_nextTarget)->IsTotem()) ||
                 !IsInrange(m_Unit, m_nextTarget, pSpell->GetSpellProto()->base_range_or_radius_sqr) ||
-                !isAttackable(m_Unit, m_nextTarget, !(pSpell->GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))))
+                !FactionSystem::CanEitherUnitAttack(m_Unit, m_nextTarget, !(pSpell->GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))))
             {
                 //we set no target and see if we managed to fid a new one
                 SetNextTarget(NULLUNIT);
@@ -195,35 +195,24 @@ void AIInterface::Update(uint32 p_time)
 
     _UpdateTargets(p_time);
 
-    if(m_Unit->isAlive() && m_AIState != STATE_IDLE
-        && m_AIState != STATE_FOLLOWING && m_AIState != STATE_FEAR
-        && m_AIState != STATE_WANDER && m_AIState != STATE_SCRIPTMOVE)
+    if(bool updateCombat = m_Unit->isAlive())
     {
-        if(m_AIType == AITYPE_PET)
+        if(m_AIState == STATE_IDLE || m_AIState == STATE_FOLLOWING
+            || m_AIState == STATE_FEAR || m_AIState == STATE_WANDER
+            || m_AIState == STATE_SCRIPTMOVE)
+            updateCombat = false;
+        else if(m_AIType == AITYPE_PET && m_Unit->IsPet())
         {
-            if(!m_Unit->bInvincible && m_Unit->IsPet())
-            {
-                Pet* pPet = TO_PET(m_Unit);
-                if(pPet->GetPetAction() == PET_ACTION_ATTACK || pPet->GetPetState() != PET_STATE_PASSIVE)
-                {
-                    _UpdateCombat(p_time);
-                }
-            }
-            else if(!m_Unit->IsPet()) // we just use any creature as a pet guardian
-            {
-                _UpdateCombat(p_time);
-            }
+            Pet* pPet = TO_PET(m_Unit);
+            if(pPet->GetPetAction() != PET_ACTION_ATTACK || pPet->GetPetState() == PET_STATE_PASSIVE)
+                updateCombat = false;
         }
-        else
-        {
+
+        if(updateCombat)
             _UpdateCombat(p_time);
-        }
     }
 
     MovementHandler.Update(p_time);
-
-    if(m_AIState == STATE_EVADE)
-        MovementHandler.HandleEvade();
 
     if(m_fleeTimer)
     {
@@ -242,6 +231,9 @@ void AIInterface::Update(uint32 p_time)
                 SetNextTarget(FindTarget());
         }
     }
+
+    if(!m_fleeTimer && m_AIState == STATE_EVADE)
+        MovementHandler.HandleEvade();
 }
 
 void AIInterface::AttackReaction(Unit* pUnit, uint32 damage_dealt, uint32 spellId)
@@ -306,7 +298,7 @@ bool AIInterface::HealReaction(Unit* caster, Unit* victim, uint32 amount, SpellE
     if(!casterInList && victimInList) // caster is not yet in Combat but victim is
     {
         // get caster into combat if he's hostile
-        if(isHostile(m_Unit, caster))
+        if(FactionSystem::isHostile(m_Unit, caster))
         {
             ai_TargetLock.Acquire();
             m_aiTargets.insert(make_pair(caster, amount));
@@ -331,7 +323,7 @@ bool AIInterface::HealReaction(Unit* caster, Unit* victim, uint32 amount, SpellE
             {
                 // get victim into combat since they are both
                 // in the same party
-                if( isHostile( m_Unit, victim ) )
+                if( FactionSystem::isHostile( m_Unit, victim ) )
                 {
                     ai_TargetLock.Acquire();
                     m_aiTargets.insert( make_pair( victim, 1 ) );
@@ -386,11 +378,11 @@ bool AIInterface::FindFriends(float dist)
             continue;
         if(pUnit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_9))
             continue;
-        if( !isHostile(GetMostHated(), pUnit) )
+        if( !FactionSystem::isHostile(GetMostHated(), pUnit) )
             continue;
         if( !m_Unit->PhasedCanInteract(pUnit) )
             continue;
-        if( isCombatSupport( m_Unit, pUnit ) && ( pUnit->GetAIInterface()->getAIState() == STATE_IDLE || pUnit->GetAIInterface()->getAIState() == STATE_SCRIPTIDLE ) )//Not sure
+        if( FactionSystem::isCombatSupport( m_Unit, pUnit ) && ( pUnit->GetAIInterface()->getAIState() == STATE_IDLE || pUnit->GetAIInterface()->getAIState() == STATE_SCRIPTIDLE ) )//Not sure
         {
             if( m_Unit->GetDistanceSq(pUnit) < dist)
             {
@@ -479,7 +471,7 @@ void AIInterface::CallGuards()
         if(zoneSpawn == NULL)
             return;
 
-        uint32 team = isAlliance(m_Unit) ? 0 : 1; // Set team
+        uint32 team = FactionSystem::isAlliance(m_Unit) ? 0 : 1; // Set team
         uint32 guardId = 0;
         guardId = team ? zoneSpawn->HordeEntry : zoneSpawn->AllianceEntry;
         guardId = guardId ? guardId : team ? 3296 : 68;
@@ -502,7 +494,7 @@ void AIInterface::CallGuards()
             if(spawned >= 3)
                 break;
 
-            if(!isHostile(*hostileItr, m_Unit))
+            if(!FactionSystem::isHostile(*hostileItr, m_Unit))
                 continue;
 
             Creature* guard = m_Unit->GetMapMgr()->CreateCreature(guardId);

@@ -30,6 +30,7 @@ Object::Object() : m_position(0,0,0,0), m_spawnLocation(0,0,0,0)
     m_mapId = -1;
     m_areaId = 0;
     m_zoneId = 0;
+    m_areaFlags = 0;
 
     m_uint32Values = 0;
     m_objectUpdated = false;
@@ -1008,7 +1009,7 @@ void Object::_BuildValuesUpdate(ByteBuffer * data, UpdateMask *updateMask, Playe
 
             if(cThis->IsVehicle())
             {
-                if(isAttackable(target, this, false))
+                if(FactionSystem::isAttackable(target, this, false))
                 {
                     DummyNpcFlags &= ~(UNIT_NPC_FLAG_VEHICLE_MOUNT);
                 }
@@ -2136,7 +2137,7 @@ void Object::UpdateOppFactionSet()
     {
         if (((*i)->GetTypeId() == TYPEID_UNIT) || ((*i)->IsPlayer()) || ((*i)->GetTypeId() == TYPEID_GAMEOBJECT))
         {
-            if (isHostile(this, (*i)))
+            if (FactionSystem::isHostile(this, (*i)))
             {
                 if(!(*i)->IsInRangeOppFactSet(this))
                     (*i)->m_oppFactsInRange.insert(this);
@@ -3380,6 +3381,7 @@ void Object::UpdateAreaInfo(MapMgr *mgr)
 {
     if(mgr == NULL && !IsInWorld())
     {
+        m_areaFlags = 0;
         m_zoneId = m_areaId = 0;
         return;
     }
@@ -3392,6 +3394,29 @@ void Object::UpdateAreaInfo(MapMgr *mgr)
     AreaTable* at = dbcArea.LookupEntry(m_areaId);
     if(at != NULL && at->ZoneId) // Set our Zone on add to world!
         SetZoneId(at->ZoneId);
+
+    m_areaFlags = OBJECT_AREA_FLAG_NONE;
+    if(CollideInterface.IsIncity(GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ()))
+        m_areaFlags |= OBJECT_AREA_FLAG_INCITY;
+    if(m_zoneId || m_areaId)
+    {
+        if(sWorld.CheckSanctuary(GetMapId(), m_zoneId, m_areaId))
+            m_areaFlags |= OBJECT_AREA_FLAG_INSANCTUARY;
+        AreaTable* at = dbcArea.LookupEntry(m_areaId);
+        if(at == NULL)
+            at = dbcArea.LookupEntry(m_zoneId);
+        if(at)
+        {
+            if(at->category == AREAC_CONTESTED)
+                m_areaFlags |= OBJECT_AREA_FLAG_CONTESTED;
+            if(at->category == AREAC_ALLIANCE_TERRITORY)
+                m_areaFlags |= OBJECT_AREA_FLAG_ALLIANCE_ZONE;
+            if(at->category == AREAC_HORDE_TERRITORY)
+                m_areaFlags |= OBJECT_AREA_FLAG_HORDE_ZONE;
+            if(at->AreaFlags & AREA_PVP_ARENA)
+                m_areaFlags |= OBJECT_AREA_FLAG_ARENA_ZONE;
+        }
+    }
 }
 
 void Object::PlaySoundToPlayer( Player* plr, uint32 sound_entry )

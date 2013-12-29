@@ -241,7 +241,7 @@ bool AIInterface::IsValidUnitTarget( Object *pObject, uint32 pFilter, float pMin
         {
             if ( !UnitTarget->CombatStatus.IsInCombat() )
                 return false; //Skip not-in-combat targets if friendly
-            if ( isHostile( m_Unit, UnitTarget ) || getThreatByPtr( UnitTarget ) > 0 )
+            if ( FactionSystem::isHostile( m_Unit, UnitTarget ) || getThreatByPtr( UnitTarget ) > 0 )
                 return false;
         }
     }
