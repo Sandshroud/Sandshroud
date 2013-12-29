@@ -94,6 +94,7 @@ namespace VMAP
             void updateDynamicMapTree(G3D::g3d_uint32 mapid, G3D::g3d_uint32 t_diff);
             void LoadGameObjectModelList();
 
+            void InitializeMap(unsigned int mapId);
             int loadMap(unsigned int mapId, int x, int y);
             int loadObject(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_uint32 m_instance, G3D::g3d_int32 m_phase);
 

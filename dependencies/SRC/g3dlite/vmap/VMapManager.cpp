@@ -50,6 +50,19 @@ namespace VMAP
         return fname.str();
     }
 
+    void VMapManager::InitializeMap(unsigned int mapId)
+    {
+        InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
+        if (instanceTree == iInstanceMapTrees.end())
+        {
+            StaticMapTree* newTree = new StaticMapTree(mapId, vmapDir);
+            if (!newTree->InitMap(getMapFileName(mapId), this))
+                delete newTree;
+            else
+                iInstanceMapTrees.insert(InstanceTreeMap::value_type(mapId, newTree)).first;
+        }
+    }
+
     int VMapManager::loadMap(unsigned int mapId, int x, int y)
     {
         int result = VMAP_LOAD_RESULT_IGNORED;

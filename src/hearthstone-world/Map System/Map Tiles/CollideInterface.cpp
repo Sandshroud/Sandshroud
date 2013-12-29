@@ -51,6 +51,7 @@ void CCollideInterface::ActivateMap(uint32 mapId)
     {
         m_mapLocks[mapId] = new CollisionMap();
         m_mapLocks[mapId]->m_loadCount = 1;
+        CollisionMgr->InitializeMap(mapId);
         memset(&m_mapLocks[mapId]->m_tileLoadCount, 0, sizeof(uint32)*64*64);
     }
     else

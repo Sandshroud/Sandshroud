@@ -36,6 +36,7 @@ public:
     ~WDTFile(void);
     bool init(char* map_id, unsigned int mapID);
 
+    int wdtFlags;
     string* gWmoInstansName;
     int gnWMO;
 
