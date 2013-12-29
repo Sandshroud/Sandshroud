@@ -10,8 +10,11 @@
 #if PLATFORM == PLATFORM_WIN
 
 /* Windows Critical Section Implementation */
-Mutex::Mutex() { InitializeCriticalSection(&cs); }
-Mutex::~Mutex() { DeleteCriticalSection(&cs); }
+EasyMutex::EasyMutex() { InitializeCriticalSection(&cs); }
+EasyMutex::~EasyMutex() { DeleteCriticalSection(&cs); }
+
+SmartMutex::SmartMutex() { InitializeCriticalSection(&cs); m_activeThread = m_ThreadCalls = 0; }
+SmartMutex::~SmartMutex() { DeleteCriticalSection(&cs); }
 
 #else
 
@@ -23,10 +26,10 @@ Mutex::~Mutex() { DeleteCriticalSection(&cs); }
 #endif
 
 /* Linux mutex implementation */
-bool Mutex::attr_initalized = false;
-pthread_mutexattr_t Mutex::attr;
+bool EasyMutex::attr_initalized = false;
+pthread_mutexattr_t EasyMutex::attr;
 
-Mutex::Mutex()
+EasyMutex::EasyMutex()
 {
     if(!attr_initalized)
     {
@@ -38,6 +41,25 @@ Mutex::Mutex()
     pthread_mutex_init(&mutex, &attr);
 }
 
-Mutex::~Mutex() { pthread_mutex_destroy(&mutex); }
+EasyMutex::~EasyMutex() { pthread_mutex_destroy(&mutex); }
+
+// Smart locking mutex
+bool SmartMutex::attr_initalized = false;
+pthread_mutexattr_t SmartMutex::attr;
+
+SmartMutex::SmartMutex()
+{
+    m_activeThread = m_ThreadCalls = 0;
+    if(!attr_initalized)
+    {
+        pthread_mutexattr_init(&attr);
+        pthread_mutexattr_settype(&attr, recursive_mutex_flag);
+        attr_initalized = true;
+    }
+
+    pthread_mutex_init(&mutex, &attr);
+}
+
+SmartMutex::~SmartMutex() { pthread_mutex_destroy(&mutex); }
 
 #endif

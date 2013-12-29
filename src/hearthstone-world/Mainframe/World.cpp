@@ -1289,7 +1289,7 @@ void World::Rehash(bool load)
     FunServerMall = mainIni->ReadInteger("ServerSettings", "MallAreaID", -1);
     LogoutDelay = mainIni->ReadInteger("ServerSettings", "Logout_Delay", 20);
     EnableFatigue = mainIni->ReadBoolean("ServerSettings", "EnableFatigue", true);
-    ServerPreloading = mainIni->ReadBoolean("Startup", "Preloading", false);
+    ServerPreloading = mainIni->ReadInteger("Startup", "Preloading", 0);
     if(LogoutDelay <= 0)
         LogoutDelay = 1;
     ApplyHolidayConfigMaskOverride();

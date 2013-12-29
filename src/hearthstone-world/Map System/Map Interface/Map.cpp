@@ -12,12 +12,14 @@ Map::Map(uint32 mapid, MapInfo * inf)
 {
     _mapInfo = inf;
     _mapId = mapid;
+    // Collision = inf->Collision;
+    Collision = sWorld.Collision;
 
     //new stuff Load Spawns
     LoadSpawns();
 
     // Setup terrain
-    _terrain = new TerrainMgr(sWorld.MapPath, _mapId, !(inf->type == INSTANCE_NULL));
+    _terrain = new TerrainMgr(sWorld.MapPath, _mapId, !(inf->type == INSTANCE_NULL), Collision);
     if(!_terrain->LoadTerrainHeader())
     {
         delete _terrain;
@@ -32,7 +34,7 @@ Map::Map(uint32 mapid, MapInfo * inf)
         name = "Unknown";
 
     // collision
-    if (sWorld.Collision)
+    if (Collision)
         CollideInterface.ActivateMap(_mapId);
 }
 

@@ -250,23 +250,26 @@ namespace VMAP
     bool VMapManager::isInLineOfSight(unsigned int mapId, G3D::g3d_uint32 instanceId, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2)
     {
         bool result = true;
-        if(x1 == x2 && y1 == y2 && z1 == z2)
+        if(fuzzyEq(x1, x2) && fuzzyEq(y1, y2) && fuzzyEq(z1, z2))
             return result; // Save us some time.
+
+        Vector3 dest = convertPositionToInternalRep(x2, y2, z2);
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
         if (instanceTree != iInstanceMapTrees.end())
         {
             Vector3 pos1 = convertPositionToInternalRep(x1, y1, z1);
-            Vector3 pos2 = convertPositionToInternalRep(x2, y2, z2);
-            result = instanceTree->second->isInLineOfSight(pos1, pos2);
+            result = instanceTree->second->isInLineOfSight(pos1, dest);
         }
 
         if(result)
         {
             DynamicTreeMap::iterator DynamicTree = iDynamicMapTrees.find(mapId);
             if (DynamicTree != iDynamicMapTrees.end())
-                result = DynamicTree->second->isInLineOfSight(x1, y1, z1, x2, y2, z2, instanceId, m_phase);
+            {
+                if(!DynamicTree->second->isInLineOfSight(x1, y1, z1, dest.x, dest.y, dest.z, instanceId, m_phase))
+                    result = false;
+            }
         }
-
         return result;
     }
 
@@ -299,11 +302,14 @@ namespace VMAP
             Vector3 pos1 = convertPositionToInternalRep(x1, y1, z1);
             Vector3 pos2 = convertPositionToInternalRep(x2, y2, z2);
             Vector3 resultPos;
-            bool result = instanceTree->second->getObjectHitPos(pos1, pos2, resultPos, modifyDist);
-            resultPos = convertPositionToInternalRep(resultPos.x, resultPos.y, resultPos.z);
-            rx = resultPos.x;
-            ry = resultPos.y;
-            rz = resultPos.z;
+            result = instanceTree->second->getObjectHitPos(pos1, pos2, resultPos, modifyDist);
+            if(result)
+            {
+                resultPos = convertPositionToInternalRep(resultPos.x, resultPos.y, resultPos.z);
+                rx = resultPos.x;
+                ry = resultPos.y;
+                rz = resultPos.z;
+            }
         }
 
         DynamicTreeMap::iterator DynamicTree = iDynamicMapTrees.find(mapId);
@@ -312,10 +318,9 @@ namespace VMAP
             Vector3 pos1 = Vector3(x1, y1, z1);
             Vector3 pos2 = Vector3(rx, ry, rz);
             Vector3 resultPos;
-            bool result = DynamicTree->second->getObjectHitPos(instanceId, m_phase, pos1, pos2, resultPos, modifyDist);
+            result = DynamicTree->second->getObjectHitPos(instanceId, m_phase, pos1, pos2, resultPos, modifyDist);
             if(result)
             {
-                bLog.outDebug("%f %f %f", resultPos.x, resultPos.y, resultPos.z);
                 rx = resultPos.x;
                 ry = resultPos.y;
                 rz = resultPos.z;

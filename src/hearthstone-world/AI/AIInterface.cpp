@@ -195,22 +195,7 @@ void AIInterface::Update(uint32 p_time)
 
     _UpdateTargets(p_time);
 
-    if(bool updateCombat = m_Unit->isAlive())
-    {
-        if(m_AIState == STATE_IDLE || m_AIState == STATE_FOLLOWING
-            || m_AIState == STATE_FEAR || m_AIState == STATE_WANDER
-            || m_AIState == STATE_SCRIPTMOVE)
-            updateCombat = false;
-        else if(m_AIType == AITYPE_PET && m_Unit->IsPet())
-        {
-            Pet* pPet = TO_PET(m_Unit);
-            if(pPet->GetPetAction() != PET_ACTION_ATTACK || pPet->GetPetState() == PET_STATE_PASSIVE)
-                updateCombat = false;
-        }
-
-        if(updateCombat)
-            _UpdateCombat(p_time);
-    }
+    _UpdateCombat(p_time);
 
     MovementHandler.Update(p_time);
 
