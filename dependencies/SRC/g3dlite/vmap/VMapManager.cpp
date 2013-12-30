@@ -80,9 +80,8 @@ namespace VMAP
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
         if (instanceTree == iInstanceMapTrees.end())
         {
-            std::string mapFileName = getMapFileName(mapId);
             StaticMapTree* newTree = new StaticMapTree(mapId, vmapDir);
-            if (!newTree->InitMap(mapFileName, this))
+            if (!newTree->InitMap(getMapFileName(mapId), this))
             {
                 delete newTree;
                 return false;
