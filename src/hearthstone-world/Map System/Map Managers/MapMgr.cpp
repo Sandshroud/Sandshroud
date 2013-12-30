@@ -1227,10 +1227,14 @@ uint16 MapMgr::GetAreaID(float x, float y, float z)
         useWMO = true;
     else if(z > terrainHeight+35.0f)
         useWMO = true;
-    uint16 aid = CollideInterface.GetAreaID(GetMapId(), x, y, z);
-    if(useWMO && aid && aid != 0xFFFF)
-        return aid;
-    return GetBaseMap()->GetAreaID(x, y, z);
+    uint16 adtaid = GetBaseMap()->GetAreaID(x, y, z);
+    if(useWMO || adtaid == 0xFFFF)
+    {
+        uint16 wmoaid = CollideInterface.GetAreaID(GetMapId(), x, y, z);
+        if(wmoaid && wmoaid != 0xFFFF)
+            return wmoaid;
+    }
+    return adtaid;
 }
 
 void MapMgr::AddForcedCell(MapCell * c, uint32 range)
