@@ -575,6 +575,84 @@ public:
     }
 };
 
+class UnderbellyGuard : public GossipScript
+{
+	public:
+		void GossipHello(Object *pObject, Player *Plr, bool AutoSend)
+		{
+			GossipMenu* Menu;
+			objmgr.CreateGossipMenuForPlayer(&Menu, pObject->GetGUID(), 14027, Plr);
+			Menu->AddItem(0, "Arena"		, 1);
+			Menu->AddItem(0, "Bank"			, 2);
+			Menu->AddItem(0, "Inn"			, 3);
+			Menu->AddItem(0, "Sewer Exits"	, 4);
+			Menu->AddItem(0, "Vendors"		, 5);
+			Menu->SendTo(Plr);
+		}
+
+		void GossipSelectOption(Object *pObject, Player *Plr, uint32 Id, uint32 IntId, const char* Code)
+		{
+			GossipMenu* Menu;
+			switch (IntId)
+			{
+				case 0:
+					GossipHello(pObject, Plr, true);
+					break;
+
+					//////////////////////
+					// Main menu handlers
+					/////
+
+				case 1:		// Arena
+					Plr->Gossip_SendPOI(5777.62f, 604.66f, 7, 6, 0, "Dalaran: Sewer Arena");
+					SendEmptyMenu(14023);
+					break;
+
+				case 2:		// Bank
+					Plr->Gossip_SendPOI(5766.77f, 733.89f, 7, 6, 0, "Dalaran: Sewer Bank");
+					SendEmptyMenu(14022);
+					break;
+
+				case 3:		// Inn
+					Plr->Gossip_SendPOI(5760.82f, 715.31f, 7, 6, 0, "Dalaran: Sewer Inn");
+					SendEmptyMenu(14021);
+					break;
+
+				case 4:		// Sewer Exits
+					{
+						objmgr.CreateGossipMenuForPlayer(&Menu, pObject->GetGUID(), 14026, Plr);
+						Menu->AddItem( 0, "Eastern Sewer Entrance", 6);
+						Menu->AddItem( 0, "Western Sewer Entrance", 7);
+						Menu->AddItem( 0, "Sewer Tunnel", 8);
+						Menu->SendTo(Plr);
+					}
+					break;
+
+				case 5:		// Vendors
+					Plr->Gossip_SendPOI(5931.57f, 558.50f, 7, 6, 0, "Dalaran: Sewer Vendors");
+					SendEmptyMenu(14019);
+					break;
+					
+				case 6:		// Eastern Sewer Entrance
+					Plr->Gossip_SendPOI(5795.98f, 555.54f, 7, 6, 0, "Dalaran: Eastern Sewer Entrance");
+					SendEmptyMenu(14024);
+					break;
+
+				case 7:		// Western Sewer Entrance
+					Plr->Gossip_SendPOI(5812.79f, 722.58f, 7, 6, 0, "Dalaran: Western Sewer Entrance");
+					SendEmptyMenu(14025);
+					break;
+
+				case 8:		// Sewer Tunnel
+					Plr->Gossip_SendPOI(5778.03f, 743.20f, 7, 6, 0, "Dalaran: Sewer Tunnel");
+					SendEmptyMenu(14020);
+					break;
+			}
+		
+		}
+
+};
+
 void Lacrimi::SetupDalaran()
 {
     /* Guard List */
@@ -596,4 +674,11 @@ void Lacrimi::SetupDalaran()
     RegisterCtrGossipScript(32691, DalaranGuard);
     RegisterCtrGossipScript(32692, DalaranGuard);
     RegisterCtrGossipScript(32693, DalaranGuard);
+
+	RegisterCtrGossipScript(32726, UnderbellyGuard);
+	RegisterCtrGossipScript(32727, UnderbellyGuard);
+	RegisterCtrGossipScript(32729, UnderbellyGuard);
+	RegisterCtrGossipScript(32730, UnderbellyGuard);
+	RegisterCtrGossipScript(32731, UnderbellyGuard);
+	RegisterCtrGossipScript(32732, UnderbellyGuard);
 }
