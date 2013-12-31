@@ -57,9 +57,13 @@ namespace VMAP
         {
             StaticMapTree* newTree = new StaticMapTree(mapId, vmapDir);
             if (!newTree->InitMap(getMapFileName(mapId), this))
+            {
+                bLog.outError("StaticMapTree::InitMap() : Map tree initialization failed");
                 delete newTree;
-            else
-                iInstanceMapTrees.insert(InstanceTreeMap::value_type(mapId, newTree)).first;
+                return;
+            }
+
+            iInstanceMapTrees.insert(InstanceTreeMap::value_type(mapId, newTree));
         }
     }
 
@@ -79,15 +83,7 @@ namespace VMAP
     {
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
         if (instanceTree == iInstanceMapTrees.end())
-        {
-            StaticMapTree* newTree = new StaticMapTree(mapId, vmapDir);
-            if (!newTree->InitMap(getMapFileName(mapId), this))
-            {
-                delete newTree;
-                return false;
-            }
-            instanceTree = iInstanceMapTrees.insert(InstanceTreeMap::value_type(mapId, newTree)).first;
-        }
+            return false;
 
         return instanceTree->second->LoadMapTile(tileX, tileY, this);
     }

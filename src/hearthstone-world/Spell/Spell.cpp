@@ -831,8 +831,7 @@ bool Spell::GenerateTargets(SpellCastTargets *t)
     {
         if(m_spellInfo->Effect[i] == 0)
             continue;
-        uint32 TargetType = 0;
-        TargetType |= GetTargetType(m_spellInfo->EffectImplicitTargetA[i], i);
+        uint32 TargetType = GetTargetType(m_spellInfo->EffectImplicitTargetA[i], i);
 
         //never get info from B if it is 0 :P
         if(m_spellInfo->EffectImplicitTargetB[i] != 0)
@@ -848,12 +847,12 @@ bool Spell::GenerateTargets(SpellCastTargets *t)
         if(TargetType & SPELL_TARGET_NO_OBJECT)
         {
             t->m_targetMask = TARGET_FLAG_SELF;
+            t->m_unitTarget = u_caster->GetGUID();
             result = true;
         }
 
         if(!(TargetType & (SPELL_TARGET_AREA | SPELL_TARGET_AREA_SELF | SPELL_TARGET_AREA_CURTARGET | SPELL_TARGET_AREA_CONE)))
         {
-
             if(TargetType & SPELL_TARGET_ANY_OBJECT)
             {
                 if(u_caster->GetUInt64Value(UNIT_FIELD_TARGET))
@@ -974,49 +973,44 @@ bool Spell::GenerateTargets(SpellCastTargets *t)
         }
         else if(TargetType & SPELL_TARGET_AREA)  //targetted aoe
         {
-            //spells like blizzard, rain of fire
-            if(u_caster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT))
+            if(u_caster->GetAIInterface()->GetNextTarget() != NULL && TargetType & SPELL_TARGET_REQUIRE_ATTACKABLE)
+            {
+                t->m_targetMask |= TARGET_FLAG_DEST_LOCATION | TARGET_FLAG_UNIT;
+                t->m_unitTarget = u_caster->GetAIInterface()->GetNextTarget()->GetGUID();
+                t->m_destX = u_caster->GetAIInterface()->GetNextTarget()->GetPositionX();
+                t->m_destY = u_caster->GetAIInterface()->GetNextTarget()->GetPositionY();
+                t->m_destZ = u_caster->GetAIInterface()->GetNextTarget()->GetPositionZ();
+                result = true;
+            }
+
+            if(TargetType & SPELL_TARGET_REQUIRE_FRIENDLY)
+            {
+                t->m_targetMask |= TARGET_FLAG_DEST_LOCATION;
+                t->m_destX = u_caster->GetPositionX();
+                t->m_destY = u_caster->GetPositionY();
+                t->m_destZ = u_caster->GetPositionZ();
+                result = true;
+            }
+            else if(u_caster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT)) //spells like blizzard, rain of fire
             {
                 Object* target = u_caster->GetMapMgr()->_GetObject(u_caster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT));
                 if(target != NULL)
                 {
                     t->m_targetMask |= TARGET_FLAG_DEST_LOCATION | TARGET_FLAG_UNIT;
+                    t->m_unitTarget = target->GetGUID();
                     t->m_destX = target->GetPositionX();
                     t->m_destY = target->GetPositionY();
                     t->m_destZ = target->GetPositionZ();
                 }
                 result = true;
             }
-            else
-            {
-                if(u_caster->GetAIInterface()->GetNextTarget() != NULL && TargetType & SPELL_TARGET_REQUIRE_ATTACKABLE)
-                {
-                    t->m_targetMask |= TARGET_FLAG_DEST_LOCATION | TARGET_FLAG_UNIT;
-                    t->m_destX = u_caster->GetAIInterface()->GetNextTarget()->GetPositionX();
-                    t->m_destY = u_caster->GetAIInterface()->GetNextTarget()->GetPositionY();
-                    t->m_destZ = u_caster->GetAIInterface()->GetNextTarget()->GetPositionZ();
-                    result = true;
-                }
-                else if(TargetType & SPELL_TARGET_REQUIRE_FRIENDLY)
-                {
-                    t->m_targetMask |= TARGET_FLAG_DEST_LOCATION | TARGET_FLAG_UNIT;
-                    t->m_destX = u_caster->GetPositionX();
-                    t->m_destY = u_caster->GetPositionY();
-                    t->m_destZ = u_caster->GetPositionZ();
-                    result = true;
-                }
-            }
         }
         else if(TargetType & SPELL_TARGET_AREA_SELF)
         {
-            t->m_targetMask |= TARGET_FLAG_SOURCE_LOCATION | TARGET_FLAG_UNIT;
-            t->m_unitTarget = u_caster->GetGUID();
-            t->m_srcX = u_caster->GetPositionX();
-            t->m_srcY = u_caster->GetPositionY();
-            t->m_srcZ = u_caster->GetPositionZ();
-            t->m_destX = u_caster->GetPositionX();
-            t->m_destY = u_caster->GetPositionY();
-            t->m_destZ = u_caster->GetPositionZ();
+            t->m_targetMask |= TARGET_FLAG_SOURCE_LOCATION;
+            t->m_destX = t->m_srcX = u_caster->GetPositionX();
+            t->m_destY = t->m_srcY = u_caster->GetPositionY();
+            t->m_destZ = t->m_srcZ = u_caster->GetPositionZ();
             result = true;
         }
 
