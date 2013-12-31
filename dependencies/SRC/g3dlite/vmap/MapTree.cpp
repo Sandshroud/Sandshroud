@@ -255,7 +255,7 @@ namespace VMAP
 
     bool StaticMapTree::InitMap(const std::string &fname, VMapManager* vm)
     {
-        bLog.outDetail("StaticMapTree::InitMap() : initializing StaticMapTree '%s'", fname.c_str());
+        bLog.outDebug("StaticMapTree::InitMap() : initializing StaticMapTree '%s'", fname.c_str());
         bool success = true;
         std::string fullname = iBasePath + fname;
         FILE* rf = fopen(fullname.c_str(), "rb");
@@ -285,14 +285,14 @@ namespace VMAP
         {
             // global model spawns
             // only non-tiled maps have them, and if so exactly one (so far at least...)
-            bLog.outDetail("StaticMapTree::InitMap() : map isTiled: %u", static_cast<G3D::g3d_uint32>(iIsTiled));
+            bLog.outDebug("StaticMapTree::InitMap() : map isTiled: %u", static_cast<G3D::g3d_uint32>(iIsTiled));
             if(!iIsTiled)
             {
                 ModelSpawn spawn;
                 if (success = ModelSpawn::readFromFile(rf, spawn))
                 {
                     WorldModel* model = vm->acquireModelInstance(spawn.name);
-                    bLog.outDetail("StaticMapTree::InitMap() : loading %s", spawn.name.c_str());
+                    bLog.outDebug("StaticMapTree::InitMap() : loading %s", spawn.name.c_str());
                     if (model)
                     {
                         // assume that global model always is the first and only tree value (could be improved...)
@@ -302,7 +302,7 @@ namespace VMAP
                     else
                     {
                         success = false;
-                        bLog.outDetail("StaticMapTree::InitMap() : could not acquire WorldModel pointer for '%s'", spawn.name.c_str());
+                        bLog.outError("StaticMapTree::InitMap() : could not acquire WorldModel pointer for '%s'", spawn.name.c_str());
                     }
                 }
             }
