@@ -95,7 +95,7 @@ namespace VMAP
     }
 
     StaticMapTree::StaticMapTree(G3D::g3d_uint32 mapID, const std::string &basePath)
-        : iMapID(mapID), iIsTiled(false), iTreeValues(0), iBasePath(basePath)
+        : iMapID(mapID), iIsTiled(false), iTreeValues(0), iNTreeValues(0), iBasePath(basePath)
     {
         if (iBasePath.length() > 0 && iBasePath[iBasePath.length()-1] != '/' && iBasePath[iBasePath.length()-1] != '\\')
         {
@@ -130,6 +130,11 @@ namespace VMAP
     bool StaticMapTree::isInLineOfSight(const Vector3& pos1, const Vector3& pos2) const
     {
         float maxDist = (pos2 - pos1).magnitude();
+        // return false if distance is over max float, in case of cheater teleporting to the end of the universe
+        if (maxDist == std::numeric_limits<float>::max() ||
+            maxDist == std::numeric_limits<float>::infinity())
+            return false;
+
         // valid map coords should *never ever* produce float overflow, but this would produce NaNs too
         assert(maxDist < std::numeric_limits<float>::max());
         // prevent NaN values which can cause BIH intersection to enter infinite loop
@@ -206,14 +211,6 @@ namespace VMAP
         return(height);
     }
 
-    g3d_uint32 StaticMapTree::GetVmapFlags(G3D::Vector3& pos)
-    {
-        g3d_uint32 flags = 0;
-        g3d_int32 adtId = 0, rootId = 0, groupid = 0;
-        getAreaInfo(pos, flags, adtId, rootId, groupid);
-        return flags;
-    }
-
     //=========================================================
 
     bool StaticMapTree::CanLoadMap(const std::string &vmapPath, G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY)
@@ -270,15 +267,16 @@ namespace VMAP
         }
 
         char tiled = '\0';
-        if ((success = fread(&tiled, sizeof(char), 1, rf)) && (success = readChunk(rf, chunk, "NODE", 4)) && iTree.readFromFile(rf))
+        if ((success = (fread(&tiled, sizeof(char), 1, rf) == 1))
+            && (success = readChunk(rf, chunk, "NODE", 4))
+            && (success = iTree.readFromFile(rf)))
         {
             iNTreeValues = iTree.primCount();
             iTreeValues = new ModelInstance[iNTreeValues];
+            success = readChunk(rf, chunk, "GOBJ", 4);
         }
 
         iIsTiled = bool(tiled);
-        if(success)
-            success = readChunk(rf, chunk, "GOBJ", 4);
         if(!success)
             bLog.outError("StaticMapTree::InitMap() : failed reading data!");
         else

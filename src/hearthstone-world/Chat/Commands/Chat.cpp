@@ -759,7 +759,6 @@ void CommandTableStorage::Init()
         { "showitems",              COMMAND_LEVEL_M, &ChatHandler::HandleShowItems,                                 "test for ItemIterator", NULL, 0, 0, 0 },
         { "testlos",                COMMAND_LEVEL_M, &ChatHandler::HandleCollisionTestLOS,                          "tests los", NULL, 0, 0, 0 },
         { "testindoor",             COMMAND_LEVEL_M, &ChatHandler::HandleCollisionTestIndoor,                       "tests indoor", NULL, 0, 0, 0 },
-        { "debugvmapareainfo",      COMMAND_LEVEL_M, &ChatHandler::HandleDebugVmapAreaInfo,                         "Generates information of Vmap area.", NULL, 0, 0, 0 },
         { "getheight",              COMMAND_LEVEL_M, &ChatHandler::HandleCollisionGetHeight,                        "Gets height", NULL, 0, 0, 0 },
         { "renameallinvalidchars",  COMMAND_LEVEL_Z, &ChatHandler::HandleRenameAllCharacter,                        "Renames all invalid character names", NULL, 0,0, 0 },
         { "removesickness",         COMMAND_LEVEL_M, &ChatHandler::HandleRemoveRessurectionSickessAuraCommand,      "Removes ressurrection sickness from the target", NULL, 0, 0, 0 },

@@ -1221,20 +1221,10 @@ uint8 MapMgr::GetWalkableState(float x, float y)
 
 uint16 MapMgr::GetAreaID(float x, float y, float z)
 {
-    bool useWMO = false;
-    float terrainHeight = GetLandHeight(x, y);
-    if(terrainHeight == NO_LAND_HEIGHT || z < terrainHeight)
-        useWMO = true;
-    else if(z > terrainHeight+35.0f)
-        useWMO = true;
-    uint16 adtaid = GetBaseMap()->GetAreaID(x, y, z);
-    if(useWMO || adtaid == 0xFFFF)
-    {
-        uint16 wmoaid = CollideInterface.GetAreaID(GetMapId(), x, y, z);
-        if(wmoaid && wmoaid != 0xFFFF)
-            return wmoaid;
-    }
-    return adtaid;
+    uint16 areaId = GetBaseMap()->GetAreaID(x, y, z), wmoAID = 0;
+    uint32 wmoFlags = 0; int32 adtId = 0, rootId = 0, groupId = 0;
+    CollideInterface.GetAreaInfo(GetMapId(), x, y, z, wmoAID, wmoFlags, adtId, rootId, groupId);
+    return wmoAID ? wmoAID : areaId;
 }
 
 void MapMgr::AddForcedCell(MapCell * c, uint32 range)

@@ -24,12 +24,12 @@ public:
     void ActivateMap(uint32 mapId);
     void DeactivateMap(uint32 mapId);
 
+    bool GetAreaInfo(uint32 mapId, float x, float y, float z, uint16 &areaId, uint32 &flags, int32 &adtId, int32 &rootId, int32 &groupid);
     bool CheckLOS(uint32 mapId, uint32 instanceId, int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2);
     bool GetFirstPoint(uint32 mapId, uint32 instanceId, int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2, float & outx, float & outy, float & outz, float distmod);
     bool IsIndoor(uint32 mapId, float x, float y, float z);
     bool IsIncity(uint32 mapid, float x, float y, float z);
     uint16 GetAreaID(uint32 mapId, float x, float y, float z);
-    uint32 GetVmapAreaFlags(uint32 mapId, float x, float y, float z);
     float GetHeight(uint32 mapId, uint32 instanceId, int32 m_phase, float x, float y, float z);
     float GetWaterHeight(uint32 mapId, float x, float y, float z, uint16 &outType);
 
