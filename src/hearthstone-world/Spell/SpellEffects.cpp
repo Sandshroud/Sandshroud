@@ -3655,7 +3655,7 @@ void Spell::SpellEffectDispelMechanic(uint32 i)
     unitTarget->m_AuraInterface.AttemptDispel(u_caster, sMisc, (unitTarget == u_caster || !FactionSystem::isAttackable( u_caster, unitTarget )));
 
     if( playerTarget && GetSpellProto()->NameHash == SPELL_HASH_DAZED && playerTarget->IsMounted() )
-        TO_UNIT(playerTarget)->Dismount();
+        playerTarget->Dismount();
 }
 
 void Spell::SpellEffectSummonDeadPet(uint32 i)

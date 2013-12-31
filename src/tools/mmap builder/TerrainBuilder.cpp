@@ -527,12 +527,12 @@ namespace MMAP
     bool TerrainBuilder::loadVMap(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, MeshData &meshData)
     {
         VMapManager* vmapManager = new VMapManager("vmaps");
-        int result = vmapManager->loadMap(mapID, tileX, tileY);
+        bool result = vmapManager->loadMap(mapID, tileX, tileY);
         bool retval = false;
 
         do
         {
-            if (result == VMAP_LOAD_RESULT_ERROR)
+            if (result == false)
                 break;
 
             InstanceTreeMap instanceTrees;

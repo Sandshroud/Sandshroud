@@ -602,7 +602,6 @@ protected:
     bool HandleWhisperBlockCommand(const char * args, WorldSession * m_session);
     bool HandleShowItems(const char * args, WorldSession * m_session);
     bool HandleCollisionTestIndoor(const char * args, WorldSession * m_session);
-    bool HandleDebugVmapAreaInfo(const char * args, WorldSession * m_session);
     bool HandleCollisionTestLOS(const char * args, WorldSession * m_session);
     bool HandleRenameAllCharacter(const char * args, WorldSession * m_session);
     bool HandleCollisionGetHeight(const char * args, WorldSession * m_session);

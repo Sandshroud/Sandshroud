@@ -1074,7 +1074,7 @@ void Player::Update( uint32 p_time )
                 {
                     // Qiraj battletanks work everywhere on map 531
                     if (! (m_mapId == 531 && ( m_MountSpellId == 25953 || m_MountSpellId == 26054 || m_MountSpellId == 26055 || m_MountSpellId == 26056 )) )
-                        TO_UNIT(this)->Dismount();
+                        Dismount();
                 }
 
                 // Now remove all auras that are only usable outdoors (e.g. Travel form)
@@ -1458,7 +1458,7 @@ void Player::EventAttackStart()
     m_attacking = true;
     if( IsMounted() )
     {
-        TO_UNIT(this)->Dismount();
+        Dismount();
         SetPlayerSpeed(RUN, m_runSpeed);
     }
 }
@@ -7953,7 +7953,7 @@ void Player::TaxiStart(TaxiPath *path, uint32 modelid, uint32 start_node)
     m_taxiMapChangeNode = 0;
 
     if( IsMounted() )
-        TO_UNIT(this)->Dismount();
+        Dismount();
 
     //also remove morph spells
     if(GetUInt32Value(UNIT_FIELD_DISPLAYID)!=GetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID))
@@ -9556,7 +9556,7 @@ bool Player::SafeTeleport(uint32 MapID, uint32 InstanceID, LocationVector vec, i
         }
 
         // Dismount
-        TO_UNIT(this)->Dismount();
+        Dismount();
     }
 
     //no flying outside new continents

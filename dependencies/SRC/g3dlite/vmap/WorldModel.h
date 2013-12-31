@@ -13,7 +13,7 @@ namespace VMAP
     class MeshTriangle
     {
         public:
-            MeshTriangle(){}
+            MeshTriangle() : idx0(0), idx1(0), idx2(0) { }
             MeshTriangle(G3D::g3d_uint32 na, G3D::g3d_uint32 nb, G3D::g3d_uint32 nc): idx0(na), idx1(nb), idx2(nc) {}
 
             G3D::g3d_uint32 idx0;
@@ -36,7 +36,7 @@ namespace VMAP
             bool writeToFile(FILE* wf);
             static bool readFromFile(FILE* rf, WmoLiquid* &liquid);
         private:
-            WmoLiquid(): iHeight(0), iFlags(0) {}
+            WmoLiquid(): iTilesX(0), iTilesY(0), iType(0), iHeight(0), iFlags(0) { }
             G3D::g3d_uint32 iTilesX;       //!< number of tiles in x direction, each
             G3D::g3d_uint32 iTilesY;
             G3D::Vector3 iCorner;          //!< the lower corner
@@ -51,7 +51,7 @@ namespace VMAP
     class GroupModel
     {
         public:
-            GroupModel(): iLiquid(0) {}
+            GroupModel(): iMogpFlags(0), iGroupWMOID(0), iLiquid(0) { }
             GroupModel(const GroupModel &other);
             GroupModel(G3D::g3d_uint32 mogpFlags, G3D::g3d_uint32 groupWMOID, const G3D::AABox &bound):
                         iBound(bound), iMogpFlags(mogpFlags), iGroupWMOID(groupWMOID), iLiquid(0) {}

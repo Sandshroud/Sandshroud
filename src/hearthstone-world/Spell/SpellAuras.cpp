@@ -5415,7 +5415,7 @@ void Aura::SpellAuraTransform(bool apply)
         displayId = ci->Male_DisplayID;
 
     if( m_target->IsPlayer() && TO_PLAYER(m_target)->IsMounted() )
-        TO_PLAYER(m_target)->Dismount();
+        m_target->Dismount();
 
     // SetPositive();
     Unit * m_caster = GetUnitCaster();
