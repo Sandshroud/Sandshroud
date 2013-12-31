@@ -319,7 +319,7 @@ public:
             }
         }
     }
-    
+
 protected:
     Creature* BKStillblade;
     uint32 lifetimer;
