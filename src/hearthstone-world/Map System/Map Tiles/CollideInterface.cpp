@@ -30,7 +30,7 @@ void CCollideInterface::UpdateAllMaps(uint32 p_time)
     if( !CollisionMgr )
         return;
 
-    CollisionMgr->updateDynamicMapTrees(p_time);
+    CollisionMgr->updateDynamicMapTree(p_time);
 }
 
 void CCollideInterface::UpdateSingleMap(uint32 mapId, uint32 p_time)
@@ -38,7 +38,7 @@ void CCollideInterface::UpdateSingleMap(uint32 mapId, uint32 p_time)
     if( !CollisionMgr )
         return;
 
-    CollisionMgr->updateDynamicMapTree(mapId, p_time);
+    CollisionMgr->updateDynamicMapTree(p_time, mapId);
 }
 
 void CCollideInterface::ActivateMap(uint32 mapId)
@@ -51,7 +51,7 @@ void CCollideInterface::ActivateMap(uint32 mapId)
     {
         m_mapLocks[mapId] = new CollisionMap();
         m_mapLocks[mapId]->m_loadCount = 1;
-        CollisionMgr->InitializeMap(mapId);
+        CollisionMgr->loadMap(mapId);
         memset(&m_mapLocks[mapId]->m_tileLoadCount, 0, sizeof(uint32)*64*64);
     }
     else
@@ -259,23 +259,14 @@ bool CCollideInterface::IsIndoor(uint32 mapId, float x, float y, float z)
     int32 adtId = 0, rootId = 0, groupid = 0;
     if(CollisionMgr->getAreaInfo(mapId, x, y, z, flags, adtId, rootId, groupid))
     {
-        WMOAreaTableEntry * WMOEntry = objmgr.GetWMOAreaTable(adtId, rootId, groupid);
-        if(WMOEntry != NULL)
+        if(flags & WMO_FLAG_INSIDE_WMO_BOUNDS
+            && !(flags & WMO_FLAG_OUTSIDE_WMO_BOUNDS)
+            && !(flags & WMO_FLAG_WMO_NO_INSIDE))
         {
-            AreaTable* ate = dbcArea.LookupEntry(WMOEntry->adtId);
-            if(ate != NULL)
-            {
-                if((ate->AreaFlags & AREA_INSIDE) && !(ate->AreaFlags & AREA_OUTSIDE))
-                    res = true;
-            }
-            res = res || ((WMOEntry->Flags & 2) && !(WMOEntry->Flags & 4));
+            WMOAreaTableEntry * WMOEntry = objmgr.GetWMOAreaTable(adtId, rootId, groupid);
+            if(WMOEntry == NULL || !(WMOEntry->Flags & 0x4))
+                res = true;
         }
-
-        res = res || ((flags & VA_FLAG_INDOORS) &&
-            !(flags & VA_FLAG_OUTSIDE) &&
-            !(flags & VA_FLAG_IN_CITY) &&
-            !(flags & VA_FLAG_IN_CITY2) &&
-            !(flags & VA_FLAG_IN_CITY3));
     }
 
     // release write lock
@@ -298,19 +289,23 @@ bool CCollideInterface::IsIncity(uint32 mapId, float x, float y, float z)
     int32 adtId = 0, rootId = 0, groupid = 0;
     if(CollisionMgr->getAreaInfo(mapId, x, y, z, flags, adtId, rootId, groupid))
     {
-        WMOAreaTableEntry * WMOEntry = objmgr.GetWMOAreaTable(adtId, rootId, groupid);
-        if(WMOEntry != NULL)
+        if(flags & WMO_FLAG_INSIDE_CITY_WMO
+            //&& (flags & WMO_FLAG_INSIDE_WMO_BOUNDS)
+            && !(flags & WMO_FLAG_OUTSIDE_WMO_BOUNDS))
+            res = true;
+        else if(flags & (WMO_FLAG_INSIDE_WMO_BOUNDS|WMO_FLAG_INSIDE_SUB_WMO))
         {
-            AreaTable* ate = dbcArea.LookupEntry(WMOEntry->areaId);
-            if(ate != NULL)
+            WMOAreaTableEntry * WMOEntry = objmgr.GetWMOAreaTable(adtId, rootId, groupid);
+            if(WMOEntry != NULL)
             {
-                if(ate->AreaFlags & AREA_CITY_AREA || ate->AreaFlags & AREA_CITY)
-                    res = true;
+                AreaTable* ate = dbcArea.LookupEntry(WMOEntry->areaId);
+                if(ate != NULL)
+                {
+                    if(ate->AreaFlags & AREA_CITY_AREA || ate->AreaFlags & AREA_CITY)
+                        res = true;
+                }
             }
         }
-
-        if((flags & VA_FLAG_IN_CITY) || (flags & VA_FLAG_IN_CITY2) || (flags & VA_FLAG_IN_CITY3))
-            res = true;
     }
 
     // release write lock
@@ -319,48 +314,29 @@ bool CCollideInterface::IsIncity(uint32 mapId, float x, float y, float z)
     return res;
 }
 
-uint16 CCollideInterface::GetAreaID(uint32 mapId, float x, float y, float z)
+bool CCollideInterface::GetAreaInfo(uint32 mapId, float x, float y, float z, uint16 &areaId, uint32 &flags, int32 &adtId, int32 &rootId, int32 &groupid)
 {
-    uint16 res = 0xFFFF;
     ASSERT(m_mapLocks[mapId] != NULL);
     if(!CollisionMgr)
-        return res;
+        return false;
 
+    bool res = false;
     // get read lock
     m_mapLocks[mapId]->m_lock.Acquire();
-
-    uint32 flags = 0;
-    int32 adtId = 0, rootId = 0, groupid = 0;
     if(CollisionMgr->getAreaInfo(mapId, x, y, z, flags, adtId, rootId, groupid))
     {
-        WMOAreaTableEntry * WMOEntry = objmgr.GetWMOAreaTable(adtId, rootId, groupid);
-        if(WMOEntry != NULL)
-            res = WMOEntry->areaId;
+        if(flags & WMO_FLAG_WMO_EXISTS)
+        {
+            res = true;
+            WMOAreaTableEntry * WMOEntry = objmgr.GetWMOAreaTable(adtId, rootId, groupid);
+            if(WMOEntry != NULL)
+                areaId = WMOEntry->areaId;
+        }
     }
 
     // release write lock
     m_mapLocks[mapId]->m_lock.Release();
-
     return res;
-}
-
-uint32 CCollideInterface::GetVmapAreaFlags(uint32 mapId, float x, float y, float z)
-{
-    ASSERT(m_mapLocks[mapId] != NULL);
-    if( !CollisionMgr )
-        return 0;
-
-    // get read lock
-    m_mapLocks[mapId]->m_lock.Acquire();
-
-    // get data
-    uint32 flags = CollisionMgr ? CollisionMgr->GetVmapFlags(mapId, x, y, z) : 0;
-
-    // release write lock
-    m_mapLocks[mapId]->m_lock.Release();
-
-    // return
-    return flags;
 }
 
 void CCollideInterface::LoadGameobjectModel(uint64 Guid, uint32 mapId, uint32 displayID, float scale, float posX, float posY, float posZ, float orientation, uint32 instanceId, int32 phasemask)

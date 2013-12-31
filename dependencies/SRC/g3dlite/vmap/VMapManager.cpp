@@ -50,7 +50,7 @@ namespace VMAP
         return fname.str();
     }
 
-    void VMapManager::InitializeMap(unsigned int mapId)
+    bool VMapManager::loadMap(unsigned int mapId)
     {
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
         if (instanceTree == iInstanceMapTrees.end())
@@ -60,38 +60,49 @@ namespace VMAP
             {
                 bLog.outError("StaticMapTree::InitMap() : Map tree initialization failed");
                 delete newTree;
-                return;
+                return false;
             }
 
             iInstanceMapTrees.insert(InstanceTreeMap::value_type(mapId, newTree));
         }
+        return true;
     }
 
-    int VMapManager::loadMap(unsigned int mapId, int x, int y)
+    void VMapManager::unloadMap(unsigned int mapId)
     {
-        int result = VMAP_LOAD_RESULT_IGNORED;
-        if (_loadMap(mapId, x, y))
-            result = VMAP_LOAD_RESULT_OK;
-        else
-            result = VMAP_LOAD_RESULT_ERROR;
+        InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
+        if (instanceTree != iInstanceMapTrees.end())
+        {
+            instanceTree->second->UnloadMap(this);
+            if (instanceTree->second->numLoadedTiles() == 0)
+            {
+                delete instanceTree->second;
+                iInstanceMapTrees.erase(mapId);
+            }
+        }
+    }
 
-        return result;
+    void VMapManager::unloadMap(unsigned int mapId, int x, int y)
+    {
+        InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
+        if (instanceTree == iInstanceMapTrees.end())
+            return;
+        instanceTree->second->UnloadMapTile(x, y, this);
     }
 
     // load one tile (internal use only)
-    bool VMapManager::_loadMap(unsigned int mapId, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY)
+    bool VMapManager::loadMap(unsigned int mapId, int x, int y)
     {
         InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
         if (instanceTree == iInstanceMapTrees.end())
             return false;
 
-        return instanceTree->second->LoadMapTile(tileX, tileY, this);
+        return instanceTree->second->LoadMapTile(x, y, this);
     }
 
     // load one tile (internal use only)
-    int VMapManager::loadObject(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_uint32 instanceId, G3D::g3d_int32 m_phase)
+    bool VMapManager::loadObject(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_uint32 instanceId, G3D::g3d_int32 m_phase)
     {
-        int result = VMAP_LOAD_RESULT_IGNORED;
         DynamicTreeMap::iterator DIT = iDynamicMapTrees.find(mapId);
         if (DIT == iDynamicMapTrees.end())
         {
@@ -99,13 +110,9 @@ namespace VMAP
             DIT = iDynamicMapTrees.insert(DynamicTreeMap::value_type(mapId, Tree)).first;
         }
         if(DIT->second == NULL)
-            return result; // Shouldn't happen.
+            return false; // Shouldn't happen.
 
-        if(_loadObject(DIT->second, guid, mapId, DisplayID, scale, x, y, z, o, instanceId, m_phase))
-            result = VMAP_LOAD_RESULT_OK;
-        else
-            result = VMAP_LOAD_RESULT_ERROR;
-        return result;
+        return _loadObject(DIT->second, guid, mapId, DisplayID, scale, x, y, z, o, instanceId, m_phase);
     }
 
     // Load our object into our dynamic tree(Internal only please!)
@@ -227,34 +234,6 @@ namespace VMAP
         }
     }
 
-    void VMapManager::unloadMap(unsigned int mapId)
-    {
-        InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
-        if (instanceTree != iInstanceMapTrees.end())
-        {
-            instanceTree->second->UnloadMap(this);
-            if (instanceTree->second->numLoadedTiles() == 0)
-            {
-                delete instanceTree->second;
-                iInstanceMapTrees.erase(mapId);
-            }
-        }
-    }
-
-    void VMapManager::unloadMap(unsigned int mapId, int x, int y)
-    {
-        InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapId);
-        if (instanceTree != iInstanceMapTrees.end())
-        {
-            instanceTree->second->UnloadMapTile(x, y, this);
-            if (instanceTree->second->numLoadedTiles() == 0)
-            {
-                delete instanceTree->second;
-                iInstanceMapTrees.erase(mapId);
-            }
-        }
-    }
-
     bool VMapManager::isInLineOfSight(unsigned int mapId, G3D::g3d_uint32 instanceId, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2)
     {
         bool result = true;
@@ -277,18 +256,6 @@ namespace VMAP
                 if(!DynamicTree->second->isInLineOfSight(x1, y1, z1, dest.x, dest.y, dest.z, instanceId, m_phase))
                     result = false;
             }
-        }
-        return result;
-    }
-
-    g3d_uint32 VMapManager::GetVmapFlags(unsigned int mapid, float x, float y, float z)
-    {
-        g3d_uint32 result;
-        InstanceTreeMap::iterator instanceTree = iInstanceMapTrees.find(mapid);
-        if (instanceTree != iInstanceMapTrees.end())
-        {
-            Vector3 position = convertPositionToInternalRep(x,y,z);
-            result = instanceTree->second->GetVmapFlags(position);
         }
         return result;
     }
@@ -448,17 +415,19 @@ namespace VMAP
         return StaticMapTree::CanLoadMap(std::string(basePath), mapId, x, y);
     }
 
-    void VMapManager::updateDynamicMapTrees(G3D::g3d_uint32 t_diff)
+    void VMapManager::updateDynamicMapTree(G3D::g3d_uint32 t_diff, G3D::g3d_int32 mapid)
     {
-        for(DynamicTreeMap::iterator itr = iDynamicMapTrees.begin(); itr != iDynamicMapTrees.end(); itr++)
-            itr->second->update(t_diff);
-    }
-
-    void VMapManager::updateDynamicMapTree(G3D::g3d_uint32 mapid, G3D::g3d_uint32 t_diff)
-    {
-        DynamicTreeMap::iterator DynamicTree = iDynamicMapTrees.find(mapid);
-        if (DynamicTree != iDynamicMapTrees.end())
-            DynamicTree->second->update(t_diff);
+        if(mapid == -1)
+        {
+            for(DynamicTreeMap::iterator itr = iDynamicMapTrees.begin(); itr != iDynamicMapTrees.end(); itr++)
+                itr->second->update(t_diff);
+        }
+        else
+        {
+            DynamicTreeMap::iterator DynamicTree = iDynamicMapTrees.find(mapid);
+            if (DynamicTree != iDynamicMapTrees.end())
+                DynamicTree->second->update(t_diff);
+        }
     }
 
     void VMapManager::LoadGameObjectModelList()
