@@ -492,7 +492,7 @@ void TerrainMgr::CellGoneActive(uint32 x, uint32 y)
 
     LoadCounter[tileX][tileY]++;
     if(m_CollisionMap)
-        CollideInterface.ActivateTile(mapId, tileX, tileY);
+        sVMapInterface.ActivateTile(mapId, tileX, tileY);
     if(sWorld.PathFinding)
         NavMeshInterface.LoadNavMesh(mapId, tileX, tileY);
     if(!AreTilesValid(tileX, tileY))
@@ -521,7 +521,7 @@ void TerrainMgr::CellGoneIdle(uint32 x, uint32 y)
     mutex.Acquire();
     LoadCounter[tileX][tileY]--;
     if(m_CollisionMap)
-        CollideInterface.DeactivateTile(mapId, tileX, tileY);
+        sVMapInterface.DeactivateTile(mapId, tileX, tileY);
     if(sWorld.PathFinding)
         NavMeshInterface.UnloadNavMesh(mapId, tileX, tileY);
     if(!AreTilesValid(tileX, tileY))

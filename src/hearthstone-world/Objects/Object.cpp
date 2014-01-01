@@ -159,7 +159,7 @@ float Object::GetCHeightForPosition(bool checkwater, float x, float y, float z)
         return mapheight+offset;
     }
 
-    float vmapheight = CollideInterface.GetHeight(GetMapId(), GetInstanceID(), GetPhaseMask(), x, y, z);
+    float vmapheight = sVMapInterface.GetHeight(GetMapId(), GetInstanceID(), GetPhaseMask(), x, y, z);
     if(IS_INSTANCE(mgr->GetMapId()) || !sWorld.CalculatedHeightChecks)
     {
         if(vmapheight != NO_WMO_HEIGHT)
@@ -180,7 +180,7 @@ float Object::GetCHeightForPosition(bool checkwater, float x, float y, float z)
     float phy = 0.0f;
     float phz = 0.0f;
     float CMapHeight = NO_LAND_HEIGHT;
-    CollideInterface.GetFirstPoint(GetMapId(), GetInstanceID(), GetPhaseMask(), x, y, z-10.0f, x, y, z+10.0f, phx, phy, CMapHeight, 0.0f);
+    sVMapInterface.GetFirstPoint(GetMapId(), GetInstanceID(), GetPhaseMask(), x, y, z-10.0f, x, y, z+10.0f, phx, phy, CMapHeight, 0.0f);
 
     // Mapheight first.
     if(mapheight != NO_LAND_HEIGHT)
@@ -195,7 +195,7 @@ float Object::GetCHeightForPosition(bool checkwater, float x, float y, float z)
                 return mapheight+offset;
             }
 
-            if(!CollideInterface.GetFirstPoint(GetMapId(), GetInstanceID(), GetPhaseMask(), x, y, mapheight, x, y, z, phx, phy, phz, 0.0f))
+            if(!sVMapInterface.GetFirstPoint(GetMapId(), GetInstanceID(), GetPhaseMask(), x, y, mapheight, x, y, z, phx, phy, phz, 0.0f))
             {
                 if(checkwater && waterheight != NO_WATER_HEIGHT)
                     if(waterheight > mapheight)
@@ -224,7 +224,7 @@ float Object::GetCHeightForPosition(bool checkwater, float x, float y, float z)
                 return vmapheight+offset;
             }
 
-            if(!CollideInterface.GetFirstPoint(GetMapId(), GetInstanceID(), GetPhaseMask(), x, y, vmapheight, x, y, z, phx, phy, phz, 0.0f))
+            if(!sVMapInterface.GetFirstPoint(GetMapId(), GetInstanceID(), GetPhaseMask(), x, y, vmapheight, x, y, z, phx, phy, phz, 0.0f))
             {
                 if(checkwater && waterheight != NO_WATER_HEIGHT)
                     if(waterheight > vmapheight)
@@ -327,23 +327,23 @@ float Object::GetCHeightForPosition(bool checkwater, float x, float y, float z)
     {
         if(mgr->CanUseCollision(this))
         {
-            if(CollideInterface.IsIndoor(GetMapId(), x, y, z))
+            if(sVMapInterface.IsIndoor(GetMapId(), x, y, z))
                 offset = 5.0f;
 
             float pointx = 0.0f;
             float pointy = 0.0f;
             float pointz = 0.0f;
-            if(CollideInterface.GetFirstPoint(GetMapId(), x, y, vmapheight+2.0f, x, y, z, pointx, pointy, pointz, 0.0f)) // Meaning there is a break inbetween us.
+            if(sVMapInterface.GetFirstPoint(GetMapId(), x, y, vmapheight+2.0f, x, y, z, pointx, pointy, pointz, 0.0f)) // Meaning there is a break inbetween us.
             {
                 if(pointz+2.0f < vmapheight) // Distance is more than a roof.
                 {
                     float pointz2 = 0.0f;
-                    if(CollideInterface.GetFirstPoint(GetMapId(), x, y, vmapheight+2.0f, x, y, pointz, pointx, pointy, pointz2, 0.0f)) // Meaning there is a break inbetween us.
+                    if(sVMapInterface.GetFirstPoint(GetMapId(), x, y, vmapheight+2.0f, x, y, pointz, pointx, pointy, pointz2, 0.0f)) // Meaning there is a break inbetween us.
                     {
                         if(pointz2+2.0f < pointz) // Distance is more than a roof.
                         {
                             float pointz3 = 0.0f;
-                            if(CollideInterface.GetFirstPoint(GetMapId(), x, y, pointz, x, y, pointz2, pointx, pointy, pointz3, 0.0f)) // Meaning there is a break inbetween us.
+                            if(sVMapInterface.GetFirstPoint(GetMapId(), x, y, pointz, x, y, pointz2, pointx, pointy, pointz3, 0.0f)) // Meaning there is a break inbetween us.
                                 vmapheight = pointz3;
                         }
                         else
@@ -356,17 +356,17 @@ float Object::GetCHeightForPosition(bool checkwater, float x, float y, float z)
                     vmapheight = pointz;
             }
 
-            if(CollideInterface.GetFirstPoint(GetMapId(), x, y, z+offset, x, y, vmapheight, pointx, pointy, pointz, 0.0f)) // Meaning there is a break inbetween us.
+            if(sVMapInterface.GetFirstPoint(GetMapId(), x, y, z+offset, x, y, vmapheight, pointx, pointy, pointz, 0.0f)) // Meaning there is a break inbetween us.
             {
                 if(pointz+2.0f < vmapheight) // Distance is more than a roof.
                 {
                     float pointz2 = 0.0f;
-                    if(CollideInterface.GetFirstPoint(GetMapId(), x, y, z+offset, x, y, pointz, pointx, pointy, pointz2, 0.0f)) // Meaning there is a break inbetween us.
+                    if(sVMapInterface.GetFirstPoint(GetMapId(), x, y, z+offset, x, y, pointz, pointx, pointy, pointz2, 0.0f)) // Meaning there is a break inbetween us.
                     {
                         if(pointz2+2.0f < pointz) // Distance is more than a roof.
                         {
                             float pointz3 = 0.0f;
-                            if(CollideInterface.GetFirstPoint(GetMapId(), x, y, pointz, x, y, pointz2, pointx, pointy, pointz3, 0.0f)) // Meaning there is a break inbetween us.
+                            if(sVMapInterface.GetFirstPoint(GetMapId(), x, y, pointz, x, y, pointz2, pointx, pointy, pointz3, 0.0f)) // Meaning there is a break inbetween us.
                                 vmapheight = pointz3;
                         }
                         else
@@ -384,23 +384,23 @@ float Object::GetCHeightForPosition(bool checkwater, float x, float y, float z)
     {
         if(mgr->CanUseCollision(this))
         {
-            if(CollideInterface.IsIndoor(GetMapId(), x, y, z))
+            if(sVMapInterface.IsIndoor(GetMapId(), x, y, z))
                 offset = 5.0f; // Use a smaller offset
 
             float pointx = 0.0f;
             float pointy = 0.0f;
             float pointz = 0.0f;
-            if(CollideInterface.GetFirstPoint(GetMapId(), x, y, z+2.0f, x, y, vmapheight, pointx, pointy, pointz, 0.0f)) // Meaning there is a break inbetween us.
+            if(sVMapInterface.GetFirstPoint(GetMapId(), x, y, z+2.0f, x, y, vmapheight, pointx, pointy, pointz, 0.0f)) // Meaning there is a break inbetween us.
             {
                 if(pointz+2.0f < vmapheight) // Distance is more than a roof.
                 {
                     float pointz2 = 0.0f;
-                    if(CollideInterface.GetFirstPoint(GetMapId(), x, y, pointz+2.0f, x, y, vmapheight, pointx, pointy, pointz2, 0.0f)) // Meaning there is a break inbetween us.
+                    if(sVMapInterface.GetFirstPoint(GetMapId(), x, y, pointz+2.0f, x, y, vmapheight, pointx, pointy, pointz2, 0.0f)) // Meaning there is a break inbetween us.
                     {
                         if(pointz2+2.0f < pointz) // Distance is more than a roof.
                         {
                             float pointz3 = 0.0f;
-                            if(CollideInterface.GetFirstPoint(GetMapId(), x, y, pointz2+2.0f, x, y, pointz, pointx, pointy, pointz3, 0.0f)) // Meaning there is a break inbetween us.
+                            if(sVMapInterface.GetFirstPoint(GetMapId(), x, y, pointz2+2.0f, x, y, pointz, pointx, pointy, pointz3, 0.0f)) // Meaning there is a break inbetween us.
                                 vmapheight = pointz3;
                         }
                         else
@@ -413,17 +413,17 @@ float Object::GetCHeightForPosition(bool checkwater, float x, float y, float z)
                     vmapheight = pointz;
             }
 
-            if(CollideInterface.GetFirstPoint(GetMapId(), x, y, vmapheight+offset, x, y, z, pointx, pointy, pointz, 0.0f)) // Meaning there is a break inbetween us.
+            if(sVMapInterface.GetFirstPoint(GetMapId(), x, y, vmapheight+offset, x, y, z, pointx, pointy, pointz, 0.0f)) // Meaning there is a break inbetween us.
             {
                 if(pointz+2.0f < vmapheight) // Distance is more than a roof.
                 {
                     float pointz2 = 0.0f;
-                    if(CollideInterface.GetFirstPoint(GetMapId(), x, y, vmapheight+offset, x, y, pointz, pointx, pointy, pointz2, 0.0f)) // Meaning there is a break inbetween us.
+                    if(sVMapInterface.GetFirstPoint(GetMapId(), x, y, vmapheight+offset, x, y, pointz, pointx, pointy, pointz2, 0.0f)) // Meaning there is a break inbetween us.
                     {
                         if(pointz2+2.0f < pointz) // Distance is more than a roof.
                         {
                             float pointz3 = 0.0f;
-                            if(CollideInterface.GetFirstPoint(GetMapId(), x, y, pointz, x, y, pointz2, pointx, pointy, pointz3, 0.0f)) // Meaning there is a break inbetween us.
+                            if(sVMapInterface.GetFirstPoint(GetMapId(), x, y, pointz, x, y, pointz2, pointx, pointy, pointz3, 0.0f)) // Meaning there is a break inbetween us.
                                 vmapheight = pointz3;
                         }
                         else
@@ -1003,7 +1003,7 @@ void Object::_BuildValuesUpdate(ByteBuffer * data, UpdateMask *updateMask, Playe
 
             if(cThis->IsVehicle())
             {
-                if(FactionSystem::isAttackable(target, this, false))
+                if(sFactionSystem.isAttackable(target, this, false))
                 {
                     DummyNpcFlags &= ~(UNIT_NPC_FLAG_VEHICLE_MOUNT);
                 }
@@ -2134,7 +2134,7 @@ void Object::UpdateOppFactionSet()
     {
         if (((*i)->GetTypeId() == TYPEID_UNIT) || ((*i)->IsPlayer()) || ((*i)->GetTypeId() == TYPEID_GAMEOBJECT))
         {
-            if (FactionSystem::isHostile(this, (*i)))
+            if (sFactionSystem.isHostile(this, (*i)))
             {
                 if(!(*i)->IsInRangeOppFactSet(this))
                     (*i)->m_oppFactsInRange.insert(this);
@@ -3393,7 +3393,7 @@ void Object::UpdateAreaInfo(MapMgr *mgr)
         SetZoneId(at->ZoneId);
 
     m_areaFlags = OBJECT_AREA_FLAG_NONE;
-    if(CollideInterface.IsIncity(GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ()))
+    if(sVMapInterface.IsIncity(GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ()))
         m_areaFlags |= OBJECT_AREA_FLAG_INCITY;
     if(m_zoneId || m_areaId)
     {
@@ -3553,7 +3553,7 @@ bool Object::IsInLineOfSight(Object* pObj)
         Tnoselevel = TO_PLAYER(pObj)->m_noseLevel;
 
     if (GetMapMgr() && GetMapMgr()->CanUseCollision(this) && GetMapMgr()->CanUseCollision(pObj))
-        return (CollideInterface.CheckLOS( GetMapId(), GetInstanceID(), GetPhaseMask(), GetPositionX(), GetPositionY(), GetPositionZ() + Onoselevel + GetFloatValue(UNIT_FIELD_HOVERHEIGHT), pObj->GetPositionX(), pObj->GetPositionY(), pObj->GetPositionZ() + Tnoselevel + pObj->GetFloatValue(UNIT_FIELD_HOVERHEIGHT)) );
+        return (sVMapInterface.CheckLOS( GetMapId(), GetInstanceID(), GetPhaseMask(), GetPositionX(), GetPositionY(), GetPositionZ() + Onoselevel + GetFloatValue(UNIT_FIELD_HOVERHEIGHT), pObj->GetPositionX(), pObj->GetPositionY(), pObj->GetPositionZ() + Tnoselevel + pObj->GetFloatValue(UNIT_FIELD_HOVERHEIGHT)) );
     else
         return true;
 }
@@ -3565,7 +3565,7 @@ bool Object::IsInLineOfSight(float x, float y, float z)
         Onoselevel = TO_PLAYER(this)->m_noseLevel;
 
     if (GetMapMgr() && GetMapMgr()->CanUseCollision(this))
-        return (CollideInterface.CheckLOS( GetMapId(), GetInstanceID(), GetPhaseMask(), GetPositionX(), GetPositionY(), GetPositionZ() + Onoselevel + GetFloatValue(UNIT_FIELD_HOVERHEIGHT), x, y, z) );
+        return (sVMapInterface.CheckLOS( GetMapId(), GetInstanceID(), GetPhaseMask(), GetPositionX(), GetPositionY(), GetPositionZ() + Onoselevel + GetFloatValue(UNIT_FIELD_HOVERHEIGHT), x, y, z) );
     else
         return true;
 }

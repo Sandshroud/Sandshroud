@@ -18,8 +18,13 @@ Map::Map(uint32 mapid, MapInfo * inf)
     //new stuff Load Spawns
     LoadSpawns();
 
+    bool mapCollision = false;
+    // collision
+    if (Collision)
+        mapCollision = sVMapInterface.ActivateMap(_mapId);
+
     // Setup terrain
-    _terrain = new TerrainMgr(sWorld.MapPath, _mapId, !(inf->type == INSTANCE_NULL), Collision);
+    _terrain = new TerrainMgr(sWorld.MapPath, _mapId, !(inf->type == INSTANCE_NULL), mapCollision);
     _terrain->LoadTerrainHeader();
 
     // get our name
@@ -28,10 +33,6 @@ Map::Map(uint32 mapid, MapInfo * inf)
         name = _mapInfo->name;
     else
         name = "Unknown";
-
-    // collision
-    if (Collision)
-        CollideInterface.ActivateMap(_mapId);
 }
 
 Map::~Map()
@@ -91,7 +92,7 @@ Map::~Map()
 
     // collision
     if (Collision)
-        CollideInterface.DeactivateMap(_mapId);
+        sVMapInterface.DeactivateMap(_mapId);
 }
 
 bool first_table_warning = true;

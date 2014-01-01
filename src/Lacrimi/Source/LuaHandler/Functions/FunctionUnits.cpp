@@ -855,7 +855,7 @@ int LuaUnit_GetRandomFriend(lua_State * L, Unit * ptr)
     for(unordered_set<Object*>::iterator itr = ptr->GetInRangeSetBegin(); itr != ptr->GetInRangeSetEnd(); ++itr)
     {
         obj = (*itr);
-        if (obj->IsUnit() && FactionSystem::isFriendly(obj,ptr))
+        if (obj->IsUnit() && sFactionSystem.isFriendly(obj,ptr))
             ++count;
     }
 
@@ -866,7 +866,7 @@ int LuaUnit_GetRandomFriend(lua_State * L, Unit * ptr)
         for(unordered_set<Object*>::iterator itr = ptr->GetInRangeSetBegin(); itr != ptr->GetInRangeSetEnd(); ++itr)
         {
             obj = (*itr);
-            if (!obj->IsUnit() || !FactionSystem::isFriendly(obj,ptr))
+            if (!obj->IsUnit() || !sFactionSystem.isFriendly(obj,ptr))
                 continue;
 
             if(count == r)
@@ -895,7 +895,7 @@ int LuaUnit_GetRandomEnemy(lua_State * L, Unit * ptr)
     for(unordered_set<Object*>::iterator itr = ptr->GetInRangeSetBegin(); itr != ptr->GetInRangeSetEnd(); ++itr)
     {
         obj = (*itr);
-        if (obj->IsUnit() && !FactionSystem::isFriendly(obj,ptr))
+        if (obj->IsUnit() && !sFactionSystem.isFriendly(obj,ptr))
             ++count;
     }
 
@@ -906,7 +906,7 @@ int LuaUnit_GetRandomEnemy(lua_State * L, Unit * ptr)
         for(unordered_set<Object*>::iterator itr = ptr->GetInRangeSetBegin(); itr != ptr->GetInRangeSetEnd(); ++itr)
         {
             obj = (*itr);
-            if (!obj->IsUnit() || FactionSystem::isFriendly(obj,ptr))
+            if (!obj->IsUnit() || sFactionSystem.isFriendly(obj,ptr))
                 continue;
 
             if(count == r)
@@ -1077,7 +1077,7 @@ int LuaUnit_ChangeTarget(lua_State * L, Unit * ptr)
 {
     TEST_UNIT();
     Unit * target = Lunar<Unit>::check(L, 1);
-    if (!target || !FactionSystem::isHostile(ptr,target) || ptr==target)
+    if (!target || !sFactionSystem.isHostile(ptr,target) || ptr==target)
         return 0;
     else
         ptr->GetAIInterface()->SetNextTarget(target);
@@ -3995,7 +3995,7 @@ int LuaUnit_IsFriendly(lua_State * L, Unit * ptr)
     if (!obj)
         return 0;
 
-    if (FactionSystem::isFriendly(ptr, obj))
+    if (sFactionSystem.isFriendly(ptr, obj))
         lua_pushboolean(L,1);
     else
         lua_pushboolean(L,0);
@@ -4442,7 +4442,7 @@ int LuaUnit_GetClosestEnemy(lua_State * L, Unit * ptr)
     for(unordered_set<Object*>::iterator itr = ptr->GetInRangeSetBegin(); itr != ptr->GetInRangeSetEnd(); ++itr)
     {
         closest_unit = (*itr);
-        if(!closest_unit->IsUnit() || !FactionSystem::isHostile(ptr,closest_unit) )
+        if(!closest_unit->IsUnit() || !sFactionSystem.isHostile(ptr,closest_unit) )
             continue;
         current_dist = ptr->GetDistance2dSq(closest_unit);
         if(current_dist < closest_dist)
@@ -4465,7 +4465,7 @@ int LuaUnit_GetClosestFriend(lua_State * L, Unit * ptr)
     for (unordered_set<Object*>::iterator itr = ptr->GetInRangeSetBegin(); itr != ptr->GetInRangeSetEnd(); ++itr)
     {
         closest_unit = (*itr);
-        if (!closest_unit->IsUnit() || FactionSystem::isHostile(closest_unit, ptr))
+        if (!closest_unit->IsUnit() || sFactionSystem.isHostile(closest_unit, ptr))
             continue;
         current_dist = closest_unit->GetDistanceSq(ptr);
         if(current_dist < closest_dist)
@@ -4650,13 +4650,13 @@ int LuaUnit_IsInRaid(lua_State * L, Unit * ptr)
 int LuaUnit_IsHostile(lua_State*  L, Unit * ptr)
 {
     Object * B = Lunar<Object>::check(L,1);
-    lua_pushboolean(L, FactionSystem::isHostile(ptr,B));
+    lua_pushboolean(L, sFactionSystem.isHostile(ptr,B));
     return 1;
 }
 int LuaUnit_IsAttackable(lua_State*  L, Unit * ptr)
 {
     Object * B = Lunar<Object>::check(L,1);
-    lua_pushboolean(L, FactionSystem::isAttackable(ptr,B));
+    lua_pushboolean(L, sFactionSystem.isAttackable(ptr,B));
     return 1;
 }
 int LuaUnit_GetNumWaypoints(lua_State * L, Unit * ptr)
@@ -5405,7 +5405,7 @@ int LuaUnit_AggroWithInRangeFriends(lua_State * L, Unit * ptr)
         if (!obj || !obj->IsUnit() || TO_UNIT(obj)->isDead())
             continue;
 
-         if (!FactionSystem::isFriendly(obj, ptr))
+         if (!sFactionSystem.isFriendly(obj, ptr))
             continue;
 
         if (ptr->GetDistance2dSq(obj) > 10*10) // 10yrd range?
@@ -5628,7 +5628,7 @@ int LuaUnit_CanAttack(lua_State * L, Unit * ptr)
     TEST_UNITPLAYER_RET();
     Unit * target = CHECK_UNIT(L,1);
     if (!target) return 0;
-    if (FactionSystem::isAttackable(ptr, target))
+    if (sFactionSystem.isAttackable(ptr, target))
         lua_pushboolean(L, 1);
     else
         lua_pushboolean(L, 0);

@@ -232,7 +232,7 @@ bool AIInterface::IsValidUnitTarget( Object *pObject, SpellEntry *info, uint32 p
         {
             if ( !UnitTarget->CombatStatus.IsInCombat() )
                 return false; //Skip not-in-combat targets if friendly
-            if ( FactionSystem::isHostile( m_Unit, UnitTarget ) || getThreatByPtr( UnitTarget ) > 0 )
+            if ( sFactionSystem.isHostile( m_Unit, UnitTarget ) || getThreatByPtr( UnitTarget ) > 0 )
                 return false;
         }
     }

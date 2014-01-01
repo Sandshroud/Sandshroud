@@ -8,10 +8,20 @@
 #define NO_WMO_HEIGHT -100000.0f
 #define WMO_MAX_HEIGHT 100000.0f
 
-extern VMAP::VMapManager* CollisionMgr;
-
-class SERVER_DECL CCollideInterface
+class SERVER_DECL VMapInterface : public Singleton<VMapInterface>
 {
+private:
+    VMAP::VMapManager* vMapMgr;
+
+protected:
+    struct MapLoadData
+    {
+        MapLoadData() : m_lock() { memset(&m_tileLoadCount, 0, sizeof(uint32)*64*64); }
+        uint32 m_tileLoadCount[64][64];
+        Mutex m_lock;
+    }*m_mapLocks[NUM_MAPS];
+    Mutex m_mapDataLock;
+
 public:
     void Init();
     void DeInit();
@@ -21,7 +31,8 @@ public:
     bool ActivateTile(uint32 mapId, uint32 tileX, uint32 tileY);
     void DeactivateTile(uint32 mapId, uint32 tileX, uint32 tileY);
     bool IsActiveTile(uint32 mapId, uint32 tileX, uint32 tileY);
-    void ActivateMap(uint32 mapId);
+
+    bool ActivateMap(uint32 mapId);
     void DeactivateMap(uint32 mapId);
 
     bool GetAreaInfo(uint32 mapId, float x, float y, float z, uint16 &areaId, uint32 &flags, int32 &adtId, int32 &rootId, int32 &groupid);
@@ -38,4 +49,4 @@ public:
     void UnLoadGameobjectModel(uint64 Guid, uint32 mapId, uint32 instanceId);
 };
 
-extern SERVER_DECL CCollideInterface CollideInterface;
+#define sVMapInterface VMapInterface::getSingleton()

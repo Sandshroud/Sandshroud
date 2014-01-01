@@ -2280,7 +2280,7 @@ uint32 Unit::HandleProc( uint32 flag, uint32 flag2, Unit* victim, SpellEntry* Ca
 
                     case 60064: // Sundial of the Exiled
                         {
-                            if(!victim || !FactionSystem::isAttackable(this, victim, false))   // harmful spells
+                            if(!victim || !sFactionSystem.isAttackable(this, victim, false))   // harmful spells
                                 continue;
                         }break;
 
@@ -4116,7 +4116,7 @@ int32 Unit::Strike( Unit* pVictim, uint32 weapon_damage_type, SpellEntry* abilit
                 if (!(*itr) || (*itr) == pVictim || !(*itr)->IsUnit())
                     continue;
 
-                if(CalcDistance(*itr) < 5.0f && FactionSystem::isAttackable(TO_UNIT(this), (*itr)) && isTargetInFront(*itr) && !TO_UNIT(*itr)->IsPacified())
+                if(CalcDistance(*itr) < 5.0f && sFactionSystem.isAttackable(TO_UNIT(this), (*itr)) && isTargetInFront(*itr) && !TO_UNIT(*itr)->IsPacified())
                 {
                     // Sweeping Strikes hits cannot be dodged, missed or parried (from wowhead)
                     bool skip_hit_check = ex->spell_info->Id == 12328 ? true : false;
@@ -4539,7 +4539,7 @@ void Unit::AddInRangeObject(Object* pObj)
 {
     if((pObj->GetTypeId() == TYPEID_UNIT) || (pObj->IsPlayer()))
     {
-        if( FactionSystem::isHostile( TO_OBJECT(this), pObj ) )
+        if( sFactionSystem.isHostile( TO_OBJECT(this), pObj ) )
             m_oppFactsInRange.insert(pObj);
     }
 
@@ -6676,7 +6676,7 @@ bool Unit::CanEnterVehicle(Player * requester)
     if(requester->CalcDistance(this) >= GetModelHalfSize()+5.0f)
         return false;
 
-    if(FactionSystem::isHostile(this, requester))
+    if(sFactionSystem.isHostile(this, requester))
         return false;
 
     if(requester->m_CurrentCharm)
