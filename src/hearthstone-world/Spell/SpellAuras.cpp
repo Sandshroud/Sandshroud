@@ -802,24 +802,19 @@ void Aura::EventUpdateCreatureAA(float r)
     }
     else
     {
-        Object::InRangeSet::iterator itrr = m_caster->GetInRangeOppFactsSetBegin();
+        Object::InRangeUnitSet::iterator itrr = m_caster->GetInRangeOppFactsSetBegin();
         while(itrr != m_caster->GetInRangeOppFactsSetEnd())
         {
-            Object* m_Target = (*itrr);
+            Unit* m_Target = (*itrr);
             itrr++;
 
             if( !m_Target )
                 continue;
 
-            if( m_Target->IsUnit() )
-                target = TO_UNIT( m_Target );
-            else
+            if( !sFactionSystem.isHostile( m_caster, m_Target ) )
                 continue;
 
-            if( !sFactionSystem.isHostile( m_caster, target ) )
-                continue;
-
-            if( !(target->isAlive() && target->GetDistanceSq(m_caster) <= r && !target->m_AuraInterface.HasActiveAura(m_spellProto->Id)) )
+            if( !(m_Target->isAlive() && m_Target->GetDistanceSq(m_caster) <= r && !m_Target->m_AuraInterface.HasActiveAura(m_spellProto->Id)) )
                 continue;
 
             Aura* aura = NULLAURA;
@@ -829,7 +824,7 @@ void Aura::EventUpdateCreatureAA(float r)
                 {
                     if(!aura)
                     {
-                        aura = (new Aura(m_spellProto, -1, m_caster, target));
+                        aura = (new Aura(m_spellProto, -1, m_caster, m_Target));
                         aura->m_areaAura = true;
                     }
                     aura->AddMod(m_spellProto->EffectApplyAuraName[i], m_spellProto->EffectBasePoints[i],
@@ -838,8 +833,8 @@ void Aura::EventUpdateCreatureAA(float r)
             }
             if(aura)
             {
-                target->AddAura(aura);
-                targets.insert(target->GetLowGUID());
+                m_Target->AddAura(aura);
+                targets.insert(m_Target->GetLowGUID());
             }
         }
     }
@@ -1070,7 +1065,7 @@ void Aura::EventUpdatePlayerAA(float r)
     else if( areatargets & AA_TARGET_ALLENEMIES )
     {
         Unit* target;
-        Object::InRangeSet::iterator itr = m_caster->GetInRangeOppFactsSetBegin();
+        Object::InRangeUnitSet::iterator itr = m_caster->GetInRangeOppFactsSetBegin();
         for(; itr != m_caster->GetInRangeOppFactsSetEnd(); itr++)
         {
             if( !(*itr) )

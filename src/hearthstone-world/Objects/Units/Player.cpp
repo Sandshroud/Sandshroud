@@ -6586,7 +6586,7 @@ void Player::ClearInRangeSet()
         }
     }
     m_inRangePlayers.clear();
-    for( Object::InRangeSet::iterator itr = m_oppFactsInRange.begin(); itr != m_oppFactsInRange.end();)
+    for( Object::InRangeUnitSet::iterator itr = m_oppFactsInRange.begin(); itr != m_oppFactsInRange.end();)
     {
         pObj = (*itr);
         ++itr;
@@ -8777,7 +8777,6 @@ void Player::PushCreationData(ByteBuffer *data, uint32 updatecount)
     }
 
     _bufferS.Release();
-
 }
 
 void Player::ProcessPendingUpdates(ByteBuffer *pBuildBuffer, ByteBuffer *pCompressionBuffer)

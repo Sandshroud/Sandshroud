@@ -332,7 +332,7 @@ Unit *AIInterface::GetBestUnitTarget( SpellEntry *info, uint32 pTargetFilter, fl
     }
     else
     {
-        for ( Object::InRangeSet::iterator ObjectIter = m_Unit->GetInRangeOppFactsSetBegin(); ObjectIter != m_Unit->GetInRangeOppFactsSetEnd(); ++ObjectIter )
+        for ( Object::InRangeUnitSet::iterator ObjectIter = m_Unit->GetInRangeOppFactsSetBegin(); ObjectIter != m_Unit->GetInRangeOppFactsSetEnd(); ++ObjectIter )
         {
             if( IsValidUnitTarget(*ObjectIter, info, pTargetFilter, pMinRange, pMaxRange) )
             {

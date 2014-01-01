@@ -3006,7 +3006,7 @@ void Spell::SpellEffectSanctuary(uint32 i) // Stop all attacks made to you
     if( unitTarget == NULL )
         return;
 
-    unordered_set< Object* >::iterator itr, it2;
+    Object::InRangeUnitSet::iterator itr, it2;
     Unit* pUnit;
 
     for( itr = unitTarget->GetInRangeOppFactsSetBegin(); itr != unitTarget->GetInRangeOppFactsSetEnd(); )
