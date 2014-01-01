@@ -155,7 +155,7 @@ using namespace std;
 #include "MapMgr.h"
 #include "DayWatcherThread.h"
 #include "Player.h"
-#include "faction.h"
+#include "FactionSystem.h"
 #include "SpellNameHashes.h"
 #include "SpellDefines.h"
 #include "Spell.h"

@@ -4,91 +4,88 @@
 
 #include "StdAfx.h"
 
-struct CollisionMap
-{
-    uint32 m_loadCount;
-    uint32 m_tileLoadCount[64][64];
-    Mutex m_lock;
-};
+createFileSingleton(VMapInterface);
 
-SERVER_DECL CCollideInterface CollideInterface;
-VMAP::VMapManager* CollisionMgr;
-CollisionMap *m_mapLocks[NUM_MAPS];
-Mutex m_mapCreateLock;
-
-void CCollideInterface::Init()
+void VMapInterface::Init()
 {
     sLog.Notice("CollideInterface", "Init");
-    CollisionMgr = new VMAP::VMapManager(sWorld.vMapPath);
-    for(uint32 i = 0; i < NUM_MAPS; i++)
-        m_mapLocks[i] = NULL;
-    CollisionMgr->LoadGameObjectModelList();
+    vMapMgr = new VMAP::VMapManager(sWorld.vMapPath);
+    memset(&m_mapLocks, NULL, sizeof(MapLoadData*)*NUM_MAPS);
+    vMapMgr->LoadGameObjectModelList();
 }
 
-void CCollideInterface::UpdateAllMaps(uint32 p_time)
+void VMapInterface::DeInit()
 {
-    if( !CollisionMgr )
-        return;
-
-    CollisionMgr->updateDynamicMapTree(p_time);
-}
-
-void CCollideInterface::UpdateSingleMap(uint32 mapId, uint32 p_time)
-{
-    if( !CollisionMgr )
-        return;
-
-    CollisionMgr->updateDynamicMapTree(p_time, mapId);
-}
-
-void CCollideInterface::ActivateMap(uint32 mapId)
-{
-    if( !CollisionMgr )
-        return;
-
-    m_mapCreateLock.Acquire();
-    if( m_mapLocks[mapId] == NULL )
+    for(uint16 i = 0; i < NUM_MAPS; i++)
     {
-        m_mapLocks[mapId] = new CollisionMap();
-        m_mapLocks[mapId]->m_loadCount = 1;
-        CollisionMgr->loadMap(mapId);
-        memset(&m_mapLocks[mapId]->m_tileLoadCount, 0, sizeof(uint32)*64*64);
+        if(m_mapLocks[i])
+        {
+            vMapMgr->unloadMap(i);
+            delete m_mapLocks[i];
+            m_mapLocks[i] = NULL;
+        }
     }
-    else
-        m_mapLocks[mapId]->m_loadCount++;
-
-    m_mapCreateLock.Release();
+    delete vMapMgr;
+    // bleh.
 }
 
-void CCollideInterface::DeactivateMap(uint32 mapId)
+void VMapInterface::UpdateAllMaps(uint32 p_time)
 {
-    ASSERT(m_mapLocks[mapId] != NULL);
-    if( !CollisionMgr )
+    if( vMapMgr == NULL )
         return;
 
-    m_mapCreateLock.Acquire();
-    --m_mapLocks[mapId]->m_loadCount;
-    if( m_mapLocks[mapId]->m_loadCount == 0 )
-    {
-        // no instances using this anymore
-        delete m_mapLocks[mapId];
-        CollisionMgr->unloadMap(mapId);
-        m_mapLocks[mapId] = NULL;
-    }
-    m_mapCreateLock.Release();
+    vMapMgr->updateDynamicMapTree(p_time);
 }
 
-bool CCollideInterface::ActivateTile(uint32 mapId, uint32 tileX, uint32 tileY)
+void VMapInterface::UpdateSingleMap(uint32 mapId, uint32 p_time)
 {
-    ASSERT(m_mapLocks[mapId] != NULL);
-    if( !CollisionMgr )
+    if( vMapMgr == NULL )
+        return;
+
+    vMapMgr->updateDynamicMapTree(p_time, mapId);
+}
+
+bool VMapInterface::ActivateMap(uint32 mapId)
+{
+    if( vMapMgr == NULL )
+        return false;
+    if(m_mapLocks[mapId] != NULL)
+        return true;
+    bool result;
+    m_mapDataLock.Acquire();
+    if(result = vMapMgr->loadMap(mapId))
+        m_mapLocks[mapId] = new MapLoadData();
+    m_mapDataLock.Release();
+    return result;
+}
+
+void VMapInterface::DeactivateMap(uint32 mapId)
+{
+    if( vMapMgr == NULL )
+        return;
+    if(m_mapLocks[mapId] == NULL)
+        return;
+
+    m_mapDataLock.Acquire();
+    // no instances using this anymore
+    delete m_mapLocks[mapId];
+    m_mapLocks[mapId] = NULL;
+    vMapMgr->unloadMap(mapId);
+    m_mapDataLock.Release();
+}
+
+bool VMapInterface::ActivateTile(uint32 mapId, uint32 tileX, uint32 tileY)
+{
+    if( vMapMgr == NULL )
+        return false;
+    if(m_mapLocks[mapId] == NULL)
         return false;
 
     // acquire write lock
     m_mapLocks[mapId]->m_lock.Acquire();
     if( m_mapLocks[mapId]->m_tileLoadCount[tileX][tileY] == 0 )
     {
-        if(CollisionMgr->loadMap(mapId, tileX, tileY))
+        if(vMapMgr->loadMap(mapId, tileX, tileY))
             sLog.outDebug("Loading VMap [%u/%u] successful", tileX, tileY);
         else
         {
@@ -106,25 +103,27 @@ bool CCollideInterface::ActivateTile(uint32 mapId, uint32 tileX, uint32 tileY)
     return true;
 }
 
-void CCollideInterface::DeactivateTile(uint32 mapId, uint32 tileX, uint32 tileY)
+void VMapInterface::DeactivateTile(uint32 mapId, uint32 tileX, uint32 tileY)
 {
-    ASSERT(m_mapLocks[mapId] != NULL);
-    if( !CollisionMgr )
+    if( vMapMgr == NULL )
+        return;
+    if(m_mapLocks[mapId] == NULL)
         return;
 
     // get write lock
     m_mapLocks[mapId]->m_lock.Acquire();
     if( (--m_mapLocks[mapId]->m_tileLoadCount[tileX][tileY]) == 0 )
-        CollisionMgr->unloadMap(mapId, tileX, tileY);
+        vMapMgr->unloadMap(mapId, tileX, tileY);
 
     // release write lock
     m_mapLocks[mapId]->m_lock.Release();
 }
 
-bool CCollideInterface::IsActiveTile(uint32 mapId, uint32 tileX, uint32 tileY)
+bool VMapInterface::IsActiveTile(uint32 mapId, uint32 tileX, uint32 tileY)
 {
-    ASSERT(m_mapLocks[mapId] != NULL);
-    if( !CollisionMgr )
+    if( vMapMgr == NULL )
+        return false;
+    if(m_mapLocks[mapId] == NULL)
         return false;
 
     bool isactive = false;
@@ -138,17 +137,18 @@ bool CCollideInterface::IsActiveTile(uint32 mapId, uint32 tileX, uint32 tileY)
     return isactive;
 }
 
-bool CCollideInterface::CheckLOS(uint32 mapId, uint32 instanceId, int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2)
+bool VMapInterface::CheckLOS(uint32 mapId, uint32 instanceId, int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2)
 {
-    ASSERT(m_mapLocks[mapId] != NULL);
-    if( !CollisionMgr )
+    if( vMapMgr == NULL )
+        return true;
+    if(m_mapLocks[mapId] == NULL)
         return true;
 
     // get read lock
     m_mapLocks[mapId]->m_lock.Acquire();
 
     // get data
-    bool res = CollisionMgr ? CollisionMgr->isInLineOfSight(mapId, instanceId, m_phase, x1, y1, z1, x2, y2, z2) : true;
+    bool res = vMapMgr ? vMapMgr->isInLineOfSight(mapId, instanceId, m_phase, x1, y1, z1, x2, y2, z2) : true;
 
     // release write lock
     m_mapLocks[mapId]->m_lock.Release();
@@ -157,17 +157,18 @@ bool CCollideInterface::CheckLOS(uint32 mapId, uint32 instanceId, int32 m_phase,
     return res;
 }
 
-bool CCollideInterface::GetFirstPoint(uint32 mapId, uint32 instanceId, int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2, float & outx, float & outy, float & outz, float distmod)
+bool VMapInterface::GetFirstPoint(uint32 mapId, uint32 instanceId, int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2, float & outx, float & outy, float & outz, float distmod)
 {
-    ASSERT(m_mapLocks[mapId] != NULL);
-    if( !CollisionMgr )
+    if( vMapMgr == NULL )
+        return false;
+    if(m_mapLocks[mapId] == NULL)
         return false;
 
     // get read lock
     m_mapLocks[mapId]->m_lock.Acquire();
 
     // get data
-    bool res = (CollisionMgr ? CollisionMgr->getObjectHitPos(mapId, instanceId, m_phase, x1, y1, z1, x2, y2, z2, outx, outy, outz, distmod) : false);
+    bool res = (vMapMgr ? vMapMgr->getObjectHitPos(mapId, instanceId, m_phase, x1, y1, z1, x2, y2, z2, outx, outy, outz, distmod) : false);
 
     // release write lock
     m_mapLocks[mapId]->m_lock.Release();
@@ -176,17 +177,18 @@ bool CCollideInterface::GetFirstPoint(uint32 mapId, uint32 instanceId, int32 m_p
     return res;
 }
 
-float CCollideInterface::GetHeight(uint32 mapId, uint32 instanceId, int32 m_phase, float x, float y, float z)
+float VMapInterface::GetHeight(uint32 mapId, uint32 instanceId, int32 m_phase, float x, float y, float z)
 {
-    ASSERT(m_mapLocks[mapId] != NULL);
-    if( !CollisionMgr )
+    if( vMapMgr == NULL )
+        return NO_WMO_HEIGHT;
+    if(m_mapLocks[mapId] == NULL)
         return NO_WMO_HEIGHT;
 
     // get read lock
     m_mapLocks[mapId]->m_lock.Acquire();
 
     // get data
-    float res = CollisionMgr ? CollisionMgr->getHeight(mapId, instanceId, m_phase, x, y, z, 10.0f) : NO_WMO_HEIGHT;
+    float res = vMapMgr ? vMapMgr->getHeight(mapId, instanceId, m_phase, x, y, z, 10.0f) : NO_WMO_HEIGHT;
 
     // release write lock
     m_mapLocks[mapId]->m_lock.Release();
@@ -221,19 +223,20 @@ uint16 convertWaterIDToFlags(uint16 wmoType)
     return 0;
 }
 
-float CCollideInterface::GetWaterHeight(uint32 mapId, float x, float y, float z, uint16 &outType)
+float VMapInterface::GetWaterHeight(uint32 mapId, float x, float y, float z, uint16 &outType)
 {
-    float res = NO_WMO_HEIGHT;
-    ASSERT(m_mapLocks[mapId] != NULL);
-    if( !CollisionMgr )
-        return res;
+    if( vMapMgr == NULL )
+        return NO_WMO_HEIGHT;
+    if(m_mapLocks[mapId] == NULL)
+        return NO_WMO_HEIGHT;
 
     // get read lock
     m_mapLocks[mapId]->m_lock.Acquire();
 
     // get data
     uint16 waterDBCId = 0;
-    CollisionMgr->GetLiquidData(mapId, x, y, z, waterDBCId, res);
+    float res = NO_WMO_HEIGHT;
+    vMapMgr->GetLiquidData(mapId, x, y, z, waterDBCId, res);
     if(waterDBCId)
         outType = convertWaterIDToFlags(waterDBCId);
 
@@ -245,19 +248,20 @@ float CCollideInterface::GetWaterHeight(uint32 mapId, float x, float y, float z,
 }
 
 /* Crow: Systematic calculations based on Mangos, a big thank you to them! */
-bool CCollideInterface::IsIndoor(uint32 mapId, float x, float y, float z)
+bool VMapInterface::IsIndoor(uint32 mapId, float x, float y, float z)
 {
-    bool res = false;
-    ASSERT(m_mapLocks[mapId] != NULL);
-    if(!CollisionMgr)
-        return res;
+    if(vMapMgr == NULL)
+        return false;
+    if(m_mapLocks[mapId] == NULL)
+        return false;
 
     // get read lock
     m_mapLocks[mapId]->m_lock.Acquire();
 
+    bool res = false;
     uint32 flags = 0;
     int32 adtId = 0, rootId = 0, groupid = 0;
-    if(CollisionMgr->getAreaInfo(mapId, x, y, z, flags, adtId, rootId, groupid))
+    if(vMapMgr->getAreaInfo(mapId, x, y, z, flags, adtId, rootId, groupid))
     {
         if(flags & WMO_FLAG_INSIDE_WMO_BOUNDS
             && !(flags & WMO_FLAG_OUTSIDE_WMO_BOUNDS)
@@ -275,19 +279,20 @@ bool CCollideInterface::IsIndoor(uint32 mapId, float x, float y, float z)
     return res;
 }
 
-bool CCollideInterface::IsIncity(uint32 mapId, float x, float y, float z)
+bool VMapInterface::IsIncity(uint32 mapId, float x, float y, float z)
 {
-    bool res = false;
-    ASSERT(m_mapLocks[mapId] != NULL);
-    if(!CollisionMgr)
-        return res;
+    if(vMapMgr == NULL)
+        return false;
+    if(m_mapLocks[mapId] == NULL)
+        return false;
 
     // get read lock
     m_mapLocks[mapId]->m_lock.Acquire();
 
+    bool res = false;
     uint32 flags = 0;
     int32 adtId = 0, rootId = 0, groupid = 0;
-    if(CollisionMgr->getAreaInfo(mapId, x, y, z, flags, adtId, rootId, groupid))
+    if(vMapMgr->getAreaInfo(mapId, x, y, z, flags, adtId, rootId, groupid))
     {
         if(flags & WMO_FLAG_INSIDE_CITY_WMO
             //&& (flags & WMO_FLAG_INSIDE_WMO_BOUNDS)
@@ -314,16 +319,17 @@ bool CCollideInterface::IsIncity(uint32 mapId, float x, float y, float z)
     return res;
 }
 
-bool CCollideInterface::GetAreaInfo(uint32 mapId, float x, float y, float z, uint16 &areaId, uint32 &flags, int32 &adtId, int32 &rootId, int32 &groupid)
+bool VMapInterface::GetAreaInfo(uint32 mapId, float x, float y, float z, uint16 &areaId, uint32 &flags, int32 &adtId, int32 &rootId, int32 &groupid)
 {
-    ASSERT(m_mapLocks[mapId] != NULL);
-    if(!CollisionMgr)
+    if(vMapMgr == NULL)
+        return false;
+    if(m_mapLocks[mapId] == NULL)
         return false;
 
     bool res = false;
     // get read lock
     m_mapLocks[mapId]->m_lock.Acquire();
-    if(CollisionMgr->getAreaInfo(mapId, x, y, z, flags, adtId, rootId, groupid))
+    if(vMapMgr->getAreaInfo(mapId, x, y, z, flags, adtId, rootId, groupid))
     {
         if(flags & WMO_FLAG_WMO_EXISTS)
         {
@@ -339,49 +345,50 @@ bool CCollideInterface::GetAreaInfo(uint32 mapId, float x, float y, float z, uin
     return res;
 }
 
-void CCollideInterface::LoadGameobjectModel(uint64 Guid, uint32 mapId, uint32 displayID, float scale, float posX, float posY, float posZ, float orientation, uint32 instanceId, int32 phasemask)
+void VMapInterface::LoadGameobjectModel(uint64 Guid, uint32 mapId, uint32 displayID, float scale, float posX, float posY, float posZ, float orientation, uint32 instanceId, int32 phasemask)
 {
-    if( !CollisionMgr )
+    if( vMapMgr == NULL )
+        return;
+    if(m_mapLocks[mapId] == NULL)
         return;
 
     // get read lock
     m_mapLocks[mapId]->m_lock.Acquire();
 
-    CollisionMgr->loadObject(Guid, mapId, displayID, scale, posX, posY, posZ, orientation, instanceId, phasemask);
+    vMapMgr->loadObject(Guid, mapId, displayID, scale, posX, posY, posZ, orientation, instanceId, phasemask);
 
     // release write lock
     m_mapLocks[mapId]->m_lock.Release();
 }
 
-void CCollideInterface::UpdateObjectModel(uint64 Guid, uint32 mapId, uint32 instanceId, uint32 displayID)
+void VMapInterface::UpdateObjectModel(uint64 Guid, uint32 mapId, uint32 instanceId, uint32 displayID)
 {
-    if( !CollisionMgr )
+    if( vMapMgr == NULL )
+        return;
+    if(m_mapLocks[mapId] == NULL)
         return;
 
     // get read lock
     m_mapLocks[mapId]->m_lock.Acquire();
 
-    CollisionMgr->changeObjectModel(Guid, mapId, instanceId, displayID);
+    vMapMgr->changeObjectModel(Guid, mapId, instanceId, displayID);
 
     // release write lock
     m_mapLocks[mapId]->m_lock.Release();
 }
 
-void CCollideInterface::UnLoadGameobjectModel(uint64 Guid, uint32 instanceId, uint32 mapId)
+void VMapInterface::UnLoadGameobjectModel(uint64 Guid, uint32 instanceId, uint32 mapId)
 {
-    if( !CollisionMgr )
+    if( vMapMgr == NULL )
+        return;
+    if(m_mapLocks[mapId] == NULL)
         return;
 
     // get read lock
     m_mapLocks[mapId]->m_lock.Acquire();
 
-    CollisionMgr->unloadObject(mapId, instanceId, Guid);
+    vMapMgr->unloadObject(mapId, instanceId, Guid);
 
     // release write lock
     m_mapLocks[mapId]->m_lock.Release();
-}
-
-void CCollideInterface::DeInit()
-{
-    // bleh.
 }

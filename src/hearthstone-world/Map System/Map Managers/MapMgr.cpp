@@ -346,7 +346,7 @@ void MapMgr::PushObject(Object* obj)
                     _sqlids_gameobjects.insert(make_pair(go->m_spawn->id, go ) );
                 }
                 CALL_INSTANCE_SCRIPT_EVENT( this, OnGameObjectPushToWorld )( go );
-                CollideInterface.LoadGameobjectModel(obj->GetGUID(), _mapId, go->GetDisplayId(), go->GetFloatValue(OBJECT_FIELD_SCALE_X), go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), go->GetOrientation(), go->GetInstanceID(), go->GetPhaseMask());
+                sVMapInterface.LoadGameobjectModel(obj->GetGUID(), _mapId, go->GetDisplayId(), go->GetFloatValue(OBJECT_FIELD_SCALE_X), go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), go->GetOrientation(), go->GetInstanceID(), go->GetPhaseMask());
             }break;
 
         case HIGHGUID_TYPE_DYNAMICOBJECT:
@@ -478,7 +478,7 @@ void MapMgr::RemoveObject(Object* obj, bool free_guid)
             if(TO_GAMEOBJECT(obj)->m_spawn != NULL)
                 _sqlids_gameobjects.erase(TO_GAMEOBJECT(obj)->m_spawn->id);
             CALL_INSTANCE_SCRIPT_EVENT( this, OnGameObjectRemoveFromWorld )( TO_GAMEOBJECT(obj) );
-            CollideInterface.UnLoadGameobjectModel(obj->GetGUID(), m_instanceID, _mapId);
+            sVMapInterface.UnLoadGameobjectModel(obj->GetGUID(), m_instanceID, _mapId);
         }break;
 
     case HIGHGUID_TYPE_PLAYER:
@@ -1202,7 +1202,7 @@ void MapMgr::GetWaterData(float x, float y, float z, float &outHeight, uint16 &o
     uint16 vwaterType = 0;
     uint16 mapWaterType = GetBaseMap()->GetWaterType(x, y);
     float mapWaterheight = GetBaseMap()->GetWaterHeight(x, y, z);
-    float vmapWaterHeight = CollideInterface.GetWaterHeight(GetMapId(), x, y, z, vwaterType);
+    float vmapWaterHeight = sVMapInterface.GetWaterHeight(GetMapId(), x, y, z, vwaterType);
     if(!(mapWaterType & 0x10) && vwaterType && vmapWaterHeight != NO_WMO_HEIGHT)
     { outHeight = vmapWaterHeight; outType = vwaterType; }
     else
@@ -1223,7 +1223,7 @@ uint16 MapMgr::GetAreaID(float x, float y, float z)
 {
     uint16 areaId = GetBaseMap()->GetAreaID(x, y, z), wmoAID = 0;
     uint32 wmoFlags = 0; int32 adtId = 0, rootId = 0, groupId = 0;
-    CollideInterface.GetAreaInfo(GetMapId(), x, y, z, wmoAID, wmoFlags, adtId, rootId, groupId);
+    sVMapInterface.GetAreaInfo(GetMapId(), x, y, z, wmoAID, wmoFlags, adtId, rootId, groupId);
     return wmoAID ? wmoAID : areaId;
 }
 
@@ -1629,7 +1629,7 @@ bool MapMgr::CanUseCollision(Object* obj)
     {
         uint32 tileX = (GetPosX(obj->GetPositionX())/8);
         uint32 tileY = (GetPosY(obj->GetPositionY())/8);
-        if(CollideInterface.IsActiveTile(_mapId, tileX, tileY))
+        if(sVMapInterface.IsActiveTile(_mapId, tileX, tileY))
             return true;
     }
 
@@ -1700,7 +1700,7 @@ void MapMgr::_PerformObjectDuties()
         return;
 
     // Update our collision system via singular map system
-    CollideInterface.UpdateSingleMap(_mapId, difftime);
+    sVMapInterface.UpdateSingleMap(_mapId, difftime);
     if(!SetThreadState(THREADSTATE_AWAITING))
         return;
 

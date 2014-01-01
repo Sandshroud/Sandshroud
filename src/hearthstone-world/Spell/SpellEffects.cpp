@@ -453,7 +453,7 @@ void Spell::SpellEffectTeleportUnits( uint32 i )  // Teleport Units
         {
             /* try to get a selection */
             pTarget = m_caster->GetMapMgr()->GetUnit(p_caster->GetSelection());
-            if( (pTarget == NULL ) || !FactionSystem::isAttackable(p_caster, pTarget, !(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED) ) || (pTarget->CalcDistance(p_caster) > 30.0f))
+            if( (pTarget == NULL ) || !sFactionSystem.isAttackable(p_caster, pTarget, !(GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED) ) || (pTarget->CalcDistance(p_caster) > 30.0f))
                 return;
         }
 
@@ -1309,7 +1309,7 @@ void Spell::SpellEffectLeap(uint32 i) // Leap
         float posY = m_caster->GetPositionY()+(radius*(sinf(ori)));
         float posZ;
 
-        if( CollideInterface.GetFirstPoint(p_caster->GetMapId(), p_caster->GetInstanceID(), p_caster->GetPhaseMask(), p_caster->GetPositionX(), p_caster->GetPositionY(), p_caster->GetPositionZ() + p_caster->m_noseLevel, posX, posY, p_caster->GetPositionZ(), posX, posY, posZ, -1.5f) )
+        if( sVMapInterface.GetFirstPoint(p_caster->GetMapId(), p_caster->GetInstanceID(), p_caster->GetPhaseMask(), p_caster->GetPositionX(), p_caster->GetPositionY(), p_caster->GetPositionZ() + p_caster->m_noseLevel, posX, posY, p_caster->GetPositionZ(), posX, posY, posZ, -1.5f) )
         {
             posZ = p_caster->GetCHeightForPosition(true, posX, posY, posZ);
             float diff = fabs(fabs(posZ) - fabs(m_caster->GetPositionZ()));
@@ -1934,7 +1934,7 @@ void Spell::SpellEffectDispel(uint32 i) // Dispel
         return;
 
     uint32 start,end;
-    if(FactionSystem::isAttackable(u_caster,unitTarget))
+    if(sFactionSystem.isAttackable(u_caster,unitTarget))
     {
         start=0;
         end=MAX_POSITIVE_AURAS;
@@ -3652,7 +3652,7 @@ void Spell::SpellEffectDispelMechanic(uint32 i)
         return;
 
     int32 sMisc = (int32)GetSpellProto()->EffectMiscValue[i];
-    unitTarget->m_AuraInterface.AttemptDispel(u_caster, sMisc, (unitTarget == u_caster || !FactionSystem::isAttackable( u_caster, unitTarget )));
+    unitTarget->m_AuraInterface.AttemptDispel(u_caster, sMisc, (unitTarget == u_caster || !sFactionSystem.isAttackable( u_caster, unitTarget )));
 
     if( playerTarget && GetSpellProto()->NameHash == SPELL_HASH_DAZED && playerTarget->IsMounted() )
         playerTarget->Dismount();
@@ -4042,7 +4042,7 @@ void Spell::SpellEffectSpellSteal( uint32 i )
         }
     }
 
-    if(!FactionSystem::isAttackable(u_caster,unitTarget))
+    if(!sFactionSystem.isAttackable(u_caster,unitTarget))
         return;
 
     unitTarget->m_AuraInterface.SpellStealAuras(u_caster, damage);

@@ -50,13 +50,8 @@ void WorldSession::HandleAttackSwingOpcode( WorldPacket & recv_data )
                 return;
             }
 
-            int attackablestatus = FactionSystem::intisAttackable( GetPlayer(), pEnemy, false );
-            if((attackablestatus < 1) && !pEnemy->IsInRangeOppFactSet(_player) &&
-                !pEnemy->CombatStatus.DidDamageTo(_player->GetGUID()))
+            if(sFactionSystem.AC_GetAttackableStatus( GetPlayer(), pEnemy ))
             {
-                if(attackablestatus == -1)
-                    return;
-
                 sWorld.LogCheater(this, "Faction exploit detected. Damagetype: Melee.");
                 GetPlayer()->BroadcastMessage("Faction exploit detected. You will be disconnected in 5 seconds.");
                 GetPlayer()->Kick(5000);

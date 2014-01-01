@@ -129,7 +129,7 @@ void DynamicObject::UpdateTargets(uint32 p_time)
 
             target = TO_UNIT(o);
 
-            if(!FactionSystem::isAttackable(u_caster, target, !(m_spellProto->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))
+            if(!sFactionSystem.isAttackable(u_caster, target, !(m_spellProto->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))
                 continue;
 
             // skip units already hit, their range will be tested later

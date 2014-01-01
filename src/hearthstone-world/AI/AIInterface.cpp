@@ -162,7 +162,7 @@ void AIInterface::Update(uint32 p_time)
             if(!m_nextTarget || (m_nextTarget && (!m_Unit->GetMapMgr()->GetUnit(m_nextTarget->GetGUID()) || !m_nextTarget->isAlive()
                 || (m_nextTarget->GetTypeId() == TYPEID_UNIT && TO_CREATURE(m_nextTarget)->IsTotem()) ||
                 !IsInrange(m_Unit, m_nextTarget, pSpell->GetSpellProto()->base_range_or_radius_sqr) ||
-                !FactionSystem::CanEitherUnitAttack(m_Unit, m_nextTarget, !(pSpell->GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))))
+                !sFactionSystem.CanEitherUnitAttack(m_Unit, m_nextTarget, !(pSpell->GetSpellProto()->c_is_flags & SPELL_FLAG_IS_TARGETINGSTEALTHED)))))
             {
                 //we set no target and see if we managed to fid a new one
                 SetNextTarget(NULLUNIT);
@@ -283,7 +283,7 @@ bool AIInterface::HealReaction(Unit* caster, Unit* victim, uint32 amount, SpellE
     if(!casterInList && victimInList) // caster is not yet in Combat but victim is
     {
         // get caster into combat if he's hostile
-        if(FactionSystem::isHostile(m_Unit, caster))
+        if(sFactionSystem.isHostile(m_Unit, caster))
         {
             ai_TargetLock.Acquire();
             m_aiTargets.insert(make_pair(caster, amount));
@@ -308,7 +308,7 @@ bool AIInterface::HealReaction(Unit* caster, Unit* victim, uint32 amount, SpellE
             {
                 // get victim into combat since they are both
                 // in the same party
-                if( FactionSystem::isHostile( m_Unit, victim ) )
+                if( sFactionSystem.isHostile( m_Unit, victim ) )
                 {
                     ai_TargetLock.Acquire();
                     m_aiTargets.insert( make_pair( victim, 1 ) );
@@ -363,11 +363,11 @@ bool AIInterface::FindFriends(float dist)
             continue;
         if(pUnit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_9))
             continue;
-        if( !FactionSystem::isHostile(GetMostHated(), pUnit) )
+        if( !sFactionSystem.isHostile(GetMostHated(), pUnit) )
             continue;
         if( !m_Unit->PhasedCanInteract(pUnit) )
             continue;
-        if( FactionSystem::isCombatSupport( m_Unit, pUnit ) && ( pUnit->GetAIInterface()->getAIState() == STATE_IDLE || pUnit->GetAIInterface()->getAIState() == STATE_SCRIPTIDLE ) )//Not sure
+        if( sFactionSystem.isCombatSupport( m_Unit, pUnit ) && ( pUnit->GetAIInterface()->getAIState() == STATE_IDLE || pUnit->GetAIInterface()->getAIState() == STATE_SCRIPTIDLE ) )//Not sure
         {
             if( m_Unit->GetDistanceSq(pUnit) < dist)
             {
@@ -456,7 +456,7 @@ void AIInterface::CallGuards()
         if(zoneSpawn == NULL)
             return;
 
-        uint32 team = FactionSystem::isAlliance(m_Unit) ? 0 : 1; // Set team
+        uint32 team = sFactionSystem.isAlliance(m_Unit) ? 0 : 1; // Set team
         uint32 guardId = 0;
         guardId = team ? zoneSpawn->HordeEntry : zoneSpawn->AllianceEntry;
         guardId = guardId ? guardId : team ? 3296 : 68;
@@ -479,7 +479,7 @@ void AIInterface::CallGuards()
             if(spawned >= 3)
                 break;
 
-            if(!FactionSystem::isHostile(*hostileItr, m_Unit))
+            if(!sFactionSystem.isHostile(*hostileItr, m_Unit))
                 continue;
 
             Creature* guard = m_Unit->GetMapMgr()->CreateCreature(guardId);

@@ -394,7 +394,7 @@ Aura::Aura( SpellEntry* proto, int32 duration, Object* caster, Unit* target )
             SM_PIValue(TO_UNIT(caster)->SM[SMT_CHARGES][1], (int32*)&procCharges, m_spellProto->SpellGroupType);
         }
 
-        if( FactionSystem::isAttackable( TO_UNIT(caster), target, false ) )
+        if( sFactionSystem.isAttackable( TO_UNIT(caster), target, false ) )
         {
             SetNegative();
             if( target->InStealth() && target != caster )
@@ -773,7 +773,7 @@ void Aura::EventUpdateCreatureAA(float r)
             else
                 continue;
 
-            if( FactionSystem::isHostile( m_caster, target ) )
+            if( sFactionSystem.isHostile( m_caster, target ) )
                 continue;
 
             if( !(target->isAlive() && target->GetDistanceSq(m_caster) <= r && !target->m_AuraInterface.HasActiveAura(m_spellProto->Id)) )
@@ -816,7 +816,7 @@ void Aura::EventUpdateCreatureAA(float r)
             else
                 continue;
 
-            if( !FactionSystem::isHostile( m_caster, target ) )
+            if( !sFactionSystem.isHostile( m_caster, target ) )
                 continue;
 
             if( !(target->isAlive() && target->GetDistanceSq(m_caster) <= r && !target->m_AuraInterface.HasActiveAura(m_spellProto->Id)) )
@@ -860,7 +860,7 @@ void Aura::EventRelocateRandomTarget()
         if( !(*itr)->IsUnit() )
             continue;
 
-        if( !FactionSystem::isHostile( m_caster, *itr ) )
+        if( !sFactionSystem.isHostile( m_caster, *itr ) )
             continue;
 
         // Too far away or dead, or I can't see him!
@@ -869,7 +869,7 @@ void Aura::EventRelocateRandomTarget()
 
         if (m_caster->GetMapMgr() && m_caster->GetMapMgr()->CanUseCollision(m_caster))
         {
-            if( !CollideInterface.CheckLOS( m_caster->GetMapId(), m_caster->GetInstanceID(), m_caster->GetPhaseMask(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ() + 2.0f, (*itr)->GetPositionX(), (*itr)->GetPositionY(), (*itr)->GetPositionZ() + 2.0f) )
+            if( !sVMapInterface.CheckLOS( m_caster->GetMapId(), m_caster->GetInstanceID(), m_caster->GetPhaseMask(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ() + 2.0f, (*itr)->GetPositionX(), (*itr)->GetPositionY(), (*itr)->GetPositionZ() + 2.0f) )
                 continue;
         }
 
@@ -1039,7 +1039,7 @@ void Aura::EventUpdatePlayerAA(float r)
             else
                 continue;
 
-            if( FactionSystem::isHostile( m_caster, target ) )
+            if( sFactionSystem.isHostile( m_caster, target ) )
                 continue;
 
             if( !(target->isAlive() && target->GetDistanceSq(m_caster) <= r && !target->m_AuraInterface.HasActiveAura(m_spellProto->Id)) )
@@ -1081,7 +1081,7 @@ void Aura::EventUpdatePlayerAA(float r)
             else
                 continue;
 
-            if( !FactionSystem::isHostile( m_caster, target ) )
+            if( !sFactionSystem.isHostile( m_caster, target ) )
                 continue;
 
             if( !(target->isAlive() && target->GetDistanceSq(m_caster) <= r && !target->m_AuraInterface.HasActiveAura(m_spellProto->Id)) )
@@ -4881,7 +4881,7 @@ void Aura::SpellAuraModSchoolImmunity(bool apply)
         Unit * m_caster = GetUnitCaster();
         if(m_caster!=NULL)
         {
-            if(FactionSystem::isAttackable(m_caster,m_target))
+            if(sFactionSystem.isAttackable(m_caster,m_target))
                 SetNegative();
             else
                 SetPositive();

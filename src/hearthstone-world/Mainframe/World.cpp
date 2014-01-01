@@ -97,6 +97,13 @@ World::~World()
 
 void World::Destruct()
 {
+    if(Collision)
+    {
+        sVMapInterface.DeInit();
+        if(PathFinding)
+            NavMeshInterface.DeInit();
+    }
+
     dummyspells.clear();
 
     sLog.Notice("Tracker", "~Tracker()");
@@ -508,7 +515,7 @@ bool World::SetInitialWorldSettings()
 
     if(Collision)
     {
-        CollideInterface.Init();
+        sVMapInterface.Init();
         if(PathFinding)
             NavMeshInterface.Init();
     }

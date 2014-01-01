@@ -169,7 +169,7 @@ void GameObject::Update(uint32 p_time)
                         ExpireAndDelete();
                         return;
                     }
-                    if(!FactionSystem::isAttackable(m_summoner,pUnit))
+                    if(!sFactionSystem.isAttackable(m_summoner,pUnit))
                         continue;
                 }
 
@@ -724,7 +724,7 @@ void GameObject::SetDisplayId(uint32 id)
     SetUInt32Value( GAMEOBJECT_DISPLAYID, id );
     if(IsInWorld())
     {
-        CollideInterface.UpdateObjectModel(GetGUID(), GetMapId(), GetInstanceID(), id);
+        sVMapInterface.UpdateObjectModel(GetGUID(), GetMapId(), GetInstanceID(), id);
     }
 }
 

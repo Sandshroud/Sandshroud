@@ -55,7 +55,7 @@ bool HolyShock(uint32 i, Spell* pSpell)
         }
 
         // Do holy damage
-        pSpell->p_caster->CastSpell(pSpell->GetUnitTarget(), FactionSystem::isAttackable(pSpell->p_caster, pSpell->GetUnitTarget()) ? hostileSpell : friendlySpell, true);
+        pSpell->p_caster->CastSpell(pSpell->GetUnitTarget(), sFactionSystem.isAttackable(pSpell->p_caster, pSpell->GetUnitTarget()) ? hostileSpell : friendlySpell, true);
     }
     return true;
 }
