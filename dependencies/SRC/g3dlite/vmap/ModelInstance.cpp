@@ -220,7 +220,6 @@ namespace VMAP
         if(m_Instance > 0) // All instances
             if(instanceid != m_Instance)
                 return false;
-
         float time = ray.intersectionTime(iBound);
         if (time == G3D::inf())
             return false;

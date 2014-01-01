@@ -27,7 +27,7 @@ struct ServerPktHeader
 
 #pragma pack(PRAGMA_POP)
 
-WorldSocket::WorldSocket(SOCKET fd, const sockaddr_in * peer) : TcpSocket(fd, WORLDSOCKET_SENDBUF_SIZE, WORLDSOCKET_RECVBUF_SIZE, false, peer)
+WorldSocket::WorldSocket(SOCKET fd, const sockaddr_in * peer) : TcpSocket(fd, WORLDSOCKET_RECVBUF_SIZE, WORLDSOCKET_SENDBUF_SIZE, false, peer)
 {
     Authed = false;
     mOpcode = mRemaining = 0;

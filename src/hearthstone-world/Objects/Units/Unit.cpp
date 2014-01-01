@@ -4540,7 +4540,7 @@ void Unit::AddInRangeObject(Object* pObj)
     if((pObj->GetTypeId() == TYPEID_UNIT) || (pObj->IsPlayer()))
     {
         if( sFactionSystem.isHostile( TO_OBJECT(this), pObj ) )
-            m_oppFactsInRange.insert(pObj);
+            m_oppFactsInRange.insert(TO_UNIT(pObj));
     }
 
     Object::AddInRangeObject(pObj);
@@ -4548,7 +4548,8 @@ void Unit::AddInRangeObject(Object* pObj)
 
 void Unit::OnRemoveInRangeObject(Object* pObj)
 {
-    m_oppFactsInRange.erase(pObj);
+    if(pObj->IsUnit())
+        m_oppFactsInRange.erase(TO_UNIT(pObj));
 
     if(pObj->GetTypeId() == TYPEID_UNIT || pObj->IsPlayer())
     {

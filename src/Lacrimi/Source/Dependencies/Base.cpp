@@ -1160,7 +1160,6 @@ Unit *MoonScriptCreatureAI::GetBestUnitTarget( TargetFilters pTargetFilter, floa
     {
         for ( unordered_set< Object *>::iterator ObjectIter = _unit->GetInRangeSetBegin(); ObjectIter != _unit->GetInRangeSetEnd(); ++ObjectIter )
         {
-            // Trololololo.......
             if( IsValidUnitTarget(*ObjectIter, pTargetFilter, pMinRange, pMaxRange) )
             {
                 if(pTargetFilter & TargetFilter_ManaClass)
@@ -1178,9 +1177,8 @@ Unit *MoonScriptCreatureAI::GetBestUnitTarget( TargetFilters pTargetFilter, floa
     }
     else
     {
-        for ( unordered_set< Object *>::iterator ObjectIter = _unit->GetInRangeOppFactsSetBegin(); ObjectIter != _unit->GetInRangeOppFactsSetEnd(); ++ObjectIter )
+        for ( Object::InRangeUnitSet::iterator ObjectIter = _unit->GetInRangeOppFactsSetBegin(); ObjectIter != _unit->GetInRangeOppFactsSetEnd(); ++ObjectIter )
         {
-            // Problem, Dylan?
             if( IsValidUnitTarget(*ObjectIter, pTargetFilter, pMinRange, pMaxRange) )
             {
                 if(pTargetFilter & TargetFilter_ManaClass)

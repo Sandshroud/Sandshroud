@@ -1003,7 +1003,7 @@ void Object::_BuildValuesUpdate(ByteBuffer * data, UpdateMask *updateMask, Playe
 
             if(cThis->IsVehicle())
             {
-                if(sFactionSystem.isAttackable(target, this, false))
+                if(sFactionSystem.isAttackable(target, cThis, false))
                 {
                     DummyNpcFlags &= ~(UNIT_NPC_FLAG_VEHICLE_MOUNT);
                 }
@@ -2129,22 +2129,25 @@ void Object::_setFaction()
 
 void Object::UpdateOppFactionSet()
 {
+    if(!IsUnit())
+        return;
+
     m_oppFactsInRange.clear();
-    for(Object::InRangeSet::iterator i = GetInRangeSetBegin(); i != GetInRangeSetEnd(); i++)
+    for(Object::InRangeUnitSet::iterator i = GetInRangeUnitSetBegin(); i != GetInRangeUnitSetEnd(); i++)
     {
         if (((*i)->GetTypeId() == TYPEID_UNIT) || ((*i)->IsPlayer()) || ((*i)->GetTypeId() == TYPEID_GAMEOBJECT))
         {
-            if (sFactionSystem.isHostile(this, (*i)))
+            if (sFactionSystem.isHostile(TO_UNIT(this), (*i)))
             {
-                if(!(*i)->IsInRangeOppFactSet(this))
-                    (*i)->m_oppFactsInRange.insert(this);
+                if(!(*i)->IsInRangeOppFactSet(TO_UNIT(this)))
+                    (*i)->m_oppFactsInRange.insert(TO_UNIT(this));
                 if (!IsInRangeOppFactSet((*i)))
                     m_oppFactsInRange.insert((*i));
             }
             else
             {
-                if((*i)->IsInRangeOppFactSet(this))
-                    (*i)->m_oppFactsInRange.erase(this);
+                if((*i)->IsInRangeOppFactSet(TO_UNIT(this)))
+                    (*i)->m_oppFactsInRange.erase(TO_UNIT(this));
                 if (IsInRangeOppFactSet((*i)))
                     m_oppFactsInRange.erase((*i));
             }
