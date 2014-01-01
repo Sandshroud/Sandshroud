@@ -247,7 +247,6 @@ float VMapInterface::GetWaterHeight(uint32 mapId, float x, float y, float z, uin
     return res;
 }
 
-/* Crow: Systematic calculations based on Mangos, a big thank you to them! */
 bool VMapInterface::IsIndoor(uint32 mapId, float x, float y, float z)
 {
     if(vMapMgr == NULL)

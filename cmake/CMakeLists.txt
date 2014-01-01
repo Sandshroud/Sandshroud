@@ -255,9 +255,13 @@ get_filename_component(f_dllfile ${dll_file} NAME)
 FILE(COPY "${DEPENDENCY_DLLS}/${f_dllfile}" DESTINATION "${OUTPUT_DIRECTORY}")
 endforeach()
 
+SET(ONLY_DEPENDENCIES 0 CACHE STRING "Option to build only dependency projects, auto off" )
 SET(BUILD_TOOLS 0 CACHE STRING "Option to include tool cmakefiles, auto off" )
 
 add_subdirectory(dependencies)
+
+if(ONLY_DEPENDENCIES EQUAL 0)
+
 add_subdirectory(hearthstone-shared)
 add_subdirectory(hearthstone-logon)
 add_subdirectory(hearthstone-world)
@@ -265,6 +269,8 @@ add_subdirectory(lacrimi)
 
 if(BUILD_TOOLS)
 add_subdirectory(tools)
+endif()
+
 endif()
 
 #Get the source directory for our code

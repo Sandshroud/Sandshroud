@@ -124,6 +124,8 @@ class SERVER_DECL Object : public EventableObject
 {
 public:
     typedef unordered_set< Object* > InRangeSet;
+    typedef unordered_set< Unit* >   InRangeUnitSet;
+    typedef unordered_set< Player* > InRangePlayerSet;
     typedef std::map<string, void*> ExtensionSet;
 
     virtual ~Object ( );
@@ -428,7 +430,7 @@ public:
     HEARTHSTONE_INLINE size_t GetInRangeCount() { return m_objectsInRange.size(); }
     HEARTHSTONE_INLINE size_t GetInRangeUnitsCount() { return m_unitsInRange.size();}
     HEARTHSTONE_INLINE size_t GetInRangePlayersCount() { return m_inRangePlayers.size();}
-    HEARTHSTONE_INLINE unordered_set<Player*  > * GetInRangePlayerSet() { return &m_inRangePlayers; };
+    HEARTHSTONE_INLINE InRangePlayerSet *GetInRangePlayerSet() { return &m_inRangePlayers; };
 
     InRangeSet::iterator GetInRangeSetBegin() { return m_objectsInRange.begin(); }
     InRangeSet::iterator GetInRangeSetEnd() { return m_objectsInRange.end(); }
@@ -463,15 +465,15 @@ public:
         m_inRangePlayers.erase( TO_PLAYER(obj) );
     }
 
-    bool IsInRangeOppFactSet(Object* pObj) { return (m_oppFactsInRange.count(pObj) > 0); }
+    bool IsInRangeOppFactSet(Unit* pObj) { return (m_oppFactsInRange.count(pObj) > 0); }
     void UpdateOppFactionSet();
 
-    HEARTHSTONE_INLINE unordered_set<Object* >::iterator GetInRangeOppFactsSetBegin() { return m_oppFactsInRange.begin(); }
-    HEARTHSTONE_INLINE unordered_set<Object* >::iterator GetInRangeOppFactsSetEnd() { return m_oppFactsInRange.end(); }
-    HEARTHSTONE_INLINE unordered_set<Player*  >::iterator GetInRangePlayerSetBegin() { return m_inRangePlayers.begin(); }
-    HEARTHSTONE_INLINE unordered_set<Player*  >::iterator GetInRangePlayerSetEnd() { return m_inRangePlayers.end(); }
-    HEARTHSTONE_INLINE unordered_set<Unit*  >::iterator GetInRangeUnitSetBegin() { return m_unitsInRange.begin(); }
-    HEARTHSTONE_INLINE unordered_set<Unit*  >::iterator GetInRangeUnitSetEnd() { return m_unitsInRange.end(); }
+    HEARTHSTONE_INLINE InRangeUnitSet::iterator GetInRangeOppFactsSetBegin() { return m_oppFactsInRange.begin(); }
+    HEARTHSTONE_INLINE InRangeUnitSet::iterator GetInRangeOppFactsSetEnd() { return m_oppFactsInRange.end(); }
+    HEARTHSTONE_INLINE InRangePlayerSet::iterator GetInRangePlayerSetBegin() { return m_inRangePlayers.begin(); }
+    HEARTHSTONE_INLINE InRangePlayerSet::iterator GetInRangePlayerSetEnd() { return m_inRangePlayers.end(); }
+    HEARTHSTONE_INLINE InRangeUnitSet::iterator GetInRangeUnitSetBegin() { return m_unitsInRange.begin(); }
+    HEARTHSTONE_INLINE InRangeUnitSet::iterator GetInRangeUnitSetEnd() { return m_unitsInRange.end(); }
 
     void __fastcall SendMessageToSet(WorldPacket *data, bool self,bool myteam_only=false);
     void OutPacketToSet(uint16 Opcode, uint16 Len, const void * Data, bool self);
@@ -621,7 +623,7 @@ protected:
     //! TODO: that functionality should be moved into WorldServer.
     unordered_set<Object* > m_objectsInRange;
     unordered_set<Player* > m_inRangePlayers;
-    unordered_set<Object* > m_oppFactsInRange;
+    unordered_set<Unit* > m_oppFactsInRange;
     unordered_set<Unit* > m_unitsInRange;
 
     int32 m_instanceId;
