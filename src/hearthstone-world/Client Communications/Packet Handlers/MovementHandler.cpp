@@ -632,7 +632,7 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
     }
 
 #if defined(_DEBUG)
-    //CollideInterface.setDebugPoint(_player->movement_info.x, _player->movement_info.y, _player->movement_info.z, _player->movement_info.orientation);
+    //sVMapInterface.setDebugPoint(_player->movement_info.x, _player->movement_info.y, _player->movement_info.z, _player->movement_info.orientation);
 #endif
 }
 

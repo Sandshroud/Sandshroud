@@ -1067,7 +1067,7 @@ void Player::Update( uint32 p_time )
     {
         if( GetMapMgr()->CanUseCollision(this) && mstime >= m_mountCheckTimer )
         {
-            if( CollideInterface.IsIndoor( m_mapId, m_position.x, m_position.y, m_position.z ) )
+            if( sVMapInterface.IsIndoor( m_mapId, m_position.x, m_position.y, m_position.z ) )
             {
                 //Mount expired?
                 if(IsMounted())
@@ -1318,7 +1318,7 @@ void Player::_EventAttack( bool offhand )
         pVictim = GetMapMgr()->GetUnit(m_curSelection);
 
     // Can't find victim, stop attacking
-    if (!pVictim || !FactionSystem::isAttackable( this, pVictim ) )
+    if (!pVictim || !sFactionSystem.isAttackable( this, pVictim ) )
     {
         sLog.outDebug("Player::Update:  No valid current selection to attack, stopping attack.");
         smsg_AttackStop(pVictim);
@@ -1544,7 +1544,7 @@ void Player::_EventExploration()
     if(HasAreaFlag(OBJECT_AREA_FLAG_INSANCTUARY))
     {
         Unit* pUnit = (GetSelection() == 0) ? NULLUNIT : (m_mapMgr ? m_mapMgr->GetUnit(GetSelection()) : NULLUNIT);
-        if(pUnit && !FactionSystem::isAttackable(this, pUnit))
+        if(pUnit && !sFactionSystem.isAttackable(this, pUnit))
         {
             EventAttackStop();
             smsg_AttackStop(pUnit);
@@ -1556,7 +1556,7 @@ void Player::_EventExploration()
         if(m_currentSpell)
         {
             Unit* target = m_currentSpell->GetUnitTarget();
-            if(target && !FactionSystem::isAttackable(this, target) && target != TO_PLAYER(this))
+            if(target && !sFactionSystem.isAttackable(this, target) && target != TO_PLAYER(this))
                 m_currentSpell->cancel();
         }
     }
@@ -6120,10 +6120,10 @@ void Player::HandleRestedCalculations(bool rest_on)
         {
             if(m_isResting)
             {
-                if(!CollideInterface.IsIndoor(GetMapId(), loc.x, loc.y, loc.z + 2.0f))
+                if(!sVMapInterface.IsIndoor(GetMapId(), loc.x, loc.y, loc.z + 2.0f))
                     ApplyPlayerRestState(false);
             }
-            else if(CollideInterface.IsIndoor(GetMapId(), loc.x, loc.y, loc.z + 2.0f))
+            else if(sVMapInterface.IsIndoor(GetMapId(), loc.x, loc.y, loc.z + 2.0f))
             {
                 float delta = 3.2f;
                 AreaTriggerEntry* ATE = dbcAreaTrigger.LookupEntry(LastAreaTrigger->AreaTriggerID);
@@ -7107,7 +7107,7 @@ void Player::EventRepeatSpell()
         return;
 
     Unit* target = GetMapMgr()->GetUnit( m_curSelection );
-    if( target == NULL || !FactionSystem::isAttackable(this, target))
+    if( target == NULL || !sFactionSystem.isAttackable(this, target))
     {
         m_AutoShotAttackTimer = 0; //avoid flooding client with error messages
         m_onAutoShot = false;

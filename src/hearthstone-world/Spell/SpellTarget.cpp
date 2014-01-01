@@ -114,7 +114,7 @@ void Spell::HandleTargetNoObject()
     newz = m_caster->GetCHeightForPosition(true, newx, newy, newz);
 
     //if not in line of sight, or too far away we summon inside caster
-    if(fabs(newz - m_caster->GetPositionZ()) > 10 || !CollideInterface.CheckLOS(m_caster->GetMapId(), m_caster->GetInstanceID(), m_caster->GetPhaseMask(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ() + 2, newx, newy, newz + 2))
+    if(fabs(newz - m_caster->GetPositionZ()) > 10 || !sVMapInterface.CheckLOS(m_caster->GetMapId(), m_caster->GetInstanceID(), m_caster->GetPhaseMask(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ() + 2, newx, newy, newz + 2))
     {
         newx = m_caster->GetPositionX();
         newy = m_caster->GetPositionY();
@@ -146,9 +146,9 @@ bool Spell::AddTarget(uint32 i, uint32 TargetType, Object* obj)
     if(u_caster != NULL && u_caster->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_9) && ((obj->IsPlayer() || obj->IsPet()) || (p_caster != NULL || m_caster->IsPet())))
         return false;
 
-    if(TargetType & SPELL_TARGET_REQUIRE_FRIENDLY && !FactionSystem::isFriendly(m_caster, obj))
+    if(TargetType & SPELL_TARGET_REQUIRE_FRIENDLY && !sFactionSystem.isFriendly(m_caster, obj))
         return false;
-    if(TargetType & SPELL_TARGET_REQUIRE_ATTACKABLE && !FactionSystem::isAttackable(m_caster, obj))
+    if(TargetType & SPELL_TARGET_REQUIRE_ATTACKABLE && !sFactionSystem.isAttackable(m_caster, obj))
         return false;
     if(TargetType & SPELL_TARGET_OBJECT_TARCLASS)
     {
@@ -196,7 +196,7 @@ bool Spell::AddTarget(uint32 i, uint32 TargetType, Object* obj)
             }*/
         }
 
-        if(!CollideInterface.CheckLOS(m_caster->GetMapId(), m_caster->GetInstanceID(), m_caster->GetPhaseMask(), x, y, z + 2, obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ() + 2))
+        if(!sVMapInterface.CheckLOS(m_caster->GetMapId(), m_caster->GetInstanceID(), m_caster->GetPhaseMask(), x, y, z + 2, obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ() + 2))
             return false;
     }
     return true;

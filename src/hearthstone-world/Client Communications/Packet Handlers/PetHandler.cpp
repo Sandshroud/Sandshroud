@@ -76,7 +76,7 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
                 {
 
                     // make sure the target is attackable
-                    if(pTarget == pPet || !FactionSystem::isAttackable(pPet, pTarget))
+                    if(pTarget == pPet || !sFactionSystem.isAttackable(pPet, pTarget))
                     {
                         WorldPacket data(SMSG_SPELL_FAILURE, 20);
                         data << _player->GetNewGUID() << uint32(0) << uint32(0) << uint8(SPELL_FAILED_BAD_TARGETS);
@@ -147,7 +147,7 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
                     if( !sp->info->buffType )
                     {
                         // make sure the target is attackable
-                        if( pTarget == pPet || !FactionSystem::isAttackable( pPet, pTarget ) )
+                        if( pTarget == pPet || !sFactionSystem.isAttackable( pPet, pTarget ) )
                         {
                             pPet->SendActionFeedback( PET_FEEDBACK_CANT_ATTACK_TARGET );
                             return;

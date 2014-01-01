@@ -340,7 +340,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         if( targets.m_unitTarget && GetPlayer()->GetMapMgr() && spellInfo->c_is_flags & SPELL_FLAG_IS_DAMAGING )
         {
             Unit* pUnit = GetPlayer()->GetMapMgr()->GetUnit( targets.m_unitTarget );
-            if( pUnit && pUnit != GetPlayer() && !FactionSystem::isAttackable( GetPlayer(), pUnit, false ) && !pUnit->IsInRangeOppFactSet(GetPlayer()) && !pUnit->CombatStatus.DidDamageTo(GetPlayer()->GetGUID()))
+            if( pUnit && pUnit != GetPlayer() && !sFactionSystem.isAttackable( GetPlayer(), pUnit, false ) && !pUnit->IsInRangeOppFactSet(GetPlayer()) && !pUnit->CombatStatus.DidDamageTo(GetPlayer()->GetGUID()))
             {
                 //GetPlayer()->BroadcastMessage("Faction exploit detected. You will be disconnected in 5 seconds.");
                 //GetPlayer()->Kick(5000);
