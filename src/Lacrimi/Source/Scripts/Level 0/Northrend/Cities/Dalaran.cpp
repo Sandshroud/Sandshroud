@@ -30,20 +30,21 @@ public:
         if(Menu == NULL)
             return;
 
-        Menu->AddItem(0, "Arena", 1);
-        Menu->AddItem(0, "Auction House", 2);
-        Menu->AddItem(0, "Bank", 3);
-        Menu->AddItem(0, "Barber", 4);
-        Menu->AddItem(0, "Battlemasters", 5);
-        Menu->AddItem(0, "Capital Portals", 6);
-        Menu->AddItem(0, "Flight Master", 7);
-        Menu->AddItem(0, "Guild Master", 8);
-        Menu->AddItem(0, "Inn", 9);
-        Menu->AddItem(0, "Mailbox", 10);
-        Menu->AddItem(0, "Points of Interest", 11);
-        Menu->AddItem(0, "Stable Master", 12);
-        Menu->AddItem(0, "Trainers", 13);
-        Menu->AddItem(0, "Vendors", 14);
+        Menu->AddItem(0, "Arena",                 1);
+        Menu->AddItem(0, "Auction House",         2);
+        Menu->AddItem(0, "Bank",                  3);
+        Menu->AddItem(0, "Barber",                4);
+        Menu->AddItem(0, "Battlemasters",         5);
+        Menu->AddItem(0, "Capital Portals",       6);
+        Menu->AddItem(0, "Flight Master",         7);
+        Menu->AddItem(0, "Guild Master",          8);
+        Menu->AddItem(0, "Inn",                   9);
+        Menu->AddItem(0, "Locksmith ",           77);
+        Menu->AddItem(0, "Mailbox",              10);
+        Menu->AddItem(0, "Points of Interest",   11);
+        Menu->AddItem(0, "Stable Master",        12);
+        Menu->AddItem(0, "Trainers",             13);
+        Menu->AddItem(0, "Vendors",              14);
 
         if(AutoSend)
             Menu->SendTo(Plr);
@@ -570,6 +571,11 @@ public:
             {
                 Plr->Gossip_SendPOI(5815.91f, 453.64f, 7, 6, 0, "Flight Master");
                 SendQuickMenu(60059);
+            }break;
+        case 77: // Locksmith
+            {
+                Plr->Gossip_SendPOI(5934.0f, 575.626f, 7, 99, 0, "Dalaran Locksmith");
+                SendQuickMenu(14004);
             }break;
         }
     }
