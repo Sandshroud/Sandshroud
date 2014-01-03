@@ -24,19 +24,19 @@ public:
         GossipMenu* Menu;
         objmgr.CreateGossipMenuForPlayer(&Menu, pObject->GetGUID(), 3543, plr);
 
-        Menu->AddItem(0, "The bank", 1);
-        Menu->AddItem(0, "The bat handler", 2);
-        Menu->AddItem(0, "The guild master", 3);
-        Menu->AddItem(0, "The inn", 4);
-        Menu->AddItem(0, "The mailbox", 5);
-        Menu->AddItem(0, "The auction house", 6);
-        Menu->AddItem(0, "The zeppelin master", 7);
-        Menu->AddItem(0, "The weapon master", 8);
-        Menu->AddItem(0, "The stable master", 9);
-        Menu->AddItem(0, "The battlemaster", 10);
-        Menu->AddItem(0, "A class trainer", 11);
-        Menu->AddItem(0, "A profession trainer", 12);
-        Menu->AddItem(0, "Locksmith", 32);
+        Menu->AddItem(0, "The bank"              , 1);
+        Menu->AddItem(0, "The bat handler"       , 2);
+        Menu->AddItem(0, "The guild master"      , 3);
+        Menu->AddItem(0, "The inn"               , 4);
+        Menu->AddItem(0, "The mailbox"           , 5);
+        Menu->AddItem(0, "The auction house"     , 6);
+        Menu->AddItem(0, "The zeppelin master"   , 7);
+        Menu->AddItem(0, "The weapon master"     , 8);
+        Menu->AddItem(0, "The stable master"     , 9);
+        Menu->AddItem(0, "The battlemaster"      , 10);
+        Menu->AddItem(0, "A class trainer"       , 11);
+        Menu->AddItem(0, "A profession trainer"  , 12);
+        Menu->AddItem(0, "Locksmith"             , 32);
         Menu->SendTo(plr);
     }
 
@@ -105,7 +105,7 @@ public:
         case 11:    // A class trainer
             {
                 objmgr.CreateGossipMenuForPlayer(&Menu, pObject->GetGUID(), 3542, Plr);
-                Menu->AddItem(0, "Mage"      , 13);
+                Menu->AddItem(0, "Mage"         , 13);
                 Menu->AddItem(0, "Paladin"      , 14);
                 Menu->AddItem(0, "Priest"       , 15);
                 Menu->AddItem(0, "Rogue"        , 16);
@@ -243,20 +243,20 @@ class UndercityGuardOverseer : public GossipScript
         {
             GossipMenu *Menu;
             objmgr.CreateGossipMenuForPlayer(&Menu, pObject->GetGUID(), 15321, Plr);
-            Menu->AddItem(0, "The auction house", 1);
-            Menu->AddItem(0, "The bank", 2);
-            Menu->AddItem(0, "Barber", 3);
-            Menu->AddItem(0, "The bat handler", 4);
-            Menu->AddItem(0, "The battlemaster", 5);
-            Menu->AddItem(0, "The guild master", 6);
-            Menu->AddItem(0, "The inn", 7);
-            Menu->AddItem(0, "Locksmith", 8);
-            Menu->AddItem(0, "The mailbox", 9);
-            Menu->AddItem(0, "The stable master", 10);
-            Menu->AddItem(0, "The weapon master", 11);
-            Menu->AddItem(0, "The zeppelin master", 12);
-            Menu->AddItem(0, "A class trainer", 13);
-            Menu->AddItem(0, "A profession trainer", 14);
+            Menu->AddItem(0, "The auction house"     , 1);
+            Menu->AddItem(0, "The bank"              , 2);
+            Menu->AddItem(0, "Barber"                , 3);
+            Menu->AddItem(0, "The bat handler"       , 4);
+            Menu->AddItem(0, "The battlemaster"      , 5);
+            Menu->AddItem(0, "The guild master"      , 6);
+            Menu->AddItem(0, "The inn"               , 7);
+            Menu->AddItem(0, "Locksmith"             , 8);
+            Menu->AddItem(0, "The mailbox"           , 9);
+            Menu->AddItem(0, "The stable master"     , 10);
+            Menu->AddItem(0, "The weapon master"     , 11);
+            Menu->AddItem(0, "The zeppelin master"   , 12);
+            Menu->AddItem(0, "A class trainer"       , 13);
+            Menu->AddItem(0, "A profession trainer"  , 14);
             Menu->SendTo(Plr);
         }
 
@@ -463,12 +463,12 @@ class BrillGuard : public GossipScript
         {
             GossipMenu* Menu;
             objmgr.CreateGossipMenuForPlayer(&Menu, pObject->GetGUID(), 2593, plr);
-            Menu->AddItem(0, "The bank", 1);
-            Menu->AddItem(0, "The bat handler", 2);
-            Menu->AddItem(0, "The inn", 3);
-            Menu->AddItem(0, "The stable master", 4);
-            Menu->AddItem(0, "A class trainer", 5);
-            Menu->AddItem(0, "A profession trainer", 6);
+            Menu->AddItem(0, "The bank"              , 1);
+            Menu->AddItem(0, "The bat handler"       , 2);
+            Menu->AddItem(0, "The inn"               , 3);
+            Menu->AddItem(0, "The stable master"     , 4);
+            Menu->AddItem(0, "A class trainer"       , 5);
+            Menu->AddItem(0, "A profession trainer"  , 6);
             Menu->SendTo(plr);
         }
 
@@ -508,9 +508,9 @@ class BrillGuard : public GossipScript
                         Menu->AddItem(0, "Mage"         , 7);
                         Menu->AddItem(0, "Paladin"      , 8);
                         Menu->AddItem(0, "Priest"       , 9);
-                        Menu->AddItem(0, "Rogue"       , 10);
-                        Menu->AddItem(0, "Warlock"     , 11);
-                        Menu->AddItem(0, "Warrior"     , 12);
+                        Menu->AddItem(0, "Rogue"        , 10);
+                        Menu->AddItem(0, "Warlock"      , 11);
+                        Menu->AddItem(0, "Warrior"      , 12);
                         Menu->SendTo(Plr);
                     }
                     break;
