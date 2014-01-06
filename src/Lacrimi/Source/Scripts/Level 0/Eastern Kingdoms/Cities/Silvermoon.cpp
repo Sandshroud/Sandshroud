@@ -329,6 +329,6 @@ protected:
 
 void Lacrimi::SetupSilvermoon()
 {
-    RegisterCtrGossipScript(16222,  SilvermoonGuard);    //Silvermoon City Guardian
-    RegisterCtrAIScript(17768,  BloodKnightStillblade);
+    RegisterCtrGossipScript(16222,    SilvermoonGuard);    //Silvermoon City Guardian
+    RegisterCtrAIScript(17768,        BloodKnightStillblade);
 }

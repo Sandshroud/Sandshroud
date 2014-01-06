@@ -272,6 +272,7 @@ void Lacrimi::SetupKalimdorScripts()
     SetupBloodmystIsle();
     SetupDarkshore();
     SetupDesolace();
+	SetupDurotar();
     SetupDustwallowMarsh();
     SetupFelwood();
     SetupFeralas();
