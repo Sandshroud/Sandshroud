@@ -65,7 +65,7 @@ namespace VMAP
             int iRefCount;
     };
 
-    typedef std::map< std::pair<G3D::g3d_uint64, G3D::g3d_uint32>, GameobjectModelInstance*> ModelGUIDEs;
+    typedef std::map< G3D::g3d_uint64, GameobjectModelInstance*> ModelGUIDEs;
     struct GOMapGuides
     {
         ModelGUIDEs ModelsByGuid;
@@ -73,7 +73,7 @@ namespace VMAP
 
     typedef std::map<G3D::g3d_uint32, GOMapGuides* > GOModelInstanceByGUID;
     typedef std::map<G3D::g3d_uint32, GameobjectModelSpawn> GOModelSpawnList;
-    typedef std::map<G3D::g3d_uint32, DynamicMapTree*> DynamicTreeMap;
+    typedef std::map<std::pair<G3D::g3d_uint32, G3D::g3d_uint32>, DynamicMapTree*> DynamicTreeMap;
     typedef std::map<G3D::g3d_uint32, StaticMapTree*> InstanceTreeMap;
     typedef std::map<std::string, ManagedModel> ModelFileMap;
 
@@ -92,7 +92,7 @@ namespace VMAP
             // Mutex for iLoadedModelFiles
             G3D::GMutex LoadedModelFilesLock;
 
-            bool _loadObject(DynamicMapTree* tree, G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_uint32 m_instance, G3D::g3d_int32 m_phase);
+            bool _loadObject(DynamicMapTree* tree, G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_int32 m_phase);
 
         public:
             // public for debug
@@ -104,7 +104,7 @@ namespace VMAP
 
             const char *GetManagerVersion() { return VMAP_MANAGER_VERSION; }
 
-            void updateDynamicMapTree(G3D::g3d_uint32 t_diff, G3D::g3d_int32 mapid = -1);
+            void updateDynamicMapTree(G3D::g3d_uint32 t_diff, G3D::g3d_int32 mapid = -1, G3D::g3d_uint32 instanceId = 0);
             void LoadGameObjectModelList();
 
             // Static collision
@@ -115,11 +115,11 @@ namespace VMAP
 
             // Dynamic collision
             bool loadObject(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 DisplayID, float scale, float x, float y, float z, float o, G3D::g3d_uint32 m_instance, G3D::g3d_int32 m_phase);
-            void changeObjectModel(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 m_instance, G3D::g3d_uint32 DisplayID);
+            bool changeObjectModel(G3D::g3d_uint64 guid, unsigned int mapId, G3D::g3d_uint32 m_instance, G3D::g3d_uint32 DisplayID);
             void unloadObject(unsigned int mapId, G3D::g3d_uint32 m_instance, G3D::g3d_uint64 guid);
 
             // Functionality
-            bool isInLineOfSight(unsigned int mapId, G3D::g3d_uint32 m_instance, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2) ;
+            bool isInLineOfSight(unsigned int mapId, G3D::g3d_uint32 m_instance, G3D::g3d_int32 m_phase, float x1, float y1, float z1, float x2, float y2, float z2);
             /**
             fill the hit pos and return true, if an object was hit
             */
