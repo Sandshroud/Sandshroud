@@ -368,7 +368,7 @@ namespace VMAP
 
     bool GroupModel::IntersectRay(const G3D::Ray &ray, float &distance, bool stopAtFirstHit) const
     {
-        if (triangles.empty())
+        if(triangles.empty())
             return false;
 
         GModelRayCallback callback(triangles, vertices);

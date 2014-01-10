@@ -1700,7 +1700,7 @@ void MapMgr::_PerformObjectDuties()
         return;
 
     // Update our collision system via singular map system
-    sVMapInterface.UpdateSingleMap(_mapId, difftime);
+    sVMapInterface.UpdateSingleMap(_mapId, m_instanceID, difftime);
     if(!SetThreadState(THREADSTATE_AWAITING))
         return;
 
