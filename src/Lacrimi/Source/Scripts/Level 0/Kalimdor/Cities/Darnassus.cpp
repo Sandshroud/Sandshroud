@@ -204,14 +204,9 @@ public:
             break;
         }
     }
-
-    void GossipEnd(Object* pObject, Player* Plr)
-    {
-
-    }
 };
 
 void Lacrimi::SetupDarnassus()
 {
-     RegisterCtrGossipScript(4262,  DarnassusGuard);            // Darnassus Sentinel
+    RegisterCtrGossipScript(4262,    DarnassusGuard);    // Darnassus Sentinel
 }

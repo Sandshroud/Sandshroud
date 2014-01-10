@@ -154,6 +154,7 @@ public:
     void SetupBloodmystIsle();
     void SetupDarkshore();
     void SetupDesolace();
+    void SetupDurotar();
     void SetupDustwallowMarsh();
     void SetupFelwood();
     void SetupFeralas();
