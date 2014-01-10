@@ -11,7 +11,8 @@ namespace VMAP
 
     typedef GameobjectModelInstance GOModelInstance;
     typedef BIHWrap<GOModelInstance> ModelWrap;
-    typedef G3D::Table<const GOModelInstance*, ModelWrap*> MemberTable;
+    //typedef G3D::Table<const GOModelInstance*, ModelWrap*> MemberTable;
+    typedef std::map<const GOModelInstance*, std::set<ModelWrap*>> MemberTable;
 
     class DynamicMapTree
     {

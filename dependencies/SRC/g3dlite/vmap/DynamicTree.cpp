@@ -5,7 +5,7 @@
 #include "../G3DAll.h"
 #include "VMapDefinitions.h"
 
-//#define USE_CELL_STRUCTURE
+#define USE_CELL_STRUCTURE
 #define TILE_COUNT 64
 #define TILE_SIZE  533.33333f
 #define MAP_SIZE   (TILE_SIZE * float(TILE_COUNT))
@@ -24,6 +24,8 @@ namespace VMAP
     struct NodeID
     {
         G3D::g3d_uint32 x, y;
+        // < operator required for std::set ordering
+        bool operator < (const NodeID& c2) const { return ((x == c2.x) ? (y < c2.y) : (x < c2.x)); }
         bool operator == (const NodeID& c2) const { return x == c2.x && y == c2.y; }
 
 #ifdef USE_CELL_STRUCTURE
@@ -34,7 +36,7 @@ namespace VMAP
             return c;
         }
 
-        bool isValid() const { return idX < CELL_COUNT && idY < CELL_COUNT; }
+        bool isValid() const { return x < CELL_COUNT && y < CELL_COUNT; }
 #else
         static float NodeSize() { return TILE_SIZE; }
         static NodeID ComputeNodeID(float fx, float fy)
@@ -104,17 +106,44 @@ namespace VMAP
         void insert(const GOModelInstance& mdl)
         {
             G3D::Vector3 pos = mdl.getPosition();
-            ModelWrap& node = getNodeFor(pos.x, pos.y);
-            node.insert(mdl);
-            memberTable.set(&mdl, &node);
+            int minX = 0xFFFF, maxX = 0, minY = 0xFFFF, maxY = 0, count = 0;
+            for(int i = 0; i < 8; i++)
+            {
+                NodeID id = NodeID::ComputeNodeID(mdl.getBounds().corner(i).x, mdl.getBounds().corner(i).y);
+                if(!id.isValid())
+                    continue;
+                count++;
+                if(id.x < minX) minX = id.x;
+                if(id.x > maxX) maxX = id.x;
+                if(id.x < minY) minY = id.y;
+                if(id.x > maxY) maxY = id.y;
+            }
+            if(count == 0)
+                return;
+
+            for(int x = minX; x <= maxX; x++)
+            {
+                for(int y = minY; y <= maxY; y++)
+                {
+                    printf("Cells: %u %u\n", x, y);
+                    ModelWrap& node = getNode(x, y);
+                    node.insert(mdl);
+                    memberTable[&mdl].insert(&node);
+                }
+            }
             ++unbalanced_times;
         }
 
         void remove(const GOModelInstance& mdl)
         {
-            memberTable[&mdl]->remove(mdl);
+            while(memberTable[&mdl].size())
+            {
+                (*memberTable[&mdl].begin())->remove(mdl);
+                memberTable[&mdl].erase(memberTable[&mdl].begin());
+            }
+
             // Remove the member
-            memberTable.remove(&mdl);
+            memberTable.erase(&mdl);
             ++unbalanced_times;
         }
 
@@ -239,7 +268,7 @@ namespace VMAP
         TimeTrackerSmall rebalance_timer;
 
         int unbalanced_times;
-        bool contains(const GOModelInstance& value) const { return memberTable.containsKey(&value); }
+        bool contains(const GOModelInstance& value) const { return memberTable.find(&value) != memberTable.end(); }
         int size() const { return memberTable.size(); }
         MemberTable memberTable;
 
