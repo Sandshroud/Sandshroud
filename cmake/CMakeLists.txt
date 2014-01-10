@@ -21,13 +21,16 @@ SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 #we break up the checks and do one check on Visual Studio
 IF( CMAKE_GENERATOR MATCHES Visual*)
 
+#Visual studio has multi core build support, so enable the config
+SET(CORECOMPILECOUNT "2" CACHE STRING "Amount of cores visual studio will compile with")
+
 #Visual Studio has Win64 appended to declare 64bit compiling
 IF(CMAKE_GENERATOR MATCHES Win64*)
 SET(IS_64BIT TRUE)
 SET(GLOBAL_DEFINES ${GLOBAL_DEFINES} "/bigobj")
 ENDIF()#Win64*
 
-SET(GLOBAL_DEFINES ${GLOBAL_DEFINES} "/Od /Ob2 /MP2 /W1")
+SET(GLOBAL_DEFINES ${GLOBAL_DEFINES} "/Od /Ob2 /MP${CORECOMPILECOUNT} /W1")
 ELSE()#!Visual*
 
 IF(CMAKE_SYSTEM_PROCESSOR MATCHES "[xX]64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "[xX]86_64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "[aA][mM][dD]64")
