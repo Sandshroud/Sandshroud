@@ -66,12 +66,12 @@ public:
 
         case 4:     // Inn
             SendQuickMenu(4263);
-            Plr->Gossip_SendPOI(-9459.34f, 42.08f, 99, 6, 0, "Lion's Pride Inn");
+            Plr->Gossip_SendPOI(-9459.34f, 42.08f, 7, 6, 0, "Lion's Pride Inn");
             break;
 
         case 5:     // Stable Master
             SendQuickMenu(5983);
-            Plr->Gossip_SendPOI(-9466.62f, 45.87f, 99, 6, 0, "Erma");
+            Plr->Gossip_SendPOI(-9466.62f, 45.87f, 7, 6, 0, "Erma");
             break;
 
         case 6:     // Class Trainer
@@ -239,5 +239,5 @@ public:
 
 void Lacrimi::SetupElwynnForest()
 {
-    RegisterCtrGossipScript(1423, GoldshireGuard);
+    RegisterCtrGossipScript(1423,    GoldshireGuard);        // Stormwind Guard
 }
