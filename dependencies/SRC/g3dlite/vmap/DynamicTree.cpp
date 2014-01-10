@@ -125,7 +125,6 @@ namespace VMAP
             {
                 for(int y = minY; y <= maxY; y++)
                 {
-                    printf("Cells: %u %u\n", x, y);
                     ModelWrap& node = getNode(x, y);
                     node.insert(mdl);
                     memberTable[&mdl].insert(&node);
