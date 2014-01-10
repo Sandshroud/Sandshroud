@@ -185,42 +185,35 @@ namespace VMAP
         return true;
     }
 
-    GameobjectModelInstance::GameobjectModelInstance(const GameobjectModelSpawn &spawn, WorldModel* model, G3D::g3d_uint32 instanceId, G3D::g3d_int32 m_phase) : iModel(model), m_Instance(instanceId), m_PhaseMask(m_phase)
+    GameobjectModelInstance::GameobjectModelInstance(const GameobjectModelSpawn &spawn, WorldModel* model, G3D::g3d_int32 m_phase) : iModel(model), m_PhaseMask(m_phase)
     {
-        iBound = BoundBase = spawn.BoundBase;
+        BoundBase = spawn.BoundBase;
         name = spawn.name;
     }
 
-    void GameobjectModelInstance::SetData(G3D::AABox Box, float x, float y, float z, float orientation, float scale)
+    void GameobjectModelInstance::SetData(float x, float y, float z, float orientation, float scale)
     {
         iPos = Vector3(x, y, z);
-//        iRot = Vector3(orientation, 0, 0);
         iScale = scale;
         iInvScale = 1.0f / iScale;
         iOrientation = orientation;
 
-//        iInvRot = G3D::Matrix3::fromEulerAnglesZYX(G3D::pi()*iRot.y/180.f, G3D::pi()*iRot.x/180.f, G3D::pi()*iRot.z/180.f).inverse();
         G3D::Matrix3 iRotation = G3D::Matrix3::fromEulerAnglesZYX(iOrientation, 0, 0);
         iInvRot = iRotation.inverse();
 
         // transform bounding box:
-        Box = AABox(Box.low() * iScale, Box.high() * iScale);
-        AABox rotated_bounds;
+        AABox box = AABox(BoundBase.low() * iScale, BoundBase.high() * iScale), rotated_bounds;
         for (int i = 0; i < 8; ++i)
-            rotated_bounds.merge(iRotation * Box.corner(i));
-
+            rotated_bounds.merge(iRotation * box.corner(i));
         iBound = rotated_bounds + iPos;
     }
 
-    bool GameobjectModelInstance::intersectRay(const G3D::Ray& ray, float& MaxDist, bool StopAtFirstHit, G3D::g3d_uint32 instanceid, G3D::g3d_int32 ph_mask) const
+    bool GameobjectModelInstance::intersectRay(const G3D::Ray& ray, float& MaxDist, bool StopAtFirstHit, G3D::g3d_int32 ph_mask) const
     {
         if(m_PhaseMask != -1 && ph_mask != -1)
             if (!(m_PhaseMask & ph_mask))
                 return false;
-        if(m_Instance > 0) // All instances
-            if(instanceid != m_Instance)
-                return false;
-        float time = ray.intersectionTime(iBound);
+        float time = ray.intersectionTime(getBounds());
         if (time == G3D::inf())
             return false;
 
