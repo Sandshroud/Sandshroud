@@ -109,15 +109,8 @@ namespace VMAP
             if (success) success = pTree.writeToFile(mapfile);
             // global map spawns (WDT), if any (most instances)
             if (success && fwrite("GOBJ", 4, 1, mapfile) != 1) success = false;
-            if(success)
-            {
-                for (TileMap::iterator glob=globalRange.first; glob != globalRange.second && success; ++glob)
-                {
-                    success = ModelSpawn::writeToFile(mapfile, map_iter->second->UniqueEntries[glob->second]);
-                    if(success == false)
-                        break;
-                }
-            }
+            if(success && !bool(isTiled))
+                success = ModelSpawn::writeToFile(mapfile, map_iter->second->UniqueEntries[globalRange.first->second]);
 
             fclose(mapfile);
 
