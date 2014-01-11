@@ -679,8 +679,10 @@ void Lacrimi::SetupDalaran()
 
     RegisterCtrGossipScript(32726, UnderbellyGuard);
     RegisterCtrGossipScript(32727, UnderbellyGuard);
+    RegisterCtrGossipScript(32728, UnderbellyGuard);
     RegisterCtrGossipScript(32729, UnderbellyGuard);
     RegisterCtrGossipScript(32730, UnderbellyGuard);
     RegisterCtrGossipScript(32731, UnderbellyGuard);
     RegisterCtrGossipScript(32732, UnderbellyGuard);
+    RegisterCtrGossipScript(32733, UnderbellyGuard);
 }
