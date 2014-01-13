@@ -24,54 +24,52 @@ bool FactionSystem::AC_GetAttackableStatus(Player *plr, Unit *target)
 int FactionSystem::GetFactionsInteractStatus(Unit *unitA, Unit* unitB)
 {
     if(unitA == NULL || unitB == NULL)
-        return 0;
+        return FI_STATUS_NONE;
     FactionTemplateDBC *factionA = unitA->m_faction, *factionB = unitB->m_faction;
     FactionDBC *factiondbcA = unitA->m_factionDBC, *factiondbcB = unitB->m_factionDBC;
     if(factionA == NULL || factionB == NULL || factiondbcA == NULL || factiondbcB == NULL)
-        return 0;
+        return FI_STATUS_NONE;
     if(factionA == factionB || factiondbcA == factiondbcB)
-        return 0; // Same faction, we can skip the rest of the checks
+        return FI_STATUS_FRIENDLY; // Same faction, we can skip the rest of the checks
     if(factionA->ID == 35 || factionB->ID == 35)
-        return 0; // 35 is forced friendly to all
+        return FI_STATUS_FRIENDLY; // 35 is forced friendly to all
 
     // Check hostile masks
     if(factionA->HostileMask & factionB->FactionMask)
-        return 1;
+        return FI_STATUS_HOSTILE;
     if(factionB->HostileMask & factionA->FactionMask)
-        return 1;
+        return FI_STATUS_HOSTILE;
 
     // check friend/enemy list
     for(uint32 i = 0; i < 4; i++)
     {
         if(factionA->EnemyFactions[i] && factionA->EnemyFactions[i] == factionB->Faction)
-            return 1;
+            return FI_STATUS_HOSTILE;
         if(factionB->EnemyFactions[i] && factionB->EnemyFactions[i] == factionA->Faction)
-            return 1;
+            return FI_STATUS_HOSTILE;
     }
 
     // Reputation System Checks
-    if(unitA->IsPlayer() && !unitB->IsPlayer())
+    if(unitA->IsPlayer() && !unitB->IsPlayer() && unitB->m_factionDBC)
     {
-        if(unitB->m_factionDBC == NULL)
-            return 0;
         if(unitB->m_factionDBC->RepListId >= 0)
             if(TO_PLAYER(unitA)->IsHostileBasedOnReputation( unitB->m_factionDBC ))
-                return 1;
+                return FI_STATUS_HOSTILE;
 
         if(unitB->m_factionDBC->RepListId == -1 && unitB->m_faction->HostileMask == 0 && unitB->m_faction->FriendlyMask == 0)
-            return 1;
+            return FI_STATUS_HOSTILE;
     }
-    else if(unitB->IsPlayer() && !unitA->IsPlayer())
+    else if(unitB->IsPlayer() && !unitA->IsPlayer() && unitA->m_factionDBC)
     {
         if(unitA->m_factionDBC->RepListId >= 0)
             if(TO_PLAYER(unitB)->IsHostileBasedOnReputation( unitA->m_factionDBC ))
-                return 1;
+                return FI_STATUS_HOSTILE;
 
         if(unitA->m_factionDBC->RepListId == -1 && unitA->m_faction->HostileMask == 0 && unitA->m_faction->FriendlyMask == 0)
-            return 1;
+            return FI_STATUS_HOSTILE;
     }
 
-    return 0;
+    return FI_STATUS_FRIENDLY;
 }
 
 int FactionSystem::GetAreaInteractionStatus(Unit *unitA, Unit *unitB)
@@ -87,9 +85,9 @@ int FactionSystem::GetAreaInteractionStatus(Unit *unitA, Unit *unitB)
         else if((unitB->IsPet() || unitB->IsSummon()) && unitA->IsPlayer())
             allowedCombat = false;
         if(!allowedCombat)
-            return 0;
+            return FI_STATUS_NONE;
     }
-    return 1;
+    return FI_STATUS_HOSTILE;
 }
 
 /// Where we check if we object A can attack object B. This is used in many feature's
@@ -98,101 +96,101 @@ int FactionSystem::intisAttackable(Object* objA, Object* objB, bool CheckStealth
 {
     // can't attack self.. this causes problems with buffs if we don't have it :p
     if( !objA || !objB || objA == objB )
-        return 0;
+        return FI_STATUS_NONE;
 
     if( !objA->IsInWorld() )
-        return 0;
+        return FI_STATUS_NONE;
 
     // can't attack corpses neither...
     if( objA->GetTypeId() == TYPEID_CORPSE || objB->GetTypeId() == TYPEID_CORPSE )
-        return 0;
+        return FI_STATUS_NONE;
 
     // Dead people can't attack anything.
     if( (objA->IsUnit() && !TO_UNIT(objA)->isAlive()) || (objB->IsUnit() && !TO_UNIT(objB)->isAlive()) )
-        return 0;
+        return FI_STATUS_NONE;
 
     // Checks for untouchable, unattackable
     if( objA->IsUnit() && (objA->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_9) ||
         objA->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNTED_TAXI) || objA->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE)))
-        return 0;
+        return FI_STATUS_NONE;
 
     if( objB->IsUnit() && (objB->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_9) ||
         objB->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNTED_TAXI) || objB->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE)))
-        return 0;
+        return FI_STATUS_NONE;
 
     if(!objA->PhasedCanInteract(objB))
-        return 0;
+        return FI_STATUS_NONE;
 
     // we cannot attack sheathed units. Maybe checked in other places too ?
     // !! warning, this presumes that objA is attacking ObjB
     if( CheckStealth && objB->IsUnit() && TO_UNIT(objB)->InStealth() )
         if(objA->CalcDistance(objB) > 5.0f)
-            return 0;
+            return FI_STATUS_NONE;
 
     // Get players (or owners of pets/totems)
     Player* player_objA = GetPlayerFromObject(objA);
     Player* player_objB = GetPlayerFromObject(objB);
     if(objA->IsUnit() && objB->IsVehicle())
         if(TO_VEHICLE(objB)->GetPassengerSlot(TO_UNIT(objA)) != -1)
-            return 0;
+            return FI_STATUS_NONE;
     else if(objB->IsUnit() && objA->IsVehicle())
         if(TO_VEHICLE(objA)->GetPassengerSlot(TO_UNIT(objB)) != -1)
-            return 0;
+            return FI_STATUS_NONE;
 
     // Always kill critters
     if(!player_objB && objB->IsCreature() && TO_CREATURE(objB)->GetCreatureType() == CRITTER)
         if(player_objA)
-            return 1;
+            return FI_STATUS_HOSTILE;
 
     // Disable GM attacking.
     if(player_objA && player_objB && player_objA->bGMTagOn)
-        return -1;
+        return FI_STATUS_FRIENDLY;
 
     // Disable GM attacking.
     if(player_objA && !player_objB && player_objA->bGMTagOn)
-        return -1;
+        return FI_STATUS_FRIENDLY;
 
     // Don't allow players to attack GMs
     if(player_objA && player_objB && player_objB->bGMTagOn)
-        return -1;
+        return FI_STATUS_FRIENDLY;
 
     // Creatures cannot attack a GM with tag on.
     if(!player_objA && player_objB && player_objB->bGMTagOn)
-        return -1;
+        return FI_STATUS_FRIENDLY;
 
     if(objA->IsCreature() && isTargetDummy(objA->GetEntry()))
-        return 0; // Bwahahaha
+        return FI_STATUS_NONE; // Bwahahaha
 
     if( player_objA && player_objB )
     {
         if(player_objA->DuelingWith == player_objB && player_objA->GetDuelState() == DUEL_STATE_STARTED )
-            return 1;
+            return FI_STATUS_HOSTILE;
     }
     else if(player_objA)
     {
         if(objB->IsPet() && TO_PET(objB)->GetOwner()->DuelingWith == player_objA)
-            return 1;
+            return FI_STATUS_HOSTILE;
         if(objB->IsSummon())
         {
             Object* summoner = TO_SUMMON(objB)->GetSummonOwner();
             if(summoner && summoner->IsPlayer())
             {
                 if(TO_PLAYER(summoner)->DuelingWith == player_objA)
-                    return 1;
+                    return FI_STATUS_HOSTILE;
             }
         }
     }
     else if(player_objB)
     {
         if(objA->IsPet() && TO_PET(objA)->GetOwner()->DuelingWith == player_objB)
-            return 1;
+            return FI_STATUS_HOSTILE;
         if(objA->IsSummon())
         {
             Object* summoner = TO_SUMMON(objA)->GetSummonOwner();
             if(summoner && summoner->IsPlayer())
             {
                 if(TO_PLAYER(summoner)->DuelingWith == player_objB)
-                    return 1;
+                    return FI_STATUS_HOSTILE;
             }
         }
     }
@@ -212,7 +210,7 @@ int FactionSystem::intisAttackable(Object* objA, Object* objB, bool CheckStealth
         else if(objA->m_faction->ID == 35 || objB->m_faction->ID == 35)
             allowedCombat = false;
         if(!allowedCombat)
-            return 0;
+            return FI_STATUS_NONE;
     }
 
     if(objA->IsCreature())
@@ -220,24 +218,24 @@ int FactionSystem::intisAttackable(Object* objA, Object* objB, bool CheckStealth
         if(objA->IsPet())
         {
             if(player_objB && !player_objB->IsPvPFlagged())
-                return 0;
+                return FI_STATUS_NONE;
 
             if(player_objB)
             {
                 if(TO_PET(objA)->GetOwner())
                 {
                     if(!TO_PET(objA)->GetOwner()->IsPvPFlagged())
-                        return 0;
+                        return FI_STATUS_NONE;
                     // the target is PvP, its okay.
                 }
                 else
-                    return 0;
+                    return FI_STATUS_NONE;
             }
         }
         else if(objA->IsSummon())
         {
             if(player_objB && !player_objB->IsPvPFlagged())
-                return 0;
+                return FI_STATUS_NONE;
 
             if(player_objB)
             {
@@ -245,11 +243,11 @@ int FactionSystem::intisAttackable(Object* objA, Object* objB, bool CheckStealth
                 if(summonownerA && summonownerA->IsPlayer())
                 {
                     if(!TO_UNIT(summonownerA)->IsPvPFlagged())
-                        return 0;
+                        return FI_STATUS_NONE;
                     // the target is PvP, its okay.
                 }
                 else
-                    return 0;
+                    return FI_STATUS_NONE;
             }
         }
     }
@@ -257,18 +255,18 @@ int FactionSystem::intisAttackable(Object* objA, Object* objB, bool CheckStealth
     if( player_objA && player_objB )
     {
         if(player_objA->IsPvPFlagged() && !player_objB->IsPvPFlagged() && player_objA->DuelingWith != player_objB)
-            return 0;
+            return FI_STATUS_NONE;
         if(!player_objA->IsPvPFlagged() && !player_objB->IsPvPFlagged() && player_objA->DuelingWith != player_objB)
-            return 0;
+            return FI_STATUS_NONE;
         if(player_objA->IsFFAPvPFlagged() && player_objB->IsFFAPvPFlagged())
         {
             if( player_objA->GetGroup() && player_objA->GetGroup() == player_objB->GetGroup() )
-                return 0;
+                return FI_STATUS_NONE;
 
             if( player_objA == player_objB ) // Totems...
-                return 0;
+                return FI_STATUS_NONE;
 
-            return 1;       // can hurt each other in FFA pvp
+            return FI_STATUS_HOSTILE;       // can hurt each other in FFA pvp
         }
 
         //Handle BG's
@@ -276,20 +274,20 @@ int FactionSystem::intisAttackable(Object* objA, Object* objB, bool CheckStealth
         {
             //Handle Arenas
             if( player_objA->GetTeam() != player_objB->GetTeam() )
-                return 1;
+                return FI_STATUS_HOSTILE;
         }
 
         // same faction can't kill each other.
         if(player_objA->m_faction == player_objB->m_faction)
-            return 0;
+            return FI_STATUS_NONE;
 
-        return 1; // Skip the rest of this, it's all faction shit.
+        return FI_STATUS_HOSTILE; // Skip the rest of this, it's all faction shit.
     }
 
     return GetFactionsInteractStatus(TO_UNIT(objA), TO_UNIT(objB));
 }
 
-bool FactionSystem::CanEitherUnitAttack(Object* objA, Object* objB, bool CheckStealth)// A can attack B?
+bool FactionSystem::CanEitherUnitAttack(Unit* objA, Unit* objB, bool CheckStealth)// A can attack B?
 {
     // can't attack self.. this causes problems with buffs if we don't have it :p
     if( !objA || !objB || objA == objB )
@@ -483,12 +481,12 @@ bool FactionSystem::CanEitherUnitAttack(Object* objA, Object* objB, bool CheckSt
         return true; // Skip the rest of this, it's all faction shit.
     }
 
-    return (GetFactionsInteractStatus(TO_UNIT(objA), TO_UNIT(objB)) == 1);
+    return (GetFactionsInteractStatus(TO_UNIT(objA), TO_UNIT(objB)) == FI_STATUS_HOSTILE);
 }
 
 bool FactionSystem::isAttackable(Object* objA, Object* objB, bool CheckStealth)// A can attack B?
 {
-    return (intisAttackable(objA, objB, CheckStealth) == 1);
+    return (intisAttackable(objA, objB, CheckStealth) == FI_STATUS_HOSTILE);
 }
 
 bool FactionSystem::isHostile(Object* objA, Object* objB)// B is hostile for A?
@@ -510,11 +508,9 @@ Player* FactionSystem::GetPlayerFromObject(Object* obj)
         if( pet_obj )
             player_obj =  pet_obj->GetPetOwner();
     }
-    else if( obj->IsUnit() )
-    {   // If it's not a player nor a pet, it can still be a totem.
-        if(obj->IsSummon())
-            player_obj =  TO_PLAYER(TO_SUMMON(obj)->GetSummonOwner());
-    }
+    else if(obj->IsSummon()) // If it's not a player nor a pet, it can still be a totem.
+        player_obj =  TO_PLAYER(TO_SUMMON(obj)->GetSummonOwner());
+
     return player_obj;
 }
 

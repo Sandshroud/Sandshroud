@@ -335,7 +335,7 @@ namespace VMAP
         if (!error.length() && !meshTree.readFromFile(rf))
             error.append("Mesh Tree");
 
-        // write liquid data
+        // read liquid data
         if (!error.length() && !readChunk(rf, chunk, "LIQU", 4))
             error.append("LIQU Chunk");
         if (!error.length() && fread(&chunkSize, sizeof(G3D::g3d_uint32), 1, rf) != 1)
@@ -402,6 +402,235 @@ namespace VMAP
         if (iLiquid)
             return iLiquid->GetType();
         return 0;
+    }
+
+    // ==================== TerrainModel =================================
+
+    bool TerrainModel::writeToFile(FILE* wf)
+    {
+        bool result = true;
+        G3D::g3d_uint32 chunkSize, count;
+
+        if (result && fwrite(&iBound, sizeof(G3D::AABox), 1, wf) != 1) result = false;
+        if (result && fwrite(&iChunkId, sizeof(G3D::g3d_uint32), 1, wf) != 1) result = false;
+        if (result && fwrite(&iAreaId, sizeof(G3D::g3d_uint32), 1, wf) != 1) result = false;
+        if (result && fwrite(&iFlags, sizeof(G3D::g3d_uint32), 1, wf) != 1) result = false;
+
+        // write vertices
+        if (result && fwrite("VERT", 1, 4, wf) != 4) result = false;
+        count = vertices.size();
+        chunkSize = sizeof(G3D::g3d_uint32)+ sizeof(Vector3)*count;
+        if (result && fwrite(&chunkSize, sizeof(G3D::g3d_uint32), 1, wf) != 1) result = false;
+        if (result && fwrite(&count, sizeof(G3D::g3d_uint32), 1, wf) != 1) result = false;
+        if (result && fwrite(&vertices[0], sizeof(Vector3), count, wf) != count) result = false;
+
+        // write triangle mesh
+        if (result && fwrite("TRIM", 1, 4, wf) != 4) result = false;
+        count = triangles.size();
+        chunkSize = sizeof(G3D::g3d_uint32)+ sizeof(MeshTriangle)*count;
+        if (result && fwrite(&chunkSize, sizeof(G3D::g3d_uint32), 1, wf) != 1) result = false;
+        if (result && fwrite(&count, sizeof(G3D::g3d_uint32), 1, wf) != 1) result = false;
+        if (result && fwrite(&triangles[0], sizeof(MeshTriangle), count, wf) != count) result = false;
+
+        // write mesh BIH
+        if (result && fwrite("MBIH", 1, 4, wf) != 4) result = false;
+        if (result) result = meshTree.writeToFile(wf);
+
+        return result;
+    }
+
+    bool TerrainModel::readFromFile(FILE* rf)
+    {
+        char chunk[4];
+        std::string error;
+        G3D::g3d_uint32 chunkSize = 0;
+        G3D::g3d_uint32 count = 0;
+        triangles.clear();
+        vertices.clear();
+
+        if (!error.length() && fread(&iBound, sizeof(G3D::AABox), 1, rf) != 1)
+            error.append("AABox");
+        if (!error.length() && fread(&iChunkId, sizeof(G3D::g3d_uint32), 1, rf) != 1)
+            error.append("Chunk Id");
+        if (!error.length() && fread(&iAreaId, sizeof(G3D::g3d_uint32), 1, rf) != 1)
+            error.append("Chunk Area Id");
+        if (!error.length() && fread(&iFlags, sizeof(G3D::g3d_uint32), 1, rf) != 1)
+            error.append("Chunk Flags");
+
+        // read vertices
+        if (!error.length() && !readChunk(rf, chunk, "VERT", 4))
+            error.append("VERT Chunk");
+        if (!error.length() && fread(&chunkSize, sizeof(G3D::g3d_uint32), 1, rf) != 1)
+            error.append("VERT Size");
+        if (!error.length() && fread(&count, sizeof(G3D::g3d_uint32), 1, rf) != 1)
+            error.append("VERT Count");
+        if (!error.length() && count)
+        {
+            vertices.resize(count);
+            if (fread(&vertices[0], sizeof(Vector3), count, rf) != count)
+                error.append("Vertices");
+        }
+
+        // read triangle mesh
+        if (!error.length() && !readChunk(rf, chunk, "TRIM", 4))
+            error.append("TRIM Chunk");
+        if (!error.length() && fread(&chunkSize, sizeof(G3D::g3d_uint32), 1, rf) != 1)
+            error.append("TRIM Size");
+        if (!error.length() && fread(&count, sizeof(G3D::g3d_uint32), 1, rf) != 1)
+            error.append("TRIM Count");
+        if (!error.length() && count)
+        {
+            triangles.resize(count);
+            if (fread(&triangles[0], sizeof(MeshTriangle), count, rf) != count)
+                error.append("TRIM Triangles");
+        }
+
+        // read mesh BIH
+        if (!error.length() && !readChunk(rf, chunk, "MBIH", 4))
+            error.append("MBIH Chunk");
+        if (!error.length() && !meshTree.readFromFile(rf))
+            error.append("Mesh Tree");
+        if(error.length())
+        {
+            bLog.outDebug("TerrainModel::readFile error while reading %s", error.c_str());
+            return false;
+        }
+        return true;
+    }
+
+    // High def mesh creates triangles based on all available verts, but is very heavy on space/memory
+    //#define HIGH_DEF_MESHTRIANGLES
+    bool TerrainModel::convertFromRaw(FILE* rf)
+    {
+        std::string error;
+        triangles.clear();
+        vertices.clear();
+
+        G3D::g3d_uint32 count = 0;
+        if (!error.length() && (fread(&count, sizeof(G3D::g3d_uint32), 1, rf) != 1))
+            error.append("VERT Length");
+        if (!error.length() && count)
+        {
+            for(uint32 i = 0; i < count; i++)
+            {
+                float x, y, z;
+                if(fread(&x, sizeof(float), 1, rf) != 1 || isnan(x))
+                    error.append("Vertices x");
+                else if(fread(&y, sizeof(float), 1, rf) != 1 || isnan(y))
+                    error.append("Vertices y");
+                else if(fread(&z, sizeof(float), 1, rf) != 1 || isnan(z))
+                    error.append("Vertices z");
+                if(error.length())
+                    break;
+                vertices.push_back(Vector3(x, y, z));
+            }
+
+            if (!error.length())
+            {
+                // Perform a simple bit of optimization here
+                float minHeight = 20000.0f, maxHeight = -20000.0f;
+                for(uint32 i = 0; i < count; i++)
+                {
+                    if (maxHeight < vertices[i].z) maxHeight = vertices[i].z;
+                    if (minHeight > vertices[i].z) minHeight = vertices[i].z;
+                }
+
+                // If we have the same height for all of the vertices then we can just draw 2 triangles
+                if(minHeight == maxHeight)
+                {
+                    // This is pretty rare but is a nice optimization point
+                    triangles.push_back(MeshTriangle(0, 9, 136));
+                    triangles.push_back(MeshTriangle(136, 145, 9));
+                }
+                else
+                {
+                    // TODO: Optimize this, with larger dual triangle rectangles based on height
+                    // TODO: Optimize this for points where z gain is equal throughout squares so we can simple draw them
+                    for(uint32 x = 0; x < 8; x++)
+                    {
+                        for(uint32 y = 0; y < 8; y++)
+                        {
+                            uint32 center = (((1+x)*9)+x*8)+y;
+                            uint32 topLeft = (x*9+x*8)+y;
+                            uint32 topRight = (x*9+x*8)+y+1;
+                            uint32 botLeft = (((x+1)*9)+((x+1)*8))+y;
+                            uint32 botRight = (((x+1)*9)+((x+1)*8))+y+1;
+                            if(vertices[topLeft].z == vertices[topRight].z && vertices[botLeft].z == vertices[botRight].z)
+                            {
+                                // Ignore the center and draw simple dual triangle squares
+                                triangles.push_back(MeshTriangle(topLeft, topRight, botLeft));
+                                triangles.push_back(MeshTriangle(botLeft, botRight, topRight));
+                            }
+                            else
+                            {
+#ifndef HIGH_DEF_MESHTRIANGLES
+                                // Ignore the center and draw simple dual triangle squares
+                                // This is acceptable because there aren't many points where terrain is used for spikes.
+                                triangles.push_back(MeshTriangle(topLeft, topRight, botLeft));
+                                triangles.push_back(MeshTriangle(botLeft, botRight, topRight));
+#else
+                                // Create 4 triangles from each of the sides towards the center
+                                triangles.push_back(MeshTriangle(topLeft, topRight, center));
+                                triangles.push_back(MeshTriangle(topRight, botRight, center));
+                                triangles.push_back(MeshTriangle(botLeft, botRight, center));
+                                triangles.push_back(MeshTriangle(topLeft, botLeft, center));
+#endif
+                            }
+                        }
+                    }
+                }
+
+                // Build our mesh tree
+                TriBoundFunc bFunc(vertices);
+                meshTree.build(triangles, bFunc);
+            }
+        }
+
+        if(error.length())
+        {
+            bLog.outString("TerrainModel::readFile error while reading %s", error.c_str());
+            return false;
+        }
+        return true;
+    }
+
+    struct TerrainRayCallback
+    {
+        TerrainRayCallback(const std::vector<MeshTriangle> &tris, const std::vector<Vector3> &vert):
+            vertices(vert.begin()), triangles(tris.begin()), hit(false) {}
+        bool operator()(const G3D::Ray& ray, G3D::g3d_uint32 entry, float& distance, bool /*pStopAtFirstHit*/)
+        {
+            bool result = IntersectTriangle(triangles[entry], vertices, ray, distance);
+            if (result)  hit=true;
+            return hit;
+        }
+        std::vector<Vector3>::const_iterator vertices;
+        std::vector<MeshTriangle>::const_iterator triangles;
+        bool hit;
+    };
+
+    bool TerrainModel::IntersectRay(const G3D::Ray &ray, float &distance, bool stopAtFirstHit) const
+    {
+        if(triangles.empty())
+            return false;
+
+        TerrainRayCallback callback(triangles, vertices);
+        meshTree.intersectRay(ray, callback, distance, stopAtFirstHit);
+        return callback.hit;
+    }
+
+    bool TerrainModel::IsInsideObject(const Vector3 &pos, const Vector3 &down, float &z_dist) const
+    {
+        if (triangles.empty() || !iBound.contains(pos))
+            return false;
+        TerrainRayCallback callback(triangles, vertices);
+        Vector3 rPos = pos - 0.1f * down;
+        float dist = G3D::inf();
+        G3D::Ray ray(rPos, down);
+        bool hit = IntersectRay(ray, dist, false);
+        if (hit)
+            z_dist = dist - 0.1f;
+        return hit;
     }
 
     // ===================== WorldModel ==================================

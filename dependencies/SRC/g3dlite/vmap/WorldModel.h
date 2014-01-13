@@ -80,6 +80,39 @@ namespace VMAP
         public:
             void getMeshData(std::vector<G3D::Vector3> &vertices, std::vector<MeshTriangle> &triangles, WmoLiquid* &liquid);
     };
+
+    /*! holding additional info for ADT terrain*/
+    class TerrainModel
+    {
+        public:
+            TerrainModel(): iChunkId(0), iAreaId(0), iFlags(0) { }
+            TerrainModel(G3D::g3d_uint32 chunkId, G3D::g3d_uint32 areaId, G3D::g3d_uint32 flags):
+                        iChunkId(chunkId), iAreaId(areaId), iFlags(flags) {}
+
+            //! pass mesh data to object and create BIH. Passed vectors get get swapped with old geometry!
+            bool IntersectRay(const G3D::Ray &ray, float &distance, bool stopAtFirstHit) const;
+            bool IsInsideObject(const G3D::Vector3 &pos, const G3D::Vector3 &down, float &z_dist) const;
+            bool GetLiquidLevel(const G3D::Vector3 &pos, float &liqHeight) const;
+            bool writeToFile(FILE* wf);
+            bool readFromFile(FILE* rf);
+            bool convertFromRaw(FILE* rf);
+            G3D::g3d_uint32 GetChunkId() const { return iChunkId; }
+            G3D::g3d_uint32 GetAreaId() const { return iAreaId; }
+            G3D::g3d_uint32 GetFlags() const { return iFlags; }
+
+        protected:
+            G3D::AABox iBound;
+            G3D::g3d_uint32 iChunkId;
+            G3D::g3d_uint32 iAreaId;
+            G3D::g3d_uint32 iFlags;
+            std::vector<G3D::Vector3> vertices;
+            std::vector<MeshTriangle> triangles;
+            BIH meshTree;
+            //WmoLiquid* iLiquid;
+        public:
+            void getMeshData(std::vector<G3D::Vector3> &vertices, std::vector<MeshTriangle> &triangles);//, WmoLiquid* &liquid);
+    };
+
     /*! Holds a model (converted M2 or WMO) in its original coordinate space */
     class WorldModel
     {

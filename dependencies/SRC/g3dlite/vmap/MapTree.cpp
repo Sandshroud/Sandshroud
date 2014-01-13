@@ -66,7 +66,6 @@ namespace VMAP
         std::stringstream tilefilename;
         tilefilename.fill('0');
         tilefilename << std::setw(3) << mapID << '_';
-        //tilefilename << std::setw(2) << tileX << '_' << std::setw(2) << tileY << ".vmtile";
         tilefilename << std::setw(2) << tileY << '_' << std::setw(2) << tileX << ".vmtile";
         return tilefilename.str();
     }
@@ -95,7 +94,7 @@ namespace VMAP
     }
 
     StaticMapTree::StaticMapTree(G3D::g3d_uint32 mapID, const std::string &basePath)
-        : iMapID(mapID), iIsTiled(false), iTreeValues(0), iNTreeValues(0), iBasePath(basePath)
+        : iMapID(mapID), iIsTiled(false), iHasTiles(true), iTreeValues(0), iNTreeValues(0), iBasePath(basePath)
     {
         if (iBasePath.length() > 0 && iBasePath[iBasePath.length()-1] != '/' && iBasePath[iBasePath.length()-1] != '\\')
         {
@@ -266,8 +265,9 @@ namespace VMAP
             return false;
         }
 
-        char tiled = '\0';
+        char tiled = '\0', hasTile = '\0';
         if ((success = (fread(&tiled, sizeof(char), 1, rf) == 1))
+            && (success = (fread(&hasTile, sizeof(char), 1, rf) == 1))
             && (success = readChunk(rf, chunk, "NODE", 4))
             && (success = iTree.readFromFile(rf)))
         {
@@ -277,6 +277,7 @@ namespace VMAP
         }
 
         iIsTiled = bool(tiled);
+        iHasTiles = bool(hasTile);
         if(!success)
             bLog.outError("StaticMapTree::InitMap() : failed reading data!");
         else
@@ -304,6 +305,18 @@ namespace VMAP
                     }
                 }
             }
+
+            if(success && iHasTiles)
+            {
+                if(success = readChunk(rf, chunk, "TILE", 4))
+                {
+                    G3D::g3d_uint32 size;
+                    if((success = (fread(&size, sizeof(G3D::g3d_uint32), 1, rf) == 1)) && size)
+                    {
+                        // Tile lists, not needed yet.
+                    }
+                }
+            }
         }
 
         fclose(rf);
@@ -328,7 +341,7 @@ namespace VMAP
 
     bool StaticMapTree::LoadMapTile(G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, VMapManager* vm)
     {
-        if (!iIsTiled)
+        if (!iIsTiled && !iHasTiles)
         {
             // currently, core creates grids for all maps, whether it has terrain tiles or not
             // so we need "fake" tile loads to know when we can unload map geometry
@@ -395,6 +408,25 @@ namespace VMAP
                         result = false;
                 }
             }
+
+            if (result && readChunk(tf, chunk, "TILE", 4))
+            {
+                if(iHasTiles)
+                {
+                    G3D::g3d_uint32 size;
+                    if((result = (fread(&size, sizeof(G3D::g3d_uint32), 1, tf) == 1)) && size)
+                    {
+                        for(uint32 i = 0; i < size; i++)
+                        {
+                            TerrainModel model;
+                            if(result = model.readFromFile(tf))
+                                iTerrainModels.insert(std::make_pair(std::make_pair(packTileID(tileX, tileY), model.GetChunkId()), model));
+                            else break;
+                        }
+                    }
+                }
+            }
+
             iLoadedTiles[packTileID(tileX, tileY)] = true;
             fclose(tf);
         }

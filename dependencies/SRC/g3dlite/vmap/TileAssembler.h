@@ -31,10 +31,12 @@ namespace VMAP
 
     typedef std::map<G3D::g3d_uint32, ModelSpawn> UniqueEntryMap;
     typedef std::multimap<G3D::g3d_uint32, G3D::g3d_uint32> TileMap;
+    typedef std::set<G3D::g3d_uint32> TileSet;
 
     struct MapSpawns
     {
         UniqueEntryMap UniqueEntries;
+        TileSet VertexMapTiles;
         TileMap TileEntries;
     };
 
@@ -84,6 +86,7 @@ namespace VMAP
 
             bool convertWorld2();
             bool readMapSpawns();
+            bool readMapTiles();
             bool calculateTransformedBound(ModelSpawn &spawn);
             void exportGameobjectModels();
 

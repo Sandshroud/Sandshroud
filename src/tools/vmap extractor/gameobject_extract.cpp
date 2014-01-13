@@ -60,6 +60,9 @@ void ExtractGameobjectModels()
     if(!dbc.open())
     {
         printf("Fatal error: Invalid GameObjectDisplayInfo.dbc file format!\n");
+        printf("<press return to exit>");
+        char garbage[2];
+        scanf("%c", garbage);
         exit(1);
     }
 
@@ -72,6 +75,9 @@ void ExtractGameobjectModels()
     if (!model_list)
     {
         printf("Fatal error: Could not open file %s\n", modelListPath.c_str());
+        printf("<press return to exit>");
+        char garbage[2];
+        scanf("%c", garbage);
         return;
     }
 
@@ -111,6 +117,9 @@ void ExtractGameobjectModels()
         {
             uint32 displayId = it->getUInt(0);
             uint32 path_length = strlen(name);
+            if(path_length > 500)
+                continue; // Ignore it.
+
             fwrite(&displayId, sizeof(uint32), 1, model_list);
             fwrite(&path_length, sizeof(uint32), 1, model_list);
             fwrite(name, sizeof(char), path_length, model_list);

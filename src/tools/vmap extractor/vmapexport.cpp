@@ -22,6 +22,7 @@
 #include <vector>
 #include <list>
 #include <errno.h>
+#include "consolelog/consolelog.h"
 
 #ifdef WIN32
     #include <Windows.h>
@@ -76,7 +77,7 @@ bool preciseVectorData = false;
 
 //static const char * szWorkDirMaps = ".\\Maps";
 const char* szWorkDirWmo = "./Buildings";
-const char* szRawVMAPMagic = "VMAP041";
+const char* szRawVMAPMagic = "VMAP045";
 
 // Local testing functions
 
@@ -446,6 +447,9 @@ bool processArgv(int argc, char ** argv, const char *versionString)
 
 int main(int argc, char ** argv)
 {
+    basicLog::InitializeBasicLog();
+    bLog.Init(3);
+
     bool success=true;
     const char *versionString = "V4.00 2012_02";
 
@@ -491,7 +495,9 @@ int main(int argc, char ** argv)
     if (gOpenArchives.empty())
     {
         printf("FATAL ERROR: None MPQ archive found by path '%s'. Use -d option with proper path.\n",input_path);
-        return 1;
+        printf("<press return to exit>");
+        char garbage[2];
+        return scanf("%c", garbage);
     }
     ReadLiquidTypeTableDBC();
 
@@ -508,7 +514,9 @@ int main(int argc, char ** argv)
         {
             delete dbc;
             printf("FATAL ERROR: Map.dbc not found in data file.\n");
-            return 1;
+            printf("<press return to exit>");
+            char garbage[2];
+            return scanf("%c", garbage);
         }
         map_count=dbc->getRecordCount ();
         map_ids=new map_id[map_count];
@@ -527,14 +535,18 @@ int main(int argc, char ** argv)
         ExtractGameobjectModels();
     }
 
+    delete [] LiqType;
     printf("\n");
     if (!success)
     {
-        printf("ERROR: Extract %s. Work NOT complete.\n   Precise vector data=%d.\nPress any key.\n",versionString, preciseVectorData);
-        getchar();
+        printf("ERROR: Extract %s. Work NOT complete.\n", versionString);
+        printf("<press return to exit>");
+        char garbage[2];
+        return scanf("%c", garbage);
     }
 
     printf("Extract %s. Work complete. No errors.\n",versionString);
-    delete [] LiqType;
-    return 0;
+    printf("<press return to exit>");
+    char garbage[2];
+    return scanf("%c", garbage);
 }

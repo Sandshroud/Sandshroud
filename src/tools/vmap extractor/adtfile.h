@@ -27,8 +27,6 @@
 #define CHUNKSIZE ((TILESIZE) / 16.0f)
 #define UNITSIZE (CHUNKSIZE / 8.0f)
 
-class Liquid;
-
 typedef struct
 {
     float x;
@@ -50,24 +48,26 @@ struct triangle
 
 typedef struct
 {
-    float v9[16*8+1][16*8+1];
-    float v8[16*8][16*8];
-}Cell;
+    uint32 light;
+    float  height;
+}liquid_data;
 
 typedef struct
 {
-    double v9[9][9];
-    double v8[8][8];
+    uint8 dataFlags;
+    float v9[9][9];
+    float v8[8][8];
     uint16 area_id;
-    //Liquid *lq;
-    float waterlevel[9][9];
-    uint8 flag;
+    uint16 flags;
+    float waterlevel;
+    liquid_data liquid[9][9];
+    uint8 liquidflags[8][8];
 }chunk;
 
 typedef struct
 {
     chunk ch[16][16];
-}mcell;
+}mTile;
 
 struct MapChunkHeader
 {
@@ -76,14 +76,14 @@ struct MapChunkHeader
     uint32 iy;
     uint32 nLayers;
     uint32 nDoodadRefs;
-    uint32 ofsHeight;
-    uint32 ofsNormal;
-    uint32 ofsLayer;
-    uint32 ofsRefs;
-    uint32 ofsAlpha;
-    uint32 sizeAlpha;
-    uint32 ofsShadow;
-    uint32 sizeShadow;
+    uint32 ofsMCVT;
+    uint32 ofsMCNR;
+    uint32 ofsMCLY;
+    uint32 ofsMCRF;
+    uint32 ofsMCAL;
+    uint32 lenMCAL;
+    uint32 ofcMCSH;
+    uint32 lenMCSH;
     uint32 areaid;
     uint32 nMapObjRefs;
     uint32 holes;
@@ -94,25 +94,32 @@ struct MapChunkHeader
     uint32 d3;
     uint32 predTex;
     uint32 nEffectDoodad;
-    uint32 ofsSndEmitters;
-    uint32 nSndEmitters;
-    uint32 ofsLiquid;
-    uint32 sizeLiquid;
+    uint32 ofsMCSE;
+    uint32 lenMCSE;
+    uint32 ofcMCLQ;
+    uint32 lenMCLQ;
     float  zpos;
     float  xpos;
     float  ypos;
-    uint32 textureId;
-    uint32 props;
-    uint32 effectId;
+    uint32 ofsMCCV;
+    uint32 ofsMCLV;
+    uint32 buff;
 };
 
+class ADT_Tile_Instance
+{
+private:
+    std::string fileName;
+    uint16 _mapId, _tileX, _tileY;
+public:
+    ADT_Tile_Instance(uint32 mapId, uint32 tileX, uint32 tileY);
+    void HandleInput(mTile *tile);
+};
 
 class ADTFile
 {
 private:
-    //size_t mcnk_offsets[256], mcnk_sizes[256];
     MPQFile ADT;
-    //mcell Mcell;
     string Adtfilename;
 public:
     ADTFile(char* filename);
@@ -122,15 +129,6 @@ public:
     string* WmoInstansName;
     string* ModelInstansName;
     bool init(uint32 map_num, uint32 tileX, uint32 tileY);
-    //void LoadMapChunks();
-
-    //uint32 wmo_count;
-/*
-    const mcell& Getmcell() const
-    {
-        return Mcell;
-    }
-*/
 };
 
 const char * GetPlainName(const char * FileName);
