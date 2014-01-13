@@ -9,6 +9,7 @@ namespace VMAP
     class ModelInstance;
     class GroupModel;
     class VMapManager;
+    class TerrainModel;
 
     struct LocationInfo
     {
@@ -18,16 +19,18 @@ namespace VMAP
         float ground_Z;
     };
 
+    typedef std::map<std::pair<G3D::g3d_uint32, G3D::g3d_uint32>, TerrainModel> TerrainModelMap;
     class StaticMapTree
     {
         typedef std::map<G3D::g3d_uint32, bool> loadedTileMap;
         typedef std::map<G3D::g3d_uint32, G3D::g3d_uint32> loadedSpawnMap;
         private:
             G3D::g3d_uint32 iMapID;
-            bool iIsTiled;
+            bool iIsTiled, iHasTiles;
             BIH iTree;
             ModelInstance* iTreeValues; // the tree entries
             G3D::g3d_uint32 iNTreeValues;
+            TerrainModelMap iTerrainModels;
 
             // Store all the map tile idents that are loaded for that map
             // some maps are not splitted into tiles and we have to make sure, not removing the map before all tiles are removed
@@ -43,7 +46,9 @@ namespace VMAP
         public:
             static std::string getTileFileName(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY);
             static G3D::g3d_uint32 packTileID(G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY) { return tileX<<16 | tileY; }
+            static G3D::g3d_uint32 packChunkID(G3D::g3d_uint32 chunkX, G3D::g3d_uint32 chunkY) { return chunkX<<8 | chunkY; }
             static void unpackTileID(G3D::g3d_uint32 ID, G3D::g3d_uint32 &tileX, G3D::g3d_uint32 &tileY) { tileX = ID>>16; tileY = ID&0xFF; }
+            static void unpackChunkID(G3D::g3d_uint32 ID, G3D::g3d_uint32 &chunkX, G3D::g3d_uint32 &chunkY) { chunkX = ID>>8; chunkY = ID&0xFF; }
             static bool CanLoadMap(const std::string &basePath, G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY);
 
             StaticMapTree(G3D::g3d_uint32 mapID, const std::string &basePath);

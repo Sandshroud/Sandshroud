@@ -52,6 +52,8 @@ namespace VMAP
         bool success = readMapSpawns();
         if (!success)
             return false;
+        if (!(success = readMapTiles()))
+            return false;
 
         // export Map data
         for (MapData::iterator map_iter = mapData.begin(); map_iter != mapData.end() && success; ++map_iter)
@@ -59,7 +61,7 @@ namespace VMAP
             // build global map tree
             std::vector<ModelSpawn*> mapSpawns;
             UniqueEntryMap::iterator entry;
-            bLog.outDetail("Calculating model bounds for map %u...", map_iter->first);
+            printf("Calculating model bounds for map %u... \n", map_iter->first);
             for (entry = map_iter->second->UniqueEntries.begin(); entry != map_iter->second->UniqueEntries.end(); ++entry)
             {
                 // M2 models don't have a bound set in WDT/ADT placement data, i still think they're not used for LoS at all on retail
@@ -78,7 +80,7 @@ namespace VMAP
                 spawnedModelFiles.insert(entry->second.name);
             }
 
-            bLog.outDetail("Creating map tree for map %u...", map_iter->first);
+            printf("Creating map tree for map %u...        \r", map_iter->first);
             BIH pTree;
             pTree.build(mapSpawns, BoundsTrait<ModelSpawn*>::getBounds);
 
@@ -94,7 +96,7 @@ namespace VMAP
             if (!mapfile)
             {
                 success = false;
-                bLog.outDetail("Cannot open %s", mapfilename.str().c_str());
+                bLog.outString("Cannot open %s", mapfilename.str().c_str());
                 break;
             }
 
@@ -103,7 +105,9 @@ namespace VMAP
             G3D::g3d_uint32 globalTileID = StaticMapTree::packTileID(65, 65);
             pair<TileMap::iterator, TileMap::iterator> globalRange = map_iter->second->TileEntries.equal_range(globalTileID);
             char isTiled = globalRange.first == globalRange.second; // only maps without terrain (tiles) have global WMO
+            char hasTiles = !map_iter->second->VertexMapTiles.empty(); // New tiles means that maps that are not tiled can still have height
             if (success && fwrite(&isTiled, sizeof(char), 1, mapfile) != 1) success = false;
+            if (success && fwrite(&hasTiles, sizeof(char), 1, mapfile) != 1) success = false;
             // Nodes
             if (success && fwrite("NODE", 4, 1, mapfile) != 1) success = false;
             if (success) success = pTree.writeToFile(mapfile);
@@ -111,8 +115,21 @@ namespace VMAP
             if (success && fwrite("GOBJ", 4, 1, mapfile) != 1) success = false;
             if(success && !bool(isTiled))
                 success = ModelSpawn::writeToFile(mapfile, map_iter->second->UniqueEntries[globalRange.first->second]);
-
+            if(success && fwrite("TILE", 4, 1, mapfile) != 1) success = false;
+            if(success && bool(hasTiles))
+            {
+                G3D::g3d_uint32 size = map_iter->second->VertexMapTiles.size()*sizeof(G3D::g3d_uint32);
+                success = fwrite(&size, sizeof(G3D::g3d_uint32), 1, mapfile);
+                if(success && size)
+                {
+                    for(TileSet::iterator itr = map_iter->second->VertexMapTiles.begin(); itr != map_iter->second->VertexMapTiles.end(); itr++)
+                        if(!(success = (fwrite(&(*itr), sizeof(G3D::g3d_uint32), 1, mapfile) == 1)))
+                            break;
+                }
+            }
             fclose(mapfile);
+            if(!success)
+                break;
 
             // <====
 
@@ -149,24 +166,153 @@ namespace VMAP
                 }
                 fclose(tilefile);
             }
-            // break; //test, extract only first map; TODO: remvoe this line
+            if(!success)
+                break;
+
+            if(bool(hasTiles))
+            {
+                // write map height data for collision triangulation
+                printf("Creating height tiles for map %u...    \n", map_iter->first);
+                for(TileSet::iterator itr = map_iter->second->VertexMapTiles.begin(); itr != map_iter->second->VertexMapTiles.end(); itr++)
+                {
+                    G3D::g3d_uint32 x, y;
+                    StaticMapTree::unpackTileID((*itr), x, y);
+                    FILE *tilefile = NULL;
+                    std::string fileName = G3D::G3D_format("%s/%03u_%02u_%02u.vmtile", iDestDir.c_str(), map_iter->first, x, y);
+                    fopen_s(&tilefile, fileName.c_str(), "r");
+                    if(tilefile != NULL)
+                    { // We have a tile that exists already so close then reopen and append the data
+                        fclose(tilefile);
+                        fopen_s(&tilefile, fileName.c_str(), "ab");
+                        if(tilefile == NULL)
+                        {
+                            bLog.outString("Unable to create vmtile           ");
+                            success = false;
+                        }
+                    }
+                    else // We need to make a new tile!
+                    {
+                        fopen_s(&tilefile, fileName.c_str(), "wb");
+                        if(tilefile == NULL)
+                        {
+                            bLog.outString("Unable to create vmtile           ");
+                            success = false;
+                        }
+
+                        // file header
+                        if (success && fwrite(VMAP_MAGIC, 10, 1, tilefile) != 1) success = false;
+                        // write an empty spawn number to fill space
+                        G3D::g3d_uint32 nullFill = 0;
+                        if (success && fwrite(&nullFill, sizeof(G3D::g3d_uint32), 1, tilefile) != 1) success = false;
+                    }
+                    FILE *sourceVM = NULL;
+                    fopen_s(&sourceVM, G3D::G3D_format("%s/%03u_%02u_%02u.hvm", iSrcDir.c_str(), map_iter->first, x, y).c_str(), "rb");
+                    if(!success || sourceVM == NULL)
+                    {
+                        if(sourceVM == NULL)
+                        {
+                            bLog.outString("Missing hvmTile!             ");
+                            success = false;
+                        }
+                        fclose(tilefile);
+                        break;
+                    }
+
+                    // Read source from the hvm
+                    std::vector<TerrainModel*> builtModels;
+                    {
+                        // Set seek
+                        fseek(sourceVM, 0, SEEK_SET);
+                        // Skip map and tile ids
+                        fseek(sourceVM, 6, SEEK_CUR);
+                        // Skip offsets and go to data
+                        G3D::g3d_uint32 offsets[16][16];
+                        fread(&offsets, sizeof(G3D::g3d_uint32), 16*16, sourceVM);
+                        for(G3D::g3d_uint16 x = 0; x < 16; x++)
+                        {
+                            for(G3D::g3d_uint16 y = 0; y < 16; y++)
+                            {
+                                if(offsets[x][y] == 0)
+                                    continue;
+
+                                TerrainModel *model = NULL;
+                                printf("Calculating terrain data.              \r");
+                                fseek(sourceVM, offsets[x][y], SEEK_SET);
+                                G3D::g3d_uint16 chunkId, areaId, flags;
+                                fread(&chunkId, sizeof(G3D::g3d_uint16), 1, sourceVM);
+                                if(chunkId != G3D::g3d_uint16(x<<8|y))
+                                    success = false;
+                                else
+                                {
+                                    fread(&areaId, sizeof(G3D::g3d_uint16), 1, sourceVM);
+                                    fread(&flags, sizeof(G3D::g3d_uint16), 1, sourceVM);
+                                    model = new TerrainModel(chunkId, areaId, flags);
+                                    if(!(success = model->convertFromRaw(sourceVM)))
+                                        delete model;
+                                }
+
+                                if(!success || model == NULL)
+                                {
+                                    bLog.outString("Error converting terrain data...           ");
+                                    break;
+                                }
+                                printf("Calculating terrain data...                \r");
+                                builtModels.push_back(model);
+                            }
+                            if(!success)
+                                break;
+                        }
+                    }
+                    fclose(sourceVM);
+                    if(!success)
+                    {
+                        fclose(tilefile);
+                        break;
+                    }
+
+                    // Append height map in triangle form
+                    success = (fwrite("TILE", 4, 1, tilefile) == 1);
+                    uint32 size = builtModels.size();
+                    if(success && fwrite(&size, sizeof(uint32), 1, tilefile) != 1) success = false;
+                    if(success && size)
+                    {
+                        printf("Appending map terrain data                 \r");
+                        for(std::vector<TerrainModel*>::iterator itr = builtModels.begin(); itr != builtModels.end() && success; itr++)
+                        {
+                            printf("Appending map terrain data.                \r");
+                            if(!(*itr)->writeToFile(tilefile))
+                            {
+                                bLog.outString("Error writing tile data to tile file...\n");
+                                success = false;
+                            }
+                            printf("Appending map terrain data..               \r");
+                        }
+                        for(std::vector<TerrainModel*>::iterator itr = builtModels.begin(); itr != builtModels.end(); itr++)
+                            delete *itr;
+                        builtModels.clear();
+                    }
+                    fclose(tilefile);
+                }
+            }
+            printf("Map data generated for map %u\n\n", map_iter->first);
         }
 
         // add an object models, listed in temp_gameobject_models file
         exportGameobjectModels();
 
         // export objects
-        bLog.outDetail("\nConverting Model Files");
+        bLog.outString("\nConverting Model Files");
         for (std::set<std::string>::iterator mfile = spawnedModelFiles.begin(); mfile != spawnedModelFiles.end(); ++mfile)
         {
-            bLog.outDetail("Converting %s", (*mfile).c_str());
-            if (!convertRawFile(*mfile))
+            printf("Converting %s      \r", (*mfile).c_str());
+            if (!convertRawFile(*mfile))      
             {
-                bLog.outDetail("error converting %s", (*mfile).c_str());
+                bLog.outString("error converting %s\n", (*mfile).c_str());
                 success = false;
                 break;
             }
         }
+        printf("Done Converting Model Files\n");
 
         //cleanup:
         for (MapData::iterator map_iter = mapData.begin(); map_iter != mapData.end(); ++map_iter)
@@ -182,10 +328,10 @@ namespace VMAP
         FILE *dirf = fopen(fname.c_str(), "rb");
         if (!dirf)
         {
-            bLog.outDetail("Could not read dir_bin file!");
+            bLog.outString("Could not read dir_bin file!");
             return false;
         }
-        bLog.outDetail("Read coordinate mapping...");
+        bLog.outString("Read coordinate mapping...");
         G3D::g3d_uint32 mapID, tileX, tileY, check=0;
         G3D::Vector3 v1, v2;
         ModelSpawn spawn;
@@ -205,16 +351,65 @@ namespace VMAP
             MapData::iterator map_iter = mapData.find(mapID);
             if (map_iter == mapData.end())
             {
-                bLog.outDetail("spawning Map %d", mapID);
+                printf("spawning Map %d          \r", mapID);
                 mapData[mapID] = current = new MapSpawns();
             }
             else current = (*map_iter).second;
             current->UniqueEntries.insert(pair<G3D::g3d_uint32, ModelSpawn>(spawn.ID, spawn));
             current->TileEntries.insert(pair<G3D::g3d_uint32, G3D::g3d_uint32>(StaticMapTree::packTileID(tileX, tileY), spawn.ID));
         }
+        bLog.outString("Done spawning maps from models");
         bool success = (ferror(dirf) == 0);
         fclose(dirf);
         return success;
+    }
+
+    bool TileAssembler::readMapTiles()
+    {
+        // Lock down directory bin
+        std::string fname = iSrcDir + "/dir_bin";
+        FILE *dirf = fopen(fname.c_str(), "rb");
+        if (!dirf)
+        {
+            bLog.outString("Could not read dir_bin file!");
+            return false;
+        }
+
+        bLog.outString("Reading map tile data...\n");
+        for(G3D::g3d_uint16 map = 0; map < 1000; map++)
+        {
+            printf("Reading map %03u...\r", map);
+            FILE *mapFile = NULL;
+            fopen_s(&mapFile, G3D::G3D_format("%s/%03u.hvm", iSrcDir.c_str(), map).c_str(), "rb");
+            if(mapFile == NULL)
+                continue;
+            fclose(mapFile);
+
+            for(G3D::g3d_uint16 x = 0; x < 64; x++)
+            {
+                for(G3D::g3d_uint16 y = 0; y < 64; y++)
+                {
+                    FILE *tile = NULL;
+                    fopen_s(&tile, G3D::G3D_format("%s/%03u_%02u_%02u.hvm", iSrcDir.c_str(), map, x, y).c_str(), "rb");
+                    if(tile == NULL)
+                        continue;
+                    fclose(tile);
+
+                    MapData::iterator map_iter = mapData.find(map);
+                    if (map_iter == mapData.end())
+                    {
+                        mapData.insert(std::make_pair(map, new MapSpawns()));
+                        map_iter = mapData.find(map);
+                    }
+
+                    map_iter->second->VertexMapTiles.insert(StaticMapTree::packTileID(x, y));
+                }
+            }
+        }
+        bLog.outString("Done reading map tile data!\n");
+
+        fclose(dirf);
+        return true;
     }
 
     bool TileAssembler::calculateTransformedBound(ModelSpawn &spawn)
@@ -234,7 +429,7 @@ namespace VMAP
 
         G3D::g3d_uint32 groups = raw_model.groupsArray.size();
         if (groups != 1)
-            bLog.outDetail("Warning: '%s' does not seem to be a M2 model!", modelFilename.c_str());
+            bLog.outString("Warning: '%s' does not seem to be a M2 model!", modelFilename.c_str());
 
         AABox modelBound;
         bool boundEmpty=true;
@@ -245,7 +440,7 @@ namespace VMAP
 
             if (vertices.empty())
             {
-                bLog.outDetail("error: model %s has no geometry!", spawn.name);
+                bLog.outString("error: model %s has no geometry!", spawn.name);
                 continue;
             }
 
@@ -284,7 +479,10 @@ namespace VMAP
 
         WorldModel_Raw raw_model;
         if (!raw_model.Read(filename.c_str()))
+        {
+            printf("Error reading raw model file\n");
             return false;
+        }
 
         // write WorldModel
         WorldModel model;
@@ -472,7 +670,7 @@ namespace VMAP
         FILE* rf = fopen(path, "rb");
         if (!rf)
         {
-            bLog.outDetail("ERROR: Can't open raw model file: %s", path);
+            bLog.outString("ERROR: Can't open raw model file: %s", path);
             return false;
         }
 

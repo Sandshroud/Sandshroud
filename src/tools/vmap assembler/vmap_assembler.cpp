@@ -29,7 +29,7 @@
 int main(int argc, char* argv[])
 {
     basicLog::InitializeBasicLog();
-    bLog.Init(7);
+    bLog.Init(3);
 
     if(argc != 3)
     {

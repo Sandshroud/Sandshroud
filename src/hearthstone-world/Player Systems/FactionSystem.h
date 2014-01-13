@@ -29,7 +29,7 @@ public:
     void LoadFactionInteractionData();
 
 public:
-    bool CanEitherUnitAttack(Object* objA, Object* objB, bool CheckStealth = true);
+    bool CanEitherUnitAttack(Unit* objA, Unit* objB, bool CheckStealth = true);
 
     bool AC_GetAttackableStatus(Player* plr, Unit *target);
 
