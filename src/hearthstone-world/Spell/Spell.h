@@ -76,7 +76,7 @@ struct SpellTarget
     int64 DestinationTime;
 };
 
-typedef vector<SpellTarget> SpellTargetList;
+typedef std::map<uint64, SpellTarget> SpellTargetMap;
 
 // Spell instance
 class SERVER_DECL Spell : public EventableObject
@@ -557,15 +557,15 @@ protected:
     }
 
 private:
-    SpellTargetList TargetList;
-    SpellTargetList ManagedTargets;
+    SpellTargetMap TargetMap;
+    SpellTargetMap ManagedTargets;
 
     // adds a target to the list, performing DidHit checks
     void _AddTarget(const Unit* target, const uint32 effectid);
 
     // adds a target to the list, negating DidHit checks
     void _AddTargetForced(const uint64& guid, const uint32 effectid);
-    void _AddTargetForced(Object * target, const uint32 effectid);
+    void _AddTargetForced(Object * target, const uint32 effectid) { if(target) _AddTargetForced(target->GetGUID(), effectid); }
 
     // didhit checker
     uint8 _DidHit(uint32 index, const Unit* target, uint8 &reflectout);
