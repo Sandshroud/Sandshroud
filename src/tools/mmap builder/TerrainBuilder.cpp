@@ -527,6 +527,9 @@ namespace MMAP
     bool TerrainBuilder::loadVMap(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, MeshData &meshData)
     {
         VMapManager* vmapManager = new VMapManager("vmaps");
+        if(!vmapManager->loadMap(mapID))
+            return false;
+
         bool result = vmapManager->loadMap(mapID, tileX, tileY);
         bool retval = false;
 
@@ -679,6 +682,7 @@ namespace MMAP
         while (false);
 
         vmapManager->unloadMap(mapID, tileX, tileY);
+        vmapManager->unloadMap(mapID);
         delete vmapManager;
 
         return retval;
