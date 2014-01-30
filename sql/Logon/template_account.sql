@@ -14,8 +14,6 @@ CREATE TABLE `accounts` (
   `forceLanguage` varchar(5) NOT NULL DEFAULT 'enUS',
   `email` varchar(32) NOT NULL DEFAULT '',
   `muted` int(30) NOT NULL DEFAULT '0',
-  `votes` int(10) NOT NULL DEFAULT '0',
-  `donorpoints` int(10) NOT NULL DEFAULT '0',
   PRIMARY KEY (`acct`),
   UNIQUE KEY `login` (`login`)
 ) ENGINE=MyISAM AUTO_INCREMENT=130 DEFAULT CHARSET=utf8;
