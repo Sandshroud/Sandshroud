@@ -727,6 +727,30 @@ void ObjectMgr::LoadQuestPOI()
     sLog.Notice("ObjectMgr", "%u quest POI definitions, %u POI points", count, pointcount);
 }
 
+void ObjectMgr::LoadRecallPoints()
+{
+    QueryResult *result = WorldDatabase.Query( "SELECT * FROM recall");
+    if(result)
+    {
+        do
+        {
+            Field *fields = result->Fetch();
+            RecallLocation *loc = new RecallLocation();
+            loc->lowercase_name = loc->RealName = std::string(fields[0].GetString());
+            HEARTHSTONE_TOLOWER(loc->lowercase_name);
+            loc->mapId = fields[1].GetUInt32();
+            loc->x = fields[2].GetFloat();
+            loc->y = fields[3].GetFloat();
+            loc->z = fields[4].GetFloat();
+            loc->orient = fields[5].GetFloat();
+            m_recallLocations.insert(loc);
+        }while (result->NextRow());
+        delete result;
+    }
+
+    sLog.Notice("ObjectMgr", "Loaded %u recall points", m_recallLocations.size());
+}
+
 void ObjectMgr::SetHighestGuids()
 {
     QueryResult *result;
@@ -2508,6 +2532,104 @@ WMOAreaTableEntry* ObjectMgr::GetWMOAreaTable(int32 adtid, int32 rootid, int32 g
     if(WMOAreaTables.find(WMOIDs) != WMOAreaTables.end())
         return WMOAreaTables.at(WMOIDs);
     return NULL;
+}
+
+RecallLocation *ObjectMgr::GetRecallLocByName(std::string name)
+{   // Should never happen
+    if(name.length() == 0)
+        return NULL;
+
+    _recallLock.Acquire();
+    RecallLocation *result = NULL;
+    std::string low_name = HEARTHSTONE_TOLOWER_RETURN(name);
+    for(RecallSet::iterator itr = m_recallLocations.begin(); itr != m_recallLocations.end(); itr++)
+    {
+        if((low_name.length() == (*itr)->lowercase_name.length()) &&
+            !strcmp(low_name.c_str(), (*itr)->lowercase_name.c_str()))
+        {
+            _recallLock.Release();
+            return *itr; // 100% direct match
+        }
+
+        if((*itr)->lowercase_name.find(low_name) != std::wstring::npos)
+            result = *itr;
+    }
+    _recallLock.Release();
+    return result;
+}
+
+bool ObjectMgr::AddRecallLocation(std::string name, uint32 mapId, float x, float y, float z, float o)
+{
+    _recallLock.Acquire();
+    std::string low_name = HEARTHSTONE_TOLOWER_RETURN(name);
+    for(RecallSet::iterator itr = m_recallLocations.begin(); itr != m_recallLocations.end(); itr++)
+    {
+        if((low_name.length() == (*itr)->lowercase_name.length()) &&
+            !strcmp(low_name.c_str(), (*itr)->lowercase_name.c_str()))
+        {
+            _recallLock.Release();
+            return false; // We can't add a location that has an existing name used
+        }
+    }
+
+    RecallLocation *loc = new RecallLocation();
+    loc->RealName = name;
+    loc->lowercase_name = low_name;
+    loc->mapId = mapId;
+    loc->x = x;
+    loc->y = y;
+    loc->z = z;
+    loc->orient = o;
+    m_recallLocations.insert(loc);
+    WorldDatabase.Execute("REPLACE INTO recall VALUES('%s', '%u', '%f', '%f', '%f', '%f')", WorldDatabase.EscapeString(loc->RealName).c_str(), loc->mapId, loc->x, loc->y, loc->z, loc->orient);
+    _recallLock.Release();
+    return true;
+}
+
+bool ObjectMgr::FillRecallNames(std::string match, std::set<RecallLocation*> &output)
+{   // Should never happen
+    if(match.length() == 0)
+        return NULL;
+
+    uint32 count = 0;
+    _recallLock.Acquire();
+    RecallLocation *result = NULL;
+    std::string low_match = HEARTHSTONE_TOLOWER_RETURN(match);
+    for(RecallSet::iterator itr = m_recallLocations.begin(); itr != m_recallLocations.end(); itr++)
+        if((*itr)->lowercase_name.find(low_match) != std::wstring::npos)
+            output.insert(*itr), count++;
+    _recallLock.Release();
+    return count > 0;
+}
+
+bool ObjectMgr::DeleteRecallLocation(std::string name)
+{   // Should never happen
+    if(!name.length())
+        return false;
+
+    _recallLock.Acquire();
+    RecallLocation *result = NULL;
+    std::string low_name = HEARTHSTONE_TOLOWER_RETURN(name);
+    for(RecallSet::iterator itr = m_recallLocations.begin(); itr != m_recallLocations.end(); itr++)
+    {
+        if((low_name.length() == (*itr)->lowercase_name.length()) &&
+            !strcmp(low_name.c_str(), (*itr)->lowercase_name.c_str()))
+        {
+            result = *itr;// 100% direct match
+            break;
+        }
+    }
+    if(result == NULL)
+    {
+        _recallLock.Release();
+        return false;
+    }
+
+    m_recallLocations.erase(result);
+    _recallLock.Release();
+    WorldDatabase.Execute("DELETE FROM recall WHERE name = '%s'", result->RealName.c_str());
+    delete result;
+    return true;
 }
 
 void ObjectMgr::LoadGroups()

@@ -355,6 +355,14 @@ struct QuestPOI
 typedef std::vector<QuestPOI> QuestPOIVector;
 typedef std::tr1::unordered_map<uint32, QuestPOIVector> QuestPOIMap;
 
+struct RecallLocation
+{
+    uint32 mapId;
+    float x, y, z;
+    float orient;
+    std::string lowercase_name, RealName;
+};
+
 class SERVER_DECL ObjectMgr : public Singleton < ObjectMgr >
 {
 public:
@@ -366,6 +374,7 @@ public:
 
     // Set typedef's
     typedef std::set<AchievementCriteriaEntry*>                                 AchievementCriteriaSet;
+    typedef std::set<RecallLocation*>                                           RecallSet;
 
     // HashMap typedef's
     typedef HM_NAMESPACE::hash_map<uint64, Item* >                              ItemMap;
@@ -410,6 +419,9 @@ public:
 
     Mutex m_achievementLock;
     AchievementCriteriaMap m_achievementCriteriaMap;
+
+    Mutex _recallLock;
+    RecallSet m_recallLocations;
 
     Item* CreateItem(uint32 entry,Player* owner);
     Item* LoadItem(uint64 guid);
@@ -553,6 +565,7 @@ public:
     void LoadReputationModifierTable(const char * tablename, ReputationModMap * dmap);
     void LoadReputationModifiers();
     void LoadQuestPOI();
+    void LoadRecallPoints();
     ReputationModifier * GetReputationModifier(uint32 entry_id, uint32 faction_id);
 
     void SetHighestGuids();
@@ -645,6 +658,11 @@ public:
 
     void HashWMOAreaTables();
     WMOAreaTableEntry* GetWMOAreaTable(int32 adtid, int32 rootid, int32 groupid);
+
+    RecallLocation *GetRecallLocByName(std::string name);
+    bool AddRecallLocation(std::string name, uint32 mapId, float x, float y, float z, float o);
+    bool FillRecallNames(std::string match, std::set<RecallLocation*> &output);
+    bool DeleteRecallLocation(std::string name);
 
 protected:
     WMOAreaTableMap WMOAreaTables;

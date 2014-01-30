@@ -731,6 +731,7 @@ void CommandTableStorage::Init()
         { "wintergrasp",            COMMAND_LEVEL_0, NULL,                                                          "",                 wintergraspCommandTable, 0, 0, 0 },
         { "faction",                COMMAND_LEVEL_0, NULL,                                                          "",                 FactionCommandTable, 0, 0, 0 },
 
+        { "teleport",               COMMAND_LEVEL_Q, &ChatHandler::HandleRecallGoCommand,                           "Port to recalled location",        NULL, 0, 0, 0 },
         { "getpos",                 COMMAND_LEVEL_D, &ChatHandler::HandleGetPosCommand,                             "",                 NULL, 0, 0, 0 },
         { "clearcooldowns",         COMMAND_LEVEL_M, &ChatHandler::HandleClearCooldownsCommand,                     "Clears all cooldowns for your class.", NULL, 0, 0, 0 },
         { "removeauras",            COMMAND_LEVEL_M, &ChatHandler::HandleRemoveAurasCommand,                        "Removes all auras from target",    NULL, 0, 0, 0 },
