@@ -1287,6 +1287,9 @@ void Spell::cast(bool check)
 
     sLog.Debug("Spell","Cast %u, Unit: %u", GetSpellProto()->Id, m_caster->GetLowGUID());
 
+    // Set the base ms time to now
+    MSTimeToAddToTravel = getMSTime();
+
     if(u_caster != NULL )
         if(u_caster->CallOnCastSpell != NULL)
             u_caster->CallOnCastSpell->UnitOnCastSpell(u_caster, m_spellInfo);
@@ -1567,12 +1570,12 @@ void Spell::cast(bool check)
                         FillTargetMap(i);
                         if(ManagedTargets.size())
                         {
-                            for(SpellTargetList::iterator itr = ManagedTargets.begin(); itr != ManagedTargets.end(); itr++)
+                            for(SpellTargetMap::iterator itr = ManagedTargets.begin(); itr != ManagedTargets.end(); itr++)
                             {
-                                if( itr->HitResult == SPELL_DID_HIT_SUCCESS )
+                                if( itr->second.HitResult == SPELL_DID_HIT_SUCCESS )
                                 {
                                     // set target pointers
-                                    _SetTargets(itr->Guid);
+                                    _SetTargets(itr->first);
 
                                     // call effect handlers
                                     if(CanHandleSpellEffect(i, m_spellInfo->NameHash))
@@ -1589,12 +1592,12 @@ void Spell::cast(bool check)
                                 }
                             }
 
-                            for(SpellTargetList::iterator itr = ManagedTargets.begin(); itr != ManagedTargets.end(); itr++)
+                            for(SpellTargetMap::iterator itr = ManagedTargets.begin(); itr != ManagedTargets.end(); itr++)
                             {
-                                if( itr->HitResult == SPELL_DID_HIT_SUCCESS )
+                                if( itr->second.HitResult == SPELL_DID_HIT_SUCCESS )
                                 {
                                     // set target pointers
-                                    _SetTargets(itr->Guid);
+                                    _SetTargets(itr->first);
 
                                     // handle the rest of shit
                                     if( unitTarget != NULL )
@@ -1706,12 +1709,12 @@ void Spell::cast(bool check)
                     GetSpellProto()->EffectApplyAuraName[1] != 0 ||
                     GetSpellProto()->EffectApplyAuraName[2] != 0 )
                 {
-                    for(SpellTargetList::iterator itr = TargetList.begin(); itr != TargetList.end(); itr++)
+                    for(SpellTargetMap::iterator itr = TargetMap.begin(); itr != TargetMap.end(); itr++)
                     {
-                        if( itr->HitResult != SPELL_DID_HIT_SUCCESS )
+                        if( itr->second.HitResult != SPELL_DID_HIT_SUCCESS )
                             continue;
 
-                        HandleAddAura(itr->Guid);
+                        HandleAddAura(itr->first);
                     }
                 }
             }
@@ -1864,15 +1867,15 @@ void Spell::CalcDestLocationHit()
         ManagedTargets.clear();
     }
 
-    if(TargetList.size())
+    if(TargetMap.size())
     {
         set<uint64> toHit;
-        for(SpellTargetList::iterator itr = TargetList.begin(); itr != TargetList.end(); itr++)
+        for(SpellTargetMap::iterator itr = TargetMap.begin(); itr != TargetMap.end(); itr++)
         {
-            if( itr->HitResult == SPELL_DID_HIT_SUCCESS )
+            if( itr->second.HitResult == SPELL_DID_HIT_SUCCESS )
             {
                 // set target pointers
-                _SetTargets(itr->Guid);
+                _SetTargets(itr->first);
                 if(unitTarget == NULL)
                     continue;
 
@@ -1880,7 +1883,7 @@ void Spell::CalcDestLocationHit()
                 if (dist < 5.0f)
                     dist = 5.0f;
                 if(dist == 5.0f)
-                    toHit.insert(itr->Guid);
+                    toHit.insert(itr->first);
                 else
                 {
                     unitTarget->AddDelayedSpell(this);
@@ -1909,35 +1912,25 @@ void Spell::CalcDestLocationHit()
 
 void Spell::HandleRemoveDestTarget(uint64 guid)
 {
-    for(SpellTargetList::iterator itr = TargetList.begin(); itr != TargetList.end(); itr++)
-    {
-        if(itr->Guid != guid)
-            continue;
-
-        TargetList.erase(itr);
-        break;
-    }
-
-    if(!TargetList.size())
+    TargetMap.erase(guid);
+    if(!TargetMap.size())
         delete this;
 }
 
 bool Spell::HandleDestTargetHit(uint64 guid, uint32 MSTime)
 {
-    for(SpellTargetList::iterator itr = TargetList.begin(); itr != TargetList.end(); itr++)
+    SpellTargetMap::iterator itr = TargetMap.find(guid);
+    if(itr != TargetMap.end())
     {
-        if(itr->Guid != guid)
-            continue;
-        _SetTargets(itr->Guid);
-
-        if((*itr).DestinationTime > MSTime)
+        if(itr->second.DestinationTime > MSTime)
         {
-            (*itr).DestinationTime -= MSTime;
+            itr->second.DestinationTime -= MSTime;
 //          SendProjectileUpdate();
             return false;
         }
         else
         {
+            _SetTargets(itr->first);
             if(unitTarget == NULL || (unitTarget && unitTarget->isAlive()))
             {
                 // if the spell is not reflected
@@ -2020,16 +2013,15 @@ bool Spell::HandleDestTargetHit(uint64 guid, uint32 MSTime)
                     GetSpellProto()->EffectApplyAuraName[1] != 0 ||
                     GetSpellProto()->EffectApplyAuraName[2] != 0 )
                 {
-                    HandleAddAura(itr->Guid);
+                    HandleAddAura(itr->first);
                 }
             }
 
-            TargetList.erase(itr);
-            break;
+            TargetMap.erase(itr);
         }
     }
 
-    if(!TargetList.size())
+    if(!TargetMap.size())
     {
         if(m_spellState == SPELL_STATE_FINISHED)
             delete this;
@@ -2547,7 +2539,7 @@ void Spell::SendProjectileUpdate()
 
 void Spell::writeSpellGoTargets( WorldPacket * data )
 {
-    SpellTargetList::iterator itr;
+    SpellTargetMap::iterator itr;
     uint32 counter;
 
     // Make sure we don't hit over 100 targets.
@@ -2557,11 +2549,11 @@ void Spell::writeSpellGoTargets( WorldPacket * data )
     if( m_hitTargetCount > 0 )
     {
         counter = 0;
-        for( itr = TargetList.begin(); itr != TargetList.end() && counter < 100; itr++ )
+        for( itr = TargetMap.begin(); itr != TargetMap.end() && counter < 100; itr++ )
         {
-            if( itr->HitResult == SPELL_DID_HIT_SUCCESS )
+            if( itr->second.HitResult == SPELL_DID_HIT_SUCCESS )
             {
-                *data << itr->Guid;
+                *data << itr->first;
                 ++counter;
             }
         }
@@ -2571,14 +2563,14 @@ void Spell::writeSpellGoTargets( WorldPacket * data )
     if( m_missTargetCount > 0 )
     {
         counter = 0;
-        for( itr = TargetList.begin(); itr != TargetList.end() && counter < 100; itr++ )
+        for( itr = TargetMap.begin(); itr != TargetMap.end() && counter < 100; itr++ )
         {
-            if( itr->HitResult != SPELL_DID_HIT_SUCCESS )
+            if( itr->second.HitResult != SPELL_DID_HIT_SUCCESS )
             {
-                *data << itr->Guid;
-                *data << uint8(itr->HitResult);
-                if (itr->HitResult == SPELL_DID_HIT_REFLECT)
-                    *data << uint8(itr->ReflectResult);
+                *data << itr->first;
+                *data << uint8(itr->second.HitResult);
+                if (itr->second.HitResult == SPELL_DID_HIT_REFLECT)
+                    *data << uint8(itr->second.ReflectResult);
                 ++counter;
             }
         }
@@ -5303,20 +5295,15 @@ uint32 GetDiminishingGroup(uint32 NameHash)
 
 void Spell::_AddTarget(const Unit* target, const uint32 effectid)
 {
-    if(MSTimeToAddToTravel == 0)
-        MSTimeToAddToTravel = getMSTime();
+    // Check if we're in the current list already, and if so, don't readd us.
+    if(ManagedTargets.find(target->GetGUID()) != ManagedTargets.end())
+        return;
 
-    // look for the target in the list already
     bool found = false;
-    for(SpellTargetList::iterator itr = TargetList.begin(); itr != TargetList.end(); itr++ )
-    {
-        if( itr->Guid == target->GetGUID() )
-        {
-            found = true;
-            itr->EffectMask |= (1 << effectid);
-            break;
-        }
-    }
+    // look for the target in the list already
+    SpellTargetMap::iterator itr = TargetMap.find(target->GetGUID());
+    if(found = (itr != TargetMap.end()))
+        itr->second.EffectMask |= (1 << effectid);
 
     // setup struct
     SpellTarget tgt;
@@ -5340,9 +5327,9 @@ void Spell::_AddTarget(const Unit* target, const uint32 effectid)
     tgt.HitResult = (g_caster || (g_caster && g_caster->GetType() != GAMEOBJECT_TYPE_TRAP) ) ? SPELL_DID_HIT_SUCCESS : _DidHit(effectid, target, tgt.ReflectResult);
 
     // add to the list
-    ManagedTargets.push_back(tgt);
+    ManagedTargets.insert(std::make_pair(target->GetGUID(), tgt));
     if(!found)
-        TargetList.push_back(tgt);
+        TargetMap.insert(std::make_pair(target->GetGUID(), tgt));
 
     // add counter
     if( tgt.HitResult == SPELL_DID_HIT_SUCCESS )
@@ -5353,19 +5340,15 @@ void Spell::_AddTarget(const Unit* target, const uint32 effectid)
 
 void Spell::_AddTargetForced(const uint64& guid, const uint32 effectid)
 {
-    if(MSTimeToAddToTravel == 0)
-        MSTimeToAddToTravel = getMSTime();
+    // Check if we're in the current list already, and if so, don't readd us.
+    if(ManagedTargets.find(guid) != ManagedTargets.end())
+        return;
 
     bool found = false;
-    for(SpellTargetList::iterator itr = TargetList.begin(); itr != TargetList.end(); itr++ )
-    {
-        if( itr->Guid == guid )
-        {
-            found = true;
-            itr->EffectMask |= (1 << effectid);
-            break;
-        }
-    }
+    // look for the target in the list already
+    SpellTargetMap::iterator itr = TargetMap.find(guid);
+    if(found = (itr != TargetMap.end()))
+        itr->second.EffectMask |= (1 << effectid);
 
     // setup struct
     SpellTarget tgt;
@@ -5395,35 +5378,11 @@ void Spell::_AddTargetForced(const uint64& guid, const uint32 effectid)
     tgt.HitResult = SPELL_DID_HIT_SUCCESS;
 
     // add to the list
-    ManagedTargets.push_back(tgt);
+    ManagedTargets.insert(std::make_pair(guid, tgt));
     if(!found)
-        TargetList.push_back(tgt);
+        TargetMap.insert(std::make_pair(guid, tgt));
 
     // add counter
-    ++m_hitTargetCount;
-}
-
-void Spell::_AddTargetForced(Object * target, const uint32 effectid)
-{
-    bool found = false;
-    for(SpellTargetList::iterator itr = TargetList.begin(); itr != TargetList.end(); itr++ )
-    {
-        if( itr->Guid == target->GetGUID() )
-        {
-            found = true;
-            itr->EffectMask |= (1 << effectid);
-            break;
-        }
-    }
-
-    SpellTarget tgt;
-    tgt.Guid = target->GetGUID();
-    tgt.EffectMask = (1 << effectid);
-    tgt.HitResult = SPELL_DID_HIT_SUCCESS;
-    tgt.DestinationTime = 0;
-    ManagedTargets.push_back(tgt);
-    if(!found)
-        TargetList.push_back(tgt);
     ++m_hitTargetCount;
 }
 
