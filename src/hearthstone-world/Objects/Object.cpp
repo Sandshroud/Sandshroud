@@ -3363,7 +3363,7 @@ void Object::SetZoneId(uint32 newZone)
 }
 
 // These are our hardcoded values
-uint32 GetZoneForMap(uint32 mapid)
+uint32 GetZoneForMap(uint32 mapid, uint32 areaId)
 {
     switch(mapid)
     {
@@ -3373,6 +3373,12 @@ uint32 GetZoneForMap(uint32 mapid)
     case 449: return 1519;
     case 450: return 1637;
     case 598: return 4131;
+    default:
+        {
+            MapEntry *entry = dbcMap.LookupEntry(mapid);
+            if(entry && areaId == 0xFFFF)
+                return entry->linked_zone;
+        }break;
     }
     return 0;
 }
@@ -3388,9 +3394,9 @@ void Object::UpdateAreaInfo(MapMgr *mgr)
     else if(mgr == NULL)
         mgr = GetMapMgr();
 
-    if(uint32 forcedZone = GetZoneForMap(mgr->GetMapId()))
+    m_zoneId = m_areaId = mgr->GetAreaID(GetPositionX(), GetPositionY(), GetPositionZ());
+    if(uint32 forcedZone = GetZoneForMap(mgr->GetMapId(), m_areaId))
         m_zoneId = m_areaId = forcedZone;
-    else m_zoneId = m_areaId = mgr->GetAreaID(GetPositionX(), GetPositionY(), GetPositionZ());
     AreaTable* at = dbcArea.LookupEntry(m_areaId);
     if(at != NULL && at->ZoneId) // Set our Zone on add to world!
         SetZoneId(at->ZoneId);
