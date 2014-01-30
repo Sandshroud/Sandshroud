@@ -466,6 +466,7 @@ bool World::SetInitialWorldSettings()
     MAKE_TASK(GuildMgr, LoadAllGuilds);
     MAKE_TASK(GuildMgr, LoadGuildCharters);
     MAKE_TASK(ObjectMgr, LoadQuestPOI);
+    MAKE_TASK(ObjectMgr, LoadRecallPoints);
     MAKE_TASK(ObjectMgr, LoadAchievements);
     MAKE_TASK(ObjectMgr, LoadCreatureWaypoints);
     MAKE_TASK(ObjectMgr, LoadTrainers);
