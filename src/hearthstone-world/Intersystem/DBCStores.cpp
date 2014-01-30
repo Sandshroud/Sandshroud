@@ -221,7 +221,7 @@ const char* mapentryFormat =
     "x"                 // 3 is_pvp_zone
     "x"                 // 4 0 or 1 for battlegrounds (not arenas)
     "xxxxxxxxxxxxxxxxx" // 5-21 real_name
-    "x"                 // 22 linked_zone
+    "u"                 // 22 linked_zone
     "xxxxxxxxxxxxxxxxx" // 23-39 hordeIntro
     "xxxxxxxxxxxxxxxxx" // 40-56 allianceIntro
     "u"                 // 57 multimap_id

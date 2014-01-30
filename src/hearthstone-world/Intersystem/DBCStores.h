@@ -1109,9 +1109,9 @@ struct MapEntry
     uint32 map_type;
 //  uint32 flags;
 //  char* real_name[16];
-//  uint32 linked_zone;     // common zone for instance and continent map
-//  char* hordeIntro[16];       // text for PvP Zones
-//  char* allianceIntro[16];    // text for PvP Zones
+    uint32 linked_zone;     // common zone for instance and continent map
+//  char* hordeIntro[16];   // text for PvP Zones
+//  char* allianceIntro[16];// text for PvP Zones
     uint32 multimap_id;     // seems to be 0 for all test maps.
 //  uint32 unk;             // 1/1.25
 //  int32 parent_map;       // map_id of parent map
