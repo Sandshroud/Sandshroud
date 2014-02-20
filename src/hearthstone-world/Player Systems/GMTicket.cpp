@@ -164,24 +164,10 @@ void WorldSession::HandleGMTicketGetTicketOpcode(WorldPacket & recv_data)
 void WorldSession::HandleGMTicketSystemStatusOpcode( WorldPacket & recv_data )
 {
     WorldPacket data(SMSG_GMTICKET_SYSTEMSTATUS, 4);
-
-    // no data
-
-    // Response - System is working Fine
-    if(sWorld.getGMTicketStatus())
-        data << uint32(1);
-    else
-        data << uint32(0);
-
+    sWorld.gmList_lock.AcquireReadLock();
+    data << uint32(sWorld.gmList.empty() ? 0 : 1);
+    sWorld.gmList_lock.ReleaseReadLock();
     SendPacket(&data);
-}
-
-void WorldSession::HandleGMTicketToggleSystemStatusOpcode( WorldPacket & recv_data )
-{
-    if(!HasGMPermissions())
-        return;
-
-    sWorld.toggleGMTicketStatus();
 }
 
 void WorldSession::HandleGMTicketSurveySubmitOpcode( WorldPacket & recv_data )

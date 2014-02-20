@@ -3052,28 +3052,6 @@ bool ChatHandler::HandleDisableAH(const char *args, WorldSession *m_session)
     return true;
 }
 
-bool ChatHandler::HandleForceStartWintergrasp(const char *args, WorldSession *m_session)
-{
-    if(sWorld.wg_enabled == false)
-        return false;
-
-    BlueSystemMessage(m_session, "Wintergrasp Forced to start, staff has been alerted.");
-    sWorld.SendMessageToGMs(m_session, "%s has force started Wintergrasp", (m_session->GetPlayer() ? m_session->GetPlayer()->GetName() : m_session->GetAccountNameS()));
-    sWorld.ForceStart = true;
-    return true;
-}
-
-bool ChatHandler::HandleForceEndWintergrasp(const char *args, WorldSession *m_session)
-{
-    if(sWorld.wg_enabled == false)
-        return false;
-
-    BlueSystemMessage(m_session, "Wintergrasp ended, staff has been alerted.");
-    sWorld.SendMessageToGMs(m_session, "%s has forced wintergrasp to end.", (m_session->GetPlayer() ? m_session->GetPlayer()->GetName() : m_session->GetAccountNameS()));
-    sWorld.ForceEnd = true;
-    return true;
-}
-
 bool ChatHandler::HandleFactionSetStanding(const char *args, WorldSession *m_session)
 {
     Player* pPlayer = getSelectedChar(m_session, true);

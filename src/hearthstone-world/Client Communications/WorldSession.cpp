@@ -892,7 +892,6 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_GMTICKET_DELETETICKET].handler                 = &WorldSession::HandleGMTicketDeleteOpcode;
     WorldPacketHandlers[CMSG_GMTICKET_GETTICKET].handler                    = &WorldSession::HandleGMTicketGetTicketOpcode;
     WorldPacketHandlers[CMSG_GMTICKET_SYSTEMSTATUS].handler                 = &WorldSession::HandleGMTicketSystemStatusOpcode;
-    WorldPacketHandlers[CMSG_GMTICKETSYSTEM_TOGGLE].handler                 = &WorldSession::HandleGMTicketToggleSystemStatusOpcode;
     WorldPacketHandlers[CMSG_GMSURVEY_SUBMIT].handler                       = &WorldSession::HandleGMTicketSurveySubmitOpcode;
 
     // Meeting Stone / Instances
