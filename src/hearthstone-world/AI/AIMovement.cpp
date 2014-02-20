@@ -276,9 +276,6 @@ void AI_Movement::Update(uint32 p_time)
     }
     else if(getCreatureState() == STOPPED && (getAIState() == STATE_IDLE || getAIState() == STATE_SCRIPTMOVE) && !m_moveTimer && !m_timeToMove && UnitToFollow == NULL) //creature is stopped and out of Combat
     {
-        if(sWorld.getAllowMovement() == false) //is creature movement enabled?
-            return;
-
         if(m_Unit->GetUInt32Value(UNIT_FIELD_DISPLAYID) == 5233) //if Spirit Healer don't move
             return;
 

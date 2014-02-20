@@ -9,14 +9,9 @@ initialiseSingleton( World );
 
 World::World()
 {
-    m_playerLimit = 0;
-    m_allowMovement = true;
-    m_gmTicketSystem = true;
-
-    GmClientChannel = "";
-
     m_StartTime = 0;
-
+    m_playerLimit = 0;
+    GmClientChannel = "";
     GuildsLoading = false;
     NetworkStressIn = 0;
     NetworkStressOut = 0;
@@ -33,7 +28,6 @@ World::World()
     IsPvPRealm = true;
     m_speedHackThreshold = -500.0f;
     m_speedHackLatencyMultiplier = 0.0f;
-    m_speedHackResetInterval = 5000;
     m_CEThreshold = 10000;
     LacrimiThread = NULL;
     LacrimiPtr = NULL;
@@ -1278,6 +1272,12 @@ void World::Rehash(bool load)
     vMapPath = mainIni->ReadString("Data", "vMapPath", "vmaps");
     MMapPath = mainIni->ReadString("Data", "MMapPath", "mmaps");
 
+    // Performance configs
+    Collision = mainIni->ReadBoolean("PerformanceSettings", "Collision", false);
+    PathFinding = mainIni->ReadBoolean("PerformanceSettings", "Pathfinding", false);
+    CalculatedHeightChecks = mainIni->ReadBoolean("PerformanceSettings", "CHeightChecks", false);
+    AreaUpdateDistance = mainIni->ReadFloat("PerformanceSettings", "AreaUpdateDistance", false);
+
     // Server Configs
     StartGold = mainIni->ReadInteger("ServerSettings", "StartGold", 1);
     StartLevel = mainIni->ReadInteger("ServerSettings", "StartLevel", 1);
@@ -1285,13 +1285,10 @@ void World::Rehash(bool load)
     m_useAccountData = mainIni->ReadBoolean("ServerSettings", "UseAccountData", false);
     SetMotd(mainIni->ReadString("ServerSettings", "Motd", "Hearthstone Default MOTD").c_str());
     cross_faction_world = mainIni->ReadBoolean("ServerSettings", "CrossFactionInteraction", false);
-    Collision = mainIni->ReadBoolean("ServerSettings", "Collision", false);
-    PathFinding = mainIni->ReadBoolean("ServerSettings", "Pathfinding", false);
     SendMovieOnJoin = mainIni->ReadBoolean("ServerSettings", "SendMovieOnJoin", true);
     m_blockgmachievements = mainIni->ReadBoolean("ServerSettings", "DisableAchievementsForGM", true);
     channelmgr.seperatechannels = mainIni->ReadBoolean("ServerSettings", "SeperateChatChannels", true);
     gm_force_robes = mainIni->ReadBoolean("ServerSettings", "ForceRobesForGM", false);
-    CalculatedHeightChecks = mainIni->ReadBoolean("ServerSettings", "CHeightChecks", false);
     trade_world_chat = mainIni->ReadInteger("ServerSettings", "TradeWorldChat", 0);
     SetPlayerLimit(mainIni->ReadInteger("ServerSettings", "PlayerLimit", 1000));
     FunServerMall = mainIni->ReadInteger("ServerSettings", "MallAreaID", -1);
@@ -1305,7 +1302,6 @@ void World::Rehash(bool load)
     // Battlegrounds
     // Wintergrasp
     wg_enabled = mainIni->ReadBoolean("Battlegrounds", "EnableWG", false);
-    ForceStart = ForceEnd = false;
 
     // Alterac Valley
     av_enabled = mainIni->ReadBoolean("Battlegrounds", "EnableAV", true);
@@ -1388,21 +1384,9 @@ void World::Rehash(bool load)
     antihack_speed = mainIni->ReadBoolean("AntiHack", "Speed", true);
     antihack_flight = mainIni->ReadBoolean("AntiHack", "Flight", true);
     no_antihack_on_gm = mainIni->ReadBoolean("AntiHack", "DisableOnGM", false);
-    SpeedhackProtection = antihack_speed;
-
-    // ======================================
-    m_movementCompressInterval = mainIni->ReadInteger("Movement", "FlushInterval", 1000);
-    m_movementCompressRate = mainIni->ReadInteger("Movement", "CompressRate", 1);
-
-    m_movementCompressThresholdCreatures = mainIni->ReadFloat("Movement", "CompressThresholdCreatures", 15.0f);
-    m_movementCompressThresholdCreatures *= m_movementCompressThresholdCreatures;
-
-    m_movementCompressThreshold = mainIni->ReadFloat("Movement", "CompressThreshold", 25.0f);
-    m_movementCompressThreshold *= m_movementCompressThreshold;     // square it to avoid sqrt() on checks
 
     m_speedHackThreshold = mainIni->ReadFloat("AntiHack", "SpeedThreshold", -500.0f);
     m_speedHackLatencyMultiplier = mainIni->ReadFloat("AntiHack", "SpeedLatencyCompensation", 0.25f);
-    m_speedHackResetInterval = mainIni->ReadInteger("AntiHack", "SpeedResetPeriod", 5000);
     antihack_cheatengine = mainIni->ReadBoolean("AntiHack", "CheatEngine", false);
     m_CEThreshold = mainIni->ReadInteger("AntiHack", "CheatEngineTimeDiff", 10000);
     // ======================================

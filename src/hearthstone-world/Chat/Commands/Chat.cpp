@@ -70,8 +70,6 @@ ChatCommand * CommandTableStorage::GetSubCommandTable(const char * name)
         return _questCommandTable;
     else if(!stricmp(name, "lookup"))
         return _lookupCommandTable;
-    else if(!stricmp(name, "wintergrasp"))
-        return _wintergraspCommandTable;
     else if(!stricmp(name, "faction"))
         return _FactionCommandTable;
 
@@ -212,7 +210,6 @@ void CommandTableStorage::Dealloc()
     free( _TitleCommandTable);
     free( _questCommandTable );
     free( _lookupCommandTable );
-    free(_wintergraspCommandTable);
     free( _commandTable );
 }
 
@@ -415,7 +412,6 @@ void CommandTableStorage::Init()
         { "release",                COMMAND_LEVEL_C, &ChatHandler::HandleGMTicketReleaseCommand,                    "Releases assigned GM Ticket with ID x.",                           NULL, 0, 0, 0 },
         { "comment",                COMMAND_LEVEL_C, &ChatHandler::HandleGMTicketCommentCommand,                    "Sets comment x to GM Ticket with ID y.",                           NULL, 0, 0, 0 },
 #endif
-        { "toggle",                 COMMAND_LEVEL_Z, &ChatHandler::HandleGMTicketToggleTicketSystemStatusCommand,   "Toggles the ticket system status.",                                NULL, 0, 0, 0 },
         { NULL,                     COMMAND_LEVEL_0, NULL,                                                          "",                                                                 NULL, 0, 0, 0 }
     };
     dupe_command_table(GMTicketCommandTable, _GMTicketCommandTable);
@@ -650,14 +646,6 @@ void CommandTableStorage::Init()
     };
     dupe_command_table(questCommandTable, _questCommandTable);
 
-    static ChatCommand wintergraspCommandTable[] =
-    {
-        { "start",                  COMMAND_LEVEL_Z, &ChatHandler::HandleForceStartWintergrasp,     "Force starts wintergrasp.",    NULL, 0, 0, 0 },
-        { "end",                    COMMAND_LEVEL_Z, &ChatHandler::HandleForceEndWintergrasp,       "Ends current wintergrasp.",    NULL, 0, 0, 0 },
-        { NULL,                     COMMAND_LEVEL_0, NULL,                                          "",                             NULL, 0, 0, 0 },
-    };
-    dupe_command_table(wintergraspCommandTable, _wintergraspCommandTable);
-
     static ChatCommand FactionCommandTable[] =
     {
         { "modstanding",            COMMAND_LEVEL_Z, &ChatHandler::HandleFactionModStanding,    "Mods a player's faction's standing based on a value",  NULL, 0, 0, 0 },
@@ -728,7 +716,6 @@ void CommandTableStorage::Init()
         { "guild",                  COMMAND_LEVEL_M, NULL,                                                          "",                 GuildCommandTable, 0, 0, 0 },
         { "title",                  COMMAND_LEVEL_M, NULL,                                                          "",                 TitleCommandTable, 0, 0, 0 },
         { "lookup",                 COMMAND_LEVEL_0, NULL,                                                          "",                 lookupCommandTable, 0, 0, 0 },
-        { "wintergrasp",            COMMAND_LEVEL_0, NULL,                                                          "",                 wintergraspCommandTable, 0, 0, 0 },
         { "faction",                COMMAND_LEVEL_0, NULL,                                                          "",                 FactionCommandTable, 0, 0, 0 },
 
         { "teleport",               COMMAND_LEVEL_Q, &ChatHandler::HandleRecallGoCommand,                           "Port to recalled location",        NULL, 0, 0, 0 },

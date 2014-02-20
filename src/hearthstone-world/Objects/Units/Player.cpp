@@ -1479,7 +1479,7 @@ void Player::_EventExploration()
         return;
     if(GetMapMgr()->GetCellByCoords(GetPositionX(),GetPositionY()) == NULL)
         return;
-    if(m_lastAreaUpdateMap == GetMapId() && m_lastAreaPosition.Distance(GetPosition()) < 5.0f)
+    if(m_lastAreaUpdateMap == GetMapId() && m_lastAreaPosition.Distance(GetPosition()) < sWorld.AreaUpdateDistance)
         return;
     m_lastAreaUpdateMap = GetMapId();
     m_lastAreaPosition = GetPosition();
