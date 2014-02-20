@@ -370,7 +370,7 @@ void Unit::Update( uint32 p_time )
             m_AreaUpdateTimer += p_time;
             if(m_AreaUpdateTimer >= 2000)
             {
-                if(m_lastAreaPosition.Distance(GetPosition()) > 5.0f)
+                if(m_lastAreaPosition.Distance(GetPosition()) > sWorld.AreaUpdateDistance)
                 {
                     // Update our area id and position
                     UpdateAreaInfo();

@@ -384,7 +384,6 @@ protected:
     bool HandleGMTicketCommentCommand(const char* args, WorldSession *m_session);
     bool HandleGMTicketDeletePermanentCommand(const char* args, WorldSession *m_session);
 #endif
-    bool HandleGMTicketToggleTicketSystemStatusCommand(const char* args, WorldSession *m_session);
 
     //Ban
     bool HandleBanCharacterCommand(const char* args, WorldSession *m_session);
@@ -634,8 +633,6 @@ protected:
 
     bool HandleEnableAH(const char *args, WorldSession *m_session);
     bool HandleDisableAH(const char *args, WorldSession *m_session);
-    bool HandleForceStartWintergrasp(const char *args, WorldSession *m_session);
-    bool HandleForceEndWintergrasp(const char *args, WorldSession *m_session);
 
     bool HandleFactionSetStanding(const char *args, WorldSession *m_session);
     bool HandleFactionModStanding(const char *args, WorldSession *m_session);

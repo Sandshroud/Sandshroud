@@ -435,15 +435,6 @@ public:
     HEARTHSTONE_INLINE uint32 GetPlayerLimit() const { return m_playerLimit; }
     void SetPlayerLimit(uint32 limit) { m_playerLimit = limit; }
 
-    HEARTHSTONE_INLINE bool getAllowMovement() const { return m_allowMovement; }
-    void SetAllowMovement(bool allow) { m_allowMovement = allow; }
-    HEARTHSTONE_INLINE bool getGMTicketStatus() { return m_gmTicketSystem; };
-    bool toggleGMTicketStatus()
-    {
-        m_gmTicketSystem = !m_gmTicketSystem;
-        return m_gmTicketSystem;
-    };
-
     HEARTHSTONE_INLINE std::string getGmClientChannel() { return GmClientChannel; }
 
     // MOTD line 1
@@ -499,8 +490,7 @@ public:
     void LoadNameGenData();
     std::string GenerateName(uint32 type = 0);
 
-    std::map<uint32, AreaTable*> mAreaIDToTable;
-    std::map<uint32, AreaTable*> mZoneIDToTable;
+    std::map<uint32, AreaTable*> mAreaIDToTable, mZoneIDToTable;
 
     std::map<uint32,uint32> TeachingSpellMap;
     uint32 GetTeachingSpell(uint32 NormalSpellId)
@@ -518,43 +508,17 @@ public:
 
     Mutex queueMutex;
 
-    uint32 mQueueUpdateInterval;
-    bool cross_faction_world;
-    uint32 trade_world_chat;
-    uint32 m_deathKnightReqLevel;
-    bool m_deathKnightOnePerAccount;
-    bool EnableFatigue;
+    string LuaScriptPath, GameMonkeyScriptPath;
+    string DBCPath, MapPath, vMapPath, MMapPath;
+    bool AHEnabled, DisableBufferSaving;
+    bool Collision, PathFinding, CalculatedHeightChecks;
+    bool LogCheaters, LogCommands, LogPlayers, bLogChat;
+    float AreaUpdateDistance, NetworkStressIn, NetworkStressOut;
+    uint32 ServerPreloading, mInWorldPlayerCount, mAcceptedConnections;
+    uint32 mQueueUpdateInterval, trade_world_chat, m_deathKnightReqLevel;
+    bool cross_faction_world, m_deathKnightOnePerAccount, EnableFatigue, NumericCommandGroups;
 
     void SaveAllPlayers();
-
-    bool LogCheaters;
-    bool LogCommands;
-    bool LogPlayers;
-    bool bLogChat;
-
-    bool NumericCommandGroups;
-
-    string LuaScriptPath;
-    string GameMonkeyScriptPath;
-
-    string DBCPath;
-    string MapPath;
-    string vMapPath;
-    string MMapPath;
-    bool Collision;
-    bool PathFinding;
-
-    uint32 ServerPreloading;
-
-    bool AHEnabled;
-    bool DisableBufferSaving;
-    bool SpeedhackProtection;
-    uint32 mInWorldPlayerCount;
-    bool CalculatedHeightChecks;
-    uint32 mAcceptedConnections;
-
-    float NetworkStressIn;
-    float NetworkStressOut;
 
     bool CheckSanctuary(uint32 MapId, uint32 zone, uint32 area)
     {
@@ -605,55 +569,30 @@ public:
     }
     RestedAreaInfo* GetRestedMapInfo(uint32 mapid) { return RestedMapIds[mapid]; }
 
-    uint32 HordePlayers;
-    uint32 AlliancePlayers;
-    uint32 PeakSessionCount;
-    bool IsPvPRealm;
-    bool SendMovieOnJoin;
-    int32 FunServerMall;
-    int LogoutDelay;
+    uint32 HordePlayers, AlliancePlayers, PeakSessionCount;
+    bool IsPvPRealm, SendMovieOnJoin;
+    int32 FunServerMall, LogoutDelay;
+    uint32 expansionUpdateTime;
     SessionSet gmList;
     RWLock gmList_lock;
 
-    uint32 expansionUpdateTime;
-
     void DeleteObject(Object* obj);
 
-    bool GuildsLoading;
+    bool gm_force_robes;
     uint8 StartLevel;
     uint32 StartGold;
 
-    uint32 flood_lines;
-    uint32 flood_seconds;
-    uint32 flood_message_time;
-    uint32 flood_mute_after_flood;
-    uint32 flood_caps_min_len;
+    uint32 flood_lines, flood_seconds, flood_message_time, flood_mute_after_flood, flood_caps_min_len;
     float flood_caps_pct;
     bool flood_message;
-    bool gm_force_robes;
 
-    bool antihack_teleport;
-    bool antihack_speed;
-    bool antihack_flight;
-    bool antihack_cheatengine;
-    bool no_antihack_on_gm;
+    bool no_antihack_on_gm, antihack_teleport, antihack_speed, antihack_flight, antihack_cheatengine;
 
-    //Enable/Disable specific battlegrounds/arenas
-    bool wg_enabled;
+    // Force start/end Wintergrasp
     bool ForceStart, ForceEnd;
-
-    bool av_enabled;
-    uint32 av_minplrs;
-    bool ab_enabled;
-    uint32 ab_minplrs;
-    bool wsg_enabled;
-    uint32 wsg_minplrs;
-    bool eots_enabled;
-    uint32 eots_minplrs;
-    bool sota_enabled;
-    uint32 sota_minplrs;
-    bool ioc_enabled;
-    uint32 ioc_minplrs;
+    //Enable/Disable specific battlegrounds/arenas
+    bool wg_enabled, av_enabled, ab_enabled, wsg_enabled, eots_enabled, sota_enabled, ioc_enabled;
+    uint32 av_minplrs, ab_minplrs, wsg_minplrs, eots_minplrs, sota_minplrs, ioc_minplrs;
 
     // Level Caps
     uint32 LevelCap_Custom_All;
@@ -712,21 +651,18 @@ protected:
     float regen_values[MAX_RATES];
 
     uint32 m_playerLimit;
-    bool m_allowMovement;
-    bool m_gmTicketSystem;
     std::string m_motd;
 
-    time_t m_gameTime;
-    time_t m_lastTick;
-
-    uint32 m_StartTime;
-    uint32 m_queueUpdateTimer;
+    time_t m_gameTime, m_lastTick;
+    uint32 m_StartTime, m_queueUpdateTimer;
 
     QueueSet mQueuedSessions;
 
 public:
     ThreadContext* LacrimiThread;
     Lacrimi* LacrimiPtr;
+
+    bool GuildsLoading;
 
     std::string GmClientChannel;
     bool m_reqGmForCommands;
@@ -735,19 +671,12 @@ public:
     bool m_useAccountData;
     bool m_blockgmachievements;
 
-    float m_movementCompressThreshold;
-    float m_movementCompressThresholdCreatures;
-    uint32 m_movementCompressRate;
-    uint32 m_movementCompressInterval;
     float m_speedHackThreshold;
     float m_speedHackLatencyMultiplier;
-    uint32 m_speedHackResetInterval;
     uint32 m_CEThreshold;
 
     // shutdown
-    uint32 m_shutdownTime;
-    uint32 m_shutdownType;
-    uint32 m_shutdownLastTime;
+    uint32 m_shutdownTime, m_shutdownType, m_shutdownLastTime;
 
     void QueueShutdown(uint32 delay, uint32 type);
     void CancelShutdown();
@@ -774,7 +703,7 @@ public:
     }
     bool QueryLog;
 
-public: // Crow: CPU and RAM shit. TODO: LINUX support
+public:
     float GetCPUUsage(bool external = false);
     float GetRAMUsage(bool external = false);
 
