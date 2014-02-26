@@ -1607,20 +1607,11 @@ void Spell::cast(bool check)
                                             unitTarget->RemoveFlag(UNIT_FIELD_AURASTATE, uint32(1) << (GetSpellProto()->TargetAuraState - 1) );
 
                                         // proc!
-                                        if(!m_triggeredSpell)
-                                        {
-                                            if( u_caster != NULL && u_caster->IsInWorld() )
-                                            {
-                                                u_caster->HandleProc(PROC_ON_CAST_SPECIFIC_SPELL | PROC_ON_CAST_SPELL, NULL, unitTarget, m_spellInfo, TotalDamage);
-                                                u_caster->m_procCounter = 0; //this is required for to be able to count the depth of procs (though i have no idea where/why we use proc on proc)
-                                            }
-                                        }
+                                        if(!m_triggeredSpell && u_caster != NULL && u_caster->IsInWorld() )
+                                            u_caster->HandleProc(PROC_ON_CAST_SPECIFIC_SPELL | PROC_ON_CAST_SPELL, NULL, unitTarget, m_spellInfo, TotalDamage);
 
                                         if( unitTarget != NULL && unitTarget->IsInWorld() )
-                                        {
                                             unitTarget->HandleProc(PROC_ON_SPELL_LAND_VICTIM, NULL, u_caster, m_spellInfo, TotalDamage);
-                                            unitTarget->m_procCounter = 0; //this is required for to be able to count the depth of procs (though i have no idea where/why we use proc on proc)
-                                        }
                                     }
                                 }
                             }
@@ -1655,20 +1646,11 @@ void Spell::cast(bool check)
                                     unitTarget->RemoveFlag(UNIT_FIELD_AURASTATE, uint32(1) << (GetSpellProto()->TargetAuraState - 1) );
 
                                 // proc!
-                                if(!m_triggeredSpell)
-                                {
-                                    if( u_caster != NULL && u_caster->IsInWorld() )
-                                    {
-                                        u_caster->HandleProc(PROC_ON_CAST_SPECIFIC_SPELL | PROC_ON_CAST_SPELL, NULL, unitTarget, m_spellInfo, TotalDamage);
-                                        u_caster->m_procCounter = 0; //this is required for to be able to count the depth of procs (though i have no idea where/why we use proc on proc)
-                                    }
-                                }
+                                if(!m_triggeredSpell && u_caster != NULL && u_caster->IsInWorld() )
+                                    u_caster->HandleProc(PROC_ON_CAST_SPECIFIC_SPELL | PROC_ON_CAST_SPELL, NULL, unitTarget, m_spellInfo, TotalDamage);
 
                                 if( unitTarget != NULL && unitTarget->IsInWorld() )
-                                {
                                     unitTarget->HandleProc(PROC_ON_SPELL_LAND_VICTIM, NULL, u_caster, m_spellInfo, TotalDamage);
-                                    unitTarget->m_procCounter = 0; //this is required for to be able to count the depth of procs (though i have no idea where/why we use proc on proc)
-                                }
                             }
                         }
                     }
@@ -1992,20 +1974,11 @@ bool Spell::HandleDestTargetHit(uint64 guid, uint32 MSTime)
                         unitTarget->RemoveFlag(UNIT_FIELD_AURASTATE, uint32(1) << (GetSpellProto()->TargetAuraState - 1) );
 
                     // proc!
-                    if(!m_triggeredSpell)
-                    {
-                        if( u_caster != NULL && u_caster->IsInWorld() )
-                        {
-                            u_caster->HandleProc(PROC_ON_CAST_SPECIFIC_SPELL | PROC_ON_CAST_SPELL, NULL, unitTarget, m_spellInfo);
-                            u_caster->m_procCounter = 0; //this is required for to be able to count the depth of procs (though i have no idea where/why we use proc on proc)
-                        }
-                    }
+                    if(!m_triggeredSpell && u_caster != NULL && u_caster->IsInWorld() )
+                        u_caster->HandleProc(PROC_ON_CAST_SPECIFIC_SPELL | PROC_ON_CAST_SPELL, NULL, unitTarget, m_spellInfo);
 
                     if( unitTarget != NULL && unitTarget->IsInWorld() )
-                    {
                         unitTarget->HandleProc(PROC_ON_SPELL_LAND_VICTIM, NULL, u_caster, m_spellInfo);
-                        unitTarget->m_procCounter = 0; //this is required for to be able to count the depth of procs (though i have no idea where/why we use proc on proc)
-                    }
                 }
 
                 /* don't call HandleAddAura unless we actually have auras... - Burlex */

@@ -507,9 +507,6 @@ public:
     void SendSpellNonMeleeDamageLog( Object* Caster, Unit* Target, uint32 SpellID, uint32 Damage, uint8 School, uint32 AbsorbedDamage, uint32 ResistedDamage, bool PhysicalDamage, uint32 BlockedDamage, bool CriticalHit, bool bToSet );
     void SendAttackerStateUpdate( Unit* Target, dealdamage *dmg, uint32 realdamage, uint32 abs, uint32 blocked_damage, uint32 hit_status, uint32 vstate );
 
-    //Dynamic objects
-    DynamicObject* dynObj;
-
     //object faction
     void _setFaction();
     uint32 _getFaction() { return m_faction ? m_faction->Faction : 0; }

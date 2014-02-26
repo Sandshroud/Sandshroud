@@ -200,6 +200,7 @@ Unit::Unit()
     polySpell = 0;
     RangedDamageTaken = 0;
     m_procCounter = 0;
+    m_procOverspill = 0;
     m_damgeShieldsInUse = false;
     m_temp_summon=false;
     m_p_DelayTimer = 0;
@@ -587,8 +588,8 @@ void Unit::GiveGroupXP(Unit* pVictim, Player* PlayerInGroup)
 
 uint32 Unit::HandleProc( uint32 flag, uint32 flag2, Unit* victim, SpellEntry* CastingSpell, int32 dmg, uint32 abs, uint32 weapon_damage_type )
 {
-    uint32 resisted_dmg = 0;
     ++m_procCounter;
+    uint32 resisted_dmg = 0;
     bool can_delete = !bProcInUse; //if this is a nested proc then we should have this set to TRUE by the father proc
     bProcInUse = true; //locking the proc list
     uint32 mstimenow = getMSTime();
@@ -744,6 +745,7 @@ uint32 Unit::HandleProc( uint32 flag, uint32 flag2, Unit* victim, SpellEntry* Ca
                     /* something has proceed over 10 times in a loop :/ dump the spellids to the crashlog, as the crashdump will most likely be useless. */
                     // BURLEX FIX ME!
                     //OutputCrashLogLine("HandleProc %u SpellId %u (%s) %u", flag, spellId, sSpellStore.LookupString(sSpellStore.LookupEntry(spellId)->Name), m_procCounter);
+                    m_procOverspill++;
                     return 0;
                 }
 
@@ -2475,6 +2477,12 @@ uint32 Unit::HandleProc( uint32 flag, uint32 flag2, Unit* victim, SpellEntry* Ca
     if(can_delete) //are we the upper level of nested procs ? If yes then we can remove the lock
         bProcInUse = false;
 
+    if(m_procOverspill)
+    {
+        m_procCounter -= m_procOverspill;
+        m_procOverspill = 0;
+    }
+    m_procCounter--;
     return resisted_dmg;
 }
 
@@ -3821,10 +3829,7 @@ int32 Unit::Strike( Unit* pVictim, uint32 weapon_damage_type, SpellEntry* abilit
         uint32 resisted_dmg;
 
         HandleProc(aproc, aproc2, pVictim, ability, realdamage, abs, weapon_damage_type + 1); //maybe using dmg.resisted_damage is better sometimes but then if using godmode dmg is resisted instead of absorbed....bad
-        m_procCounter = 0;
-
         resisted_dmg = pVictim->HandleProc(vproc, vproc2, TO_UNIT(this), ability, realdamage, abs, weapon_damage_type + 1);
-        pVictim->m_procCounter = 0;
 
         if(realdamage > 0)
         {
@@ -5463,6 +5468,24 @@ void Unit::SummonExpireAll(bool clearowner)
             if(obj != NULL)
                 obj->ExpireAndDelete();
             m_ObjectSlots[x] = 0;
+        }
+    }
+}
+
+void Unit::FillSummonList(std::vector<Creature*> &summonList, uint8 summonType)
+{
+    for(std::map< uint32, std::set<Creature*> >::iterator itr = m_Summons.begin(); itr != m_Summons.end(); itr++)
+    {
+        if(!itr->second.size())
+            continue;
+        for(std::set<Creature*>::iterator itr2 = itr->second.begin(); itr2 != itr->second.end(); itr2++)
+        {
+            // Should never happen
+            if(!(*itr2)->IsSummon())
+                continue;
+            Summon* summon = TO_SUMMON(*itr2);
+            if(summonType == 0xFF || summon->GetSummonType() == summonType)
+                summonList.push_back(*itr2);
         }
     }
 }
