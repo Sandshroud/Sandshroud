@@ -59,7 +59,6 @@ Object::Object() : m_position(0,0,0,0), m_spawnLocation(0,0,0,0)
 
     m_mapMgr = NULLMAPMGR;
     m_mapCell = 0;
-    dynObj = NULLDYN;
 
     m_faction = NULL;
     m_factionDBC = NULL;
@@ -1487,8 +1486,6 @@ void Object::RemoveFromWorld(bool free_guid)
 {
     // clear loot
     ClearLoot();
-    if(dynObj != NULL)
-        dynObj->Remove();
 
     ASSERT(m_mapMgr);
     MapMgr* m = m_mapMgr;
@@ -2427,9 +2424,7 @@ int32 Object::DealDamage(Unit* pVictim, uint32 damage, uint32 targetEvent, uint3
                 killerspell = NULL;
 
             pVictim->HandleProc( NULL, PROC_ON_DIE, TO_UNIT(this), killerspell );
-            pVictim->m_procCounter = 0;
             TO_UNIT(this)->HandleProc( PROC_ON_TARGET_DIE, NULL, pVictim, killerspell );
-            TO_UNIT(this)->m_procCounter = 0;
         }
 
         // check if pets owner is combat participant
@@ -3162,9 +3157,7 @@ int32 Object::SpellNonMeleeDamageLog(Unit* pVictim, uint32 spellID, uint32 damag
     if( IsUnit() && allowProc && spellInfo->Id != 25501 )
     {
         pVictim->HandleProc( vproc, vproc2, TO_UNIT(this), spellInfo, float2int32( res ) );
-        pVictim->m_procCounter = 0;
         TO_UNIT(this)->HandleProc( aproc, aproc2, pVictim, spellInfo, float2int32( res ) );
-        TO_UNIT(this)->m_procCounter = 0;
     }
 
     if( IsPlayer() )
