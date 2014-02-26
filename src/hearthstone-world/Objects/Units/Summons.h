@@ -116,6 +116,8 @@ public:
 
     int32 GetSummonSlot() { return summonslot; };
     Object* GetSummonOwner() { return s_Owner; };
+    // Returns the internal summon type or none
+    uint8 GetSummonType() { return m_Internal ? m_Internal->GetSummonType() : SUMMON_TYPE_NONE; };
 
 private:
     SummonHandler* m_Internal;

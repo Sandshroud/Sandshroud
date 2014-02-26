@@ -16,7 +16,7 @@ public:
     virtual void Init();
     virtual void Destruct();
 
-    void Create(Object* caster, Spell* pSpell, float x, float y, float z, uint32 duration, float radius);
+    void Create(Object* caster, Spell* pSpell, float x, float y, float z, int32 duration, float radius);
     void UpdateTargets(uint32 p_time);
 
     void AddInRangeObject(Object* pObj);
@@ -24,10 +24,9 @@ public:
     void Remove();
 
 protected:
+    uint64 casterGuid;
+
     SpellEntry * m_spellProto;
-    Unit* u_caster;
-    Player* p_caster;
-    Spell* m_parentSpell;
     DynamicObjectList targets;
 
     int32 m_aliveDuration;

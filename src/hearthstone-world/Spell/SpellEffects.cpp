@@ -1208,20 +1208,9 @@ void Spell::SpellEffectPersistentAA(uint32 i) // Persistent Area Aura
 {
     if(m_AreaAura || m_caster == NULL || !m_caster->IsInWorld())
         return;
-    //create only 1 dyn object
     int32 dur = GetDuration();
     float r = GetRadius(i);
 
-    //Note: this code seems to be useless
-    //this must be only source point or dest point
-    //this AREA aura it's applied on area
-    //it can'be on unit or self or item or object
-    //uncomment it if I'm wrong
-    //We are thinking in general so it might be useful later DK
-
-    // grep: this is a hack!
-    // our shitty dynobj system doesn't support GO casters, so we gotta
-    // kinda have 2 summoners for traps that apply AA.
     DynamicObject* dynObj = m_caster->GetMapMgr()->CreateDynamicObject();
     if(g_caster != NULL && g_caster->m_summoner && !unitTarget)
     {
@@ -1270,14 +1259,6 @@ void Spell::SpellEffectPersistentAA(uint32 i) // Persistent Area Aura
         return;
     }
 
-    if(u_caster != NULL)
-    {
-        if(GetSpellProto()->IsChannelSpell())
-        {
-            u_caster->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, dynObj->GetGUID());
-            u_caster->SetUInt32Value(UNIT_CHANNEL_SPELL, GetSpellProto()->Id);
-        }
-    }
     m_AreaAura = true;
 }
 
@@ -2929,8 +2910,7 @@ void Spell::SpellEffectAddFarsight(uint32 i) // Add Farsight
     if( p_caster == NULL )
         return;
 
-    DynamicObject* dyn = NULL;
-    dyn = p_caster->GetMapMgr()->CreateDynamicObject();
+    DynamicObject* dyn = p_caster->GetMapMgr()->CreateDynamicObject();
     if(dyn == NULL)
         return;
 

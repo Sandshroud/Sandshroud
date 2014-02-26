@@ -794,7 +794,7 @@ public:
     uint32 GetSpellDidHitResult( uint32 index, Unit* pVictim, Spell* pSpell, uint8 &reflectout );
     int32 Strike( Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability, int32 add_damage, int32 pct_dmg_mod, uint32 exclusive_damage, bool disable_proc, bool skip_hit_check, bool proc_extrastrike = false );
 
-    uint32 m_procCounter;
+    uint32 m_procCounter, m_procOverspill;
     uint32 HandleProc(uint32 flag, uint32 flag2, Unit* victim, SpellEntry* CastingSpell, int32 dmg = -1, uint32 abs = 0, uint32 weapon_damage_type = 0);
     void HandleProcDmgShield(uint32 flag, Unit* attacker);//almost the same as handleproc :P
 
@@ -916,6 +916,7 @@ public:
     void SummonExpireSlot(uint8 slot); // Empties just slot x.
     void SummonExpireAll(bool clearowner); //Empties all slots (NPC's + GameObjects
     HEARTHSTONE_INLINE void AddSummonToSlot(uint8 slot, Creature* toAdd) { m_Summons[slot].insert(toAdd); };
+    void FillSummonList(std::vector<Creature*> &summonList, uint8 summonType);
 
     uint32 m_ObjectSlots[4];
     uint32 m_triggerSpell;

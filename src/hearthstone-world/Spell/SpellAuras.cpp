@@ -1619,10 +1619,7 @@ void Aura::EventPeriodicDamage(uint32 amount)
         if( m_caster != NULL)
         {
             m_caster->HandleProc(PROC_ON_ANY_HOSTILE_ACTION|PROC_ON_SPELL_LAND, NULL, mtarget, sp, float2int32(res));
-            m_caster->m_procCounter = 0;
-
             mtarget->HandleProc(PROC_ON_ANY_HOSTILE_ACTION|PROC_ON_ANY_DAMAGE_VICTIM|PROC_ON_SPELL_LAND_VICTIM, NULL, m_caster, sp, float2int32(res));
-            mtarget->m_procCounter = 0;
         }
 
         if( m_caster != NULL)
@@ -3430,10 +3427,7 @@ void Aura::EventPeriodicHeal( uint32 amount )
         }
     }
     m_caster->HandleProc(PROC_ON_SPELL_LAND, NULL, m_target, m_spellProto, add);
-    m_caster->m_procCounter = 0;
-
     m_target->HandleProc(PROC_ON_SPELL_LAND_VICTIM, NULL, m_caster, m_spellProto, add);
-    m_target->m_procCounter = 0;
 }
 
 void Aura::SpellAuraModAttackSpeed(bool apply)

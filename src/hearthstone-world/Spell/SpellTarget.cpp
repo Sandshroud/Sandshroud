@@ -54,11 +54,13 @@ void Spell::FillTargetMap(uint32 i)
 
     if(TargetType & (SPELL_TARGET_AREA | SPELL_TARGET_AREA_SELF))  //targetted aoe
         AddAOETargets(i, TargetType, GetRadius(i), m_spellInfo->MaxTargets);
-
-    //TODO: support summon slots?
-    /*if (TargetType & SPELL_TARGET_OBJECT_CURTOTEMS && u_caster != NULL)
-        for (uint32 i=1; i<5; ++i) //totem slots are 1, 2, 3, 4
-            AddTarget(i, TargetType, u_caster->m_summonslot[i]);*/
+    if (TargetType & SPELL_TARGET_OBJECT_CURTOTEMS && u_caster != NULL)
+    {
+        std::vector<Creature*> m_totemList;
+        u_caster->FillSummonList(m_totemList, SUMMON_TYPE_TOTEM);
+        for(std::vector<Creature*>::iterator itr = m_totemList.begin(); itr != m_totemList.end(); itr++)
+            AddTarget(i, TargetType, *itr);
+    }
 
     if(TargetType & SPELL_TARGET_OBJECT_CURPET && p_caster != NULL)
         AddTarget(i, TargetType, p_caster->GetSummon());

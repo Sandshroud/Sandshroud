@@ -32,7 +32,6 @@ void HonorHandler::AddHonorPointsToPlayer(Player* pPlayer, uint32 uAmount)
     pPlayer->m_honorToday += uAmount;
 
     pPlayer->HandleProc(PROC_ON_GAIN_EXPIERIENCE, NULL, pPlayer, NULL);
-    pPlayer->m_procCounter = 0;
     if (pPlayer->m_honorPoints > 75000)
         pPlayer->m_honorPoints = 75000;
 
