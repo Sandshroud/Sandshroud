@@ -8,6 +8,7 @@ add_subdirectory(database)
 add_subdirectory(dbclib)
 add_subdirectory(detour)
 add_subdirectory(g3dlite)
+add_subdirectory(lualib)
 
 if(BUILD_TOOLS)
 add_subdirectory(libmpq1)
