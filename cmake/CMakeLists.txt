@@ -276,19 +276,27 @@ endif()
 
 endif()
 
+SET(BUILD_IGNORE 1)
+
 #Get the source directory for our code
 get_filename_component(C_MAKESOURCEPATH ${CMAKE_SOURCE_DIR} PATH)
 #Our cmake output directory is in our git folder!
 IF(${CMAKE_BINARY_DIR} MATCHES ${C_MAKESOURCEPATH})
 #Cut out the path of our binary path
 string(REGEX REPLACE "${C_MAKESOURCEPATH}" "" C_MAKECUTBINDIR "${CMAKE_BINARY_DIR}")
+#Check that we have a string
+IF(NOT "${C_MAKECUTBINDIR}" STREQUAL "")
 #Check the path of our output bin
 get_filename_component(C_MAKEOUTPUTBIN ${C_MAKECUTBINDIR} PATH)
-if(${C_MAKEOUTPUTBIN} STREQUAL "/")
+IF("${C_MAKEOUTPUTBIN}" STREQUAL "/")
 #Our output bin is directly in our source folder
 get_filename_component(C_MAKEOUTPUTBIN ${CMAKE_BINARY_DIR} NAME)
 endif()
+else()
+SET(BUILD_IGNORE 0)
+endif()
 
+IF(BUILD_IGNORE)
 IF(NOT EXISTS "${ROOT_PATH}/${C_MAKEOUTPUTBIN}.ignore")
 #Add our configured output of cmake to git ignore
 FILE(APPEND "${ROOT_PATH}/.gitignore" "
@@ -296,6 +304,7 @@ ${C_MAKEOUTPUTBIN}")
 #End function for appending output of cmake
 FILE(APPEND "${ROOT_PATH}/${C_MAKEOUTPUTBIN}.ignore" "")
 
+endif()
 endif()
 
 endif()
