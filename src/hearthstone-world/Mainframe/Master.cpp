@@ -142,10 +142,10 @@ bool Master::Run(int argc, char ** argv)
     uint32 LoadingTime = getMSTime();
     sLog.Notice( "Config", "Loading Config Files..." );
     if( !mainIni->ParseError() )
-        sLog.Success( "Config", ">> hearthstone-world.conf" );
+        sLog.Success( "Config", ">> hearthstone-world.ini" );
     else
     {
-        sLog.Error( "Config", ">> hearthstone-world.conf" );
+        sLog.Error( "Config", ">> hearthstone-world.ini" );
         return false;
     }
 
