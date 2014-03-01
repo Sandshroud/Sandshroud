@@ -533,6 +533,43 @@ void Conflagrate(uint32 i, Spell* pSpell, uint32 effect)
     }
 }
 
+/////////////////////////
+/// Proclimit Scripts ///
+/////////////////////////
+bool ImprovedShadowboltProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    if(dataHolder->GetCastingSpell() == NULL)
+        return false;
+    return dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_SHADOW_BOLT;
+}
+
+bool ImprovedDrainSoulProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    if(dataHolder->GetCastingSpell() == NULL || target == NULL)
+        return false;
+    if(!target->GetCurrentSpell())
+        return false;
+    if(target->GetCurrentSpell()->GetSpellProto()->NameHash != SPELL_HASH_DRAIN_SOUL)
+        return false;
+    SpellEntry *osp = dbcSpell.LookupEntry(triggered->origId);
+    if(osp == NULL)
+        return false;
+    damage = ( osp->EffectBasePoints[2] + 1 ) * target->GetUInt32Value( UNIT_FIELD_MAXPOWER1 ) / 100;
+    return true;
+}
+
+bool UnstableAfflictionProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    if(dataHolder->GetCastingSpell() == NULL)
+        return false;
+    SpellEntry *osp = dbcSpell.LookupEntry(triggered->origId);
+    if(osp == NULL)
+        return false;
+
+    damage = ((osp->EffectBasePoints[0] + 1) * 9) + floor(target->GetDamageDoneMod(SCHOOL_SHADOW) * 1.8f);
+    return true;
+}
+
 void Lacrimi::SetupWarlockSpells()
 {
     ////////////////////////
@@ -583,4 +620,15 @@ void Lacrimi::SetupWarlockSpells()
     RegisterSpellEffectModifier(61290, Shadowflame);
 
     RegisterSpellEffectModifier(17962, Conflagrate);
+
+    /////////////////////////
+    /// Proclimit Scripts ///
+    /////////////////////////
+    RegisterSpellScriptedProclimit(17794, ImprovedShadowboltProcs);
+    RegisterSpellScriptedProclimit(17797, ImprovedShadowboltProcs);
+    RegisterSpellScriptedProclimit(17798, ImprovedShadowboltProcs);
+    RegisterSpellScriptedProclimit(17799, ImprovedShadowboltProcs);
+    RegisterSpellScriptedProclimit(17800, ImprovedShadowboltProcs);
+    RegisterSpellScriptedProclimit(18371, ImprovedDrainSoulProcs);
+    RegisterSpellScriptedProclimit(31117, UnstableAfflictionProcs);
 }

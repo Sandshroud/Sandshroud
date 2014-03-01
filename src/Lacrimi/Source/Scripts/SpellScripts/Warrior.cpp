@@ -195,6 +195,40 @@ void SlamDMG(uint32 i, Spell* pSpell, uint32 effect)
     }
 }
 
+/////////////////////////
+/// Proclimit Scripts ///
+/////////////////////////
+bool BloodFrenzyProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    if(dataHolder->GetCastingSpell() == NULL)
+        return false;
+    if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_REND)
+        return true;
+    if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_DEEP_WOUNDS)
+        return true;
+    return false;
+}
+
+bool SwordAndBoardProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    if(dataHolder->GetCastingSpell() == NULL)
+        return false;
+    if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_REVENGE)
+        return true;
+    if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_DEVASTATE)
+        return true;
+    return false;
+}
+
+bool ImprovedRevengeProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    if(dataHolder->GetCastingSpell() == NULL)
+        return false;
+    if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_REVENGE)
+        return true;
+    return false;
+}
+
 void Lacrimi::SetupWarriorSpells()
 {
     ////////////////////////
@@ -259,4 +293,13 @@ void Lacrimi::SetupWarriorSpells()
     RegisterSpellEffectModifier(47475, SlamDMG);
 
     RegisterSpellEffectModifier(59653, DamageShieldDMG);
+
+    /////////////////////////
+    /// Proclimit Scripts ///
+    /////////////////////////
+    RegisterSpellScriptedProclimit(30069, BloodFrenzyProcs);
+    RegisterSpellScriptedProclimit(30070, BloodFrenzyProcs);
+    RegisterSpellScriptedProclimit(50227, SwordAndBoardProcs);
+    RegisterSpellScriptedProclimit(12798, ImprovedRevengeProcs);
+    RegisterSpellScriptedProclimit(58363, ImprovedRevengeProcs);
 }

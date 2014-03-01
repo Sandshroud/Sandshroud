@@ -923,7 +923,7 @@ void WorldSession::HandleSellItemOpcode( WorldPacket & recv_data )
     if(quantity > stackcount)
         quantity = stackcount; //make sure we don't over do it
 
-    uint32 price = GetSellPriceForItem(it, quantity);
+    uint32 price = Item::GetSellPriceForItem(it, quantity);
 
     _player->ModUnsigned32Value(PLAYER_FIELD_COINAGE,price);
 
@@ -1401,7 +1401,7 @@ void WorldSession::SendInventoryList(Creature* unit)
                 data << curItem->ItemId;
                 data << curItem->DisplayInfoID;
                 data << av_am;
-                data << GetBuyPriceForItem(curItem, 1, _player, unit);
+                data << Item::GetBuyPriceForItem(curItem, 1, _player, unit);
                 data << curItem->MaxDurability;
                 data << itr->second.amount;
 

@@ -64,6 +64,27 @@ struct ProcTriggerSpell
     int32 procValue;
 };
 
+struct ProcDataHolder
+{
+public:
+    ProcDataHolder(uint32 flag, uint32 flag2, Unit* victim, SpellEntry* CastingSpell, int32 dmg, uint32 abs, uint32 wdt)
+        : _flag(flag), _flag2(flag2), _victim(victim), _casting(CastingSpell), _damage(dmg), _absorb(abs), _weapon_damage_type(wdt) {}
+
+    Unit *GetVictim() { return _victim; }
+    SpellEntry *GetCastingSpell() { return _casting; }
+    uint32 GetFlag() { return _flag; }
+    uint32 GetFlag2() { return _flag; }
+    int32 GetDamage() { return _damage; }
+    uint32 GetAbsorb() { return _absorb; }
+    uint32 GetWeaponDamageType() { return _weapon_damage_type; }
+private:
+    Unit* _victim;
+    SpellEntry* _casting;
+    int32 _damage;
+    uint32 _flag, _flag2;
+    uint32 _absorb, _weapon_damage_type;
+};
+
 typedef set<uint32> AreaAuraList;
 
 class SERVER_DECL Aura : public EventableObject

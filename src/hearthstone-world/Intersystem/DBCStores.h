@@ -784,6 +784,7 @@ struct SpellEntry
 
     // Queries/Commands:
     bool IsChannelSpell() { return ((AttributesEx & (0x04|0x40)) ? true : (ChannelInterruptFlags != 0 ? true : false)); }
+    bool HasEffect(uint32 spellEffect) { return (Effect[0] == spellEffect || Effect[1] == spellEffect || Effect[2] == spellEffect); };
 };
 
 struct SpellDifficultyEntry

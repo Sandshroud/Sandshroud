@@ -350,13 +350,14 @@ public:
                 return true;
         return false;
     }
- 
+
+public:
+    static uint32 GetSkillByProto( uint32, uint32 );
+
+    static uint32 GetSellPriceForItem( ItemPrototype* proto, uint32 count );
+    static uint32 GetBuyPriceForItem( ItemPrototype* proto, uint32 count, Player* plr, Creature* vendor );
+
+    static uint32 GetSellPriceForItem( uint32 itemid, uint32 count);
+    static uint32 GetBuyPriceForItem( uint32 itemid, uint32 count, Player* plr, Creature* vendor );
+
 };
-
-uint32 GetSkillByProto( uint32, uint32 );
-
-uint32 GetSellPriceForItem( ItemPrototype* proto, uint32 count );
-uint32 GetBuyPriceForItem( ItemPrototype* proto, uint32 count, Player* plr, Creature* vendor );
-
-uint32 GetSellPriceForItem( uint32 itemid, uint32 count);
-uint32 GetBuyPriceForItem( uint32 itemid, uint32 count, Player* plr, Creature* vendor );
