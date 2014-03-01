@@ -146,6 +146,7 @@ typedef MapManagerScript*(*exp_create_mapmanager_script)(MapMgr *_internal);
 
 typedef bool(*exp_handle_dummy_spell)(uint32 i, Spell* pSpell);
 typedef bool(*exp_handle_script_effect)(uint32 i, Spell* pSpell);
+typedef bool(*exp_handle_script_proclimit)(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder);
 typedef bool(*exp_handle_dummy_aura)(uint32 i, Aura* pAura, bool apply);
 typedef void(*exp_handle_spell_effect_mod)(uint32 i, Spell* pSpell, uint32 effect);
 
@@ -162,6 +163,7 @@ typedef HM_NAMESPACE::hash_map<uint32, exp_create_mapmanager_script> MapMgrScrip
 typedef HM_NAMESPACE::hash_map<uint32, exp_handle_dummy_aura> HandleDummyAuraMap;
 typedef HM_NAMESPACE::hash_map<uint32, exp_handle_dummy_spell> HandleDummySpellMap;
 typedef HM_NAMESPACE::hash_map<uint32, exp_handle_script_effect> HandleScriptEffectMap;
+typedef HM_NAMESPACE::hash_map<uint32, exp_handle_script_proclimit> HandleScriptProclimitMap;
 typedef HM_NAMESPACE::hash_map<uint32, exp_handle_spell_effect_mod> HandleSpellEffectModifier;
 
 typedef map<uint8, map<uint32, GossipScript*> > MultiTypeGossipMap;
@@ -194,6 +196,7 @@ public:
     GameObjectAIScript * CreateAIScriptClassForGameObject(uint32 uEntryId, GameObject* pGameObject);
     MapManagerScript * CreateMapManagerScriptForMapManager(uint32 mapid, MapMgr* _internal, bool Silent);
 
+    bool HandleScriptedProcLimits(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder);
     bool HandleScriptedSpellEffect(uint32 uSpellId, uint32 i, Spell* pSpell);
     bool CallScriptedDummySpell(uint32 uSpellId, uint32 i, Spell* pSpell);
     bool CallScriptedDummyAura(uint32 uSpellId, uint32 i, Aura*  pAura, bool apply);
@@ -208,6 +211,7 @@ public:
     void register_dummy_aura(uint32 entry, exp_handle_dummy_aura callback);
     void register_dummy_spell(uint32 entry, exp_handle_dummy_spell callback);
     void register_script_effect(uint32 entry, exp_handle_script_effect callback);
+    void register_scripted_proclimit(uint32 entry, exp_handle_script_proclimit callback);
     void register_creature_script(uint32 entry, exp_create_creature_ai callback);
     void register_gameobject_script(uint32 entry, exp_create_gameobject_ai callback);
     void register_mapmanager_script(uint32 entry, exp_create_mapmanager_script callback);
@@ -232,6 +236,7 @@ protected:
     HandleDummyAuraMap _auras;
     HandleDummySpellMap _spells;
     HandleScriptEffectMap _effects;
+    HandleScriptProclimitMap _proclimits;
     HandleSpellEffectModifier _effectmods;
 
     LibraryHandleMap _handles;
@@ -241,6 +246,8 @@ protected:
     QuestScripts _questscripts;
     MultiTypeGossipMap GossipMaps;
     QuestScriptMap EntryQuestScriptMap;
+
+    exp_handle_script_proclimit _baseproclimits;
 };
 
 class SERVER_DECL CreatureAIScript

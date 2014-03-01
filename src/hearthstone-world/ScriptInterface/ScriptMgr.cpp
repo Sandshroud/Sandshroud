@@ -442,6 +442,20 @@ void ScriptMgr::register_script_effect(uint32 entry, exp_handle_script_effect ca
     _effects.insert( HandleScriptEffectMap::value_type( entry, callback ) );
 }
 
+void ScriptMgr::register_scripted_proclimit(uint32 entry, exp_handle_script_proclimit callback)
+{
+    if(entry == 0)
+    {
+        _baseproclimits = callback;
+        return;
+    }
+
+    if(_proclimits.find(entry) != _proclimits.end())
+        return;
+
+    _proclimits.insert( HandleScriptProclimitMap::value_type( entry, callback ) );
+}
+
 void ScriptMgr::register_spell_effect_modifier(uint32 entry, exp_handle_spell_effect_mod callback)
 {
     if(_effectmods.find(entry) != _effectmods.end())
@@ -533,6 +547,16 @@ GameObjectAIScript * ScriptMgr::CreateAIScriptClassForGameObject(uint32 uEntryId
 
     exp_create_gameobject_ai function_ptr = itr->second;
     return (function_ptr)(pGameObject);
+}
+
+bool ScriptMgr::HandleScriptedProcLimits(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    HandleScriptProclimitMap::iterator itr = _proclimits.find(uSpellId);
+    if(itr == _proclimits.end())
+        return _baseproclimits(target, uSpellId, damage, targets, triggered, dataHolder);
+
+    exp_handle_script_proclimit ptr = itr->second;
+    return (ptr)(target, uSpellId, damage, targets, triggered, dataHolder);
 }
 
 bool ScriptMgr::HandleScriptedSpellEffect(uint32 uSpellId, uint32 i, Spell* pSpell)

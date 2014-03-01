@@ -116,6 +116,32 @@ void ShadowWordDeath(uint32 i, Spell* pSpell, uint32 effect)
         pSpell->p_caster->CastSpell(pSpell->u_caster, 32409, true);
 }
 
+/////////////////////////
+/// Proclimit Scripts ///
+/////////////////////////
+bool MassDispelProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    if(dataHolder->GetCastingSpell() == NULL)
+        return false;
+    return dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_MASS_DISPEL;
+}
+
+bool HolyConcentrationProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    if(dataHolder->GetCastingSpell() == NULL)
+        return false;
+    if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_FLASH_HEAL)
+        return true;
+    if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_BINDING_HEAL)
+        return true;
+    if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_GREATER_HEAL)
+        return true;
+    //Requires EmpoweredRenew
+    //if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_RENEW)
+        //return true;
+    return false;
+}
+
 void Lacrimi::SetupPriestSpells()
 {
     ////////////////////////
@@ -145,4 +171,11 @@ void Lacrimi::SetupPriestSpells()
     RegisterSpellEffectModifier(32996, ShadowWordDeath);
     RegisterSpellEffectModifier(48157, ShadowWordDeath);
     RegisterSpellEffectModifier(48158, ShadowWordDeath);
+
+    /////////////////////////
+    /// Proclimit Scripts ///
+    /////////////////////////
+    RegisterSpellScriptedProclimit(32592, MassDispelProcs);
+    RegisterSpellScriptedProclimit(39897, MassDispelProcs);
+    RegisterSpellScriptedProclimit(34754, HolyConcentrationProcs);
 }

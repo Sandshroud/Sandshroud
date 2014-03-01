@@ -111,6 +111,55 @@ void CatSwipe(uint32 i, Spell* pSpell, uint32 effect)
     }
 }
 
+/////////////////////////
+/// Proclimit Scripts ///
+/////////////////////////
+bool PrimalFuryProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    if(dataHolder->GetCastingSpell() == NULL)
+        return false;
+    return dataHolder->GetCastingSpell()->HasEffect(SPELL_EFFECT_ADD_COMBO_POINTS);
+}
+
+bool IntensityProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    if(dataHolder->GetCastingSpell() == NULL)
+        return false;
+    // Only proc on Enrage
+    return dataHolder->GetCastingSpell()->Id == 5229;
+}
+
+bool EclipseWrathProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    if(dataHolder->GetCastingSpell() == NULL)
+        return false;
+    // Only proc on Wrath
+    return dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_WRATH;
+}
+
+bool EclipseStarfireProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    if(dataHolder->GetCastingSpell() == NULL)
+        return false;
+    // Only proc on Starfire
+    return dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_STARFIRE;
+}
+
+bool InfectedWoundsProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    if(dataHolder->GetCastingSpell() == NULL)
+        return false;
+    if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_SHRED)
+        return true;
+    if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_MAUL)
+        return true;
+    if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_MANGLE__CAT_)
+        return true;
+    if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_MANGLE__BEAR_)
+        return true;
+    return false;
+}
+
 void Lacrimi::SetupDruidSpells()
 {
     ////////////////////////
@@ -150,4 +199,15 @@ void Lacrimi::SetupDruidSpells()
     RegisterSpellEffectModifier(48577, FerociousBite);
 
     RegisterSpellEffectModifier(62078, CatSwipe);
+
+    /////////////////////////
+    /// Proclimit Scripts ///
+    /////////////////////////
+    RegisterSpellScriptedProclimit(16953, PrimalFuryProcs);
+    RegisterSpellScriptedProclimit(17106, IntensityProcs);
+    RegisterSpellScriptedProclimit(48518, EclipseWrathProcs);
+    RegisterSpellScriptedProclimit(48517, EclipseStarfireProcs);
+    RegisterSpellScriptedProclimit(58179, InfectedWoundsProcs);
+    RegisterSpellScriptedProclimit(58180, InfectedWoundsProcs);
+    RegisterSpellScriptedProclimit(58181, InfectedWoundsProcs);
 }

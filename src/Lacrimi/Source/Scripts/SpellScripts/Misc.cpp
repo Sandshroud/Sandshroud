@@ -204,6 +204,11 @@ void ChimeraShotSerpant(uint32 i, Spell* pSpell, uint32 effect)
     }
 }
 
+/////////////////////////
+/// Proclimit Scripts ///
+/////////////////////////
+bool Todo2(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder);
+
 void Lacrimi::SetupMiscSpells()
 {
     ////////////////////////
@@ -236,6 +241,11 @@ void Lacrimi::SetupMiscSpells()
     RegisterSpellEffectModifier(62775, TympanicTantrum);
 
     RegisterSpellEffectModifier(53353, ChimeraShotSerpant);
+
+    /////////////////////////
+    /// Proclimit Scripts ///
+    /////////////////////////
+    RegisterSpellScriptedProclimit(0, Todo2);
 }
 
 
@@ -591,4 +601,1378 @@ void Todo()
         }break;
     case 60103: { }break;
     }
+}
+
+bool Todo2(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    SpellEntry *casting = dataHolder->GetCastingSpell(), *applying = dbcSpell.LookupEntry(triggered->origId), *spe = dbcSpell.LookupEntry(uSpellId);
+    if(casting == NULL || spe == NULL)
+        return false;
+
+    uint32 talentlevel = 0;
+    switch( triggered->origId )
+    {
+        //mace specialization
+        case 12284: {talentlevel = 1;}break;
+        case 12701: {talentlevel = 2;}break;
+        case 12702: {talentlevel = 3;}break;
+        case 12703: {talentlevel = 4;}break;
+        case 12704: {talentlevel = 5;}break;
+
+        //Unbridled Wrath
+        case 12999: {talentlevel = 1;}break;
+        case 13000: {talentlevel = 2;}break;
+        case 13001: {talentlevel = 3;}break;
+        case 13002: {talentlevel = 4;}break;
+    }
+
+    switch(uSpellId)
+    {
+        //warlock - Nightfall
+    case 17941:
+        {
+            //only trigger effect for specified spells
+            if( casting->NameHash != SPELL_HASH_CORRUPTION && //Corruption
+                casting->NameHash != SPELL_HASH_DRAIN_LIFE )//Drain Life
+                return false;
+        }break;
+
+    case 32386://Shadow Embrace
+    case 32388:
+    case 32389:
+    case 32390:
+    case 32391:
+        {
+            if( casting->NameHash != SPELL_HASH_SHADOW_BOLT &&
+                casting->NameHash != SPELL_HASH_HAUNT )
+                return false;
+        }break;
+
+        //warlock - Aftermath
+    case 18118:
+        {
+            //only trigger effect for specified spells
+            skilllinespell* skillability = objmgr.GetSpellSkill(casting->Id);
+            if( !skillability )
+                return false;
+
+            if( skillability->skilline != SKILL_DESTRUCTION )
+                return false;
+        }break;
+
+        //warlock - Soul Leech
+    case 30294:
+        {
+            if(applying == NULL)
+                return false;
+            if( dataHolder->GetDamage() == -1 )
+                return false;
+
+            damage = (applying->EffectBasePoints[0]+1) * dataHolder->GetDamage() / 100;
+        }break;
+
+        //warlock - pyroclasm
+    case 18093:
+        {
+            //only trigger effect for specified spells
+            if( casting->NameHash != SPELL_HASH_RAIN_OF_FIRE && //Rain of Fire
+                casting->NameHash != SPELL_HASH_HELLFIRE_EFFECT && //Hellfire
+                casting->NameHash != SPELL_HASH_SOUL_FIRE ) //Soul Fire
+                return false;
+        }break;
+
+        //mage - Improved Scorch
+    case 22959:
+        {
+            //only trigger effect for specified spells
+            if( casting->NameHash != SPELL_HASH_SCORCH ) //Scorch
+                return false;
+        }break;
+
+        //mage - Combustion
+    case 28682:
+        {
+            //only trigger effect for specified spells
+            if( !( casting->c_is_flags & SPELL_FLAG_IS_DAMAGING)
+                || casting->School != SCHOOL_FIRE )
+                return false;
+
+            if( dataHolder->GetFlag2() & PROC_ON_SPELL_CRIT_HIT )
+            {
+                triggered->procCharges++;
+                if( triggered->procCharges >= 3 ) //whatch that number cause it depends on original stack count !
+                {
+                    target->m_AuraInterface.RemoveAllAurasByNameHash( SPELL_HASH_COMBUSTION, false );
+                }return false;
+            }
+        }break;
+
+        //priest - Shadow Weaving
+    case 15258:
+        {
+            //we need damaging spells for this, so we suppose all shadow spells casted on target are dmging spells = Wrong
+            if( casting->School != SCHOOL_SHADOW || !( casting->c_is_flags & SPELL_FLAG_IS_DAMAGING ) )
+                return false;
+        }break;
+
+        //priest - Inspiration
+    case 15359:
+    case 14893:
+    case 15357:
+        {
+            if(!( casting->c_is_flags & SPELL_FLAG_IS_HEALING ) )
+                return false;
+        }break;
+
+        //Druid Living Seed
+    case 48504:
+        {
+            if ( casting->NameHash != SPELL_HASH_SWIFTMEND &&
+                casting->NameHash != SPELL_HASH_REGROWTH &&
+                casting->NameHash != SPELL_HASH_HEALING_TOUCH &&
+                casting->NameHash != SPELL_HASH_NOURISH )
+                return false;
+        }break;
+
+        //shaman - Healing Way
+    case 29203:
+        {
+            //only trigger effect for specified spells
+            if( casting->NameHash != SPELL_HASH_HEALING_WAVE ) //healing wave
+                return false;
+        }break;
+
+    case 16180:
+    case 16196:
+    case 16198: // Improved Water Shield
+        {
+            // Proc for Lesser Healing Wave is 60% of base one
+            if((casting->NameHash == SPELL_HASH_LESSER_HEALING_WAVE && Rand(40)))
+                return false;
+
+            Aura* shield = target->m_AuraInterface.FindPositiveAuraByNameHash(SPELL_HASH_WATER_SHIELD);
+            if(!shield)
+                return false;
+
+            uSpellId = shield->m_spellProto->EffectTriggerSpell[0];
+            shield->ModProcCharges(-1);
+        }break;
+
+    case 51525:
+    case 51526:
+    case 51527: // Static Shock
+        {
+            Aura* shield = target->m_AuraInterface.FindPositiveAuraByNameHash(SPELL_HASH_LIGHTNING_SHIELD);
+            if(shield == NULL)
+                return false;
+
+            uSpellId = shield->m_spellProto->EffectTriggerSpell[0];
+            shield->ModProcCharges(-1);
+        }break;
+
+        //shaman - Elemental Devastation
+    case 29177:
+    case 29178:
+    case 30165:
+        {
+            //only trigger effect for specified spells
+            if( !(casting->c_is_flags & SPELL_FLAG_IS_DAMAGING)) //healing wave
+                return false;
+        }break;
+
+        //shaman - windfury weapon
+    case 25504:
+        {
+            if(!target->IsPlayer() || dataHolder->GetWeaponDamageType() < 1 || dataHolder->GetWeaponDamageType() > 2)
+                return false;
+
+            Item* mh = TO_PLAYER(target)->GetItemInterface()->GetInventoryItem( EQUIPMENT_SLOT_MAINHAND + dataHolder->GetWeaponDamageType() -1);
+            if(mh == NULL)
+                return false;
+
+            uint32 apBonus = 46; // use rank 1 bonus as default
+            EnchantmentInstance * ei = mh->GetEnchantment(1);
+            if(ei == NULL)
+                return false;
+
+            EnchantEntry * e = ei->Enchantment;
+            if(e == NULL)
+                return false;
+
+            switch(e->Id)
+            {
+            case 284: apBonus = 119; break;
+            case 525: apBonus = 249; break;
+            case 1669: apBonus = 333; break;
+            case 2636: apBonus = 445; break;
+            case 3785: apBonus = 835; break;
+            case 3786: apBonus = 1090; break;
+            case 3787: apBonus = 1250; break;
+            }
+
+            float mhs = float( mh->GetProto()->Delay );
+            // Calculate extra AP bonus damage
+            uint32 extra_dmg=float2int32(mhs * apBonus / 14000.0f);
+            if(dataHolder->GetWeaponDamageType() == 2) // offhand gets 50% bonus
+                extra_dmg /= 2;
+
+            target->Strike( dataHolder->GetVictim(), dataHolder->GetWeaponDamageType()-1, spe, extra_dmg, 0, 0, false, false );
+            target->Strike( dataHolder->GetVictim(), dataHolder->GetWeaponDamageType()-1, spe, extra_dmg, 0, 0, false, false );
+            uSpellId = 33010; // WF animation
+        }break;
+
+        // Ancestral Fortitude
+    case 16237:
+    case 16177:
+    case 16236:
+        {
+            if(!( casting->c_is_flags & SPELL_FLAG_IS_HEALING ))
+                return false;
+        }break;
+
+        // Flametongue Weapon
+    case 8026:
+    case 8028:
+    case 8029:
+    case 10445:
+    case 16343:
+    case 16344:
+    case 25488:
+    case 58786:
+    case 58787:
+    case 58788:
+        {
+            if(!target->IsPlayer() || dataHolder->GetWeaponDamageType() < 1 || dataHolder->GetWeaponDamageType() > 2)
+                return false;
+
+            uSpellId = 10444;    // Flametongue Weapon proc
+            Item* mh = TO_PLAYER(target)->GetItemInterface()->GetInventoryItem( EQUIPMENT_SLOT_MAINHAND + dataHolder->GetWeaponDamageType() - 1 );
+
+            if( mh == NULL)
+                return false;
+
+            float mhs = float( mh->GetProto()->Delay );
+            damage = FL2UINT( mhs * 0.001f * (spe->EffectBasePoints[0] + 1)/88 );
+        }break;
+
+        //rogue - Ruthlessness
+    case 14157:
+        {
+            //we need a finishing move for this
+            if(!(casting->c_is_flags & SPELL_FLAG_IS_FINISHING_MOVE) || dataHolder->GetVictim() == TO_UNIT(target))
+                return false;
+
+            if(target->IsPlayer())
+            {
+                TO_PLAYER(target)->m_spellcomboPoints = 0;
+                //TO_PLAYER(target)->UpdateComboPoints();
+            }
+        }break;
+
+        //rogue - Relentless Strikes
+    case 14181:
+        {
+            if(applying == NULL)
+                return false;
+            if(!target->IsPlayer() || TO_UNIT(target) != dataHolder->GetVictim())  // to prevent it proccing 2 times
+                return false;//this should not ocur unless we made a fuckup somewhere
+
+            if( !(casting->c_is_flags & SPELL_FLAG_IS_FINISHING_MOVE) )
+                return false;
+
+            int32 procChance = applying->EffectPointsPerComboPoint[0] * TO_PLAYER(target)->m_comboPoints;
+            if(!Rand(procChance))
+                return false;
+        }break;
+
+        //rogue - Find Weakness
+    case 31234:
+    case 31235:
+    case 31236:
+    case 31237:
+    case 31238:
+        {
+            if(!(casting->c_is_flags & SPELL_FLAG_IS_FINISHING_MOVE))
+                return false;
+        }break;
+
+        //rogue - Initiative
+    case 13977:
+        {
+            //we need a Ambush, Garrote, or Cheap Shot
+            if( casting->NameHash != SPELL_HASH_CHEAP_SHOT && //Cheap Shot
+                casting->NameHash != SPELL_HASH_AMBUSH && //Ambush
+                casting->NameHash != SPELL_HASH_GARROTE )  //Garrote
+                return false;
+        }break;
+
+        //Priest - blackout
+    case 15269:
+        {
+            if( casting->School != SCHOOL_SHADOW || !( casting->c_is_flags & SPELL_FLAG_IS_DAMAGING ) )
+                return false;
+        }break;
+
+        //warrior - improved berserker rage
+    case 23690:
+    case 23691:
+        {
+            if(casting->NameHash != SPELL_HASH_BERSERKER_RAGE )
+                return false;
+        }break;
+
+        //mage - Arcane Concentration
+    case 12536:
+        {
+            if( !( casting->c_is_flags & SPELL_FLAG_IS_DAMAGING ) )
+                return false;
+        }break;
+
+        //mage - Improved Blizzard
+    case 12484:
+    case 12485:
+    case 12486:
+        {
+            if( casting->NameHash != SPELL_HASH_BLIZZARD || dataHolder->GetVictim() == TO_UNIT(target) ) //Blizzard
+                return false;
+        }break;
+
+        //mage - Master of Elements
+    case 29077:
+        {
+            if(applying == NULL)
+                return false;
+            damage = float2int32(target->GetSpellBaseCost(casting) * ((applying->EffectBasePoints[0] + 1) / 100));
+        }break;
+
+        // Burnout
+    case 44450:
+        {
+            if(applying == NULL)
+                return false;
+            int32 addcost = float2int32(target->GetSpellBaseCost(casting) * ((applying->EffectBasePoints[1] + 1) / 100));
+            if( (target->GetUInt32Value(UNIT_FIELD_POWER1) - addcost) < 0 )
+                target->SetUInt32Value(UNIT_FIELD_POWER1, 0);
+            else
+                target->ModUnsigned32Value(UNIT_FIELD_POWER1, -addcost);
+        }break;
+
+        //Hunter - Thrill of the Hunt
+    case 34720:
+        {
+            damage = float2int32(target->GetSpellBaseCost(casting) * (40.0f / 100.0f));
+        }break;
+
+        // Improved Steady Shot
+    case 53220:
+        {
+            if( casting->NameHash != SPELL_HASH_STEADY_SHOT )
+                return false;
+        }break;
+
+        //rogue - improved sprint
+    case 30918:
+        {
+            if( casting->NameHash != SPELL_HASH_SPRINT || dataHolder->GetVictim() != TO_UNIT(target) ) //sprint
+                return false;
+        }break;
+
+        //paladin - Improved Lay on Hands
+    case 20233:
+    case 20236:
+        {
+            if( casting->NameHash != SPELL_HASH_LAY_ON_HANDS )
+                return false;
+        }break;
+
+        //paladin - Spiritual Attunement
+    case 31786:
+        {
+            if(applying == NULL)
+                return false;
+            //trigger only on heal spell cast by NOT us
+            if( !( casting->c_is_flags & SPELL_FLAG_IS_HEALING ) || TO_UNIT(target) == dataHolder->GetVictim() )
+                return false;
+
+            damage = (casting->EffectBasePoints[IsHealingSpell(casting)-1] + 1) * (applying->EffectBasePoints[0] + 1 ) / 100;
+        }break;
+
+        //paladin - Eye for an Eye
+    case 25997:
+        {
+            if(applying == NULL)
+                return false;
+            if( dataHolder->GetVictim() == TO_UNIT(target) )
+                return false; //not self casted crits
+
+            if(!(casting->c_is_flags & SPELL_FLAG_IS_DAMAGING))
+                return false;
+
+            damage = ( dataHolder->GetDamage() *  (applying->EffectBasePoints[0] + 1 )) / 100 ; //only half dmg
+            int32 half_health = target->GetUInt32Value(UNIT_FIELD_HEALTH) >> 1;
+            if( damage > half_health )
+                damage = half_health;
+        }break;
+
+        //paladin  - Sacred Cleansing
+    case 53659:
+        {
+            if(casting->NameHash != SPELL_HASH_CLEANSE )
+                return false;
+        }break;
+
+        //paladin - Infusion of Light
+    case 53672:
+    case 54149:
+        {
+            if( casting->NameHash != SPELL_HASH_HOLY_SHOCK )
+                return false;
+        }break;
+
+        //paladin - art of war
+    case 53489:
+    case 59578:
+        {
+            if( casting->NameHash != SPELL_HASH_CRUSADER_STRIKE &&
+                casting->NameHash != SPELL_HASH_DIVINE_STORM &&
+                !(casting->buffType & SPELL_TYPE_JUDGEMENT) )
+                return false;
+        }break;
+
+    case 61840:
+        {
+            if(applying == NULL)
+                return false;
+            if(!target->IsPlayer())
+                return false;
+            if( casting->NameHash != SPELL_HASH_CRUSADER_STRIKE &&
+                casting->NameHash != SPELL_HASH_DIVINE_STORM &&
+                casting->buffType != SPELL_TYPE_JUDGEMENT )
+                return false;
+
+            damage = float2int32(float(dataHolder->GetDamage())*0.0375f);
+        }break;
+
+        // Paladin - Sheat of Light
+    case 54203:
+        {
+            if(applying == NULL)
+                return false;
+            if(!(casting->c_is_flags & SPELL_FLAG_IS_HEALING))
+                return false;
+            damage = dataHolder->GetDamage() * (applying->EffectBasePoints[1] + 1) / 400;
+        }break;
+
+        //Energized
+    case 43751:
+        {
+            if( casting->NameHash != SPELL_HASH_LIGHTNING_BOLT )
+                return false;
+        }break;
+
+        //Spell Haste Trinket
+    case 33370:
+        {
+            if( !( casting->c_is_flags & SPELL_FLAG_IS_DAMAGING ) )
+                return false;
+        }break;
+
+        // Fathom-Brooch of the Tidewalker proc
+    case 37243:
+        {
+            if( casting->School != SCHOOL_NATURE )
+                return false;
+        }break;
+
+        //shaman - Lightning Overload
+    case 39805:
+        {
+            //trigger on lightning and chain lightning. Spell should be identical , well maybe next time :P
+            if(dataHolder->GetVictim() && (casting->NameHash == SPELL_HASH_LIGHTNING_BOLT || casting->NameHash == SPELL_HASH_CHAIN_LIGHTNING))
+            {
+                uSpellId = casting->Id;
+                damage = (casting->EffectBasePoints[0] + 1) / 2; //only half dmg
+                targets.m_unitTarget = dataHolder->GetVictim()->GetGUID();
+            }
+            else
+                return false;
+        }break;
+
+        //item - Band of the Eternal Sage
+    case 35084:
+        {
+            //requires offensive spell. ! might not cover all spells
+            if( !( casting->c_is_flags & SPELL_FLAG_IS_DAMAGING ) )
+                return false;
+        }break;
+
+    case 44544: //Fingers of Frost
+    case 57761: //Brain Freeze
+        {
+            if( casting->NameHash != SPELL_HASH_FROSTBOLT &&
+                casting->NameHash != SPELL_HASH_CONE_OF_COLD &&
+                casting->NameHash != SPELL_HASH_FROSTFIRE_BOLT )
+                return false;
+        }break;
+
+        // druid - Celestial Focus
+    case 16922:
+        {
+            if( casting->NameHash != SPELL_HASH_STARFIRE )
+                return false;
+        }break;
+
+    case 37565: //setbonus
+        {
+            if (casting->NameHash != SPELL_HASH_FLASH_HEAL)
+                return false;
+        }break;
+
+        //SETBONUSES
+    case 37379:
+        {
+            if (casting->School != SCHOOL_SHADOW || !(casting->c_is_flags & SPELL_FLAG_IS_DAMAGING))
+                return false;
+        }break;
+
+    case 37378:
+        {
+            if (casting->School != SCHOOL_FIRE || !(casting->c_is_flags & SPELL_FLAG_IS_DAMAGING))
+                return false;
+        }break;
+
+    case 39950:
+        {
+            if (!(casting->c_is_flags & SPELL_FLAG_IS_HEALING))
+                return false;
+        }break;
+
+    case 37234:
+    case 37214:
+    case 37601:
+        {
+            if (!(casting->c_is_flags & SPELL_FLAG_IS_DAMAGING))
+                return false;
+        }break;
+
+    case 37237:
+        {
+            if (casting->NameHash != SPELL_HASH_LIGHTNING_BOLT)
+                return false;
+        }break;
+
+    case 37193:
+        {
+            if (casting->NameHash != SPELL_HASH_HOLY_SHIELD)
+                return false;
+        }break;
+
+    case 37196:
+    case 43838:
+        {
+            if( casting->buffIndexType != SPELL_TYPE_INDEX_JUDGEMENT )
+                return false;
+        }break;
+
+    case 43837:
+        {
+            if( casting->NameHash != SPELL_HASH_FLASH_OF_LIGHT &&
+                casting->NameHash != SPELL_HASH_HOLY_LIGHT )
+                return false;
+        }break;
+
+    case 37529:
+        {
+            if( casting->NameHash != SPELL_HASH_OVERPOWER )
+                return false;
+        }break;
+
+    case 37517:
+        {
+            if( casting->Id == 37517 || casting->NameHash != SPELL_HASH_REVENGE )
+                return false;
+        }break;
+
+        //SETBONUSES END
+        //Pendulum of Telluric Currents
+    case 60483:
+        {
+            if(!( casting->c_is_flags & SPELL_FLAG_IS_DAMAGING ))
+                return false;
+        }break;
+
+        //http://www.wowhead.com/?item=32493 Ashtongue Talisman of Shadows
+    case 40480:
+        {
+            if(casting->NameHash != SPELL_HASH_CORRUPTION )
+                return false;
+        }break;
+
+        //http://www.wowhead.com/?item=32488 Ashtongue Talisman of Insight
+    case 40483:
+        {
+            if( !( casting->c_is_flags & SPELL_FLAG_IS_DAMAGING ) )
+                return false;
+        }break;
+
+        //http://www.wowhead.com/?item=32487 Ashtongue Talisman of Swiftness
+    case 40487:
+        {
+            if(casting->NameHash != SPELL_HASH_STEADY_SHOT)
+                return false;
+        }break;
+
+        //http://www.wowhead.com/?item=32485 Ashtongue Talisman of Valor
+    case 40459:
+        {
+            if((casting->NameHash != SPELL_HASH_MORTAL_STRIKE
+                || casting->NameHash != SPELL_HASH_BLOODTHIRST
+                || casting->NameHash != SPELL_HASH_SHIELD_SLAM))
+                return false;
+        }break;
+
+        //item - Band of the Eternal Restorer
+    case 35087:
+        {
+            if(!(casting->c_is_flags & SPELL_FLAG_IS_HEALING)) //requires healing spell.
+                return false;
+        }break;
+
+        //http://www.wowhead.com/?item=32486 Ashtongue Talisman of Equilibrium
+    case 40452: //Mangle has a 40% chance to grant 140 Strength for 8 sec
+        {
+            if(casting->NameHash != SPELL_HASH_MANGLE__BEAR_
+                || casting->NameHash != SPELL_HASH_MANGLE__CAT_)
+                return false;
+        }break;
+
+    case 40445: //Starfire has a 25% chance to grant up to 150 spell damage for 8 sec
+        {
+            if(casting->NameHash != SPELL_HASH_STARFIRE)
+                return false;
+        }break;
+
+    case 40446: //Rejuvenation has a 25% chance to grant up to 210 healing for 8 sec
+        {
+            if(casting->NameHash != SPELL_HASH_REJUVENATION)
+                return false;
+        }break;
+
+        //http://www.wowhead.com/?item=32490 Ashtongue Talisman of Acumen
+    case 40441: //Each time your Shadow Word: Pain deals damage, it has a 10% chance to grant you 220 spell damage for 10 sec
+        {
+            if(casting->NameHash != SPELL_HASH_SHADOW_WORD__PAIN)
+                return false;
+        }break;
+
+        //http://www.wowhead.com/?item=32490 Ashtongue Talisman of Acumen
+    case 40440: //Each time your Renew heals, it has a 10% chance to grant you 220 healing for 5 sec
+        {
+            if(casting->NameHash != SPELL_HASH_RENEW)
+                return false;
+        }break;
+
+        //http://www.wowhead.com/?item=32492 Ashtongue Talisman of Lethality
+    case 40461:
+        {
+            //we need a finishing move for this
+            if(!(casting->c_is_flags & SPELL_FLAG_IS_FINISHING_MOVE) || dataHolder->GetVictim() == TO_UNIT(target))
+                return false;
+        }break;
+
+    case 37445: //using a mana gem grants you 225 spell damage for 15 sec
+        {
+            if (casting->NameHash != SPELL_HASH_REPLENISH_MANA)
+                return false;
+        }break;
+
+    case 38395:
+        {
+            if( casting->NameHash != SPELL_HASH_IMMOLATE &&
+                casting->NameHash != SPELL_HASH_CORRUPTION)
+                return false;
+        }break;
+
+    case 48108: // [Mage] Hot Streak
+        {
+            if( casting->NameHash != SPELL_HASH_FIREBALL &&
+                casting->NameHash != SPELL_HASH_FIRE_BLAST &&
+                casting->NameHash != SPELL_HASH_SCORCH &&
+                casting->NameHash != SPELL_HASH_LIVING_BOMB &&
+                casting->NameHash != SPELL_HASH_FROSTFIRE_BOLT )
+                return false;
+
+            target->m_hotStreakCount++;
+            if (target->m_hotStreakCount >= 2)
+                target->m_hotStreakCount = 0;
+            else
+                return false;
+        }break;
+
+    case 52179: // Astral Shift
+        {
+            if( !spe ||
+                !(Spell::HasMechanic(casting, MECHANIC_STUNNED) ||
+                Spell::HasMechanic(casting, MECHANIC_FLEEING) ||
+                Spell::HasMechanic(casting, MECHANIC_SILENCED)) )
+                return false;
+
+            SpellDuration *sd = dbcSpellDuration.LookupEntry(casting->DurationIndex);
+            if(!sd)
+                return false;
+
+            int32 dur = GetDBCDuration(sd);
+            if(dur > 10000)
+                dur = 10000;
+
+            Aura* aura = new Aura(spe, dur, dataHolder->GetVictim(), TO_UNIT(target));
+            aura->AddMod(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, -30, 127, 0);
+            target->AddAura(aura);
+            return false;
+        }break;
+
+    case 51693: // Waylay
+        {
+            if(casting->NameHash != SPELL_HASH_AMBUSH)
+                return false;
+        }break;
+
+    case 60503: // Taste for Blood
+        {
+            if(casting->NameHash != SPELL_HASH_REND)
+                return false;
+        }break;
+
+    case 46989: //improved blink
+    case 47000:
+        {
+            if (casting->NameHash != SPELL_HASH_BLINK )
+                return false;
+        }break;
+
+    case 52752: // Ancestral Awakening
+        {
+            if(applying == NULL)
+                return false;
+            if((casting->NameHash != SPELL_HASH_HEALING_WAVE &&
+                casting->NameHash != SPELL_HASH_LESSER_HEALING_WAVE &&
+                casting->NameHash != SPELL_HASH_RIPTIDE) ||
+                !target->IsPlayer())
+                return false;
+
+            targets.m_unitTarget = Spell::FindLowestHealthRaidMember(TO_PLAYER(target), 1600); // within 40 yards
+            if(!targets.m_unitTarget)   // shouldn't happen
+                return false;
+
+            damage = dataHolder->GetDamage() * (applying->EffectBasePoints[0] + 1) / 100;
+        }break;
+
+    case 54748: //Burning Determination
+        {
+            if(!(Spell::HasMechanic(casting, MECHANIC_SILENCED)
+                || Spell::HasMechanic(casting, MECHANIC_INTERRUPTED)))
+                return false;
+        }break;
+
+    case 54741: //Firestarter
+        {
+            if( casting->NameHash != SPELL_HASH_BLAST_WAVE &&
+                casting->NameHash != SPELL_HASH_DRAGON_S_BREATH )
+                return false;
+        }break;
+
+    case 12494: //Frostbite
+        {
+            //me thinks its correct
+            if( !( casting->SpellGroupType[0] & 0x100220 ) || dataHolder->GetVictim() == TO_UNIT(target) ) //frost
+                return false;
+        }break;
+
+    case 53390: //Tidal Waves
+        {
+            if( casting->NameHash != SPELL_HASH_CHAIN_HEAL &&
+                casting->NameHash != SPELL_HASH_RIPTIDE )
+                return false;
+        }break;
+
+        //Earthliving
+    case 51945:
+    case 51990:
+    case 51997:
+    case 51998:
+    case 51999:
+    case 52000:
+        {
+            if( !(casting->c_is_flags & SPELL_FLAG_IS_HEALING) )
+                return false;
+        }break;
+
+        //Borrowed Time
+    case 59887:
+    case 59888:
+    case 59889:
+    case 59890:
+    case 59891:
+        {
+            if( casting->NameHash != SPELL_HASH_POWER_WORD__SHIELD )
+                return false;
+        }break;
+
+    case 60229: // Darkmoon Card: Greatness
+        {
+            if(!(casting->c_is_flags & (SPELL_FLAG_IS_DAMAGING | SPELL_FLAG_IS_HEALING) ))
+                return false;
+        }break;
+
+    case 49694://Improved Spirit Tap
+    case 59000:
+        {
+            if( casting->NameHash != SPELL_HASH_MIND_BLAST &&
+                casting->NameHash != SPELL_HASH_SHADOW_WORD__DEATH )
+                return false;
+        }break;
+
+    case 33196://Misery
+    case 33197:
+    case 33198:
+        {
+            if( casting->NameHash != SPELL_HASH_MIND_FLAY &&
+                casting->NameHash != SPELL_HASH_VAMPIRIC_TOUCH &&
+                casting->NameHash != SPELL_HASH_SHADOW_WORD__PAIN )
+                return false;
+        }break;
+
+    case 47383://molten core
+        {
+            if( !( casting->c_is_flags & SPELL_FLAG_IS_DAMAGING ) )
+                return false;
+
+            if( casting->School != SCHOOL_SHADOW )
+                return false;
+        }break;
+
+    case 53655://judgements of the pure
+    case 53656:
+    case 53657:
+    case 54152:
+    case 54153:
+        {
+            if( casting->buffIndexType != SPELL_TYPE_INDEX_JUDGEMENT )
+                return false;
+        }break;
+
+    case 60803://Glyph of Remove Curse
+        {
+            if( casting->NameHash != SPELL_HASH_REMOVE_CURSE || dataHolder->GetVictim() == target )
+                return false;
+        }break;
+
+    case 16246: // Elemental focus
+        {
+            if( !( casting->c_is_flags & SPELL_FLAG_IS_DAMAGING ) )
+                return false;
+
+            if( casting->School != SCHOOL_FIRE &&
+                casting->School != SCHOOL_NATURE &&
+                casting->School != SCHOOL_FROST )
+                return false;
+        }break;
+
+    case 55021:
+    case 18469:
+        {
+            if( casting->NameHash != SPELL_HASH_COUNTERSPELL || dataHolder->GetVictim() == target )
+                return false;
+        }break;
+
+    case 60433:
+    case 60432:
+    case 60431: // Earth and Moon
+        {
+            if( casting->NameHash != SPELL_HASH_WRATH &&
+                casting->NameHash != SPELL_HASH_STARFIRE )
+                return false;
+        }break;
+
+        // Bloodsurge
+    case 46916:
+        {
+            if( casting->NameHash != SPELL_HASH_HEROIC_STRIKE &&
+                casting->NameHash != SPELL_HASH_BLOODTHIRST &&
+                casting->NameHash != SPELL_HASH_WHIRLWIND )
+                return false;
+        }break;
+
+    case 58362: // Glyph of heroic strike
+        {
+            if( casting->NameHash != SPELL_HASH_HEROIC_STRIKE )
+                return false;
+        }break;
+
+    case 43738://primal instinct
+        {
+            if( casting->NameHash != SPELL_HASH_MANGLE__CAT_ &&
+                casting->NameHash != SPELL_HASH_MANGLE__BEAR_ )
+                return false;
+        }break;
+
+    case 44401: // Missile Barrage
+        {
+            if( casting->NameHash != SPELL_HASH_ARCANE_BLAST &&
+                casting->NameHash != SPELL_HASH_ARCANE_BARRAGE &&
+                casting->NameHash != SPELL_HASH_FIREBALL &&
+                casting->NameHash != SPELL_HASH_FROSTBOLT &&
+                casting->NameHash != SPELL_HASH_FROSTFIRE_BOLT )
+                return false;
+        }break;
+
+    case 16886:
+        {
+            if( !(casting->c_is_flags & SPELL_FLAG_IS_HEALING) )
+                return false;
+        }break;
+
+    case 47948:
+        {
+            if( casting->NameHash != SPELL_HASH_MIND_FLAY )
+                return false;
+        }break;
+
+        // Illumination
+    case 20272:
+        {
+            if( casting->NameHash != SPELL_HASH_HOLY_LIGHT &&
+                casting->NameHash != SPELL_HASH_FLASH_OF_LIGHT &&
+                casting->NameHash != SPELL_HASH_HOLY_SHOCK )
+                return false;
+
+            damage = float2int32(target->GetSpellBaseCost(casting) * 0.3f);
+        }break;
+
+        // Omen of Clarity
+    case 16870:
+        {
+            if(!(casting->c_is_flags & SPELL_FLAG_IS_HEALING ||
+                casting->c_is_flags & SPELL_FLAG_IS_DAMAGING) )
+                return false;
+        }break;
+
+        // Gag order
+    case 18498:
+        {
+            if( casting->NameHash != SPELL_HASH_SHIELD_BASH && casting->NameHash != SPELL_HASH_HEROIC_THROW )
+                return false;
+        }break;
+
+        // Replenishment
+    case 57669:
+        {
+            if( casting->NameHash != SPELL_HASH_EXPLOSIVE_SHOT
+                && casting->NameHash != SPELL_HASH_ARCANE_SHOT
+                && casting->NameHash != SPELL_HASH_STEADY_SHOT )
+                return false;
+
+            if( target->IsPlayer() )
+            {
+                Player* caster = TO_PLAYER( target );
+                if( caster->GetGroup() )
+                {
+                    uint32 TargetCount = 0;
+                    caster->GetGroup()->Lock();
+                    for(uint32 x = 0; x < caster->GetGroup()->GetSubGroupCount(); ++x)
+                    {
+                        if( TargetCount == 10 )
+                            break;
+
+                        for(GroupMembersSet::iterator itr = caster->GetGroup()->GetSubGroup( x )->GetGroupMembersBegin(); itr != caster->GetGroup()->GetSubGroup( x )->GetGroupMembersEnd(); itr++)
+                        {
+                            if((*itr)->m_loggedInPlayer && TargetCount <= 10)
+                            {
+                                Player* p_target = (*itr)->m_loggedInPlayer;
+                                if( p_target->GetPowerType() != POWER_TYPE_MANA )
+                                    return false;
+
+                                SpellEntry* Replinishment = dbcSpell.LookupEntryForced( 57669 );
+                                Spell* pSpell = NULLSPELL;
+                                pSpell = (new Spell(TO_PLAYER( target ), Replinishment, true, NULLAURA));
+                                pSpell->forced_basepoints[0] = float2int32(p_target->GetUInt32Value(UNIT_FIELD_BASE_MANA) * 0.0025f);
+                                SpellCastTargets tgt;
+                                tgt.m_unitTarget = p_target->GetGUID();
+                                pSpell->prepare(&tgt);
+                                TargetCount++;
+                            }
+                        }
+                    }
+                    caster->GetGroup()->Unlock();
+                    return false;
+                }
+            }
+        }break;
+
+        // Blade Barrier
+    case 51789:
+        {
+            if( !target->IsPlayer() )
+                return false;
+
+            SpellRuneCostEntry * sr = dbcSpellRuneCost.LookupEntryForced( casting->runeCostID );
+            if( !sr || sr->bloodRuneCost == 0 ) // not costing blood.
+                return false;
+            if( TO_PLAYER(target)->m_runes[0] == RUNE_TYPE_BLOOD || TO_PLAYER(target)->m_runes[1] == RUNE_TYPE_BLOOD )
+                return false; // oh snap, still have blood runes, this doesn't count.
+        }break;
+    case 55666: // Desecration Rank 1
+    case 55667: // Desecration Rank 2
+        {
+            if(casting->NameHash != SPELL_HASH_PLAGUE_STRIKE && casting->NameHash != SPELL_HASH_SCOURGE_STRIKE)
+                return false;
+        }break;
+
+    case 64745:
+        {
+            if(casting->NameHash != SPELL_HASH_ANTI_MAGIC_SHELL)
+                return false;
+        }break;
+
+    case 64936:
+        {
+            if(casting->NameHash != SPELL_HASH_SHIELD_BLOCK)
+                return false;
+        }break;
+    case 60675:
+    case 60685:
+    case 60686:
+    case 60687:
+    case 60688:
+    case 60690:
+        {
+            if(casting->NameHash != SPELL_HASH_PLAGUE_STRIKE)
+                return false;
+        }break;
+
+    case 50040:
+    case 50041:
+    case 50043:
+        {
+            if(casting->NameHash != SPELL_HASH_FROST_FEVER)
+                return false;
+        }break;
+    }
+
+    switch(uSpellId) // Independent of Casting spell
+    {
+        case 25997:
+            {
+                if(casting == NULL)
+                    return false;
+            }break;
+
+        case 54180:
+        case 31930:
+            {
+                if(casting == NULL)
+                    return false;
+            }break;
+
+    case 31616: // Nature's Guardian
+        {
+            if(applying == NULL)
+                return false;
+
+            if(target->GetHealthPct() > 30)
+                return false;
+
+            //heal value depends on the rank of parent spell
+            //maybe we should use CalculateEffect(uint32 i) to gain SM benefits
+            int32 value = 0;
+            int32 basePoints = applying->EffectBasePoints[0]+1;//+(getLevel()*basePointsPerLevel);
+            int32 randomPoints = applying->EffectDieSides[0];
+            if(randomPoints <= 1)
+                value = basePoints;
+            else
+                value = basePoints + RandomUInt(randomPoints);
+            damage = target->GetUInt32Value(UNIT_FIELD_MAXHEALTH) * value / 100;
+        }break;
+
+    case 37309:
+        {
+            if( !target->IsPlayer() )
+                return false;
+
+            if( TO_PLAYER(target)->GetShapeShift() != FORM_BEAR ||
+                TO_PLAYER(target)->GetShapeShift() != FORM_DIREBEAR )
+                return false;
+        }break;
+
+    case 37310:
+        {
+            if( !target->IsPlayer() || TO_PLAYER(target)->GetShapeShift() != FORM_CAT )
+                return false;
+        }break;
+
+    case 5530:
+        {
+            //warrior/rogue mace specialization can trigger only when using maces
+            Item* it;
+            if( TO_PLAYER(target)->GetItemInterface() )
+            {
+                it = TO_PLAYER(target)->GetItemInterface()->GetInventoryItem( EQUIPMENT_SLOT_MAINHAND );
+                if( it != NULL && it->GetProto() )
+                {
+                    uint32 reqskill = Item::GetSkillByProto( it->GetProto()->Class, it->GetProto()->SubClass );
+                    if( reqskill != SKILL_MACES && reqskill != SKILL_2H_MACES )
+                        return false;
+                }
+                else
+                    return false; //no weapon no joy
+            }
+            else
+                return false; //no weapon no joy
+
+            //let's recalc chance to cast since we have a full 100 all time on this one
+            //how lame to get talentpointlevel for this spell :(
+            //float chance=it->GetProto()->Delay*100*talentlevel/60000;
+        }break;
+
+    case 16459:
+    case 4350:
+        {
+            //sword specialization
+            if( TO_PLAYER(target)->GetItemInterface())
+            {
+                Item* it = TO_PLAYER(target)->GetItemInterface()->GetInventoryItem( EQUIPMENT_SLOT_MAINHAND );
+                if( it != NULL && it->GetProto() )
+                {
+                    uint32 reqskill = Item::GetSkillByProto( it->GetProto()->Class, it->GetProto()->SubClass );
+                    if( reqskill != SKILL_SWORDS && reqskill != SKILL_2H_SWORDS )
+                        return false;
+                }
+                else
+                    return false; //no weapon no joy
+            }
+            else
+                return false; //no weapon no joy
+        }break;
+
+    case 12721:
+        {
+            //deep wound requires a melee weapon
+            Item* it;
+            if( TO_PLAYER(target)->GetItemInterface())
+            {
+                it = TO_PLAYER(target)->GetItemInterface()->GetInventoryItem( EQUIPMENT_SLOT_MAINHAND );
+                if( it != NULL && it->GetProto() )
+                {
+                    //class 2 means weapons ;)
+                    if( it->GetProto()->Class != ITEM_CLASS_WEAPON )
+                        return false;
+                }
+                else 
+                    return false; //no weapon no joy
+            }
+            else 
+                return false; //no weapon no joy
+        }break;
+
+        //warrior - Unbridled Wrath
+    case 12964:
+        {
+            //let's recalc chance to cast since we have a full 100 all time on this one
+            Item* it;
+            if( TO_PLAYER(target)->GetItemInterface() )
+            {
+                it = TO_PLAYER(target)->GetItemInterface()->GetInventoryItem( EQUIPMENT_SLOT_MAINHAND );
+                if( !( it != NULL && it->GetProto() ) )
+                    return false; //no weapon no joy
+            }
+            else
+                return false; //no weapon no joy
+
+            //float chance=float(it->GetProto()->Delay)*float(talentlevel)/600.0f;
+            float chance = float( it->GetProto()->Delay ) * float(talentlevel ) / 300.0f; //zack this had a very low proc rate. Kinda liek a waisted talent
+            uint32 myroll = RandomUInt( 100 );
+            if( myroll > chance )
+                return false;
+        }break;
+
+        //priest - Blessed Recovery
+    case 27813:
+    case 27817:
+    case 27818:
+        {
+            if(!target->IsPlayer() || !dataHolder->GetDamage())
+                return false;
+
+            int32 val = applying->EffectBasePoints[0] + 1;
+            Spell* spell(new Spell(TO_UNIT(target), spe ,true, NULLAURA));
+            spell->forced_basepoints[0] = (val*dataHolder->GetDamage())/300; //per tick
+            SpellCastTargets targets;
+            targets.m_unitTarget = target->GetGUID();
+            spell->prepare(&targets);
+            return false;
+        }break;
+
+        //priest - Reflective Shield
+    case 33619:
+        {
+            if(applying == NULL)
+                return false;
+
+            //requires Power Word: Shield active
+            uint32 power_word_id = target->m_AuraInterface.GetAuraSpellIDWithNameHash( SPELL_HASH_POWER_WORD__SHIELD );
+            if( !power_word_id )
+                return false;//this should not ocur unless we made a fuckup somewhere
+
+            //make a direct strike then exit rest of handler
+            int tdmg = dataHolder->GetAbsorb() * ( applying->EffectBasePoints[0] + 1 ) / 100;
+            //somehow we should make this not caused any threat (tobedone)
+            target->SpellNonMeleeDamageLog( dataHolder->GetVictim(), power_word_id, tdmg, false, true );
+            return false;
+        }break;
+
+        //rogue - combat potency
+    case 35542:
+    case 35545:
+    case 35546:
+    case 35547:
+    case 35548:
+        {
+            if( !target->IsPlayer() || !dataHolder->GetDamage() || dataHolder->GetWeaponDamageType() != 2 )
+                return false;
+        }break;
+
+        // Pallas
+    case 43747:
+    case 34260:
+        {
+            if( !target->HasDummyAura(SPELL_HASH_SEAL_OF_COMMAND) )
+                return false;
+        }break;
+
+    case 48391: // Owlkin Frenzy
+        {
+            if( !target->IsPlayer() )
+                return false;
+
+            if( TO_PLAYER( target )->GetShapeShift() != FORM_MOONKIN )
+                return false;
+        }break;
+
+    case 59653:
+        {
+            float shdmg = 0.0f;
+            if( target->HasDummyAura(SPELL_HASH_DAMAGE_SHIELD) )
+                target->GetDummyAura(SPELL_HASH_DAMAGE_SHIELD)->Id == 58874 ? shdmg = 0.2f : shdmg = 0.1f;
+
+            damage = float2int32(target->GetUInt32Value(PLAYER_SHIELD_BLOCK) * shdmg);
+        }break;
+
+        // Aspect of the Viper
+    case 34075:
+        {
+            if( !target->IsPlayer() )
+                return false;
+
+            Player* caster = TO_PLAYER(target);
+            Item* it = caster->GetItemInterface()->GetInventoryItem(EQUIPMENT_SLOT_RANGED);
+            if( !it )
+                it = caster->GetItemInterface()->GetInventoryItem(EQUIPMENT_SLOT_MAINHAND);
+            if( it )
+            {
+                float mod = it->GetProto()->Delay / 1000.0f;
+                damage = float2int32( 0.01f * mod * caster->GetUInt32Value(UNIT_FIELD_BASE_MANA) );
+            }
+            else
+                damage = 1;
+        }break;
+
+    case 50475:
+        {
+            if( dataHolder->GetDamage() ) // heal him :)
+            {
+                int32 toheal = (int32)(dataHolder->GetDamage() * 0.04);
+                target->Heal( TO_UNIT(target), 50475, toheal );
+            }
+        }break;
+
+    case 60064: // Sundial of the Exiled
+        {
+            if(!dataHolder->GetVictim() || !sFactionSystem.isAttackable(target, dataHolder->GetVictim(), false))   // harmful spells
+                return false;
+        }break;
+
+        // Spells that are takedamage but less than 35.
+    case 45057: // Trinket: Evasive Maneuvers
+    case 45058: // Commendation of Kael'thas
+    case 44440: // Fiery Payback 1
+    case 44441: // Fiery Payback 2
+    case 71634: // Corpse Tongue
+    case 71640: // Corpse Tongue H
+        {
+            if(target->GetHealthPct() > 35)
+                return false;
+        }break;
+
+    case 63685:// Frozen Power - Freeze
+        {
+            uint32 minDistance = spe->EffectBasePoints[0] + 1;
+            if(!dataHolder->GetVictim() || target->GetDistanceSq(dataHolder->GetVictim()) < minDistance * minDistance)
+                return false;   // victim not far enough
+        }break;
+
+    case 63375: // Improved Stormstrike
+        {
+            damage = (spe->EffectBasePoints[0] + 1) * target->GetUInt32Value(UNIT_FIELD_BASE_MANA) / 100;
+        }break;
+
+    case 14189: //Seal Fate
+        {
+            return false; // Fuck this shit.
+        }break;
+
+    case 71484:
+    case 71485:
+    case 71486:
+    case 71487:
+    case 71491:
+    case 71492:
+    case 71556:
+    case 71558:
+    case 71559:
+    case 71560:
+    case 71561:
+        {
+            bool hasaura = false;
+            uint32 auras[11] = { 71484, 71485, 71486, 71487, 71491, 71492, 71556, 71558, 71559, 71560, 71561 };
+            for(int i = 0; i < 11; i++)
+            {
+                if(target->HasAura(auras[i]))
+                {
+                    hasaura = true;
+                    break;
+                }
+            }
+            if(hasaura)
+                return false;
+        }break;
+    }
+
+    if( casting && uSpellId == 54370 )
+    {
+        uint32 NewSpellID = 0;
+        switch( casting->School )
+        {
+        case SCHOOL_HOLY: NewSpellID = 54370; break;
+        case SCHOOL_FIRE: NewSpellID = 54371; break;
+        case SCHOOL_NATURE: NewSpellID = 54375; break;
+        case SCHOOL_FROST: NewSpellID = 54372; break;
+        case SCHOOL_SHADOW: NewSpellID = 54374; break;
+        case SCHOOL_ARCANE: NewSpellID = 54373; break;
+        }
+
+        if( NewSpellID )
+            uSpellId = NewSpellID;
+    }
+
+    return true;
 }

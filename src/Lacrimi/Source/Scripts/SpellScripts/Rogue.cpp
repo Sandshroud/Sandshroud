@@ -235,6 +235,29 @@ void InstantPoison(uint32 i, Spell* pSpell, uint32 effect)
     }
 }
 
+/////////////////////////
+/// Proclimit Scripts ///
+/////////////////////////
+bool SealFateProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    return dataHolder->GetCastingSpell() == NULL;
+}
+
+bool BladeTwistingProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    if(dataHolder->GetCastingSpell() == NULL)
+        return false;
+    if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_SHIV)
+        return true;
+    if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_GOUGE)
+        return true;
+    if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_BACKSTAB)
+        return true;
+    if(dataHolder->GetCastingSpell()->NameHash == SPELL_HASH_SINISTER_STRIKE)
+        return true;
+    return false;
+}
+
 void Lacrimi::SetupRogueSpells()
 {
     ////////////////////////
@@ -301,4 +324,10 @@ void Lacrimi::SetupRogueSpells()
     RegisterSpellEffectModifier(26890, InstantPoison);
     RegisterSpellEffectModifier(57964, InstantPoison);
     RegisterSpellEffectModifier(57965, InstantPoison);
+
+    /////////////////////////
+    /// Proclimit Scripts ///
+    /////////////////////////
+    RegisterSpellScriptedProclimit(14189, SealFateProcs);
+    RegisterSpellScriptedProclimit(31125, BladeTwistingProcs);
 }

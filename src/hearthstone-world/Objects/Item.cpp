@@ -384,7 +384,7 @@ void Item::DeleteFromDB()
     CharacterDatabase.Execute( "DELETE FROM playeritems WHERE guid = %u", m_uint32Values[OBJECT_FIELD_GUID] );
 }
 
-uint32 GetSkillByProto( uint32 Class, uint32 SubClass )
+uint32 Item::GetSkillByProto( uint32 Class, uint32 SubClass )
 {
     if( Class == 4 && SubClass < 7 )
     {
@@ -459,14 +459,14 @@ const ItemProf* GetProficiencyBySkill( uint32 skill )
     }
 }
 
-uint32 GetSellPriceForItem( ItemPrototype *proto, uint32 count )
+uint32 Item::GetSellPriceForItem( ItemPrototype *proto, uint32 count )
 {
     int32 cost;
     cost = proto->SellPrice * ( ( count < 1 ) ? 1 : count );
     return cost;
 }
 
-uint32 GetBuyPriceForItem( ItemPrototype* proto, uint32 count, Player* plr, Creature* vendor )
+uint32 Item::GetBuyPriceForItem( ItemPrototype* proto, uint32 count, Player* plr, Creature* vendor )
 {
     int32 cost = proto->BuyPrice;
 
@@ -479,18 +479,18 @@ uint32 GetBuyPriceForItem( ItemPrototype* proto, uint32 count, Player* plr, Crea
     return cost * count;
 }
 
-uint32 GetSellPriceForItem( uint32 itemid, uint32 count )
+uint32 Item::GetSellPriceForItem( uint32 itemid, uint32 count )
 {
     if( ItemPrototype* proto = ItemPrototypeStorage.LookupEntry( itemid ) )
-        return GetSellPriceForItem(proto, count);
+        return Item::GetSellPriceForItem(proto, count);
     else
         return 1;
 }
 
-uint32 GetBuyPriceForItem( uint32 itemid, uint32 count, Player* plr, Creature* vendor )
+uint32 Item::GetBuyPriceForItem( uint32 itemid, uint32 count, Player* plr, Creature* vendor )
 {
     if( ItemPrototype* proto = ItemPrototypeStorage.LookupEntry( itemid ) )
-        return GetBuyPriceForItem( proto, count, plr, vendor );
+        return Item::GetBuyPriceForItem( proto, count, plr, vendor );
     else
         return 1;
 }

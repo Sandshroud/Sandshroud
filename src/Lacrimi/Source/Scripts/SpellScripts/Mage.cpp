@@ -84,6 +84,16 @@ void FireShield(uint32 i, Spell* pSpell, uint32 effect)
         pSpell->damage = pSpell->GetSpellProto()->EffectBasePoints[i] + 1;
 }
 
+/////////////////////////
+/// Proclimit Scripts ///
+/////////////////////////
+bool IgniteProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    if(dataHolder->GetCastingSpell() == NULL)
+        return false;
+    return dataHolder->GetCastingSpell()->School == SCHOOL_FIRE;
+}
+
 void Lacrimi::SetupMageSpells()
 {
     ////////////////////////
@@ -105,4 +115,9 @@ void Lacrimi::SetupMageSpells()
     RegisterSpellEffectModifier(34913, FireShield);
     RegisterSpellEffectModifier(43043, FireShield);
     RegisterSpellEffectModifier(43044, FireShield);
+    
+    /////////////////////////
+    /// Proclimit Scripts ///
+    /////////////////////////
+    RegisterSpellScriptedProclimit(12654, IgniteProcs);
 }

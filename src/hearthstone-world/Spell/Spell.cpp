@@ -4374,13 +4374,17 @@ int32 Spell::CalculateEffect(uint32 i, Unit* target)
 
     if( u_caster != NULL )
     {
-        int32 level = int32(u_caster->getLevel());
-        if (level > int32(m_spellInfo->maxLevel) && m_spellInfo->maxLevel > 0)
-            level = int32(m_spellInfo->maxLevel);
-        else if (level < int32(m_spellInfo->baseLevel))
-            level = int32(m_spellInfo->baseLevel);
-        level -= int32(m_spellInfo->spellLevel);
-
+        uint32 level = u_caster->getLevel();
+        if(level < m_spellInfo->spellLevel)
+            level = m_spellInfo->baseLevel;
+        else
+        {
+            level -= m_spellInfo->spellLevel;
+            if(level < m_spellInfo->baseLevel)
+                level = m_spellInfo->baseLevel;
+        }
+        if (m_spellInfo->maxLevel > 0 && level > m_spellInfo->maxLevel)
+            level = m_spellInfo->maxLevel;
         basePoints += float2int32(level * basePointsPerLevel);
     }
 
@@ -4466,28 +4470,19 @@ int32 Spell::CalculateEffect(uint32 i, Unit* target)
         {
             SM_FIValue(caster->SM[SMT_FIRST_EFFECT_BONUS][0],&spell_flat_modifers,GetSpellProto()->SpellGroupType);
             SM_FIValue(caster->SM[SMT_FIRST_EFFECT_BONUS][1],&spell_pct_modifers,GetSpellProto()->SpellGroupType);
-        }else if( i == 1 )
+        }
+        else if( i == 1 )
         {
             SM_FIValue(caster->SM[SMT_SECOND_EFFECT_BONUS][0],&spell_flat_modifers,GetSpellProto()->SpellGroupType);
             SM_FIValue(caster->SM[SMT_SECOND_EFFECT_BONUS][1],&spell_pct_modifers,GetSpellProto()->SpellGroupType);
         }
-        if( ( i == 2 ) ||
-            ( i == 1 && GetSpellProto()->Effect[2] == 0 ) ||
-            ( i == 0 && GetSpellProto()->Effect[1] == 0 && GetSpellProto()->Effect[2] == 0 ) )
+
+        if( ( i == 2 ) || ( i == 1 && GetSpellProto()->Effect[2] == 0 ) || ( i == 0 && GetSpellProto()->Effect[1] == 0 && GetSpellProto()->Effect[2] == 0 ) )
         {
             SM_FIValue(caster->SM[SMT_LAST_EFFECT_BONUS][0],&spell_flat_modifers,GetSpellProto()->SpellGroupType);
             SM_FIValue(caster->SM[SMT_LAST_EFFECT_BONUS][1],&spell_pct_modifers,GetSpellProto()->SpellGroupType);
         }
-        value += float2int32(value*(float)(spell_pct_modifers/100.0f)) + spell_flat_modifers;
-
-        if (!basePointsPerLevel && (m_spellInfo->Attributes & 0x80000 && m_spellInfo->spellLevel) &&
-                m_spellInfo->EffectApplyAuraName[i] != SPELL_AURA_MOD_SPEED_ALWAYS &&
-                m_spellInfo->EffectApplyAuraName[i] != SPELL_AURA_MOD_INCREASE_SPEED &&
-                m_spellInfo->EffectApplyAuraName[i] != SPELL_AURA_MOD_DECREASE_SPEED &&
-                m_spellInfo->Effect[i] != SPELL_EFFECT_WEAPON_PERCENT_DAMAGE &&
-                m_spellInfo->Effect[i] != SPELL_EFFECT_KNOCK_BACK &&
-                m_spellInfo->EffectApplyAuraName[i] != 171 ) //there are many more: slow speed, -healing pct
-                value *= 0.25f * exp(caster->getLevel() * (70 - m_spellInfo->spellLevel) / 1000.0f);
+        value += float2int32(value * (float)(spell_pct_modifers / 100.0f)) + spell_flat_modifers;
     }
 
     return value;

@@ -341,7 +341,19 @@ void EyeForAnEye(uint32 i, Spell* pSpell, uint32 effect)
     }
 }
 
+/////////////////////////
+/// Proclimit Scripts ///
+/////////////////////////
+bool JudgementsOfTheWiseProcs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
+{
+    if(dataHolder->GetCastingSpell() == NULL)
+        return false;
+    // Limit to judgement procs only
+    return dataHolder->GetCastingSpell()->buffIndexType == SPELL_TYPE_INDEX_JUDGEMENT;
+}
+
 //void Judgements(uint32 i, Spell* pSpell, uint32 effect)
+//bool Procs(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targets, ProcTriggerSpell *triggered, ProcDataHolder *dataHolder)
 void Lacrimi::SetupPaladinSpells()
 {
     ////////////////////////
@@ -383,4 +395,10 @@ void Lacrimi::SetupPaladinSpells()
 
     RegisterSpellEffectModifier(9799, EyeForAnEye);
     RegisterSpellEffectModifier(25988, EyeForAnEye);
+
+    /////////////////////////
+    /// Proclimit Scripts ///
+    /////////////////////////
+    RegisterSpellScriptedProclimit(31930, JudgementsOfTheWiseProcs);
+    RegisterSpellScriptedProclimit(54180, JudgementsOfTheWiseProcs);
 }

@@ -39,6 +39,7 @@ class CleanupComponent;
 #define RegisterDummyAura(entry, script) sMgr->register_dummy_aura(entry, &script)
 #define RegisterDummySpell(entry, script) sMgr->register_dummy_spell(entry, &script)
 #define RegisterSpellScriptEffect(entry, script) sMgr->register_script_effect(entry, &script)
+#define RegisterSpellScriptedProclimit(entry, script) sMgr->register_scripted_proclimit(entry, &script)
 #define RegisterSpellEffectModifier(entry, script) sMgr->register_spell_effect_modifier(entry, &script)
 
 #define RegisterCtrAIScript(entry, script) sMgr->register_creature_script(entry, &script::Create)
