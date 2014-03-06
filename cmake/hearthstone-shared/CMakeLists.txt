@@ -6,8 +6,13 @@ FILE(GLOB auth_files
 "${prefix}/Auth/*.h"
 "${prefix}/Auth/*.cpp")
 source_group("Auth" FILES ${auth_files})
-
 SET(SRCS ${SRCS} ${auth_files})
+
+FILE(GLOB client_files
+"${prefix}/Client/*.h"
+"${prefix}/Client/*.cpp")
+source_group("Client" FILES ${client_files})
+SET(SRCS ${SRCS} ${client_files} )
 
 FILE(GLOB config_files
 "${prefix}/Config/*.h"
@@ -29,30 +34,6 @@ FILE(GLOB console_files
 "${prefix}/Console/*.cpp")
 source_group("Console" FILES ${console_files})
 SET(SRCS ${SRCS} ${console_files} )
-
-FILE(GLOB datastore_files
-"${prefix}/DataStorage/*.h"
-"${prefix}/DataStorage/*.cpp")
-source_group("Database" FILES ${datastore_files})
-SET(SRCS ${SRCS} ${datastore_files} )
-
-FILE(GLOB datastore_dbc_files
-"${prefix}/DataStorage/DBC/*.h"
-"${prefix}/DataStorage/DBC/*.cpp")
-source_group("Database\\DBC" FILES ${datastore_dbc_files})
-SET(SRCS ${SRCS} ${datastore_dbc_files} )
-
-FILE(GLOB network_files
-"${prefix}/Network/*.h"
-"${prefix}/Network/*.cpp")
-source_group("Network" FILES ${network_files})
-SET(SRCS ${SRCS} ${network_files} )
-
-FILE(GLOB threading_files
-"${prefix}/Threading/*.h"
-"${prefix}/Threading/*.cpp")
-source_group("Threading" FILES ${threading_files})
-SET(SRCS ${SRCS} ${threading_files} )
 
 FILE(GLOB sources
 "${prefix}/*.h"
