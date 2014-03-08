@@ -177,9 +177,12 @@ bool Master::Run(int argc, char ** argv)
     EventableObjectHolder* m_Holder = new EventableObjectHolder(-1);
 
     new World();
+    new OpcodeManager();
 
     /* load the config file */
     sWorld.Rehash(true);
+    // Set our opcode data
+    sOpcodeMgr.SetOpcodeListData();
 
     // Because of our log DB system, these have to be initialized different then rehash.
     sWorld.LogCheaters = mainIni->ReadBoolean("Log", "Cheaters", false);

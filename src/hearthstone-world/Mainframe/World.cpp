@@ -31,6 +31,8 @@ World::World()
     m_CEThreshold = 10000;
     LacrimiThread = NULL;
     LacrimiPtr = NULL;
+    authSeed1.SetRand(16 * 8);
+    authSeed2.SetRand(16 * 8);
 
 #ifdef WIN32
     m_bFirstTime = true;
@@ -973,7 +975,7 @@ void World::UpdateQueuedSessions(uint32 diff)
         uint32 Position = 1;
         while(iter != mQueuedSessions.end())
         {
-            (*iter)->UpdateQueuePosition(Position++);
+            (*iter)->SendAuthResponse(AUTH_WAIT_QUEUE, true, Position++);
             ++iter;
         }
         queueMutex.Release();

@@ -964,11 +964,6 @@ void Object::_BuildValuesUpdate(ByteBuffer * data, UpdateMask *updateMask, Playe
             DummyFlags2 = m_uint32Values[UNIT_FIELD_FLAGS_2];
             DummyNpcFlags = m_uint32Values[UNIT_NPC_FLAGS];
             DummyDynFlags = m_uint32Values[UNIT_DYNAMIC_FLAGS];
-            if(pThis->GetSession()->GetRecruitAFriendId() == target->GetSession()->GetAccountId()
-                || pThis->GetSession()->GetAccountId() == target->GetSession()->GetRecruitAFriendId())
-            {
-                DummyDynFlags |= U_DYN_FLAG_REFER_A_FRIEND;
-            }
         }
         else if(IsCreature())       // tagged group will have tagged player
         {

@@ -6,7 +6,7 @@
 
 void WorldSession::HandleLFDPlrLockOpcode( WorldPacket& recv_data )
 {
-    CHECK_INWORLD_RETURN();
+/*    CHECK_INWORLD_RETURN();
 
     DungeonSet::iterator itr;
     DungeonSet randomDungeonSet;
@@ -88,13 +88,12 @@ void WorldSession::HandleLFDPlrLockOpcode( WorldPacket& recv_data )
             data << uint8(0);
         }
     }
-    SendPacket(&data);
+    SendPacket(&data);*/
 }
 
 void WorldSession::HandleLFDPartyLockOpcode( WorldPacket& recv_data )
 {
-    // Crow: Confirmed structure below
-    WorldPacket data(SMSG_LFD_PARTY_LOCK_INFO_UPDATE, 400);
+/*    WorldPacket data(SMSG_LFD_PARTY_LOCK_INFO_UPDATE, 400);
     uint8 cnt = 0;
     data << uint8(cnt);
     for(uint8 i = 0; i < cnt; i++)
@@ -108,5 +107,5 @@ void WorldSession::HandleLFDPartyLockOpcode( WorldPacket& recv_data )
             data << uint32(0);
         }
     }
-    SendPacket(&data);
+    SendPacket(&data);*/
 }
