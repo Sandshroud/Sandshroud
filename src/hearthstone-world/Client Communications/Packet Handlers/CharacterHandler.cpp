@@ -53,137 +53,118 @@ void WorldSession::CharacterEnumProc(QueryResult * result)
     m_asyncQuery = false;
 
     //Erm, reset it here in case player deleted his DK.
-    m_hasDeathKnight= false;
-
-    // should be more than enough.. 200 bytes per char..
-    WorldPacket data(SMSG_CHAR_ENUM, (result ? result->GetRowCount() * 200 : 1));
+    m_hasDeathKnight = false;
+    WorldPacket data(SMSG_CHARACTER_ENUM, 200);
 
     // parse m_characters and build a mighty packet of
     // characters to send to the client.
     data << num;
     if( result )
     {
-        CreatureInfo *info = NULL;
-        player_item items[19];
-        ItemPrototype * proto;
-//      player_item bags[4];
-        QueryResult * res;
-        Field *fields;
-        int8 slot;
-        int8 containerslot;
-        uint8 Class;
-        uint8 race;
-        uint32 i;
-        uint32 bytes2;
-        uint32 flags;
-        uint32 banned;
-        uint64 guid;
+        struct
+        {
+            uint32 displayid;
+            uint8 invtype;
+            uint32 enchantment;
+        } items[19];
         do
         {
-            fields = result->Fetch();
-            guid = fields[0].GetUInt32();
-            bytes2 = fields[6].GetUInt32();
-            Class = fields[3].GetUInt8();
-            flags = fields[17].GetUInt32();
-            race = fields[3].GetUInt8();
+            memset(items, 0, (sizeof(uint32)+sizeof(uint8)+sizeof(uint32))*EQUIPMENT_SLOT_END);
 
-            if( _side < 0 )
-            {
-                // work out the side
-                static uint8 sides[RACE_DRAENEI+1] = { 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0 };
-                _side = sides[race];
-            }
+            Field *fields = result->Fetch();
+            std::string name = fields[7].GetString();
+            uint64 guid = fields[0].GetUInt32();
+            uint8 _race = fields[2].GetUInt8(), _class = fields[3].GetUInt8(), _level = fields[1].GetUInt8();
+            uint32 flags = fields[17].GetUInt32(), _bytes1 = fields[5].GetUInt32(), _bytes2 = fields[6].GetUInt32();
 
-            /* build character enum, w0000t :p */
-            data << fields[0].GetUInt64();      // guid
-            data << fields[7].GetString();      // name
-            data << fields[2].GetUInt8();       // race
-            data << race;                       // class
-            data << fields[4].GetUInt8();       // gender
-            data << fields[5].GetUInt32();      // PLAYER_BYTES
-            data << uint8(bytes2 & 0xFF);       // facial hair
-            data << fields[1].GetUInt8();       // Level
-            data << fields[12].GetUInt32();     // zoneid
-            data << fields[11].GetUInt32();     // Mapid
-            data << fields[8].GetFloat();       // X
-            data << fields[9].GetFloat();       // Y
-            data << fields[10].GetFloat();      // Z
-            data << fields[18].GetUInt32();     // GuildID
+            if( _level > m_highestLevel )
+                m_highestLevel = _level;
 
-            if( fields[1].GetUInt8() > m_highestLevel )
-                m_highestLevel = fields[1].GetUInt8();
-
-            if( Class == DEATHKNIGHT )
+            if( _class == DEATHKNIGHT )
                 m_hasDeathKnight = true;
 
-            banned = fields[13].GetUInt32();
-            if(banned && (banned<10 || banned > (uint32)UNIXTIME))
-                data << uint32(0x01A04040);
-            else
-            {
-                if(fields[16].GetUInt32() != 0)
-                    data << uint32(0x00A04342);
-                else if(fields[15].GetUInt32() != 0)
-                    data << (uint32)8704; // Dead (displaying as Ghost)
-                else
-                    data << uint32(1);      // alive
-            }
+            /* build character enum, w0000t :p */
+            data << guid;                   // playerGuid
+            data << name.c_str();           // name
+            data << _race;                  // race
+            data << _class;                 // class
+            data << fields[4].GetUInt8();   // gender
+            data << uint8(_bytes1);         // skin
+            data << uint8(_bytes1 >> 8);    // face
+            data << uint8(_bytes1 >> 16);   // hair style
+            data << uint8(_bytes1 >> 24);   // hair color
+            data << uint8(_bytes2 & 0xFF);  // facial hair
+            data << _level;                 // Level
+            data << fields[12].GetUInt32(); // zoneid
+            data << fields[11].GetUInt32(); // Mapid
+            data << fields[8].GetFloat();   // X
+            data << fields[9].GetFloat();   // Y
+            data << fields[10].GetFloat();  // Z
 
-            data << uint32(fields[19].GetUInt8());  // Character Customization
+            // GuildID is now a guid
+            if(fields[18].GetUInt32())
+                data << uint32(0x1FF6) << fields[18].GetUInt32();
+            else data << uint64(0);
+
+            uint32 player_flags;
+            if(fields[17].GetUInt32() & PLAYER_FLAG_NOHELM)
+                player_flags |= 0x00000400;
+            if(fields[17].GetUInt32() & PLAYER_FLAG_NOCLOAK)
+                player_flags |= 0x00000800;
+            if(fields[15].GetUInt32() != 0)
+                player_flags |= 0x00002000;
+            if(fields[16].GetUInt32() != 0)
+                player_flags |= 0x00004000;
+            uint64 banned = fields[13].GetUInt64();
+            if(banned && (banned < 10 || banned > UNIXTIME))
+                player_flags |= 0x01000000;
+            data << player_flags << uint32(fields[19].GetUInt8());
             data << fields[14].GetUInt8();          // Rest State
 
-            if( Class == WARLOCK || Class == HUNTER )
+            QueryResult *res = NULL;
+            CreatureInfo *petInfo = NULL;
+            if( _class == WARLOCK || _class == HUNTER )
             {
                 res = CharacterDatabase.Query("SELECT entry FROM playerpets WHERE ownerguid="I64FMTD" AND ( active MOD 10 ) =1", guid);
-
                 if(res)
                 {
-                    info = CreatureNameStorage.LookupEntry(res->Fetch()[0].GetUInt32());
+                    petInfo = CreatureNameStorage.LookupEntry(res->Fetch()[0].GetUInt32());
                     delete res;
                 }
-                else
-                    info=NULL;
             }
-            else
-                info=NULL;
 
-            if(info)  //PET INFO uint32 displayid,  uint32 level,        uint32 familyid
-                data << uint32(info->Male_DisplayID) << uint32(10) << uint32(info->Family);
-            else
-                data << uint32(0) << uint32(0) << uint32(0);
+            if(petInfo)  //PET INFO uint32 displayid,  uint32 level,        uint32 familyid
+                data << uint32(petInfo->Male_DisplayID) << uint32(10) << uint32(petInfo->Family);
+            else data << uint32(0) << uint32(0) << uint32(0);
 
             res = CharacterDatabase.Query("SELECT containerslot, slot, entry, enchantments FROM playeritems WHERE ownerguid=%u", GUID_LOPART(guid));
-
-            uint32 enchantid;
-            EnchantEntry * enc;
-            memset(items, 0, sizeof(player_item) * EQUIPMENT_SLOT_END);
             if(res)
             {
                 do
                 {
-                    containerslot = res->Fetch()[0].GetInt8();
-                    slot = res->Fetch()[1].GetInt8();
+                    int8 containerslot = res->Fetch()[0].GetInt8(), slot = res->Fetch()[1].GetInt8();
                     if( containerslot == -1 && slot < EQUIPMENT_SLOT_END && slot >= 0 )
                     {
-                        proto = ItemPrototypeStorage.LookupEntry(res->Fetch()[2].GetUInt32());
+                        ItemPrototype *proto = ItemPrototypeStorage.LookupEntry(res->Fetch()[2].GetUInt32());
                         if(proto)
                         {
                             // slot0 = head, slot14 = cloak
-                            if(!(slot == 0 && (flags & (uint32)PLAYER_FLAG_NOHELM) != 0) && !(slot == 14 && (flags & (uint32)PLAYER_FLAG_NOCLOAK) != 0))
+                            if(!(slot == 0 && ((player_flags & 0x400) != 0) && !(slot == 14 && ((player_flags & 0x800) != 0))))
                             {
                                 items[slot].displayid = proto->DisplayInfoID;
                                 items[slot].invtype = proto->InventoryType;
                                 if( slot == EQUIPMENT_SLOT_MAINHAND || slot == EQUIPMENT_SLOT_OFFHAND )
                                 {
                                     // get enchant visual ID
-                                    const char * enchant_field = res->Fetch()[3].GetString();
+                                    uint32 enchantid;
+                                    const char *enchant_field = res->Fetch()[3].GetString();
                                     if( sscanf( enchant_field , "%u,0,0;" , (unsigned int *)&enchantid ) == 1 && enchantid > 0 )
                                     {
-                                        enc = dbcEnchant.LookupEntry( enchantid );
+                                        EnchantEntry *enc = dbcEnchant.LookupEntry( enchantid );
                                         if( enc != NULL )
                                             items[slot].enchantment = enc->visual;
                                         else
-                                            items[slot].enchantment = 0;;
+                                            items[slot].enchantment = 0;
                                     }
                                 }
                             }
@@ -193,12 +174,10 @@ void WorldSession::CharacterEnumProc(QueryResult * result)
                 delete res;
             }
 
-            for( i = 0; i < EQUIPMENT_SLOT_END; i++ )
+            for( uint8 i = 0; i < EQUIPMENT_SLOT_END; i++ )
                 data << items[i].displayid << items[i].invtype << uint32(items[i].enchantment);
-
-            for( i = 0; i < 4; i++)
-                data << uint32(0)/*bags[i].displayid*/ << uint8(18) << uint32(0);
-            //          Displayid                         // Bag      // Enchant
+            for( uint8 i = 0; i < 4; i++)
+                data << uint32(0) << uint8(0) << uint32(0);
 
             num++;
         }
@@ -206,8 +185,6 @@ void WorldSession::CharacterEnumProc(QueryResult * result)
     }
 
     data.put<uint8>(0, num);
-
-    //sLog.outDebug("Character Enum", "Built in %u ms.", getMSTime() - start_time);
     SendPacket( &data );
 }
 
@@ -256,7 +233,7 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recv_data )
     recv_data >> name >> race >> class_;
     recv_data.rpos(0);
 
-    WorldPacket data(SMSG_CHAR_CREATE, 1);
+    WorldPacket data(SMSG_CHARACTER_CREATE, 1);
     if(!sWorld.VerifyName(name.c_str(), name.length()))
     {
         data << uint8(CHAR_CREATE_NAME_IN_USE);
@@ -378,100 +355,6 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recv_data )
     sLogonCommHandler.UpdateAccountCount(GetAccountId(), 1);
 }
 
-/* Last Checked at patch 3.0.2 Specfic SMSG_CHAR_CREATE Error Codes:
-
-    RESPONSE_SUCCESS = 0,
-    RESPONSE_FAILURE = 1,
-    RESPONSE_CANCELLED = 2,
-    RESPONSE_DISCONNECTED = 3,
-    RESPONSE_FAILED_TO_CONNECT = 4,
-    RESPONSE_VERSION_MISMATCH = 5,
-    CSTATUS_CONNECTING = 6,
-    CSTATUS_NEGOTIATING_SECURITY = 7,
-    CSTATUS_NEGOTIATION_COMPLETE = 8,
-    CSTATUS_NEGOTIATION_FAILED = 9,
-    CSTATUS_AUTHENTICATING = 10,
-    AUTH_OK = 11,
-    AUTH_FAILED = 12,
-    AUTH_REJECT = 13,
-    AUTH_BAD_SERVER_PROOF = 14,
-    AUTH_UNAVAILABLE = 15,
-    AUTH_SYSTEM_ERROR = 16,
-    AUTH_BILLING_ERROR = 17,
-    AUTH_BILLING_EXPIRED = 18,
-    AUTH_VERSION_MISMATCH = 19,
-    AUTH_UNKNOWN_ACCOUNT = 20,
-    AUTH_INCORRECT_PASSWORD = 21,
-    AUTH_SESSION_EXPIRED = 22,
-    AUTH_SERVER_SHUTTING_DOWN = 23,
-    AUTH_ALREADY_LOGGING_IN = 24,
-    AUTH_LOGIN_SERVER_NOT_FOUND = 25,
-    AUTH_WAIT_QUEUE = 26,
-    AUTH_BANNED = 27,
-    AUTH_ALREADY_ONLINE = 28,
-    AUTH_NO_TIME = 29,
-    AUTH_DB_BUSY = 30,
-    AUTH_SUSPENDED = 31,
-    AUTH_PARENTAL_CONTROL = 32,
-    AUTH_LOCKED_ENFORCED = 33,
-    REALM_LIST_SUCCESS = 34,
-    REALM_LIST_FAILED = 35,
-    REALM_LIST_INVALID = 36,
-    REALM_LIST_REALM_NOT_FOUND = 37,
-    ACCOUNT_CREATE_IN_PROGRESS = 38,
-    ACCOUNT_CREATE_SUCCESS = 39,
-    ACCOUNT_CREATE_FAILED = 40,
-    CHAR_LIST_RETRIEVED = 41,
-    CHAR_LIST_FAILED = 42,
-    CHAR_CREATE_IN_PROGRESS = 43,
-    CHAR_CREATE_SUCCESS = 44,
-    CHAR_CREATE_ERROR = 45,
-    CHAR_CREATE_FAILED = 46,
-    CHAR_CREATE_DISABLED = 47,
-    CHAR_CREATE_PVP_TEAMS_VIOLATION = 48,
-    CHAR_CREATE_SERVER_LIMIT = 49,
-    CHAR_CREATE_ACCOUNT_LIMIT = 50,
-    CHAR_CREATE_SERVER_QUEUE = 51,
-    CHAR_CREATE_ONLY_EXISTING = 52,
-    CHAR_CREATE_EXPANSION = 53,
-    CHAR_CREATE_EXPANSION_CLASS = 54,
-    CHAR_CREATE_LEVEL_REQUIREMENT = 55,
-    CHAR_CREATE_UNIQUE_CLASS_LIMIT = 56,
-    CHAR_DELETE_IN_PROGRESS = 57,
-    CHAR_DELETE_SUCCESS = 58,0x3A
-    CHAR_DELETE_FAILED = 59, 0x3B
-    CHAR_DELETE_FAILED_LOCKED_FOR_TRANSFER = 60, 0x3C
-    CHAR_DELETE_FAILED_GUILD_LEADER = 61, 0x3D
-    CHAR_DELETE_FAILED_ARENA_CAPTAIN = 62, 0x3E
-    CHAR_LOGIN_IN_PROGRESS = 63,
-    CHAR_LOGIN_SUCCESS = 64,
-    CHAR_LOGIN_NO_WORLD = 65,
-    CHAR_LOGIN_DUPLICATE_CHARACTER = 66,
-    CHAR_LOGIN_NO_INSTANCES = 67,
-    CHAR_LOGIN_FAILED = 68,
-    CHAR_LOGIN_DISABLED = 69,
-    CHAR_LOGIN_NO_CHARACTER = 70,
-    CHAR_LOGIN_LOCKED_FOR_TRANSFER = 71,
-    CHAR_LOGIN_LOCKED_BY_BILLING = 72,
-    CHAR_NAME_SUCCESS = 73,
-    CHAR_NAME_FAILURE = 74,
-    CHAR_NAME_NO_NAME = 75,
-    CHAR_NAME_TOO_SHORT = 76,
-    CHAR_NAME_TOO_LONG = 77,
-    CHAR_NAME_INVALID_CHARACTER = 78,
-    CHAR_NAME_MIXED_LANGUAGES = 79,
-    CHAR_NAME_PROFANE = 80,
-    CHAR_NAME_RESERVED = 81,
-    CHAR_NAME_INVALID_APOSTROPHE = 82,
-    CHAR_NAME_MULTIPLE_APOSTROPHES = 83,
-    CHAR_NAME_THREE_CONSECUTIVE = 84,
-    CHAR_NAME_INVALID_SPACE = 85,
-    CHAR_NAME_CONSECUTIVE_SPACES = 86,
-    CHAR_NAME_RUSSIAN_CONSECUTIVE_SILENT_CHARACTERS = 87,
-    CHAR_NAME_RUSSIAN_SILENT_CHARACTER_AT_BEGINNING_OR_END = 88,
-    CHAR_NAME_DECLENSION_DOESNT_MATCH_BASE_NAME = 89,
-*/
-
 void WorldSession::HandleCharDeleteOpcode( WorldPacket & recv_data )
 {
     CHECK_PACKET_SIZE(recv_data, 8);
@@ -485,7 +368,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recv_data )
     else
         fail = DeleteCharacter((uint32)guid);
 
-    OutPacket(SMSG_CHAR_DELETE, 1, &fail);
+    OutPacket(SMSG_CHARACTER_DELETE, 1, &fail);
     if(fail == CHAR_DELETE_SUCCESS)
         sLogonCommHandler.UpdateAccountCount(GetAccountId(), -1);
 }
@@ -588,7 +471,7 @@ uint8 WorldSession::DeleteCharacter(uint32 guid)
 
 void WorldSession::HandleCharRenameOpcode(WorldPacket & recv_data)
 {
-    WorldPacket data(SMSG_CHAR_RENAME, recv_data.size() + 1);
+    WorldPacket data(SMSG_CHARACTER_RENAME, recv_data.size() + 1);
 
     uint64 guid;
     string name;
@@ -1070,7 +953,7 @@ void WorldSession::HandleAlterAppearance(WorldPacket & recv_data)
 
 void WorldSession::HandleCharCustomizeOpcode(WorldPacket & recv_data)
 {
-    WorldPacket data(SMSG_CHAR_CUSTOMIZE, recv_data.size() + 1);
+    WorldPacket data(SMSG_CHARACTER_CUSTOMIZE, recv_data.size() + 1);
     uint64 guid;
     string name;
     recv_data >> guid >> name;

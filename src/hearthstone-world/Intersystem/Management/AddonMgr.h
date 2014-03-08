@@ -22,8 +22,7 @@ public:
     void LoadFromDB();
     void SaveToDB();
 
-    void SendAddonInfoPacket(WorldPacket *source, uint32 pos, WorldSession *m_session);
-    bool AppendPublicKey(WorldPacket& data, string AddonName, uint32 CRC);
+    void SendAddonInfoPacket(WorldPacket *source, WorldSession *m_session);
 
 private:
     std::map<std::string, AddonEntry*> KnownAddons;

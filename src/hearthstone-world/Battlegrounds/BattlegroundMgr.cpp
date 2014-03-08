@@ -1460,7 +1460,7 @@ void CBattlegroundManager::SendBattlegroundQueueStatus(Player* plr, uint32 queue
     if( queueSlot > 1 )
         return;
 
-    WorldPacket data(SMSG_BATTLEFIELD_STATUS, 40);
+    WorldPacket data(SMSG_BATTLEFIELD_STATUS1, 40);
     data << uint32(queueSlot);
     if( plr->m_bg && plr->m_bgSlot == queueSlot)
     {

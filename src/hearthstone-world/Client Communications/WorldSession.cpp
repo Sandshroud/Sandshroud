@@ -12,7 +12,7 @@ extern bool bServerShutdown;
 #define WORLDSOCKET_TIMEOUT 80
 OpcodeHandler WorldPacketHandlers[NUM_MSG_TYPES];
 
-WorldSession::WorldSession(uint32 id, string Name, WorldSocket *sock) : EventableObject(), _socket(sock), _accountId(id), _recruitafriendId(1), _accountName(Name),
+WorldSession::WorldSession(uint32 id, string Name, WorldSocket *sock) : EventableObject(), _socket(sock), _accountId(id), _accountName(Name),
 _logoutTime(0), permissions(NULL), permissioncount(0), _loggingOut(false), instanceId(0), _recentlogout(false)
 {
     _player = NULLPLR;
@@ -29,7 +29,6 @@ _logoutTime(0), permissions(NULL), permissioncount(0), _loggingOut(false), insta
     m_clientTimeDelay =0;
     m_loggingInPlayer=NULLPLR;
     m_muted = 0;
-    _side = -1;
     m_repeatTime = 0;
     m_repeatEmoteTime = 0;
     m_repeatEmoteId = 0;
@@ -136,22 +135,22 @@ int WorldSession::Update(uint32 InstanceID)
                     if(Handler->status == STATUS_LOGGEDIN && !_player && Handler->handler != 0)
                     {
                         sLog.Warning("WorldSession", "Received unexpected/wrong state packet(Logged In) with opcode %s (0x%.4X)",
-                            LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());
+                            sOpcodeMgr.GetOpcodeName(packet->GetOpcode()), packet->GetOpcode());
                     }
                     else if(Handler->status == STATUS_IN_OR_LOGGINGOUT && !_player && !_recentlogout && Handler->handler != 0)
                     {
                         sLog.Warning("WorldSession", "Received unexpected/wrong state packet(In or Out) with opcode %s (0x%.4X)",
-                            LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());
+                            sOpcodeMgr.GetOpcodeName(packet->GetOpcode()), packet->GetOpcode());
                     }
                     else
                     {
                         // Valid Packet :>
                         if(Handler->handler == 0)
-                            sLog.Warning("WorldSession", "Received unhandled packet with opcode %s (0x%.4X)", LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());
+                            sLog.Warning("WorldSession", "Received unhandled packet with opcode %s (0x%.4X)", sOpcodeMgr.GetOpcodeName(packet->GetOpcode()), packet->GetOpcode());
                         else
                         {
                             bool fail = false;
-                            packet->opcodename = LookupOpcodeName(packet->GetOpcode()); // Needed for ByteBuffer
+                            packet->opcodename = sOpcodeMgr.GetOpcodeName(packet->GetOpcode()); // Needed for ByteBuffer
                             try
                             {
                                 (this->*Handler->handler)(*packet);
@@ -159,7 +158,7 @@ int WorldSession::Update(uint32 InstanceID)
                             catch (ByteBufferException &)
                             {
                                 fail = true;
-                                sLog.Error("WorldSession", "Incorrect handling of opcode %s (0x%.4X) REPORT TO DEVS", LookupOpcodeName(packet->GetOpcode()), packet->GetOpcode());
+                                sLog.Error("WorldSession", "Incorrect handling of opcode %s (0x%.4X) REPORT TO DEVS", sOpcodeMgr.GetOpcodeName(packet->GetOpcode()), packet->GetOpcode());
                             }
 
                             if(!fail && sLog.isOutProcess() && (packet->rpos() < packet->wpos()))
@@ -516,20 +515,20 @@ void WorldSession::InitPacketHandlerTable()
     }
 
     // Login
-    WorldPacketHandlers[CMSG_CHAR_ENUM].handler                             = &WorldSession::HandleCharEnumOpcode;
-    WorldPacketHandlers[CMSG_CHAR_ENUM].status                              = STATUS_AUTHED;
+    WorldPacketHandlers[CMSG_CHARACTER_ENUM].handler                        = &WorldSession::HandleCharEnumOpcode;
+    WorldPacketHandlers[CMSG_CHARACTER_ENUM].status                         = STATUS_AUTHED;
 
-    WorldPacketHandlers[CMSG_CHAR_CREATE].handler                           = &WorldSession::HandleCharCreateOpcode;
-    WorldPacketHandlers[CMSG_CHAR_CREATE].status                            = STATUS_AUTHED;
+    WorldPacketHandlers[CMSG_CHARACTER_CREATE].handler                      = &WorldSession::HandleCharCreateOpcode;
+    WorldPacketHandlers[CMSG_CHARACTER_CREATE].status                       = STATUS_AUTHED;
 
-    WorldPacketHandlers[CMSG_CHAR_DELETE].handler                           = &WorldSession::HandleCharDeleteOpcode;
-    WorldPacketHandlers[CMSG_CHAR_DELETE].status                            = STATUS_AUTHED;
+    WorldPacketHandlers[CMSG_CHARACTER_DELETE].handler                      = &WorldSession::HandleCharDeleteOpcode;
+    WorldPacketHandlers[CMSG_CHARACTER_DELETE].status                       = STATUS_AUTHED;
 
-    WorldPacketHandlers[CMSG_CHAR_RENAME].handler                           = &WorldSession::HandleCharRenameOpcode;
-    WorldPacketHandlers[CMSG_CHAR_RENAME].status                            = STATUS_AUTHED;
+    WorldPacketHandlers[CMSG_CHARACTER_RENAME].handler                      = &WorldSession::HandleCharRenameOpcode;
+    WorldPacketHandlers[CMSG_CHARACTER_RENAME].status                       = STATUS_AUTHED;
 
-    WorldPacketHandlers[CMSG_CHAR_CUSTOMIZE].handler                        = &WorldSession::HandleCharCustomizeOpcode;
-    WorldPacketHandlers[CMSG_CHAR_CUSTOMIZE].status                         = STATUS_AUTHED;
+    WorldPacketHandlers[CMSG_CHARACTER_CUSTOMIZE].handler                   = &WorldSession::HandleCharCustomizeOpcode;
+    WorldPacketHandlers[CMSG_CHARACTER_CUSTOMIZE].status                    = STATUS_AUTHED;
 
     WorldPacketHandlers[CMSG_PLAYER_LOGIN].handler                          = &WorldSession::HandlePlayerLoginOpcode;
     WorldPacketHandlers[CMSG_PLAYER_LOGIN].status                           = STATUS_AUTHED;
@@ -642,7 +641,7 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_GAMEOBJ_USE].handler                           = &WorldSession::HandleGameObjectUse;
     WorldPacketHandlers[CMSG_PLAYED_TIME].handler                           = &WorldSession::HandlePlayedTimeOpcode;
     WorldPacketHandlers[CMSG_SETSHEATHED].handler                           = &WorldSession::HandleSetSheathedOpcode;
-    WorldPacketHandlers[CMSG_MESSAGECHAT].handler                           = &WorldSession::HandleMessagechatOpcode;
+    //WorldPacketHandlers[CMSG_MESSAGECHAT].handler                           = &WorldSession::HandleMessagechatOpcode;
     WorldPacketHandlers[CMSG_TEXT_EMOTE].handler                            = &WorldSession::HandleTextEmoteOpcode;
     WorldPacketHandlers[CMSG_INSPECT].handler                               = &WorldSession::HandleInspectOpcode;
     WorldPacketHandlers[CMSG_TIME_SYNC_RESP].handler                        = &WorldSession::HandleTimeSyncResp;
@@ -717,13 +716,10 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_SWAP_ITEM].handler                             = &WorldSession::HandleSwapItemOpcode;
     WorldPacketHandlers[CMSG_DESTROYITEM].handler                           = &WorldSession::HandleDestroyItemOpcode;
     WorldPacketHandlers[CMSG_AUTOEQUIP_ITEM].handler                        = &WorldSession::HandleAutoEquipItemOpcode;
-    WorldPacketHandlers[CMSG_ITEM_QUERY_SINGLE].handler                     = &WorldSession::HandleItemQuerySingleOpcode;
     WorldPacketHandlers[CMSG_SELL_ITEM].handler                             = &WorldSession::HandleSellItemOpcode;
-    WorldPacketHandlers[CMSG_BUY_ITEM_IN_SLOT].handler                      = &WorldSession::HandleBuyItemInSlotOpcode;
     WorldPacketHandlers[CMSG_BUY_ITEM].handler                              = &WorldSession::HandleBuyItemOpcode;
     WorldPacketHandlers[CMSG_LIST_INVENTORY].handler                        = &WorldSession::HandleListInventoryOpcode;
     WorldPacketHandlers[CMSG_AUTOSTORE_BAG_ITEM].handler                    = &WorldSession::HandleAutoStoreBagItemOpcode;
-    WorldPacketHandlers[CMSG_SET_AMMO].handler                              = &WorldSession::HandleAmmoSetOpcode;
     WorldPacketHandlers[CMSG_BUYBACK_ITEM].handler                          = &WorldSession::HandleBuyBackOpcode;
     WorldPacketHandlers[CMSG_SPLIT_ITEM].handler                            = &WorldSession::HandleSplitOpcode;
     WorldPacketHandlers[CMSG_READ_ITEM].handler                             = &WorldSession::HandleReadItemOpcode;
@@ -821,8 +817,8 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_GUILD_RANK].handler                            = &WorldSession::HandleGuildEditRank;
     WorldPacketHandlers[CMSG_GUILD_ADD_RANK].handler                        = &WorldSession::HandleGuildAddRank;
     WorldPacketHandlers[CMSG_GUILD_DEL_RANK].handler                        = &WorldSession::HandleGuildDelRank;
-    WorldPacketHandlers[CMSG_GUILD_SET_PUBLIC_NOTE].handler                 = &WorldSession::HandleGuildSetPublicNote;
-    WorldPacketHandlers[CMSG_GUILD_SET_OFFICER_NOTE].handler                = &WorldSession::HandleGuildSetOfficerNote;
+    //WorldPacketHandlers[CMSG_GUILD_SET_PUBLIC_NOTE].handler                 = &WorldSession::HandleGuildSetPublicNote;
+    //WorldPacketHandlers[CMSG_GUILD_SET_OFFICER_NOTE].handler                = &WorldSession::HandleGuildSetOfficerNote;
     WorldPacketHandlers[CMSG_PETITION_BUY].handler                          = &WorldSession::HandleCharterBuy;
     WorldPacketHandlers[CMSG_PETITION_SHOW_SIGNATURES].handler              = &WorldSession::HandleCharterShowSignatures;
     WorldPacketHandlers[CMSG_TURN_IN_PETITION].handler                      = &WorldSession::HandleCharterTurnInCharter;
@@ -855,10 +851,10 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_PET_ACTION].handler                            = &WorldSession::HandlePetAction;
     WorldPacketHandlers[CMSG_REQUEST_PET_INFO].handler                      = &WorldSession::HandlePetInfo;
     WorldPacketHandlers[CMSG_PET_NAME_QUERY].handler                        = &WorldSession::HandlePetNameQuery;
-    WorldPacketHandlers[CMSG_BUY_STABLE_SLOT].handler                       = &WorldSession::HandleBuyStableSlot;
-    WorldPacketHandlers[CMSG_STABLE_PET].handler                            = &WorldSession::HandleStablePet;
-    WorldPacketHandlers[CMSG_UNSTABLE_PET].handler                          = &WorldSession::HandleUnstablePet;
-    WorldPacketHandlers[CMSG_STABLE_SWAP_PET].handler                       = &WorldSession::HandleStableSwapPet;
+    //WorldPacketHandlers[CMSG_BUY_STABLE_SLOT].handler                       = &WorldSession::HandleBuyStableSlot;
+    //WorldPacketHandlers[CMSG_STABLE_PET].handler                            = &WorldSession::HandleStablePet;
+    //WorldPacketHandlers[CMSG_UNSTABLE_PET].handler                          = &WorldSession::HandleUnstablePet;
+    //WorldPacketHandlers[CMSG_STABLE_SWAP_PET].handler                       = &WorldSession::HandleStableSwapPet;
     WorldPacketHandlers[MSG_LIST_STABLED_PETS].handler                      = &WorldSession::HandleStabledPetList;
     WorldPacketHandlers[CMSG_PET_SET_ACTION].handler                        = &WorldSession::HandlePetSetActionOpcode;
     WorldPacketHandlers[CMSG_PET_RENAME].handler                            = &WorldSession::HandlePetRename;
@@ -880,9 +876,9 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_LEAVE_BATTLEFIELD].handler                     = &WorldSession::HandleLeaveBattlefieldOpcode;
     WorldPacketHandlers[CMSG_AREA_SPIRIT_HEALER_QUERY].handler              = &WorldSession::HandleAreaSpiritHealerQueryOpcode;
     WorldPacketHandlers[CMSG_AREA_SPIRIT_HEALER_QUEUE].handler              = &WorldSession::HandleAreaSpiritHealerQueueOpcode;
-    WorldPacketHandlers[MSG_BATTLEGROUND_PLAYER_POSITIONS].handler          = &WorldSession::HandleBattlegroundPlayerPositionsOpcode;
+    //WorldPacketHandlers[MSG_BATTLEGROUND_PLAYER_POSITIONS].handler          = &WorldSession::HandleBattlegroundPlayerPositionsOpcode;
     WorldPacketHandlers[MSG_PVP_LOG_DATA].handler                           = &WorldSession::HandlePVPLogDataOpcode;
-    WorldPacketHandlers[MSG_INSPECT_HONOR_STATS].handler                    = &WorldSession::HandleInspectHonorStatsOpcode;
+    //WorldPacketHandlers[MSG_INSPECT_HONOR_STATS].handler                    = &WorldSession::HandleInspectHonorStatsOpcode;
     WorldPacketHandlers[CMSG_SET_ACTIONBAR_TOGGLES].handler                 = &WorldSession::HandleSetActionBarTogglesOpcode;
     WorldPacketHandlers[CMSG_MOVE_SPLINE_DONE].handler                      = &WorldSession::HandleMoveSplineCompleteOpcode;
 
@@ -907,8 +903,8 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_OPEN_ITEM].handler                             = &WorldSession::HandleOpenItemOpcode;
     WorldPacketHandlers[CMSG_COMPLETE_CINEMATIC].handler                    = &WorldSession::HandleCompleteCinematic;
     WorldPacketHandlers[CMSG_MOUNTSPECIAL_ANIM].handler                     = &WorldSession::HandleMountSpecialAnimOpcode;
-    WorldPacketHandlers[CMSG_TOGGLE_CLOAK].handler                          = &WorldSession::HandleToggleCloakOpcode;
-    WorldPacketHandlers[CMSG_TOGGLE_HELM].handler                           = &WorldSession::HandleToggleHelmOpcode;
+    //WorldPacketHandlers[CMSG_TOGGLE_CLOAK].handler                          = &WorldSession::HandleToggleCloakOpcode;
+    //WorldPacketHandlers[CMSG_TOGGLE_HELM].handler                           = &WorldSession::HandleToggleHelmOpcode;
     WorldPacketHandlers[CMSG_SET_TITLE].handler                             = &WorldSession::HandleSetVisibleRankOpcode;
     WorldPacketHandlers[CMSG_COMPLAIN].handler                              = &WorldSession::HandleReportSpamOpcode;
     WorldPacketHandlers[CMSG_WORLD_STATE_UI_TIMER_UPDATE].handler           = &WorldSession::HandleWorldStateUITimerUpdate;
@@ -999,7 +995,7 @@ void WorldSession::LogUnprocessedTail(WorldPacket *packet)
 {
     sLog.outError( "SESSION: opcode %s (0x%.4X) has unprocessed tail data \n"
         "The size recieved is %u while the packet size is %u\n",
-        LookupOpcodeName(packet->GetOpcode()),
+        sOpcodeMgr.GetOpcodeName(packet->GetOpcode()),
         packet->GetOpcode(),
         packet->rpos(), packet->wpos());
 

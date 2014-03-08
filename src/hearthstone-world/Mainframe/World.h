@@ -174,11 +174,12 @@ enum WorldMapInfoFlag
 
 enum AccountFlags
 {
-    ACCOUNT_FLAG_VIP            = 0x1,
-    ACCOUNT_FLAG_SPONSOR        = 0x2,
-    ACCOUNT_FLAG_SUPER_SPONSOR  = 0x4,
-    ACCOUNT_FLAG_XPACK_01       = 0x8,
-    ACCOUNT_FLAG_XPACK_02       = 0x10
+    ACCOUNT_FLAG_VIP            = 0x01,
+    ACCOUNT_FLAG_SPONSOR        = 0x02,
+    ACCOUNT_FLAG_SUPER_SPONSOR  = 0x04,
+    ACCOUNT_FLAG_XPACK_01       = 0x08,
+    ACCOUNT_FLAG_XPACK_02       = 0x10,
+    ACCOUNT_FLAG_XPACK_03       = 0x20
 };
 
 enum HolidayMasks
@@ -506,8 +507,10 @@ public:
     uint32 GetQueuePos(WorldSocket* Socket);
     void UpdateQueuedSessions(uint32 diff);
 
-    Mutex queueMutex;
+    // Auth seeds
+    BigNumber authSeed1, authSeed2;
 
+    Mutex queueMutex;
     string LuaScriptPath, GameMonkeyScriptPath;
     string DBCPath, MapPath, vMapPath, MMapPath;
     bool AHEnabled, DisableBufferSaving;

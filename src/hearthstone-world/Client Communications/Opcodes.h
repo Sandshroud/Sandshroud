@@ -6,15 +6,26 @@
 
 #include "../hearthstone-shared/Client/OpcodeList.h"
 
-extern NameTableEntry g_worldOpcodeNames[];
-
-inline static const char *LookupOpcodeName(uint32 id)
+class OpcodeManager : public Singleton<OpcodeManager>
 {
-    if( id >= NUM_MSG_TYPES )
-        return "(null)";
+public:
+    OpcodeManager();
+    ~OpcodeManager();
 
-    return g_worldOpcodeNames[id].name;
-}
+    void SetOpcodeListData();
+
+    uint32 ConvertOpcodeForInput(uint32 opcode);
+    uint32 ConvertOpcodeForOutput(uint32 opcode);
+    const char* GetOpcodeName(uint32 opcode);
+
+private:
+    void SetOpcodeData(uint32 opcode, char* name, uint32 newOpcode);
+
+    std::map<uint32, uint32> outputMap, inputMap;
+    std::map<uint32, char*> opcodeNames;
+};
+
+#define sOpcodeMgr OpcodeManager::getSingleton()
 
 enum FriendsResult {
     FRIEND_DB_ERROR             = 0x00,

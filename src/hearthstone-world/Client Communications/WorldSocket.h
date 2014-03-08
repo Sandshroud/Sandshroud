@@ -20,6 +20,7 @@ enum OUTPACKET_RESULT
     OUTPACKET_RESULT_NO_ROOM_IN_BUFFER = 2,
     OUTPACKET_RESULT_NOT_CONNECTED = 3,
     OUTPACKET_RESULT_SOCKET_ERROR = 4,
+    OUTPACKET_RESULT_PACKET_ERROR = 5
 };
 
 class SERVER_DECL WorldSocket : public TcpSocket
@@ -39,7 +40,7 @@ public:
     void Authenticate();
     void InformationRetreiveCallback(WorldPacket & recvData, uint32 requestid);
 
-    void __fastcall UpdateQueuePosition(uint32 Position);
+    void __fastcall SendAuthResponse(uint8 code, bool holdsPosition, uint32 position = 0);
 
     void OnRecvData();
     void OnConnect();
@@ -56,16 +57,16 @@ protected:
     void _HandlePing(WorldPacket* recvPacket);
 
 private:
-    uint8 K[40];
-    uint32 mOpcode;
-    uint32 mRemaining;
+    uint32 mOpcode, mRemaining, mUnaltered;
+
     uint32 mSeed;
-    uint32 mClientSeed;
-    uint32 mClientBuild;
     uint32 mRequestID;
+    uint8 hashDigest[20];
+    uint32 mClientSeed;
+    uint16 mClientBuild;
+    WorldPacket *addonPacket;
 
     WorldSession *mSession;
-    WorldPacket * pAuthenticationPacket;
     FastQueue<WorldPacket*, DummyLock> _queue;
     Mutex queueLock;
 
@@ -75,9 +76,3 @@ private:
     bool m_nagleEanbled;
     string * m_fullAccountName;
 };
-
-void FastGUIDPack(ByteBuffer & buf, const uint64 & oldguid);
-
-//!!! warning. This presumes that all guids can be compressed at least 1 byte
-//make sure you choose highguids acordingly
-unsigned int FastGUIDPack(const uint64 & oldguid, unsigned char * buffer, uint32 pos);

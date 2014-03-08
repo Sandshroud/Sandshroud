@@ -673,7 +673,7 @@ bool Player::Create(WorldPacket& data )
     if(!info)
     {
         // info not found.
-        WorldPacket data(SMSG_CHAR_CREATE, 1);
+        WorldPacket data(SMSG_CHARACTER_CREATE, 1);
         data << uint8(CHAR_CREATE_ERROR);
         GetSession()->SendPacket(&data);
         return false;
@@ -682,7 +682,7 @@ bool Player::Create(WorldPacket& data )
     // check that the account CAN create TBC or Cata characters, if we're making some
     if(race >= RACE_BLOODELF && !m_session->HasFlag(ACCOUNT_FLAG_XPACK_01))
     {
-        WorldPacket data(SMSG_CHAR_CREATE, 1);
+        WorldPacket data(SMSG_CHARACTER_CREATE, 1);
         data << uint8(CHAR_CREATE_ERROR);
         GetSession()->SendPacket(&data);
         return false;
@@ -708,7 +708,7 @@ bool Player::Create(WorldPacket& data )
     if(!myRace || !myClass)
     {
         // information not found
-        WorldPacket data(SMSG_CHAR_CREATE, 1);
+        WorldPacket data(SMSG_CHARACTER_CREATE, 1);
         data << uint8(CHAR_CREATE_ERROR);
         GetSession()->SendPacket(&data);
         return false;
