@@ -2374,19 +2374,6 @@ void World::LogChat(WorldSession* session, string message, ...)
     }
 }
 
-void World::UpdatePlayerItemInfos()
-{
-    Player* plr = NULL;
-    SessionMap::iterator itr;
-    for(itr = m_sessions.begin(); itr != m_sessions.end(); itr++)
-    {
-        if(plr = itr->second->GetPlayer())
-        {
-            plr->RebuildItemInfo();
-        }
-    }
-}
-
 void World::SetAnniversary(uint32 anniversarynumber)
 {
     // Set these here.

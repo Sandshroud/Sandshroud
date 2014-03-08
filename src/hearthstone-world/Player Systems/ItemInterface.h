@@ -68,7 +68,6 @@ public:
     bool SafeFullRemoveItemByGuid(uint64 guid); //destroys item fully
     AddItemResult AddItemToFreeSlot(Item* item);
     AddItemResult AddItemToFreeBankSlot(Item* item);
-    void RebuildItemInfoForOwner();
     uint32 GetEquippedItemCountWithLimitId(uint32 Id);
     uint32 GetSocketedGemCountWithLimitId(uint32 Id);
 

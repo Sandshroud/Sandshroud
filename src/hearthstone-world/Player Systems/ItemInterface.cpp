@@ -3449,21 +3449,6 @@ void ItemInterface::SwapItems(int16 SrcInvSlot, int16 DstInvSlot, int16 SrcSlot,
     }
 }
 
-void ItemInterface::RebuildItemInfoForOwner()
-{
-    WorldSession* m_session = GetOwner()->GetSession();
-
-    uint32 i = 0;
-    for(i = 0; i < MAX_INVENTORY_SLOT; i++)
-        if(m_pItems[i])
-            m_session->SendItemInfo(m_pItems[i]->GetEntry());
-
-    for(i = 0; i < MAX_BUYBACK_SLOT; i++)
-        if(m_pBuyBack[i])
-            m_session->SendItemInfo(m_pBuyBack[i]->GetEntry());
-
-}
-
 uint32 ItemInterface::GetEquippedItemCountWithLimitId(uint32 Id)
 {
     uint32 count = 0;
