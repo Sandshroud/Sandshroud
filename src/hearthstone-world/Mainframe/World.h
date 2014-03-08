@@ -681,7 +681,6 @@ public:
     void QueueShutdown(uint32 delay, uint32 type);
     void CancelShutdown();
     void UpdateShutdownStatus();
-    void UpdatePlayerItemInfos();
 
     bool VerifyName(const char * name, size_t nlen)
     {
