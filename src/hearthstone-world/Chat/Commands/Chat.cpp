@@ -72,12 +72,6 @@ ChatCommand * CommandTableStorage::GetSubCommandTable(const char * name)
         return _lookupCommandTable;
     else if(!stricmp(name, "faction"))
         return _FactionCommandTable;
-
-    // DB command Start
-    else if(!stricmp(name, "database"))
-        return _DatabaseCommandTable;
-    else if(!stricmp(name, "item"))
-        return _DBItemCommandTable;
     return 0;
 }
 
@@ -190,8 +184,6 @@ void CommandTableStorage::Dealloc()
 {
     free( _modifyCommandTable );
     free( _debugCommandTable );
-    free( _DBItemCommandTable );
-    free( _DatabaseCommandTable );
     free( _waypointCommandTable );
     free( _GMTicketCommandTable );
     free( _GameObjectCommandTable );
@@ -294,80 +286,6 @@ void CommandTableStorage::Init()
         { NULL,                         COMMAND_LEVEL_0, NULL,                                                      "",                                                                                                                     NULL, 0, 0, 0 }
     };
     dupe_command_table(debugCommandTable, _debugCommandTable);
-
-    static ChatCommand DBItemCommandTable[] =
-    {
-        { "create",                     COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemCreateCommand,                           "Creates an item by ID in DB and Server", NULL, 0, 0, 0 },
-        { "setclass",                   COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetClassCommand,                         "Sets an item's class by item id", NULL, 0, 0, 0 },
-        { "setsubclass",                COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetSubClassCommand,                      "Sets an item's subclass by item id", NULL, 0, 0, 0 },
-        { "setname",                    COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetNameCommand,                          "", NULL, 0, 0, 0 },
-        { "setdisplayid",               COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetDisplayIdCommand,                     "", NULL, 0, 0, 0 },
-        { "setquality",                 COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetQualityCommand,                       "", NULL, 0, 0, 0 },
-        { "setflags",                   COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetFlagsCommand,                         "", NULL, 0, 0, 0 },
-        { "setbuyprice",                COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetBuyPriceCommand,                      "", NULL, 0, 0, 0 },
-        { "setsellprice",               COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetSellPriceCommand,                     "", NULL, 0, 0, 0 },
-        { "setinventorytype",           COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetInventoryTypeCommand,                 "", NULL, 0, 0, 0 },
-        { "setallowableclass",          COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetAllowableClassCommand,                "", NULL, 0, 0, 0 },
-        { "setallowablerace",           COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetAllowableRaceCommand,                 "", NULL, 0, 0, 0 },
-        { "setitemlevel",               COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetItemLevelCommand,                     "", NULL, 0, 0, 0 },
-        { "setrequiredlevel",           COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetRequiredLevelCommand,                 "", NULL, 0, 0, 0 },
-        { "setrequiredskill",           COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetRequiredSkillCommand,                 "", NULL, 0, 0, 0 },
-        { "setrequiredskillrank",       COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetRequiredSkillRankCommand,             "", NULL, 0, 0, 0 },
-        { "setrequiredspell",           COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetRequiredSpellCommand,                 "", NULL, 0, 0, 0 },
-        { "setrequiredrank1",           COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetRequiredRank1Command,                 "", NULL, 0, 0, 0 },
-        { "setrequiredrank2",           COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetRequiredRank2Command,                 "", NULL, 0, 0, 0 },
-        { "setrequiredfaction",         COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetRequiredFactionCommand,               "", NULL, 0, 0, 0 },
-        { "setrequiredfactionstanding", COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetRequiredFactionStandingCommand,       "", NULL, 0, 0, 0 },
-        { "setunique",                  COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetUniqueCommand,                        "", NULL, 0, 0, 0 },
-        { "setmaxcount",                COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetMaxCountCommand,                      "", NULL, 0, 0, 0 },
-        { "setcontainerslots",          COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetContainerSlotsCommand,                "", NULL, 0, 0, 0 },
-        { "setstattype",                COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetStatTypeCommand,                      "", NULL, 0, 0, 0 },
-        { "setstatvalue",               COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetStatValueCommand,                     "", NULL, 0, 0, 0 },
-        { "setscalingstatid",           COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetScalingStatIDCommand,                 "", NULL, 0, 0, 0 },
-        { "setscalingstatflags",        COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetScalingStatFlagsCommand,              "", NULL, 0, 0, 0 },
-        { "setdamagemin",               COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetDamageMinCommand,                     "", NULL, 0, 0, 0 },
-        { "setdamagemax",               COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetDamageMaxCommand,                     "", NULL, 0, 0, 0 },
-        { "setdamagetype",              COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetDamageTypeCommand,                    "", NULL, 0, 0, 0 },
-        { "setsetarmor",                COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetArmorCommand,                         "", NULL, 0, 0, 0 },
-        { "setsetresistance",           COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetResistanceCommand,                    "", NULL, 0, 0, 0 },
-        { "setsetdelay",                COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetDelayCommand,                         "", NULL, 0, 0, 0 },
-        { "setammotype",                COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetAmmoTypeCommand,                      "", NULL, 0, 0, 0 },
-        { "setrange",                   COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetRangeCommand,                         "", NULL, 0, 0, 0 },
-        { "setspellinfo",               COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetSpellInfoCommand,                     "", NULL, 0, 0, 0 },
-        { "setbonding",                 COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetBondingCommand,                       "", NULL, 0, 0, 0 },
-        { "setdescription",             COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetDescriptionCommand,                   "", NULL, 0, 0, 0 },
-        { "setpageid",                  COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetPageIDCommand,                        "", NULL, 0, 0, 0 },
-        { "setpagelanguage",            COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetPageLanguageCommand,                  "", NULL, 0, 0, 0 },
-        { "setpagematerial",            COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetPageMaterialCommand,                  "", NULL, 0, 0, 0 },
-        { "setquestid",                 COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetQuestIDCommand,                       "", NULL, 0, 0, 0 },
-        { "setlockid",                  COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetLockIDCommand,                        "", NULL, 0, 0, 0 },
-        { "setsheathid",                COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetSheathIDCommand,                      "", NULL, 0, 0, 0 },
-        { "setrandompropertyid",        COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetRandomPropertyIDCommand,              "", NULL, 0, 0, 0 },
-        { "setrandomsuffixid",          COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetRandomSuffixIDCommand,                "", NULL, 0, 0, 0 },
-        { "setblock",                   COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetBlockCommand,                         "", NULL, 0, 0, 0 },
-        { "setitemset",                 COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetItemSetCommand,                       "", NULL, 0, 0, 0 },
-        { "setmaxdurability",           COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetMaxDurabilityCommand,                 "", NULL, 0, 0, 0 },
-        { "setzonenameid",              COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetZoneNameIDCommand,                    "", NULL, 0, 0, 0 },
-        { "setmapid",                   COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetMapIdCommand,                         "", NULL, 0, 0, 0 },
-        { "setbagfamily",               COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetBagFamilyCommand,                     "", NULL, 0, 0, 0 },
-        { "settotemcategory",           COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetTotemCategoryCommand,                 "", NULL, 0, 0, 0 },
-        { "setsocketinfo",              COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetSocketInfoCommand,                    "", NULL, 0, 0, 0 },
-        { "setsocketbonus",             COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetSocketBonusCommand,                   "", NULL, 0, 0, 0 },
-        { "setgemproperties",           COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetGemPropertiesCommand,                 "", NULL, 0, 0, 0 },
-        { "setrequireddisenchantskill", COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetRequiredDisenchantSkillCommand,       "", NULL, 0, 0, 0 },
-        { "setlootgold",                COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetLootGoldCommand,                      "", NULL, 0, 0, 0 },
-        { "setgoldloot",                COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetLootGoldCommand,                      "", NULL, 0, 0, 0 },
-        { "setarmordamagemodifier",     COMMAND_LEVEL_Z, &ChatHandler::HandleDBItemSetArmorDamageModifierCommand,           "", NULL, 0, 0, 0 },
-        { NULL,                         COMMAND_LEVEL_0, NULL,                                                              "", NULL, 0, 0, 0 }
-    };
-    dupe_command_table(DBItemCommandTable, _DBItemCommandTable);
-
-    static ChatCommand DatabaseCommandTable[] =
-    {
-        { "item",                   COMMAND_LEVEL_Z, NULL, "", DBItemCommandTable,      0, 0, 0 },
-        { NULL,                     COMMAND_LEVEL_0, NULL, "", NULL,                    0, 0, 0 }
-    };
-    dupe_command_table(DatabaseCommandTable, _DatabaseCommandTable);
 
     static ChatCommand waypointCommandTable[] =
     {
@@ -699,7 +617,6 @@ void CommandTableStorage::Init()
         { "modify",                 COMMAND_LEVEL_M, NULL,                                                          "",                 modifyCommandTable, 0, 0, 0 },
         { "waypoint",               COMMAND_LEVEL_W, NULL,                                                          "",                 waypointCommandTable, 0, 0, 0 },
         { "debug",                  COMMAND_LEVEL_D, NULL,                                                          "",                 debugCommandTable, 0, 0, 0 },
-        { "database",               COMMAND_LEVEL_Z, NULL,                                                          "",                 DatabaseCommandTable, 0, 0, 0 },
         { "gobject",                COMMAND_LEVEL_O, NULL,                                                          "",                 GameObjectCommandTable, 0, 0, 0 },
         { "battleground",           COMMAND_LEVEL_E, NULL,                                                          "",                 BattlegroundCommandTable, 0, 0, 0 },
         { "npc",                    COMMAND_LEVEL_N, NULL,                                                          "",                 NPCCommandTable, 0, 0, 0 },

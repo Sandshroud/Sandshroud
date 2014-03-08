@@ -13113,11 +13113,6 @@ void Player::SetPhaseForArea(uint32 areaid, int32 phase)
     }
 }
 
-void Player::RebuildItemInfo()
-{
-    GetItemInterface()->RebuildItemInfoForOwner();
-}
-
 uint32 Player::GenerateShapeshiftModelId(uint32 form)
 {
     switch(form)

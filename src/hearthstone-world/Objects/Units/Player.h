@@ -1307,7 +1307,6 @@ public:
 
     HEARTHSTONE_INLINE AchievementInterface* GetAchievementInterface() { return m_achievementInterface; }
     AchievementInterface * m_achievementInterface;
-    void RebuildItemInfo();
 
     /************************************************************************/
     /* Loot                                                                 */
