@@ -139,7 +139,7 @@ void WorldSession::HandleBattlegroundPlayerPositionsOpcode(WorldPacket &recv_dat
         if(hp)
             ++count2;
 
-        WorldPacket data(MSG_BATTLEGROUND_PLAYER_POSITIONS, (4+4+16*count1+16*count2));
+        WorldPacket data(SMSG_BATTLEGROUND_PLAYER_POSITIONS, (4+4+16*count1+16*count2));
 
         data << count1;
         data << count2;
@@ -165,7 +165,7 @@ void WorldSession::HandleBattlegroundPlayerPositionsOpcode(WorldPacket &recv_dat
 
         Player* ap = objmgr.GetPlayer((CAST(EyeOfTheStorm, bg))->GetFlagHolderGUID());
         if(ap) ++count2;
-         WorldPacket data(MSG_BATTLEGROUND_PLAYER_POSITIONS, (4+4));
+         WorldPacket data(SMSG_BATTLEGROUND_PLAYER_POSITIONS, (4+4));
         data << count1;
         data << count2;
         if(ap)
@@ -246,7 +246,7 @@ void WorldSession::HandleInspectHonorStatsOpcode( WorldPacket &recv_data )
     if( player == NULL )
         return;
 
-    WorldPacket data( MSG_INSPECT_HONOR_STATS, 25 );
+    WorldPacket data( SMSG_INSPECT_HONOR_STATS, 25 );
 
     data << player->GetGUID() << (uint8)player->GetUInt32Value( PLAYER_FIELD_HONOR_CURRENCY );
     data << player->GetUInt32Value( PLAYER_FIELD_KILLS );

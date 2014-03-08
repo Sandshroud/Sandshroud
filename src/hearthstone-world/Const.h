@@ -4,8 +4,8 @@
 
 #pragma once
 
-#define NUM_MAPS 750
-#define CL_BUILD_SUPPORT 12340
+#define NUM_MAPS 900
+#define CL_BUILD_SUPPORT 13623
 
 class CBattleground;
 class CBattlegroundManager;

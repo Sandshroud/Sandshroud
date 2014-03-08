@@ -210,7 +210,6 @@ public:
     uint32 m_currMsTime;
     uint32 m_lastPing;
 
-    HEARTHSTONE_INLINE uint32 GetRecruitAFriendId() const { return _recruitafriendId; }
     HEARTHSTONE_INLINE uint32 GetAccountId() const { return _accountId; }
     HEARTHSTONE_INLINE Player* GetPlayer() { return _player; }
 
@@ -371,7 +370,6 @@ protected:
     void HandleSetAtWarOpcode(WorldPacket& recvPacket);
     void HandleSetWatchedFactionIndexOpcode(WorldPacket& recvPacket);
     void HandleTogglePVPOpcode(WorldPacket& recvPacket);
-    void HandleAmmoSetOpcode(WorldPacket& recvPacket);
     void HandleGameObjectUse(WorldPacket& recvPacket);
     //void HandleJoinChannelOpcode(WorldPacket& recvPacket);
     //void HandleLeaveChannelOpcode(WorldPacket& recvPacket);
@@ -481,9 +479,7 @@ protected:
     void HandleSwapItemOpcode(WorldPacket& recvPacket);
     void HandleDestroyItemOpcode(WorldPacket& recvPacket);
     void HandleAutoEquipItemOpcode(WorldPacket& recvPacket);
-    void HandleItemQuerySingleOpcode(WorldPacket& recvPacket);
     void HandleSellItemOpcode(WorldPacket& recvPacket);
-    void HandleBuyItemInSlotOpcode(WorldPacket& recvPacket);
     void HandleBuyItemOpcode(WorldPacket& recvPacket);
     void HandleListInventoryOpcode(WorldPacket& recvPacket);
     void HandleAutoStoreBagItemOpcode(WorldPacket& recvPacket);
@@ -790,12 +786,9 @@ private:
     uint32 _accountId;
     uint32 _accountFlags;
     string _accountName;
-    uint32 _recruitafriendId;
-    int8 _side;
+    uint32 _logoutTime; // time we received a logout request -- wait 20 seconds, and quit
 
     WoWGuid m_MoverWoWGuid;
-
-    uint32 _logoutTime; // time we received a logout request -- wait 20 seconds, and quit
 
     AccountDataEntry sAccountData[8];
 
@@ -831,19 +824,6 @@ public:
     bool m_asyncQuery;
 
     void SendGossipForObject(Object* pObject);
-    void SendItemInfo(uint32 entry)
-    {
-        WorldPacket data(CMSG_ITEM_QUERY_SINGLE, 4);
-        data << uint32(entry);
-        HandleItemQuerySingleOpcode(data);
-
-        data.clear();
-        data.Initialize(CMSG_ITEM_QUERY_SINGLE);
-        data.reserve(12);
-        data << uint32(entry) << uint64(0);
-        HandleItemNameQueryOpcode(data);
-        data.clear();
-    }
 
 protected:
     uint32 m_repeatTime;

@@ -21,8 +21,23 @@ struct ClientPktHeader
 
 struct ServerPktHeader
 {
-    uint16 size;
-    uint16 cmd;
+    ServerPktHeader(uint32 size, uint16 cmd) : size(size)
+    {
+        uint8 headerIndex = 0;
+        if (isLargePacket())
+            header[headerIndex++] = 0x80 | (0xFF & (size >> 16));
+        header[headerIndex++] = 0xFF &(size >> 8);
+        header[headerIndex++] = 0xFF & size;
+
+        header[headerIndex++] = 0xFF & cmd;
+        header[headerIndex++] = 0xFF & (cmd >> 8);
+    }
+
+    uint8 getHeaderLength() { return 2 + (isLargePacket() ? 3 : 2); }
+    bool isLargePacket() { return size > 0x7FFF; }
+
+    uint32 size;
+    uint8 header[5];
 };
 
 #pragma pack(PRAGMA_POP)
@@ -30,11 +45,11 @@ struct ServerPktHeader
 WorldSocket::WorldSocket(SOCKET fd, const sockaddr_in * peer) : TcpSocket(fd, WORLDSOCKET_RECVBUF_SIZE, WORLDSOCKET_SENDBUF_SIZE, false, peer)
 {
     Authed = false;
-    mOpcode = mRemaining = 0;
+    mOpcode = mRemaining = mUnaltered = 0;
     _latency = 0;
     mSession = NULL;
     mSeed = RandomUInt();
-    pAuthenticationPacket = NULL;
+    addonPacket = NULL;
     mQueued = false;
     mRequestID = 0;
     m_nagleEanbled = false;
@@ -49,8 +64,9 @@ WorldSocket::~WorldSocket()
         delete pck;
     queueLock.Release();
 
-    if(pAuthenticationPacket)
-        delete pAuthenticationPacket;
+    if(addonPacket)
+        delete addonPacket;
+    addonPacket = NULL;
 
     if(mSession)
     {
@@ -105,8 +121,11 @@ void WorldSocket::OutPacket(uint16 opcode, size_t len, const void* data, bool In
     res = _OutPacket(opcode, len, data, InWorld);
     if(res == OUTPACKET_RESULT_SUCCESS)
         return;
+    if(res == OUTPACKET_RESULT_PACKET_ERROR)
+    { // Track packets that cause packet errors
 
-    if(res == OUTPACKET_RESULT_NO_ROOM_IN_BUFFER)
+    }
+    else if(res == OUTPACKET_RESULT_NO_ROOM_IN_BUFFER)
     {
         /* queue the packet */
         queueLock.Acquire();
@@ -167,31 +186,20 @@ OUTPACKET_RESULT WorldSocket::_OutPacket(uint16 opcode, size_t len, const void* 
     bool rv;
     if(!IsConnected())
         return OUTPACKET_RESULT_NOT_CONNECTED;
-
+    uint16 newOpcode = sOpcodeMgr.ConvertOpcodeForOutput(opcode);
+    if(newOpcode == MSG_NULL_ACTION)
+        return OUTPACKET_RESULT_PACKET_ERROR;
     if( GetWriteBuffer()->GetSpace() < (len+4) )
         return OUTPACKET_RESULT_NO_ROOM_IN_BUFFER;
-
-/*  if(InWorld)
-    {
-        if(Uniques.find(opcode) == Uniques.end())
-        {
-            sLog.Notice("", "Sent packet %s (0x%03X)", LookupOpcodeName(opcode), uint(opcode), uint(opcode));
-            Uniques.insert(opcode);
-        }
-    }
-    else if(opcode != SMSG_UPDATE_OBJECT && opcode != SMSG_PONG && opcode != SMSG_WORLD_STATE_UI_TIMER_UPDATE && opcode != SMSG_WEATHER)
-        printf("Sent packet %s (0x%03X)\n", LookupOpcodeName(opcode), uint(opcode), uint(opcode));*/
 
     LockWriteBuffer();
     // Encrypt the packet
     // First, create the header.
-    ServerPktHeader Header;
-    Header.cmd = opcode;
-    Header.size = ntohs((uint16)len + 2);
-    _crypt.EncryptSend((uint8*)&Header, sizeof (ServerPktHeader));
+    ServerPktHeader Header(len + 2, newOpcode);
+    _crypt.EncryptSend((uint8*)&Header.header, Header.getHeaderLength());
 
     // Pass the header to our send buffer
-    rv = WriteButHold((const uint8*)&Header, 4);
+    rv = WriteButHold((const uint8*)&Header.header, Header.getHeaderLength());
 
     // Pass the rest of the packet to our send buffer (if there is any)
     if(len > 0 && rv)
@@ -209,36 +217,53 @@ void WorldSocket::OnConnect()
 {
     sWorld.mAcceptedConnections++;
     _latency = getMSTime();
+
     WorldPacket data (SMSG_AUTH_CHALLENGE, 25);
-    data << uint32(1);          // Unk
+    data.append(sWorld.authSeed1.AsByteArray(), 16);
+    data << uint8(1);
     data << mSeed;
-    data << uint32(0xF3539DA3); // Generated Random.
-    data << uint32(0x6E8547B9); // 3.2.2
-    data << uint32(0x9A6AA2F8); // 3.2.2
-    data << uint32(0xA4F170F4); // 3.2.2
+    data.append(sWorld.authSeed2.AsByteArray(), 16);
     SendPacket(&data);
 }
 
 void WorldSocket::_HandleAuthSession(WorldPacket* recvPacket)
 {
+    uint32 addonSize;
     std::string account;
-    uint32 unk;
-    uint64 unk3; // 3.2.2 Unk
     _latency = getMSTime() - _latency;
 
     try
     {
-        *recvPacket >> mClientBuild;
-        *recvPacket >> unk;
-        *recvPacket >> account;
-        *recvPacket >> unk;
+        *recvPacket >> hashDigest[14] >> hashDigest[7] >> hashDigest[16];
+        *recvPacket >> hashDigest[9] >> hashDigest[4] >> hashDigest[5] >> hashDigest[15];
+        recvPacket->read_skip<uint32>();
+        *recvPacket >> hashDigest[18];
+        recvPacket->read_skip<uint64>();
+        recvPacket->read_skip<uint32>();
+        *recvPacket >> hashDigest[13];
+        recvPacket->read_skip<uint8>();
+        *recvPacket >> hashDigest[10] >> hashDigest[6];
         *recvPacket >> mClientSeed;
-        // 3.2.2
-        *recvPacket >> unk3;
-        // 3.3.5
-        *recvPacket >> unk;
-        *recvPacket >> unk;
-        *recvPacket >> unk;
+        recvPacket->read_skip<uint32>();
+        *recvPacket >> hashDigest[19] >> hashDigest[11] >> hashDigest[17];
+        *recvPacket >> hashDigest[8] >> hashDigest[12] >> hashDigest[0];
+        *recvPacket >> mClientBuild;
+        *recvPacket >> hashDigest[3];
+        recvPacket->read_skip<uint8>();
+        recvPacket->read_skip<uint32>();
+        *recvPacket >> hashDigest[1] >> hashDigest[2];
+
+        *recvPacket >> addonSize;
+        if(addonSize)
+        {
+            uint8 *addonBytes = new uint8[addonSize];
+            recvPacket->read(addonBytes, addonSize);
+            addonPacket = new WorldPacket(CMSG_AUTH_SESSION, addonSize);
+            addonPacket->append(addonBytes, addonSize);
+            delete addonBytes;
+        }
+
+        *recvPacket >> account;
     }
     catch(ByteBufferException &)
     {
@@ -262,9 +287,6 @@ void WorldSocket::_HandleAuthSession(WorldPacket* recvPacket)
 
     // shitty hash !
     m_fullAccountName = new string( account );
-
-    // Set the authentication packet
-    pAuthenticationPacket = recvPacket;
 }
 
 void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 requestid)
@@ -275,7 +297,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
     uint32 error;
     recvData >> error;
 
-    if(error != 0 || pAuthenticationPacket == NULL)
+    if(error != 0)
     {
         // something happened wrong @ the logon server
         OutPacket(SMSG_AUTH_RESPONSE, 1, "\x0D");
@@ -283,13 +305,11 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
     }
 
     // Extract account information from the packet.
-    string AccountName;
+    string AccountName, GMFlags;
     const string * ForcedPermissions;
-    uint32 AccountID;
-    string GMFlags;
+    uint32 AccountID, i;
     uint8 AccountFlags;
     string lang = "enUS";
-    uint32 i;
 
     recvData >> AccountID >> AccountName >> GMFlags >> AccountFlags;
     ForcedPermissions = sLogonCommHandler.GetForcedPermissions(AccountName);
@@ -297,24 +317,22 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
         GMFlags.assign(ForcedPermissions->c_str());
 
     sLog.Debug( "WorldSocket","Received information packet from logon: `%s` ID %u (request %u)", AccountName.c_str(), AccountID, mRequestID);
-//  sLog.outColor(TNORMAL, "\n");
 
     mRequestID = 0;
-    //Pull the session key.
-
-    BigNumber BNK;
+    uint8 K[40];
     recvData.read(K, 40);
     _crypt.Init(K);
-    BNK.SetBinary(K, 40);
 
-    //checking if player is already connected
-    //disconnect current player and login this one(blizzlike)
+    BigNumber BNK;
+    BNK.SetBinary(K, 40);
 
     if(recvData.rpos() != recvData.wpos())
         recvData.read((uint8*)lang.data(), 4);
 
-    WorldSession *session = NULL;
-    session = sWorld.FindSession( AccountID );
+    //checking if player is already connected
+    //disconnect current player and login this one(blizzlike)
+
+    WorldSession *session = sWorld.FindSession( AccountID );
     if( session != NULL )
     {
         if(session->_player != NULL && session->_player->GetMapMgr() == NULL)
@@ -339,9 +357,6 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 
     Sha1Hash sha;
 
-    uint8 digest[20];
-    pAuthenticationPacket->read(digest, 20);
-
     uint32 t = 0;
     if( m_fullAccountName == NULL )             // should never happen !
         sha.UpdateData(AccountName);
@@ -360,7 +375,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
     sha.UpdateBigNumbers(&BNK, NULL);
     sha.Finalize();
 
-    if (memcmp(sha.GetDigest(), digest, 20))
+    if (memcmp(sha.GetDigest(), hashDigest, 20))
     {
         // AUTH_UNKNOWN_ACCOUNT = 21
         OutPacket(SMSG_AUTH_RESPONSE, 1, "\x15");
@@ -425,7 +440,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
         sLog.Debug("Queue", "%s added to queue in position %u", AccountName.c_str(), Position);
 
         // Send packet so we know what we're doing
-        UpdateQueuePosition(Position);
+        SendAuthResponse(AUTH_WAIT_QUEUE, true, Position);
     }
 
     pSession->deleteMutex.Release();
@@ -434,47 +449,53 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 void WorldSocket::Authenticate()
 {
     WorldSession * pSession = mSession;
-    ASSERT(pAuthenticationPacket);
     mQueued = false;
-
     if(!pSession)
     {
         sLog.Debug( "WorldSocket","Lost Session");
         return;
     }
 
-    if(pSession->HasFlag(ACCOUNT_FLAG_XPACK_02))
-        OutPacket(SMSG_AUTH_RESPONSE, 11, "\x0C\x30\x78\x00\x00\x00\x00\x00\x00\x00\x02");
-    else if(pSession->HasFlag(ACCOUNT_FLAG_XPACK_01))
-        OutPacket(SMSG_AUTH_RESPONSE, 11, "\x0C\x30\x78\x00\x00\x00\x00\x00\x00\x00\x01");
-    else
-        OutPacket(SMSG_AUTH_RESPONSE, 11, "\x0C\x30\x78\x00\x00\x00\x00\x00\x00\x00\x00");
+    SendAuthResponse(AUTH_OK, false);
+    if(addonPacket)
+    {
+        sAddonMgr.SendAddonInfoPacket(addonPacket, pSession);
+        delete addonPacket;
+        addonPacket = NULL;
+    }
 
-    sAddonMgr.SendAddonInfoPacket(pAuthenticationPacket, (uint32)pAuthenticationPacket->rpos(), pSession);
     pSession->_latency = _latency;
-
-    delete pAuthenticationPacket;
-    pAuthenticationPacket = NULL;
-
     sWorld.AddSession(pSession);
     sWorld.AddGlobalSession(pSession);
 }
 
-void WorldSocket::UpdateQueuePosition(uint32 Position)
+void WorldSocket::SendAuthResponse(uint8 code, bool holdsPosition, uint32 position)
 {
-    WorldPacket QueuePacket(SMSG_AUTH_RESPONSE, 15);
-    QueuePacket << uint8(0x1B) << uint8(0x2C) << uint8(0x73) << uint8(0) << uint8(0);
-    QueuePacket << uint32(0) << uint8(0);
-    QueuePacket << Position;
-    SendPacket(&QueuePacket);
+    WorldPacket data(SMSG_AUTH_RESPONSE, 15);
+    data << uint8(code) << uint32(0) << uint8(0) << uint32(0);
+    if(mSession)
+    {
+        if(mSession->HasFlag(ACCOUNT_FLAG_XPACK_03))
+            data << uint8(3)<< uint8(3);
+        else if(mSession->HasFlag(ACCOUNT_FLAG_XPACK_02))
+            data << uint8(2)<< uint8(2);
+        else if(mSession->HasFlag(ACCOUNT_FLAG_XPACK_01))
+            data << uint8(1)<< uint8(1);
+        else
+            data << uint8(0)<< uint8(0);
+    }
+    else data << uint8(0)<< uint8(0);
+    if(holdsPosition)
+        data << position << uint8(0);
+    SendPacket(&data);
 }
 
 void WorldSocket::_HandlePing(WorldPacket* recvPacket)
 {
     uint32 ping;
 
-    *recvPacket >> ping;
     *recvPacket >> _latency;
+    *recvPacket >> ping;
 
     if(mSession)
     {
@@ -530,7 +551,8 @@ void WorldSocket::OnRecvData()
             // Decrypt the header
             _crypt.DecryptRecv((uint8*)&Header, sizeof (ClientPktHeader));
             mRemaining = ntohs(Header.size) - 4;
-            mOpcode = Header.cmd;
+            mUnaltered = Header.cmd;
+            mOpcode = sOpcodeMgr.ConvertOpcodeForInput(Header.cmd);
         }
 
         if(mRemaining > 0)
@@ -565,6 +587,10 @@ void WorldSocket::OnRecvData()
             {
                 _HandleAuthSession(Packet);
             }break;
+        case MSG_NULL_ACTION:
+            { // We need to log opcodes that are non existent
+                //mUnaltered
+            }break;
         default:
             {
                 if(mSession)
@@ -576,130 +602,6 @@ void WorldSocket::OnRecvData()
                 }
             }break;
         }
+        mUnaltered = 0;
     }
-}
-
-void FastGUIDPack(ByteBuffer & buf, const uint64 & oldguid)
-{
-    if( &oldguid == NULL )
-        return;
-
-    // hehe speed freaks
-    uint8 guidmask = 0;
-    uint8 guidfields[9] = {0,0,0,0,0,0,0,0};
-
-    int j = 1;
-    uint8 * test = (uint8*)&oldguid;
-
-    if (*test) //7*8
-    {
-        guidfields[j] = *test;
-        guidmask |= 1;
-        j++;
-    }
-    if (*(test+1)) //6*8
-    {
-        guidfields[j] = *(test+1);
-        guidmask |= 2;
-        j++;
-    }
-    if (*(test+2)) //5*8
-    {
-        guidfields[j] = *(test+2);
-        guidmask |= 4;
-        j++;
-    }
-    if (*(test+3)) //4*8
-    {
-        guidfields[j] = *(test+3);
-        guidmask |= 8;
-        j++;
-    }
-    if (*(test+4)) //3*8
-    {
-        guidfields[j] = *(test+4);
-        guidmask |= 16;
-        j++;
-    }
-    if (*(test+5))//2*8
-    {
-        guidfields[j] = *(test+5);
-        guidmask |= 32;
-        j++;
-    }
-    if (*(test+6))//1*8
-    {
-        guidfields[j] = *(test+6);
-        guidmask |= 64;
-        j++;
-    }
-    if (*(test+7)) //0*8
-    {
-        guidfields[j] = *(test+7);
-        guidmask |= 128;
-        j++;
-    }
-    guidfields[0] = guidmask;
-
-    buf.append(guidfields,j);
-}
-
-unsigned int FastGUIDPack(const uint64 & oldguid, unsigned char * buffer, uint32 pos)
-{
-    // hehe speed freaks
-    uint8 guidmask = 0;
-
-    int j = 1 + pos;
-    uint8 * test = (uint8*)&oldguid;
-
-    if (*test) //7*8
-    {
-        buffer[j] = *test;
-        guidmask |= 1;
-        j++;
-    }
-    if (*(test+1)) //6*8
-    {
-        buffer[j] = *(test+1);
-        guidmask |= 2;
-        j++;
-    }
-    if (*(test+2)) //5*8
-    {
-        buffer[j] = *(test+2);
-        guidmask |= 4;
-        j++;
-    }
-    if (*(test+3)) //4*8
-    {
-        buffer[j] = *(test+3);
-        guidmask |= 8;
-        j++;
-    }
-    if (*(test+4)) //3*8
-    {
-        buffer[j] = *(test+4);
-        guidmask |= 16;
-        j++;
-    }
-    if (*(test+5))//2*8
-    {
-        buffer[j] = *(test+5);
-        guidmask |= 32;
-        j++;
-    }
-    if (*(test+6))//1*8
-    {
-        buffer[j] = *(test+6);
-        guidmask |= 64;
-        j++;
-    }
-    if (*(test+7)) //0*8
-    {
-        buffer[j] = *(test+7);
-        guidmask |= 128;
-        j++;
-    }
-    buffer[pos] = guidmask;
-    return (j - pos);
 }

@@ -270,13 +270,6 @@ enum LFGroleflags
     DAMAGE      = 8
 };
 
-struct player_item
-{
-    uint32 displayid;
-    uint8 invtype;
-    uint32 enchantment; // added in 2.4
-};
-
 /*
 Exalted         1,000    Access to racial mounts. Capped at 999.7
 Revered         21,000   Heroic mode keys for Outland dungeons

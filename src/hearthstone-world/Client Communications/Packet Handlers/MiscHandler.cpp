@@ -1109,61 +1109,6 @@ void WorldSession::HandleTogglePVPOpcode(WorldPacket& recv_data)
         sChatHandler.ColorSystemMessage(this, MSG_COLOR_WHITE, error.c_str());
 }
 
-void WorldSession::HandleAmmoSetOpcode(WorldPacket & recv_data)
-{
-    uint32 ammoId;
-    recv_data >> ammoId;
-
-    if(!ammoId)
-        return;
-
-    ItemPrototype * xproto=ItemPrototypeStorage.LookupEntry(ammoId);
-    if(!xproto)
-        return;
-
-    if(xproto->Class != ITEM_CLASS_PROJECTILE || GetPlayer()->GetItemInterface()->GetItemCount(ammoId) == 0)
-    {
-        sWorld.LogCheater(GetPlayer()->GetSession(), "Definately cheating. tried to add %u as ammo.", ammoId);
-        GetPlayer()->GetSession()->Disconnect();
-        return;
-    }
-
-    if(xproto->RequiredLevel > 0)
-    {
-        if(GetPlayer()->getLevel() < (uint32)xproto->RequiredLevel)
-        {
-            GetPlayer()->GetItemInterface()->BuildInventoryChangeError(NULLITEM, NULLITEM,INV_ERR_ITEM_RANK_NOT_ENOUGH);
-            _player->SetUInt32Value(PLAYER_AMMO_ID, 0);
-            _player->UpdateStats();
-            return;
-        }
-    }
-    if(xproto->RequiredSkill > 0)
-    {
-        if(!GetPlayer()->_HasSkillLine(xproto->RequiredSkill))
-        {
-            GetPlayer()->GetItemInterface()->BuildInventoryChangeError(NULLITEM, NULLITEM,INV_ERR_ITEM_RANK_NOT_ENOUGH);
-            _player->SetUInt32Value(PLAYER_AMMO_ID, 0);
-            _player->UpdateStats();
-            return;
-        }
-
-        if(xproto->RequiredSkillRank > 0)
-        {
-            if(_player->_GetSkillLineCurrent(xproto->RequiredSkill, false) < (uint32)xproto->RequiredSkillRank)
-            {
-                GetPlayer()->GetItemInterface()->BuildInventoryChangeError(NULLITEM, NULLITEM,INV_ERR_ITEM_RANK_NOT_ENOUGH);
-                _player->SetUInt32Value(PLAYER_AMMO_ID, 0);
-                _player->UpdateStats();
-                return;
-            }
-        }
-    }
-    _player->SetUInt32Value(PLAYER_AMMO_ID, ammoId);
-    _player->UpdateStats();
-}
-
-
 void WorldSession::HandleGameObjectUse(WorldPacket & recv_data)
 {
     CHECK_INWORLD_RETURN();
