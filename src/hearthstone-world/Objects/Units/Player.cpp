@@ -397,7 +397,6 @@ void Player::Init()
         m_WeaponSubClassDamagePct[i] = 1.0f;
 
     watchedchannel          = NULL;
-    RequireAmmo             = true;
     PreventRes              = false;
     MobXPGainRate           = 0.0f;
     NoReagentCost           = false;
@@ -935,10 +934,6 @@ void Player::EquipInit(PlayerCreateInfo *EquipInfo)
                             item = NULLITEM;
                         }
                     }
-
-                    if(item != NULL) // Item successfully added.
-                        if(proto->InventoryType == INVTYPE_AMMO)
-                            SetUInt32Value(PLAYER_AMMO_ID, proto->ItemId);
                 }
             }
         }
@@ -2297,6 +2292,8 @@ void Player::InitVisibleUpdateBits()
     Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_ENTRY);
     Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_TYPE);
     Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_SCALE_X);
+    Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_DATA);
+    Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_DATA+1);
 
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_SUMMON);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_SUMMON+1);
@@ -2353,7 +2350,6 @@ void Player::InitVisibleUpdateBits()
     Player::m_visibleUpdateMask.SetBit(PLAYER_DUEL_TEAM);
     Player::m_visibleUpdateMask.SetBit(PLAYER_DUEL_ARBITER);
     Player::m_visibleUpdateMask.SetBit(PLAYER_DUEL_ARBITER+1);
-    Player::m_visibleUpdateMask.SetBit(PLAYER_GUILDID);
     Player::m_visibleUpdateMask.SetBit(PLAYER_GUILDRANK);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_BYTES_2);
 
@@ -2465,7 +2461,7 @@ void Player::SaveToDB(bool bNewCharacter /* =false */)
     << GetUInt64Value(PLAYER__FIELD_KNOWN_TITLES1) << ","
     << GetUInt64Value(PLAYER__FIELD_KNOWN_TITLES2) << ","
     << m_uint32Values[PLAYER_FIELD_COINAGE] << ","
-    << m_uint32Values[PLAYER_AMMO_ID] << ","
+    << uint32(0) << ","
     << m_uint32Values[PLAYER_CHARACTER_POINTS+1] << ","
     << m_maxTalentPoints << ","
     << load_health << ","
@@ -3175,6 +3171,9 @@ void Player::LoadFromDBProc(QueryResultVector & results)
         return;
     }
 
+    SetGuildId(m_playerInfo->GuildId);
+    SetGuildRank(m_playerInfo->GuildRank);
+
     m_bgTeam = m_team = myRace->team_id;
 
     SetNoseLevel();
@@ -3339,7 +3338,7 @@ void Player::LoadFromDBProc(QueryResultVector & results)
     SetUInt64Value( PLAYER__FIELD_KNOWN_TITLES1, get_next_field.GetUInt64() );
     SetUInt64Value( PLAYER__FIELD_KNOWN_TITLES2, get_next_field.GetUInt64() );
     m_uint32Values[PLAYER_FIELD_COINAGE]                = get_next_field.GetUInt32();
-    m_uint32Values[PLAYER_AMMO_ID]                      = get_next_field.GetUInt32();
+    get_next_field;
     m_uint32Values[PLAYER_CHARACTER_POINTS+1]           = get_next_field.GetUInt32();
     m_maxTalentPoints                                   = get_next_field.GetUInt16();
     load_health                                         = get_next_field.GetUInt32();
@@ -7011,21 +7010,6 @@ int32 Player::CanShootRangedWeapon( uint32 spellid, Unit* target, bool autoshot 
     if( spellinfo == NULL )
         return -1;
 
-    Item* itm = GetItemInterface()->GetInventoryItem( EQUIPMENT_SLOT_RANGED );
-    if( RequireAmmo ) // Check ammo
-    {
-        if( itm == NULL )
-            fail = SPELL_FAILED_NO_AMMO;
-
-        ItemPrototype * ammo = ItemPrototypeStorage.LookupEntry(GetUInt32Value(PLAYER_AMMO_ID));
-        if( ammo && ammo->RequiredLevel > 0 && getLevel() < (uint32)ammo->RequiredLevel)
-            return SPELL_FAILED_LOWLEVEL;
-
-        ItemPrototype * ranged = ItemPrototypeStorage.LookupEntry(itm->GetEntry());
-        if( ammo && ranged && ammo->SubClass != ranged->AmmoType )
-            return SPELL_FAILED_NEED_AMMO;
-    }
-
     // Player has clicked off target. Fail spell.
     if( m_curSelection != m_AutoShotTarget )
         fail = SPELL_FAILED_INTERRUPTED;
@@ -7062,13 +7046,6 @@ int32 Player::CanShootRangedWeapon( uint32 spellid, Unit* target, bool autoshot 
     {
         //  sLog.outString( "Auto shot failed: out of range (Maxr: %f, Dist: %f)" , maxr , dist );
         fail = SPELL_FAILED_OUT_OF_RANGE;
-    }
-
-    if( spellid == SPELL_RANGED_THROW || spellid == SPELL_RANGED_WAND)
-    {
-        if( itm != NULL && RequireAmmo) // no need for this
-            if( GetItemInterface()->GetItemCount( itm->GetEntry() ) == 0 )
-                fail = SPELL_FAILED_NO_AMMO;
     }
 
     if (GetMapMgr() && GetMapMgr()->CanUseCollision(this))
@@ -9609,24 +9586,6 @@ void Player::SafeTeleport(MapMgr* mgr, LocationVector vec, int32 phase)
     }
 }
 
-void Player::SetGuildId(uint32 guildId)
-{
-    uint32 field = PLAYER_GUILDID;
-    if(!IsInWorld())
-        sEventMgr.AddEvent(TO_OBJECT(this), &Object::EventSetUInt32Value, field, guildId, EVENT_PLAYER_SEND_PACKET, 1, 1, EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT);
-    else
-        SetUInt32Value(field, guildId);
-}
-
-void Player::SetGuildRank(uint32 guildRank)
-{
-    uint32 field = PLAYER_GUILDRANK;
-    if(!IsInWorld())
-        sEventMgr.AddEvent(TO_OBJECT(this), &Object::EventSetUInt32Value, field, guildRank, EVENT_PLAYER_SEND_PACKET, 1, 1, EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT);
-    else
-        SetUInt32Value(field, guildRank);
-}
-
 void Player::UpdatePvPArea()
 {
     AreaTable *areaDBC = dbcArea.LookupEntry(GetAreaId()), *zoneDBC = dbcArea.LookupEntry(GetZoneId());
@@ -10180,12 +10139,12 @@ void Player::ModifyBonuses(uint32 type,int32 val)
         }break;
     case ATTACK_POWER:
         {
-            ModUnsigned32Value( UNIT_FIELD_ATTACK_POWER_MODS, val );
-            ModUnsigned32Value( UNIT_FIELD_RANGED_ATTACK_POWER_MODS, val );
+            ModUnsigned32Value( UNIT_FIELD_ATTACK_POWER_MOD_POS, val );
+            ModUnsigned32Value( UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS, val );
         }break;
     case RANGED_ATTACK_POWER:
         {
-            ModUnsigned32Value( UNIT_FIELD_RANGED_ATTACK_POWER_MODS, val );
+            ModUnsigned32Value( UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS, val );
         }break;
     case FERAL_ATTACK_POWER:
         {
@@ -10403,15 +10362,6 @@ void Player::CalcDamage()
             //modified by Zack : please try to use premade functions if possible to avoid forgetting stuff
             ap_bonus = GetRAP()/14000.0f;
             bonus = ap_bonus*it->GetProto()->Delay;
-
-            if(GetUInt32Value(PLAYER_AMMO_ID) && RequireAmmo)
-            {
-                ItemPrototype * xproto=ItemPrototypeStorage.LookupEntry(GetUInt32Value(PLAYER_AMMO_ID));
-                if(xproto)
-                {
-                    bonus+=((xproto->Damage[0].Min+xproto->Damage[0].Max)*it->GetProto()->Delay)/2000.0f;
-                }
-            }
         }else bonus = 0;
 
         r = BaseRangedDamage[0]+delta+bonus;
@@ -12794,7 +12744,7 @@ uint16 Player::FindQuestSlot( uint32 questid )
 
 void Player::UpdateKnownCurrencies(uint32 itemId, bool apply)
 {
-    if(CurrencyTypesEntry const* ctEntry = dbcCurrencyTypes.LookupEntry(itemId))
+/*    if(CurrencyTypesEntry const* ctEntry = dbcCurrencyTypes.LookupEntry(itemId))
     {
         if(ctEntry)
         {
@@ -12811,7 +12761,7 @@ void Player::UpdateKnownCurrencies(uint32 itemId, bool apply)
                 SetUInt64Value( PLAYER_FIELD_KNOWN_CURRENCIES, newval );
             }
         }
-    }
+    }*/
 }
 
 uint32 Player::GetTotalItemLevel()

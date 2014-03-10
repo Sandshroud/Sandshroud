@@ -1423,9 +1423,13 @@ public:
     HEARTHSTONE_INLINE void SetAttackPower(uint32 amt) { SetUInt32Value(UNIT_FIELD_ATTACK_POWER, amt); }
     HEARTHSTONE_INLINE uint32 GetAttackPower() { return GetUInt32Value(UNIT_FIELD_ATTACK_POWER); }
 
-    HEARTHSTONE_INLINE void SetAttackPowerMods(uint32 amt) { SetUInt32Value(UNIT_FIELD_ATTACK_POWER_MODS, amt); }
-    HEARTHSTONE_INLINE uint32 GetAttackPowerMods() { return GetUInt32Value(UNIT_FIELD_ATTACK_POWER_MODS); }
-    HEARTHSTONE_INLINE void ModAttackPowerMods(uint32 amt) { ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MODS, amt); }
+    HEARTHSTONE_INLINE void SetAttackPowerPositiveMods(uint32 amt) { SetUInt32Value(UNIT_FIELD_ATTACK_POWER_MOD_POS, amt); }
+    HEARTHSTONE_INLINE uint32 GetAttackPowerPositiveMods() { return GetUInt32Value(UNIT_FIELD_ATTACK_POWER_MOD_POS); }
+    HEARTHSTONE_INLINE void ModAttackPowerPositiveMods(uint32 amt) { ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MOD_POS, amt); }
+
+    HEARTHSTONE_INLINE void SetAttackPowerNegativeMods(uint32 amt) { SetUInt32Value(UNIT_FIELD_ATTACK_POWER_MOD_NEG, amt); }
+    HEARTHSTONE_INLINE uint32 GetAttackPowerNegativeMods() { return GetUInt32Value(UNIT_FIELD_ATTACK_POWER_MOD_NEG); }
+    HEARTHSTONE_INLINE void ModAttackPowerNegativeMods(uint32 amt) { ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MOD_NEG, amt); }
 
     HEARTHSTONE_INLINE void SetAttackPowerMultiplier(float amt) { SetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER, amt); }
     HEARTHSTONE_INLINE float GetAttackPowerMultiplier() { return GetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER); }
@@ -1436,9 +1440,13 @@ public:
     HEARTHSTONE_INLINE void SetRangedAttackPower(uint32 amt) { SetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER, amt); }
     HEARTHSTONE_INLINE uint32 GetRangedAttackPower() { return GetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER); }
 
-    HEARTHSTONE_INLINE void SetRangedAttackPowerMods(uint32 amt) { SetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS, amt); }
-    HEARTHSTONE_INLINE uint32 GetRangedAttackPowerMods() { return GetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS); }
-    HEARTHSTONE_INLINE void ModRangedAttackPowerMods(uint32 amt) { ModUnsigned32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS, amt); }
+    HEARTHSTONE_INLINE void SetRangedAttackPowerPositiveMods(uint32 amt) { SetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS, amt); }
+    HEARTHSTONE_INLINE uint32 GetRangedAttackPowerPositiveMods() { return GetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS); }
+    HEARTHSTONE_INLINE void ModRangedAttackPowerPositiveMods(uint32 amt) { ModUnsigned32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS, amt); }
+
+    HEARTHSTONE_INLINE void SetRangedAttackPowerNegativeMods(uint32 amt) { SetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MOD_NEG, amt); }
+    HEARTHSTONE_INLINE uint32 GetRangedAttackPowerNegativeMods() { return GetUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MOD_NEG); }
+    HEARTHSTONE_INLINE void ModRangedAttackPowerNegativeMods(uint32 amt) { ModUnsigned32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MOD_NEG, amt); }
 
     HEARTHSTONE_INLINE void SetRangedAttackPowerMultiplier(float amt) { SetFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER, amt); }
     HEARTHSTONE_INLINE float GetRangedAttackPowerMultiplier() { return GetFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER); }

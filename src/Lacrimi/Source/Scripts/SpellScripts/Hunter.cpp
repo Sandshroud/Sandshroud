@@ -130,15 +130,8 @@ void SteadyShotDMG(uint32 i, Spell* pSpell, uint32 effect)
                 stundmg = pSpell->p_caster->GetRAP()/10 + pSpell->GetSpellProto()->EffectBasePoints[i] + pSpell->GetSpellProto()->EffectBasePoints[i + 1];
             else
                 stundmg = pSpell->p_caster->GetRAP()/10 + pSpell->GetSpellProto()->EffectBasePoints[i];
-
-            // Ammo Damage
-            float ammodmg, bowdmg = CalculateDamage(pSpell->u_caster, pSpell->GetUnitTarget(), RANGED, NULL);
-            if(ItemPrototype* ip = ItemPrototypeStorage.LookupEntry(pSpell->p_caster->GetUInt32Value(PLAYER_AMMO_ID)))
-                ammodmg = (ip->Damage[0].Min + ip->Damage[0].Max) * 0.2f; //+unmodified ammo damage
-            else
-                ammodmg = 0;
             // Actual damage :D
-            pSpell->damage = float2int32(ammodmg + bowdmg) + stundmg;
+            pSpell->damage = CalculateDamage(pSpell->u_caster, pSpell->GetUnitTarget(), RANGED, NULL) + stundmg;
         }
     }
 }

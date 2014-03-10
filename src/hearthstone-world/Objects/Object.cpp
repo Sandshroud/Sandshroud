@@ -853,26 +853,26 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint32 flags, uint32 movefl
                 *data << float(0); //pitch
         }
 
-        if(moveinfo != NULL)
-            *data << moveinfo->FallTime;
-        else
-            *data << uint32(0); //last fall time
-
-        if(moveflags & MOVEFLAG_REDIRECTED || moveflags & MOVEFLAG_FALLING) // BYTE1(flags2) & 0x10
+        if(m_movementflags & 0x800)
         {
-            if(moveinfo != NULL && (moveinfo->jump_sinAngle || moveinfo->jump_velocity)) // Only thing we really need to check.
-            {
-                *data << moveinfo->jump_velocity;
-                *data << moveinfo->jump_sinAngle;
-                *data << moveinfo->jump_cosAngle;
-                *data << moveinfo->jump_xySpeed;
-            }
+            if(moveinfo != NULL)
+                *data << moveinfo->FallTime << moveinfo->jump_velocity;
             else
+                *data << uint32(0) << (float)1.0; //last fall time
+            if(moveflags & MOVEFLAG_REDIRECTED || moveflags & MOVEFLAG_FALLING) // BYTE1(flags2) & 0x10
             {
-                *data << (float)1.0;    //velocity
-                *data << (float)1.0;    //sinAngle
-                *data << (float)0;      //cosAngle
-                *data << (float)0;      //xySpeed
+                if(moveinfo != NULL && (moveinfo->jump_sinAngle || moveinfo->jump_velocity)) // Only thing we really need to check.
+                {
+                    *data << moveinfo->jump_sinAngle;
+                    *data << moveinfo->jump_cosAngle;
+                    *data << moveinfo->jump_xySpeed;
+                }
+                else
+                {
+                    *data << (float)1.0;    //sinAngle
+                    *data << (float)0;      //cosAngle
+                    *data << (float)0;      //xySpeed
+                }
             }
         }
 
@@ -923,12 +923,6 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint32 flags, uint32 movefl
         *data << float(m_position.o);
     }
 
-    if(flags & 0x0008)
-        *data << GetUInt32Value(OBJECT_FIELD_GUID);
-
-    if(flags & 0x0010)
-        *data << GetUInt32Value(OBJECT_FIELD_GUID+1);
-
     if(flags & 0x0004)
         FastGUIDPack(*data, GetUInt64Value(UNIT_FIELD_TARGET)); // Compressed target guid.
 
@@ -938,6 +932,9 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint32 flags, uint32 movefl
     if(flags & 0x0080) //if ((_BYTE)flags_ < 0)
         *data << TO_VEHICLE(this)->GetVehicleEntry() << float(TO_VEHICLE(this)->GetOrientation());
 
+    if(flags & 0x800)
+        *data << uint16(0) << uint16(0) << uint16(0);
+
     // 0x200
     if(flags & 0x0200)
     {
@@ -946,6 +943,9 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint32 flags, uint32 movefl
             rotation = TO_GAMEOBJECT(this)->m_rotation;
         *data << uint64(rotation); //blizz 64bit rotation
     }
+
+    if(flags & 0x1000)
+        *data << uint8(0);
 }
 
 //=======================================================================================
