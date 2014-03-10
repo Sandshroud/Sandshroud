@@ -2216,18 +2216,12 @@ void ItemInterface::BuyItem(ItemPrototype *item, uint32 total_amount, Creature* 
 
         int32 val = (int32)(ec->honor * total_amount);
 
-        if( m_pOwner->GetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY) >= (uint32)val )
-        {
-            m_pOwner->ModUnsigned32Value( PLAYER_FIELD_HONOR_CURRENCY, -val );
+        if( m_pOwner->m_honorPoints >= (uint32)val )
             m_pOwner->m_honorPoints -= val;
-        }
 
         val = (int32)(ec->arena * total_amount);
-        if( m_pOwner->GetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY ) >= (uint32)val )
-        {
-            m_pOwner->ModUnsigned32Value( PLAYER_FIELD_ARENA_CURRENCY, -val );
+        if( m_pOwner->m_arenaPoints >= (uint32)val )
             m_pOwner->m_arenaPoints -= val;
-        }
     }
 }
 
@@ -2258,9 +2252,9 @@ int8 ItemInterface::CanAffordItem(ItemPrototype * item,uint32 amount, Creature* 
             }
         }
 
-        if(m_pOwner->GetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY) < (ec->honor*amount))
+        if(m_pOwner->m_honorPoints < (ec->honor*amount))
             return CAN_AFFORD_ITEM_ERROR_DONT_HAVE_ENOUGH_MONEY;
-        if(m_pOwner->GetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY ) < (ec->arena*amount))
+        if(m_pOwner->m_arenaPoints < (ec->arena*amount))
             return CAN_AFFORD_ITEM_ERROR_DONT_HAVE_ENOUGH_MONEY;
         if(m_pOwner->GetMaxPersonalRating(ec->Ignore2v2Team > 0) < ec->personalrating)
             return CAN_AFFORD_ITEM_ERROR_NOT_REQUIRED_RANK;

@@ -1199,12 +1199,12 @@ public:
     /************************************************************************/
     /* Guilds                                                               */
     /************************************************************************/
-    HEARTHSTONE_INLINE bool IsInGuild() {return ((m_playerInfo ? m_playerInfo->GuildId : m_uint32Values[PLAYER_GUILDID]) != 0) ? true : false;}
-    HEARTHSTONE_INLINE uint32 GetGuildId() { return (m_playerInfo ? m_playerInfo->GuildId : m_uint32Values[PLAYER_GUILDID]); }
-    HEARTHSTONE_INLINE uint32 GetGuildRank() { return (m_playerInfo ? m_playerInfo->GuildRank : m_uint32Values[PLAYER_GUILDRANK]); }
+    HEARTHSTONE_INLINE bool IsInGuild() { return (GetUInt32Value(PLAYER_GUILDID) > 0); }
+    HEARTHSTONE_INLINE uint32 GetGuildId() { return GetUInt32Value(PLAYER_GUILDID); }
+    HEARTHSTONE_INLINE uint32 GetGuildRank() { return GetUInt32Value(PLAYER_GUILDRANK); }
 
-    void SetGuildId(uint32 guildId);
-    void SetGuildRank(uint32 guildRank);
+    void SetGuildId(uint32 guildId) { SetUInt32Value(PLAYER_GUILDID, guildId); }
+    void SetGuildRank(uint32 guildRank) { SetUInt32Value(PLAYER_GUILDRANK, guildRank); }
 
     uint32 GetGuildInvitersGuid() { return m_invitersGuid; }
     void SetGuildInvitersGuid( uint32 guid ) { m_invitersGuid = guid; }
@@ -2313,7 +2313,6 @@ public:
 
     uint8 GetChatTag() const;
     void AddArenaPoints( uint32 arenapoints );
-    bool RequireAmmo;
     bool PreventRes;
 
     // loooooot

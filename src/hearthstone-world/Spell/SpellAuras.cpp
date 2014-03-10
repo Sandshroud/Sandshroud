@@ -1946,10 +1946,10 @@ void Aura::SpellAuraDummy(bool apply)
         {
             SetPositive();
             mod->realamount = (GetSpellProto()->EffectBasePoints[0]+1 * m_target->getLevel())/100;
-            m_target->ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MODS,mod->realamount);
+            m_target->ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MOD_POS,mod->realamount);
         }
         else
-            m_target->ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MODS, -mod->realamount);
+            m_target->ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MOD_POS, -mod->realamount);
         m_target->CalcDamage();
     }break;
     case 126: //Eye of Killrog
@@ -6435,11 +6435,6 @@ void Aura::SpellAuraRequireNoAmmo(bool apply)
 {
     if(!m_target->IsPlayer())
         return;
-
-    if(apply)
-        TO_PLAYER(m_target)->RequireAmmo = false;
-    else
-        TO_PLAYER(m_target)->RequireAmmo = true;
 }
 
 void Aura::SpellAuraModDamagePercDone(bool apply)
@@ -6969,7 +6964,7 @@ void Aura::SpellAuraModAttackPower(bool apply)
         SetNegative();
     else
         SetPositive();
-    m_target->ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MODS,apply? mod->m_amount : -mod->m_amount);
+    m_target->ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MOD_POS,apply? mod->m_amount : -mod->m_amount);
     m_target->CalcDamage();
 }
 
@@ -7523,10 +7518,10 @@ void Aura::SpellAuraModRangedAttackPower(bool apply)
             SetPositive();
         else
             SetNegative();
-        m_target->ModUnsigned32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS,mod->m_amount);
+        m_target->ModUnsigned32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS,mod->m_amount);
     }
     else
-        m_target->ModUnsigned32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS,-mod->m_amount);
+        m_target->ModUnsigned32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS,-mod->m_amount);
     m_target->CalcDamage();
 }
 
@@ -9041,7 +9036,7 @@ void Aura::SpellAuraIncreaseRangedAPStatPCT(bool apply)
             SetPositive();
     }
     //TODO make it recomputed each time we get AP or stats change
-    m_target->ModUnsigned32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS, apply ? mod->realamount : -mod->realamount);
+    m_target->ModUnsigned32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS, apply ? mod->realamount : -mod->realamount);
     m_target->CalcDamage();
 
     if( m_spellProto->NameHash == SPELL_HASH_HUNTER_VS__WILD )
@@ -9049,7 +9044,7 @@ void Aura::SpellAuraIncreaseRangedAPStatPCT(bool apply)
         Pet* pPet = TO_PLAYER(m_target)->GetSummon();
         if( pPet )
         {
-            pPet->ModUnsigned32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MODS, apply ? mod->realamount : -mod->realamount);
+            pPet->ModUnsigned32Value(UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS, apply ? mod->realamount : -mod->realamount);
             pPet->CalcDamage();
         }
     }
@@ -9366,7 +9361,7 @@ void Aura::SpellAuraIncreaseAPByAttribute(bool apply)
             SetPositive();
     }
     //TODO make it recomputed each time we get AP or stats change
-    m_target->ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MODS, apply ? mod->realamount : -mod->realamount);
+    m_target->ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MOD_POS, apply ? mod->realamount : -mod->realamount);
     m_target->CalcDamage();
 
     if( m_spellProto->NameHash == SPELL_HASH_HUNTER_VS__WILD )
@@ -9377,7 +9372,7 @@ void Aura::SpellAuraIncreaseAPByAttribute(bool apply)
         Pet* pPet = TO_PLAYER(m_target)->GetSummon();
         if( pPet )
         {
-            pPet->ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MODS, apply ? mod->realamount : -mod->realamount);
+            pPet->ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MOD_POS, apply ? mod->realamount : -mod->realamount);
             pPet->CalcDamage();
         }
     }
@@ -9792,10 +9787,10 @@ void Aura::SpellAuraModAttackPowerByArmor( bool apply )
             SetNegative();
 
         mod->fixed_amount[mod->i] = m_target->GetUInt32Value( UNIT_FIELD_RESISTANCES ) / mod->m_amount;
-        m_target->ModUnsigned32Value( UNIT_FIELD_ATTACK_POWER_MODS, mod->fixed_amount[mod->i] );
+        m_target->ModUnsigned32Value( UNIT_FIELD_ATTACK_POWER_MOD_POS, mod->fixed_amount[mod->i] );
     }
     else
-        m_target->ModUnsigned32Value( UNIT_FIELD_ATTACK_POWER_MODS, -mod->fixed_amount[mod->i] );
+        m_target->ModUnsigned32Value( UNIT_FIELD_ATTACK_POWER_MOD_POS, -mod->fixed_amount[mod->i] );
 
     m_target->CalcDamage();
 }
@@ -9893,11 +9888,11 @@ void Aura::EventModAttackPowerByArmorUpdate( uint32 i )
     if (val != m_modList[i].realamount)
     {
         //remove old one
-        m_target->ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MODS, -m_modList[i].realamount);
+        m_target->ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MOD_POS, -m_modList[i].realamount);
 
         m_modList[i].realamount = val;
         //add new one
-        m_target->ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MODS, m_modList[i].realamount);
+        m_target->ModUnsigned32Value(UNIT_FIELD_ATTACK_POWER_MOD_POS, m_modList[i].realamount);
     }
 }
 

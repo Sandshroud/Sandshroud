@@ -218,11 +218,7 @@ void HonorHandler::OnPlayerKilled( Player* pPlayer, Player* pVictim )
 void HonorHandler::RecalculateHonorFields(Player* pPlayer)
 {
     pPlayer->SetUInt32Value(PLAYER_FIELD_KILLS, uint16(pPlayer->m_killsToday) | ( pPlayer->m_killsYesterday << 16 ) );
-    pPlayer->SetUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION, pPlayer->m_honorToday);
-    pPlayer->SetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION, pPlayer->m_honorYesterday);
     pPlayer->SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, pPlayer->m_killsLifetime);
-    pPlayer->SetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY, pPlayer->m_honorPoints);
-    pPlayer->SetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY, pPlayer->m_arenaPoints);
 
     // Currency tab - (Blizz Placeholders)
     pPlayer->UpdateKnownCurrencies(43307, true); //Arena Points
