@@ -713,10 +713,10 @@ void GameObject::UpdateRotation(float orientation3, float orientation4)
         orientation4 = (float) cosRotation;
     }
 
-    SetFloatValue(GAMEOBJECT_PARENTROTATION, 0.0f);
-    SetFloatValue(GAMEOBJECT_PARENTROTATION_1, 0.0f);
-    SetFloatValue(GAMEOBJECT_PARENTROTATION_2, orientation3);
-    SetFloatValue(GAMEOBJECT_PARENTROTATION_3, orientation4);
+    SetFloatValue(GAMEOBJECT_ROTATION, 0.0f);
+    SetFloatValue(GAMEOBJECT_ROTATION_01, 0.0f);
+    SetFloatValue(GAMEOBJECT_ROTATION_02, orientation3);
+    SetFloatValue(GAMEOBJECT_ROTATION_03, orientation4);
 }
 
 void GameObject::SetDisplayId(uint32 id)

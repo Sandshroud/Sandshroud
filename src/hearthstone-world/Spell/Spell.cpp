@@ -2377,46 +2377,6 @@ void Spell::SendSpellStart()
         }
     }
 
-    if( cast_flags & SPELL_CAST_FLAGS_RANGED )
-    {
-        ItemPrototype* ip = NULL;
-        if( GetSpellProto()->Id == SPELL_RANGED_THROW ) // throw
-        {
-            if( p_caster != NULL )
-            {
-                Item* itm = p_caster->GetItemInterface()->GetInventoryItem( EQUIPMENT_SLOT_RANGED );
-                if( itm != NULL )
-                {
-                    ip = itm->GetProto();
-
-                    // burlex - added a check here anyway (wpe suckers :P)
-                    if( itm->GetDurability() > 0 )
-                    {
-                        itm->SetDurability( itm->GetDurability() - 1 );
-                        if( itm->GetDurability() == 0 )
-                            p_caster->ApplyItemMods( itm, EQUIPMENT_SLOT_RANGED, false, true );
-                    }
-                }
-                else
-                {
-                    ip = ItemPrototypeStorage.LookupEntry( 2512 );  /*rough arrow*/
-                }
-            }
-        }
-        else if( GetSpellProto()->Flags4 & FLAGS4_PLAYER_RANGED_SPELLS )
-        {
-            if( p_caster != NULL )
-                ip = ItemPrototypeStorage.LookupEntry( p_caster->GetUInt32Value( PLAYER_AMMO_ID ) );
-            else
-                ip = ItemPrototypeStorage.LookupEntry( 2512 );  /*rough arrow*/
-        }
-
-        if( ip != NULL )
-            data << ip->DisplayInfoID << ip->InventoryType;
-        else
-            data << uint32(0) << uint32(0);
-    }
-
     data << uint32(152);
     m_caster->SendMessageToSet( &data, true );
 }
@@ -2462,35 +2422,6 @@ void Spell::SendSpellGo()
 
     if (cast_flags & SPELL_CAST_FLAGS_POWER_UPDATE) //send new power
         data << uint32( u_caster->GetPower(GetSpellProto()->powerType));
-
-    if( cast_flags & SPELL_CAST_FLAGS_RANGED )
-    {
-        if( GetSpellProto()->Id == SPELL_RANGED_THROW )
-        {
-            if( p_caster != NULL )
-            {
-                Item* it = p_caster->GetItemInterface()->GetInventoryItem( EQUIPMENT_SLOT_RANGED );
-                if( it != NULL )
-                    ip = it->GetProto();
-            }
-            else
-            {
-                ip = ItemPrototypeStorage.LookupEntry(2512);    //rough arrow
-            }
-        }
-        else
-        {
-            if( p_caster != NULL )
-                ip = ItemPrototypeStorage.LookupEntry(p_caster->GetUInt32Value( PLAYER_AMMO_ID ) );
-            else // HACK FIX
-                ip = ItemPrototypeStorage.LookupEntry(2512);    //rough arrow
-        }
-
-        if( ip != NULL)
-            data << ip->DisplayInfoID << ip->InventoryType;
-        else
-            data << uint32(0) << uint32(0);
-    }
 
     if (cast_flags & SPELL_CAST_FLAGS_PROJECTILE)
         data << m_missilePitch << m_missileTravelTime;
@@ -4344,12 +4275,6 @@ void Spell::RemoveItems()
             i_caster->ModSignedInt32Value(ITEM_FIELD_SPELL_CHARGES, -1);
             i_caster->m_isDirty = true;
         }
-    }
-
-    // Ammo Removal
-    if( p_caster && p_caster->RequireAmmo && GetSpellProto()->Id != 53254 && (GetSpellProto()->Flags3 == FLAGS3_REQ_RANGED_WEAPON || GetSpellProto()->Flags4 & FLAGS4_PLAYER_RANGED_SPELLS))
-    {
-        p_caster->GetItemInterface()->RemoveItemAmt_ProtectPointer(p_caster->GetUInt32Value(PLAYER_AMMO_ID), 1, &i_caster);
     }
 
     // Reagent Removal
