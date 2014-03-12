@@ -154,7 +154,7 @@ bool ChatHandler::HandleFaceCommand(const char* args, WorldSession *m_session)
     /* Convert to Blizzards Format */
     float theOrientation = Orentation ? Orentation/(360/float(6.28)) : 0.0f;
 
-    obj->SetPosition(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), theOrientation, false);
+    obj->SetPosition(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), theOrientation);
     SystemMessage(m_session, "Facing sent.");
     return true;
 }
