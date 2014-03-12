@@ -734,7 +734,7 @@ private:
     float t_x, t_y, t_z, t_orient;
 
 public:
-    uint32 transTime;
+    uint32 transTime, transTime2;
     uint8 transSeat;
     float pitch;
     uint32 fallTime;

@@ -832,6 +832,8 @@ void MovementInfo::read(ByteBuffer &data)
         {
             data.read_skip<WoWGuid>();
             data.read_skip(4+4+4+4 + 4 + 1);
+            if (movementFlags2 & MOVEMENTFLAG2_INTERPOLATED_MOVEMENT)
+                data.read_skip(4);
         }
         if(transData) movementFlags |= MOVEFLAG_TAXI;
     }
@@ -839,14 +841,18 @@ void MovementInfo::read(ByteBuffer &data)
     {
         data >> transGuid >> t_x >> t_y >> t_z >> t_orient;
         data >> transTime >> transSeat;
+        if (movementFlags2 & MOVEMENTFLAG2_INTERPOLATED_MOVEMENT)
+            data >> transTime2;
     }
 
     if (movementFlags & (MOVEFLAG_SWIMMING | MOVEFLAG_AIR_SWIMMING) || movementFlags2 & MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING)
         data >> pitch;
-    data >> fallTime;
-
-    if (movementFlags & MOVEFLAG_FALLING || movementFlags & MOVEFLAG_REDIRECTED)
-        data >> j_vel >> j_sin >> j_cos >> j_speed;
+    if(movementFlags2 & MOVEMENTFLAG2_INTERPOLATED_TURNING)
+    {
+        data >> fallTime >> j_vel;
+        if (movementFlags & MOVEFLAG_REDIRECTED)
+            data >> j_sin >> j_cos >> j_speed;
+    }
     if (movementFlags & MOVEFLAG_SPLINE_MOVER)
         data >> splineAngle;
 }
@@ -856,14 +862,20 @@ void MovementInfo::write(ByteBuffer &data)
     data << movementFlags << movementFlags2 << moveTime;
     data.appendvector(m_position, true);
     if(movementFlags & MOVEFLAG_TAXI)
+    {
         data << transGuid << t_x << t_y << t_z << t_orient << transTime << transSeat;
+        if (movementFlags2 & MOVEMENTFLAG2_INTERPOLATED_MOVEMENT)
+            data << transTime2;
+    }
 
     if(movementFlags & (MOVEFLAG_SWIMMING | MOVEFLAG_AIR_SWIMMING) || movementFlags2 & MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING)
         data << pitch;
-    data << fallTime;
-
-    if(movementFlags & MOVEFLAG_FALLING || movementFlags & MOVEFLAG_REDIRECTED)
-        data << j_vel << j_sin << j_cos << j_speed;
+    if(movementFlags2 & MOVEMENTFLAG2_INTERPOLATED_TURNING)
+    {
+        data << fallTime << j_vel;
+        if(movementFlags & MOVEFLAG_REDIRECTED)
+            data << j_sin << j_cos << j_speed;
+    }
     if(movementFlags & MOVEFLAG_SPLINE_MOVER)
         data << splineAngle;
 }
