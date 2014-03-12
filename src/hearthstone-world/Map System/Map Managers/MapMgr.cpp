@@ -528,7 +528,7 @@ void MapMgr::RemoveObject(Object* obj, bool free_guid)
         {
             if( (*iter)->IsPlayer() )
             {
-                if( TO_PLAYER( *iter )->IsVisible( obj ) && TO_PLAYER( *iter )->m_TransporterGUID != obj->GetGUID())
+                if( TO_PLAYER( *iter )->IsVisible( obj ) && TO_PLAYER( *iter )->GetTransportGuid() != obj->GetGUID())
                     TO_PLAYER( *iter )->PushOutOfRange(obj->GetNewGUID());
                 obj->DestroyForPlayer(TO_PLAYER( *iter ), obj->IsGameObject());
             }
@@ -595,7 +595,7 @@ void MapMgr::ChangeObjectLocation( Object* obj )
         {
             curObj = *iter;
             iter2 = iter++;
-            if( curObj->IsPlayer() && obj->IsPlayer() && plObj && plObj->m_TransporterGUID && plObj->m_TransporterGUID == TO_PLAYER( curObj )->m_TransporterGUID )
+            if( curObj->IsPlayer() && obj->IsPlayer() && plObj && plObj->GetTransportGuid() && plObj->GetTransportGuid() == TO_PLAYER( curObj )->GetTransportGuid() )
                 fRange = 0.0f; // unlimited distance for people on same boat
             else if( curObj->IsPlayer() && obj->IsPlayer() && plObj && plObj->GetVehicle() && plObj->GetVehicle() == TO_PLAYER( curObj )->GetVehicle() )
                 fRange = 0.0f; // unlimited distance for people on same vehicle
@@ -767,7 +767,7 @@ void MapMgr::UpdateInRangeSet( Object* obj, Player* plObj, MapCell* cell )
         if( curObj == NULL )
             continue;
 
-        if( curObj->IsPlayer() && obj->IsPlayer() && plObj && plObj->m_TransporterGUID && plObj->m_TransporterGUID == TO_PLAYER( curObj )->m_TransporterGUID )
+        if( curObj->IsPlayer() && obj->IsPlayer() && plObj && plObj->GetTransportGuid() && plObj->GetTransportGuid() == TO_PLAYER( curObj )->GetTransportGuid() )
             fRange = 0.0f; // unlimited distance for people on same boat
         else if( curObj->IsPlayer() && obj->IsPlayer() && plObj && plObj->GetVehicle() && plObj->GetVehicle() == TO_PLAYER( curObj )->GetVehicle() )
             fRange = 0.0f; // unlimited distance for people on same vehicle
@@ -889,7 +889,7 @@ void MapMgr::UpdateInRangeSet(uint64 guid, MapCell* cell )
         if( curObj == NULL )
             continue;
 
-        if( curObj->IsPlayer() && obj->IsPlayer() && plObj && plObj->m_TransporterGUID && plObj->m_TransporterGUID == TO_PLAYER( curObj )->m_TransporterGUID )
+        if( curObj->IsPlayer() && obj->IsPlayer() && plObj && plObj->GetTransportGuid() && plObj->GetTransportGuid() == TO_PLAYER( curObj )->GetTransportGuid() )
             fRange = 0.0f; // unlimited distance for people on same boat
         else if( curObj->IsPlayer() && obj->IsPlayer() && plObj && plObj->GetVehicle() && plObj->GetVehicle() == TO_PLAYER( curObj )->GetVehicle() )
             fRange = 0.0f; // unlimited distance for people on same vehicle

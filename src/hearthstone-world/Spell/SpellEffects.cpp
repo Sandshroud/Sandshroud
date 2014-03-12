@@ -2602,7 +2602,7 @@ void Spell::SpellEffectTameCreature(uint32 i)
 
     Pet* pPet = objmgr.CreatePet();
     pPet->SetInstanceID(p_caster->GetInstanceID());
-    pPet->SetPosition(p_caster->GetPosition(), true);
+    pPet->SetPosition(p_caster->GetPosition());
     pPet->CreateAsSummon(tame->GetProto(), tame->GetCreatureInfo(), tame, p_caster, NULL, NULL, 2, 0);
 
     // Add removal event.
@@ -2670,7 +2670,7 @@ void Spell::SpellEffectSummonPet(uint32 i) //summon - pet
         if(summon == NULL)
             return;
         summon->SetInstanceID(m_caster->GetInstanceID());
-        summon->SetPosition(m_caster->GetPosition(), true);
+        summon->SetPosition(m_caster->GetPosition());
         summon->CreateAsSummon(proto, ci, NULL, p_caster, NULL, GetSpellProto(), 1, 0);
         if( u_caster->IsPvPFlagged() )
             summon->SetPvPFlag();
@@ -3295,7 +3295,7 @@ void Spell::SpellEffectCharge(uint32 i)
 
     uint32 time = uint32( (m_caster->CalcDistance(x,y,z) / ((u_caster->m_runSpeed * 3.5) * 0.001f)) + 0.5);
     u_caster->GetAIInterface()->SendMoveToPacket(x, y, z, 0.0f, time, MONSTER_MOVE_FLAG_WALK);
-    u_caster->SetPosition(x,y,z,0.0f,true);
+    u_caster->SetPosition(x,y,z,0.0f);
 
     if(unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT)
         unitTarget->GetAIInterface()->StopMovement(time);

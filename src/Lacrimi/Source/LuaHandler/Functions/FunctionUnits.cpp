@@ -4152,18 +4152,20 @@ int LuaUnit_GetPlayerMovementVector(lua_State * L, Unit * ptr)
     MovementInfo * movement_info = plr->GetMovementInfo();
     if(movement_info != NULL) 
     {
+        float x, y, z, o;
+        movement_info->GetPosition(x, y, z, o);
         lua_newtable(L);
         lua_pushstring(L, "x");
-        lua_pushnumber(L, movement_info->x);
+        lua_pushnumber(L, x);
         lua_rawset(L, -3);
         lua_pushstring(L, "y");
-        lua_pushnumber(L, movement_info->y);
+        lua_pushnumber(L, y);
         lua_rawset(L, -3);
         lua_pushstring(L, "z");
-        lua_pushnumber(L, movement_info->z);
+        lua_pushnumber(L, z);
         lua_rawset(L, -3);
         lua_pushstring(L, "o");
-        lua_pushnumber(L, movement_info->orientation);
+        lua_pushnumber(L, o);
         lua_rawset(L, -3);
     }
     else
@@ -4176,7 +4178,7 @@ int LuaUnit_GetPlayerMovementFlags(lua_State * L, Unit * ptr)
     TEST_PLAYER();
     MovementInfo * move_info = TO_PLAYER(ptr)->GetMovementInfo();
     if (move_info != NULL)
-        lua_pushnumber(L, move_info->flags);
+        lua_pushnumber(L, move_info->movementFlags);
     else
         RET_NIL(true)
     return 1;
@@ -4934,7 +4936,7 @@ int LuaUnit_SetPosition(lua_State * L, Unit * ptr)
     data << x << y << z;
 
     ptr->SendMessageToSet(&data, true);
-    ptr->SetPosition(x,y,z,o,true);
+    ptr->SetPosition(x,y,z,o);
     return 1;
 }
 

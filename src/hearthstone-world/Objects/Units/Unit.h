@@ -602,40 +602,6 @@ enum Powers
 
 typedef std::list<struct ProcTriggerSpellOnSpell> ProcTriggerSpellOnSpellList;
 
-class MovementInfo
-{
-public:
-    MovementInfo()
-    {
-        flags = flags16 = time = x = y = z = orientation = transX = transY = transZ = transO = 0;
-        transTime = transSeat = pitch = FallTime = 0;
-        jump_sinAngle = jump_cosAngle = jump_xySpeed = jump_velocity = spline = 0;
-        transGuid = WoWGuid(uint64(NULL));
-    };
-    ~MovementInfo() { };
-
-    void init(WorldPacket & data);
-    void write(WorldPacket & data);
-    void SetPosition(float nx, float ny, float nz, float o = 0.0f) { x = nx; y = ny; z = nz; orientation = o; };
-    void SetPosition(LocationVector loc) { x = loc.x; y = loc.y; z = loc.z; orientation = loc.o; };
-    LocationVector* GetPosition() { return (new LocationVector(x, y, z, orientation)); };
-
-    uint32 flags;
-    uint16 flags16;
-    uint32 time;
-    float x, y, z, orientation;
-    WoWGuid transGuid;
-    float transX, transY, transZ, transO;
-    uint32 transTime;
-    uint8 transSeat;
-    float pitch;// -1.55=looking down, 0=looking forward, +1.55=looking up
-    uint32 FallTime;
-    float jump_sinAngle;//on slip 8 is zero, on jump some other number
-    float jump_cosAngle, jump_xySpeed;//9,10 changes if you are not on foot
-    float jump_velocity;//something related to collision, CROW: Might be used for other knockback information.
-    float spline;
-};
-
 /************************************************************************/
 /* "In-Combat" Handler                                                  */
 /************************************************************************/
@@ -714,6 +680,71 @@ protected:
     void ClearMyHealers();
 };
 
+/************************************************************************/
+/* Movement Handler                                                     */
+/************************************************************************/
+
+class MovementInfo
+{
+public:
+    MovementInfo() : transGuid(), movementFlags(0), movementFlags2(0), moveTime(0),
+        x(0.f), y(0.f), z(0.f), orient(0.f), t_x(0.f), t_y(0.f), t_z(0.f), t_orient(0.f),
+        transTime(0), transSeat(0), pitch(0.f), fallTime(0), j_sin(0.f), j_cos(0.f), j_vel(0.f), j_speed(0.f),
+        splineAngle(0.f) { };
+    ~MovementInfo() { };
+
+    void read(ByteBuffer &data);
+    void write(ByteBuffer &data);
+
+    // Position data
+    void SetPosition(float newX, float newY, float newZ, float newO = 0.0f) { m_position.ChangeCoords(newX, newY, newZ, newO); };
+    void SetPosition(LocationVector loc) { m_position.ChangeCoords(loc.x, loc.y, loc.z, loc.o); };
+    void GetPosition(LocationVector &loc) { loc.ChangeCoords(m_position.x, m_position.y, m_position.z, m_position.o); };
+    void GetPosition(float &_x, float &_y, float &_z, float &_o) { _x = m_position.x; _y = m_position.y; _z = m_position.z; _o = m_position.o; };
+
+    // Transport data
+    void GetTransportPosition(LocationVector &loc) { loc.x = t_x; loc.y = t_y; loc.z = t_z; loc.o = t_orient; };
+    void GetTransportPosition(float &_x, float &_y, float &_z, float &_o) { _x = t_x; _y = t_y; _z = t_z; _o = t_orient; };
+    void SetTransportData(uint64 guid, float x, float y, float z, float o, uint8 seat) { transGuid.Init(guid); t_x = x; t_y = y; t_z = z; t_orient = o; transSeat = seat; }
+    void ClearTransportData() { transGuid.Clear(); t_x = t_y = t_z = t_orient = 0.0f; transTime = 0; transSeat = 0; };
+    void SetTransportLock(bool locked) { m_lockTransport = locked; }
+    bool GetTransportLock() { return m_lockTransport; }
+
+public:
+    void HandleBreathing(Player* _player, WorldSession * pSession);
+    void GetRawPosition(float &_x, float &_y, float &_z, float &_o) { _x = x; _y = y; _z = z; _o = orient; };
+
+public: // Server position
+    LocationVector m_position;
+
+    void UpdatePosition() { m_position.ChangeCoords(x, y, z, orient); };
+
+public: // Raw data
+    uint32 movementFlags;
+    uint16 movementFlags2;
+    uint32 moveTime;
+
+private:
+    float x, y, z, orient;
+
+public:
+    WoWGuid transGuid;
+
+private:
+    float t_x, t_y, t_z, t_orient;
+
+public:
+    uint32 transTime;
+    uint8 transSeat;
+    float pitch;
+    uint32 fallTime;
+    float j_sin, j_cos, j_vel, j_speed;
+    float splineAngle;
+
+private:
+    bool m_lockTransport;
+};
+
 //====================================================================
 //  Unit
 //  Base object for Players and Creatures
@@ -721,6 +752,7 @@ protected:
 
 class SERVER_DECL Unit : public Object
 {
+    friend class AIInterface;
 public:
     void CombatStatusHandler_UpdateTargets();
 
@@ -729,10 +761,13 @@ public:
     virtual void Init();
     virtual void Destruct();
 
-    friend class AIInterface;
     virtual void Update( uint32 time );
-    virtual void RemoveFromWorld(bool free_guid);
+
     virtual void OnPushToWorld();
+    virtual void RemoveFromWorld(bool free_guid);
+
+    virtual void SetPosition( float newX, float newY, float newZ, float newOrientation );
+    virtual void SetPosition( const LocationVector & v) { SetPosition(v.x, v.y, v.z, v.o); }
 
     void setAttackTimer(int32 time, bool offhand);
     bool isAttackReady(bool offhand);
@@ -1463,22 +1498,16 @@ public:
     //  custom functions for scripting
     void SetWeaponDisplayId(uint8 slot, uint32 ItemId);
 
-    //Transporters
-    WoWGuid m_transportNewGuid;
-    uint64 m_TransporterGUID;
-    LocationVector* m_transportPosition;
-    float m_TransporterUnk;
-    bool m_lockTransportVariables;
     HEARTHSTONE_INLINE uint32 GetMaxPower( uint32 index ){ return GetUInt32Value( UNIT_FIELD_MAXPOWER1 + index ); }
     HEARTHSTONE_INLINE void SetMaxPower( uint32 index, uint32 value ){SetUInt32Value(UNIT_FIELD_MAXPOWER1+index,value );}
 
-    // Movement Info.
-    HEARTHSTONE_INLINE MovementInfo* GetMovementInfo() { return &movement_info; }
-    MovementInfo movement_info;
+public: // Movement Info.
+    uint64 GetTransportGuid() { return movement_info.transGuid.GetOldGuid(); };
 
-protected:
-    /* Preallocated buffers for movement handlers */
-    uint8 movement_packet[90];
+    HEARTHSTONE_INLINE MovementInfo* GetMovementInfo() { return &movement_info; }
+
+    //
+    MovementInfo movement_info;
 
 protected:
     LocationVector m_lastAreaPosition;
@@ -1533,12 +1562,6 @@ public:
     uint32 m_charmtemp;
 
     std::map<uint32, SpellEntry*> m_DummyAuras;
-
-public: // Virtual Script Callers
-    UnitOnKillUnitScript* CallOnKillUnit;
-    UnitOnDeathScript* CallOnDeath;
-    UnitOnEnterCombatScript* CallOnEnterCombat;
-    UnitOnCastSpellScript* CallOnCastSpell;
 
 public:
     void knockback(int32 basepoint, uint32 miscvalue, bool disengage = false );

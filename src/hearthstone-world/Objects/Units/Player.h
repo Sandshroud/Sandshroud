@@ -2339,15 +2339,6 @@ public:
     uint32 m_drunkTimer;
     static DrunkenState GetDrunkenstateByValue(uint16 value);
     void EventDrunkenVomit();
-
-    // Player Vehicles
-public:
-    void InitAsVehicle();
-    void DeInitAsVehicle();
-    void AddPassenger(Unit* unit, int8 slot = -1);
-    void ChangeSeats(Unit* pPassenger, uint8 seatid);
-    void RemovePassenger(Unit* pPassenger);
-    void InstallExtras();
 };
 
 class SkillIterator

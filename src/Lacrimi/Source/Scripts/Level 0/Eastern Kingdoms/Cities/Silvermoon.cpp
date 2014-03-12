@@ -288,7 +288,7 @@ public:
     {
         if(active)
         {
-            _unit->SetPosition(_unit->GetSpawnX(), _unit->GetSpawnY(), _unit->GetSpawnZ(), _unit->GetSpawnO(), true);
+            _unit->SetPosition(_unit->GetSpawnX(), _unit->GetSpawnY(), _unit->GetSpawnZ(), _unit->GetSpawnO());
             lifetimer = 120000;
             timediff = UNIXTIME;
             _unit->SetUInt32Value(UNIT_NPC_FLAGS, 1);
