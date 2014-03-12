@@ -145,6 +145,9 @@ public:
     virtual void OnPrePushToWorld() { }
     virtual void RemoveFromWorld(bool free_guid);
 
+    virtual void SetPosition( float newX, float newY, float newZ, float newOrientation );
+    virtual void SetPosition( const LocationVector & v) { SetPosition(v.x, v.y, v.z, v.o); }
+
     HEARTHSTONE_INLINE void ObjLock() { m_objlock.Acquire(); }
     HEARTHSTONE_INLINE void ObjUnlock() { m_objlock.Release(); }
 
@@ -167,6 +170,7 @@ public:
     HEARTHSTONE_INLINE uint32 GetHighGUID() const { return (m_uint32Values[1]); } /// Sooooooooooooooooooooooooooooooooooo high
     HEARTHSTONE_INLINE uint32 GetLowGUID() const { return (m_uint32Values[0]); }
 
+    bool m_isTransport;
     bool m_isVehicle;
     bool m_isSummon;
     bool m_isTotem;
@@ -181,6 +185,7 @@ public:
     HEARTHSTONE_INLINE bool IsGameObject() { return m_objectTypeId == TYPEID_GAMEOBJECT; }
     HEARTHSTONE_INLINE bool IsContainer()   { return m_objectTypeId == TYPEID_CONTAINER; }
     HEARTHSTONE_INLINE bool IsItem()    { return m_objectTypeId == TYPEID_ITEM; }
+    HEARTHSTONE_INLINE bool IsTransport() { return m_isTransport; }
     HEARTHSTONE_INLINE bool IsVehicle() { return m_isVehicle; }
     HEARTHSTONE_INLINE bool IsSummon() { return m_isSummon; }
     HEARTHSTONE_INLINE bool IsTotem() { return m_isTotem; }
@@ -202,8 +207,6 @@ public:
 
     WorldPacket * BuildTeleportAckMsg( const LocationVector & v);
 
-    bool SetPosition( float newX, float newY, float newZ, float newOrientation, bool allowPorting = false );
-    bool SetPosition( const LocationVector & v, bool allowPorting = false);
     void SetRotation( uint64 guid );
 
     void CastSpell(Object* Target, SpellEntry* Sp, bool triggered);
@@ -496,7 +499,6 @@ public:
 
     float m_base_runSpeed;
     float m_base_walkSpeed;
-    uint16 m_movementflags;
 
     int32 SpellNonMeleeDamageLog(Unit* pVictim, uint32 spellID, uint32 damage, bool allowProc, bool static_damage = false, bool no_remove_auras = false, uint32 AdditionalCritChance = 0);
 
@@ -580,7 +582,6 @@ protected:
 
     //! Type id.
     uint8 m_objectTypeId;
-
     //! Zone id.
     uint32 m_zoneId;
     //! Area id.
@@ -687,10 +688,4 @@ public:
 
     // empties loot vector
     void ClearLoot();
-
-public:
-    uint16 GetMovementFlags() { return m_movementflags; }
-    void AddMovementFlags(uint32 flags) { m_movementflags &= (uint16)flags;}
-    void SetMovementFlags(uint32 flags){ m_movementflags = (uint16)flags;}
-    void RemoveMovementFlags(uint32 flags){ m_movementflags &= ~(uint16)flags;}
 };

@@ -283,13 +283,11 @@ bool Transporter::GenerateWaypoints()
 WaypointIterator Transporter::GetNextWaypoint()
 {
     WaypointIterator iter = mCurrentWaypoint;
-    iter++;
-    if (iter == m_WayPoints.end())
+    if ((++iter) == m_WayPoints.end())
         iter = m_WayPoints.begin();
     return iter;
 }
 
-uint32 TimeStamp();
 void Transporter::UpdatePosition()
 {
     if (m_WayPoints.size() <= 1)
@@ -299,23 +297,15 @@ void Transporter::UpdatePosition()
 
     while (((m_timer - mCurrentWaypoint->first) % m_pathTime) >= ((mNextWaypoint->first - mCurrentWaypoint->first) % m_pathTime))
     {
-        /*printf("%s from %u %f %f %f to %u %f %f %f\n", GetInfo()->Name,
-            mCurrentWaypoint->second.mapid, mCurrentWaypoint->second.x,mCurrentWaypoint->second.y,mCurrentWaypoint->second.z,
-            mNextWaypoint->second.mapid, mNextWaypoint->second.x,mNextWaypoint->second.y,mNextWaypoint->second.z);*/
-
         mCurrentWaypoint = mNextWaypoint;
         mNextWaypoint = GetNextWaypoint();
-        if (mNextWaypoint->second.mapid != GetMapId() || mCurrentWaypoint->second.teleport) {
-            //mCurrentWaypoint = mNextWaypoint;
-            //mNextWaypoint = GetNextWaypoint();
-            TransportPassengers(mNextWaypoint->second.mapid, GetMapId(),
-                mNextWaypoint->second.x, mNextWaypoint->second.y, mNextWaypoint->second.z);
+        if (mNextWaypoint->second.mapid != GetMapId() || mCurrentWaypoint->second.teleport)
+        {
+            TransportPassengers(mNextWaypoint->second.mapid, GetMapId(), mNextWaypoint->second.x, mNextWaypoint->second.y, mNextWaypoint->second.z);
             break;
-        } else {
-            SetPosition(mNextWaypoint->second.x, mNextWaypoint->second.y,
-                mNextWaypoint->second.z, m_position.o, false);
         }
 
+        SetPosition(mNextWaypoint->second.x, mNextWaypoint->second.y, mNextWaypoint->second.z, m_position.o);
         if(mCurrentWaypoint->second.delayed)
         {
             PlaySoundToSet(5495);       // BoatDockedWarning.wav
@@ -351,10 +341,11 @@ void Transporter::TransportPassengers(uint32 mapid, uint32 oldmap, float x, floa
             if(!plr->GetSession() || !plr->IsInWorld())
                 continue;
 
-            v.x = x + plr->m_transportPosition->x;
-            v.y = y + plr->m_transportPosition->y;
-            v.z = z + plr->m_transportPosition->z;
-            v.o = plr->GetOrientation();
+            plr->GetMovementInfo()->GetTransportPosition(v);
+            v.x += x;
+            v.y += y;
+            v.z += z;
+            v.o += plr->GetOrientation();
 
             if(mapid == 530 && !plr->GetSession()->HasFlag(ACCOUNT_FLAG_XPACK_01))
             {
@@ -376,7 +367,7 @@ void Transporter::TransportPassengers(uint32 mapid, uint32 oldmap, float x, floa
             if( plr->GetVehicle() )
                 plr->GetVehicle()->RemovePassenger( plr );
 
-            plr->m_lockTransportVariables = true;
+            plr->GetMovementInfo()->SetTransportLock(true);
             plr->GetSession()->SendPacket(&Pending);
             plr->_Relocate(mapid, v, false, true, 0);
         }
@@ -385,13 +376,13 @@ void Transporter::TransportPassengers(uint32 mapid, uint32 oldmap, float x, floa
     // Set our position
     RemoveFromWorld(false);
     SetMapId(mapid);
-    SetPosition(x,y,z,m_position.o,false);
+    SetPosition(x,y,z,m_position.o);
     AddToWorld();
 }
 
 Transporter::Transporter(uint64 guid) : GameObject(guid)
 {
-
+    m_isTransport = true;
 }
 
 Transporter::~Transporter()
@@ -410,10 +401,7 @@ void Transporter::Destruct()
     for(TransportNPCMap::iterator itr = m_npcs.begin(); itr != m_npcs.end(); itr++)
     {
         if(itr->second->GetTypeId()==TYPEID_UNIT)
-        {
-            delete TO_CREATURE( itr->second )->m_transportPosition;
-            TO_CREATURE( itr->second )->m_TransporterGUID = NULL;
-        }
+            TO_CREATURE( itr->second )->GetMovementInfo()->ClearTransportData();
         delete itr->second;
     }
     GameObject::Destruct();
@@ -467,7 +455,7 @@ void ObjectMgr::LoadTransporters()
 void Transporter::OnPushToWorld()
 {
     // Create waypoint event
-    sEventMgr.AddEvent(CAST(Transporter,this), &Transporter::UpdatePosition, EVENT_TRANSPORTER_NEXT_WAYPOINT, 100, 0,EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT);
+    sEventMgr.AddEvent(this, &Transporter::UpdatePosition, EVENT_TRANSPORTER_NEXT_WAYPOINT, 100, 0,EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT);
 }
 
 void Transporter::AddNPC(uint32 Entry, float offsetX, float offsetY, float offsetZ, float offsetO)
@@ -488,10 +476,7 @@ void Transporter::AddNPC(uint32 Entry, float offsetX, float offsetY, float offse
     Creature* pCreature(new Creature((uint64)HIGHGUID_TYPE_TRANSPORTER<<32 | guid));
     pCreature->Init();
     pCreature->Load(proto, GetMapMgr()->iInstanceMode, offsetX, offsetY, offsetZ, offsetO);
-    pCreature->m_TransporterUnk = UNIXTIME;
-    pCreature->m_transportPosition = new LocationVector(offsetX, offsetY, offsetZ, offsetO);
-    pCreature->m_TransporterGUID = GetGUID();
-    pCreature->m_transportNewGuid = GetNewGUID();
+    pCreature->GetMovementInfo()->SetTransportData(GetGUID(), offsetX, offsetY, offsetZ, offsetO, 0);
     m_npcs.insert(make_pair(guid,pCreature));
 }
 
@@ -513,11 +498,12 @@ uint32 Transporter::BuildCreateUpdateBlockForPlayer(ByteBuffer *data, Player* ta
     // add all the npcs to the packet
     for(TransportNPCMap::iterator itr = m_npcs.begin(); itr != m_npcs.end(); itr++)
     {
-        LocationVector v_offset = GetPosition();
-        v_offset.x = v_offset.x + TO_CREATURE(itr->second)->m_transportPosition->x;
-        v_offset.y = v_offset.y + TO_CREATURE(itr->second)->m_transportPosition->y;
-        v_offset.z = v_offset.z + TO_CREATURE(itr->second)->m_transportPosition->z;
-        itr->second->SetPosition(v_offset, false);
+        LocationVector v_offset;
+        TO_CREATURE(itr->second)->GetMovementInfo()->GetTransportPosition(v_offset);
+        v_offset.x += GetPositionX();
+        v_offset.y += GetPositionY();
+        v_offset.z += GetPositionZ();
+        itr->second->SetPosition(v_offset);
         cnt += itr->second->BuildCreateUpdateBlockForPlayer(data, target);
     }
 
