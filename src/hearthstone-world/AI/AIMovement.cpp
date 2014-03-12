@@ -100,10 +100,7 @@ void AI_Movement::Update(uint32 p_time)
                     setCreatureState(STOPPED);
                     m_moveSprint = false;
 
-                    if(m_destinationO != 0.0f)
-                        m_Unit->SetPosition(m_destinationX, m_destinationY, m_destinationZ, m_destinationO, true);
-                    else
-                        m_Unit->SetPosition(m_destinationX, m_destinationY, m_destinationZ, m_Unit->GetOrientation(), true);
+                    m_Unit->SetPosition(m_destinationX, m_destinationY, m_destinationZ, (m_destinationO == 0.0f ? m_Unit->GetOrientation() : m_destinationO));
                     m_destinationX = m_destinationY = m_destinationZ = m_destinationO = 0.0f;
                     m_timeMoved = 0;
                     m_timeToMove = 0;
@@ -245,10 +242,7 @@ void AI_Movement::Update(uint32 p_time)
                 setCreatureState(STOPPED);
                 m_moveSprint = false;
 
-                if(wayO != 0.0f)
-                    m_Unit->SetPosition(m_nextPosX, m_nextPosY, m_nextPosZ, wayO, true);
-                else
-                    m_Unit->SetPosition(m_nextPosX, m_nextPosY, m_nextPosZ, m_Unit->GetOrientation(), true);
+                m_Unit->SetPosition(m_nextPosX, m_nextPosY, m_nextPosZ, (wayO == 0.0f ? m_Unit->GetOrientation() : wayO));
                 m_nextPosX = m_nextPosY = m_nextPosZ = m_nextPosO = 0.0f;
                 m_timeMoved = 0;
                 m_timeToMove = 0;

@@ -34,6 +34,7 @@ Object::Object() : m_position(0,0,0,0), m_spawnLocation(0,0,0,0)
 
     m_uint32Values = 0;
     m_objectUpdated = false;
+    m_isTransport = false;
     m_isVehicle = false;
     m_isSummon = false;
     m_isTotem = false;
@@ -55,7 +56,6 @@ Object::Object() : m_position(0,0,0,0), m_spawnLocation(0,0,0,0)
     m_swimSpeed = 4.722222f;
     m_backSwimSpeed = 2.5f;
     m_turnRate = 3.141593f;
-    m_movementflags = 0;
 
     m_mapMgr = NULLMAPMGR;
     m_mapCell = 0;
@@ -705,185 +705,14 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint32 flags, uint32 movefl
 {
     *data << uint16(flags);
 
-    Unit* uThis = NULL;
-    Player* pThis = NULL;
-    Vehicle* vthis = NULL;
-    Creature* cThis = NULL;
-    MovementInfo* moveinfo = NULL; // We are basically writing movement info, if exists.
-
-    if(m_objectTypeId == TYPEID_PLAYER)
-    {
-        pThis = TO_PLAYER(this);
-        uThis = TO_UNIT(this);
-        if(target == pThis)
-            pThis->UpdateLastSpeeds(); // Updating our last speeds.
-
-        moveinfo = pThis->GetMovementInfo();
-    }
-    else if(m_objectTypeId == TYPEID_UNIT)
-    {
-        uThis = TO_UNIT(this);
-        cThis = TO_CREATURE(this);
-        moveinfo = uThis->GetMovementInfo();
-        if(IsVehicle())
-            vthis = TO_VEHICLE(this);
-    }
-
     if(flags & 0x20)
     {
-        if(uThis && (uThis->m_TransporterGUID != uint64(NULL) || uThis->GetVehicle() != NULL))
-            moveflags |= MOVEFLAG_TAXI;
+        if(!IsUnit())
+            return;
 
-        if(cThis)
-        {
-            //       Don't know what this is, but I've only seen it applied to spirit healers.
-            //       maybe some sort of invisibility flag? :/
-            switch(GetEntry())
-            {
-            case 6491:  // Spirit Healer
-            case 13116: // Alliance Spirit Guide
-            case 13117: // Horde Spirit Guide
-                {
-                    moveflags |= MOVEFLAG_WATER_WALK;
-                }break;
-            }
-
-            if(!cThis->isDead())
-            {
-                uint32 flyflags = 0;
-                if( cThis->GetAIInterface()->IsFlying() )
-                {
-                    switch(GetEntry())
-                    { //Zack : Teribus the Cursed had flag 400 instead of 800 and he is flying all the time
-                    case 22441: // Crow: Teribus the Cursed also doesn't attack unless he's on the ground.
-//                  case : // Dragons in BRD
-                        flyflags |= (MOVEFLAG_NO_COLLISION | MOVEFLAG_FLYING | MOVEFLAG_LEVITATE | MOVEFLAG_AIR_SWIMMING);
-                        break;
-                    default:
-                        flyflags |= (MOVEFLAG_FLYING | MOVEFLAG_LEVITATE | MOVEFLAG_AIR_SWIMMING);
-                        break;
-                    }
-                }
-                else if( cThis->GetCanMove() & LIMIT_ON_OBJ )
-                    flyflags |= (MOVEFLAG_LEVITATE | MOVEFLAG_FLYING); // Keep us in the same spot.
-
-                if(flyflags)
-                    moveflags |= flyflags;
-            }
-
-            if( TO_CREATURE(this)->proto && TO_CREATURE(this)->proto->extra_a9_flags)
-                moveflags |= TO_CREATURE(this)->proto->extra_a9_flags;
-        }
-
-        if(pThis)
-        {
-            if(pThis != target)
-            {
-                if(!pThis->isDead())
-                {
-                    if(pThis->m_FlyingAura != 0 || pThis->FlyCheat)
-                        moveflags |= MOVEFLAG_FLYING;
-                }
-            }
-
-            Vehicle* veh = TO_VEHICLE(pThis->GetVehicle());
-            if(veh)
-            {
-                uint16 addflags = vthis->GetAddMovement2Flags();
-                if(addflags)
-                    m_movementflags |= addflags;
-            }
-        }
-
-        *data << uint32(moveflags);
-        *data << uint16(m_movementflags);
-        *data << getMSTime(); // this appears to be time in ms but can be any thing
-        *data << m_position.x;
-        *data << m_position.y;
-        *data << m_position.z;
-        *data << m_position.o;
-
-        if ( moveflags & MOVEFLAG_TAXI )    //BYTE1(flags2) & 2
-        {
-            if(moveinfo != NULL && moveinfo->transGuid.GetOldGuid())
-            {
-                *data << moveinfo->transGuid << moveinfo->transX << moveinfo->transY
-                    << moveinfo->transZ << moveinfo->transO << moveinfo->transTime << moveinfo->transSeat;
-            }
-            else if (IsUnit() && TO_UNIT(this)->GetVehicle(true) != NULL)
-            {
-                Unit* pUnit = TO_UNIT(this);
-                Vehicle* vehicle = TO_VEHICLE(pUnit->GetVehicle(true));
-
-                if (pUnit->GetSeatID() != 0xFF && vehicle->m_vehicleSeats[pUnit->GetSeatID()] != NULL)
-                {
-                    *data << pUnit->GetVehicle()->GetNewGUID();
-                    *data << vehicle->m_vehicleSeats[pUnit->GetSeatID()]->m_attachmentOffsetX;
-                    *data << vehicle->m_vehicleSeats[pUnit->GetSeatID()]->m_attachmentOffsetY;
-                    *data << vehicle->m_vehicleSeats[pUnit->GetSeatID()]->m_attachmentOffsetZ;
-                    *data << vehicle->GetOrientation() - GetOrientation();
-                    *data << uint32(0);
-                    *data << pUnit->GetSeatID();
-                }
-                else
-                {
-                    *data << uint8(0);
-                    *data << float(0);
-                    *data << float(0);
-                    *data << float(0);
-                    *data << float(0);
-                    *data << uint32(0);
-                    *data << uint8(0);
-                }
-            }
-            else if(uThis && uThis->m_transportPosition != NULL)
-            {
-                WoWGuid wowguid(uThis->m_TransporterGUID);
-                *data << wowguid;
-                *data << uThis->m_transportPosition->x << uThis->m_transportPosition->y << uThis->m_transportPosition->z << uThis->m_transportPosition->o;
-                *data << uint32(uThis->m_TransporterUnk) << uint8(0);
-            }
-        }
-
-        if(moveflags & (MOVEFLAG_SWIMMING | MOVEFLAG_AIR_SWIMMING) || m_movementflags & MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING) // Pitch
-        {
-            if(moveinfo != NULL)
-                *data << moveinfo->pitch;
-            else
-                *data << float(0); //pitch
-        }
-
-        if(m_movementflags & 0x800)
-        {
-            if(moveinfo != NULL)
-                *data << moveinfo->FallTime << moveinfo->jump_velocity;
-            else
-                *data << uint32(0) << (float)1.0; //last fall time
-            if(moveflags & MOVEFLAG_REDIRECTED || moveflags & MOVEFLAG_FALLING) // BYTE1(flags2) & 0x10
-            {
-                if(moveinfo != NULL && (moveinfo->jump_sinAngle || moveinfo->jump_velocity)) // Only thing we really need to check.
-                {
-                    *data << moveinfo->jump_sinAngle;
-                    *data << moveinfo->jump_cosAngle;
-                    *data << moveinfo->jump_xySpeed;
-                }
-                else
-                {
-                    *data << (float)1.0;    //sinAngle
-                    *data << (float)0;      //cosAngle
-                    *data << (float)0;      //xySpeed
-                }
-            }
-        }
-
-        if( moveflags & MOVEFLAG_SPLINE_MOVER )
-        {
-            if(moveinfo != NULL)
-                *data << moveinfo->pitch;
-            else
-                *data << float(0); //last fall time
-        }
-
+        size_t pos = data->wpos();
+        TO_UNIT(this)->GetMovementInfo()->write(*data);
+        data->put<uint8>(pos, 0);   // Clear our movement bits
         *data << m_walkSpeed;       // walk speed
         *data << m_runSpeed;        // run speed
         *data << m_backWalkSpeed;   // backwards run speed
@@ -927,7 +756,11 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint32 flags, uint32 movefl
         FastGUIDPack(*data, GetUInt64Value(UNIT_FIELD_TARGET)); // Compressed target guid.
 
     if(flags & 0x0002)
-        *data << (uint32)getMSTime();
+    {
+        if(IsTransport())
+            *data << TO_TRANSPORT(this)->m_timer;
+        else *data << (uint32)getMSTime();
+    }
 
     if(flags & 0x0080) //if ((_BYTE)flags_ < 0)
         *data << TO_VEHICLE(this)->GetVehicleEntry() << float(TO_VEHICLE(this)->GetOrientation());
@@ -1120,61 +953,18 @@ WorldPacket * Object::BuildTeleportAckMsg(const LocationVector & v)
     *data << uint32(2); // flags
     *data << uint16(0);
     *data << getMSTime();
-    *data << v;
-    *data << v.o;
+    data->appendvector(v, true);
     *data << uint32(0);
     return data;
 }
 
-bool Object::SetPosition(const LocationVector & v, bool allowPorting /* = false */)
+void Object::SetPosition( float newX, float newY, float newZ, float newOrientation )
 {
-    bool updateMap = false, result = true;
-
-    if (m_position.x != v.x || m_position.y != v.y)
-        updateMap = true;
-
-    m_position = const_cast<LocationVector&>(v);
-    if(IsUnit())
-        TO_UNIT(this)->movement_info.SetPosition(const_cast<LocationVector&>(v));
-
-    if (!allowPorting && v.z < -500)
-    {
-        m_position.z = 500;
-        sLog.outDebug( "setPosition: fell through map; height ported" );
-        if(IsPlayer())
-            TO_PLAYER(this)->RepopAtGraveyard( GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId() );
-
-        result = false;
-    }
-
-    if (IsInWorld() && updateMap)
-    {
-        m_mapMgr->ChangeObjectLocation(this);
-    }
-
-    return result;
-}
-
-bool Object::SetPosition( float newX, float newY, float newZ, float newOrientation, bool allowPorting )
-{
-    bool updateMap = false, result = true;
-
-    //if (m_position.x != newX || m_position.y != newY)
-        //updateMap = true;
+    bool updateMap = false;
     if(m_lastMapUpdatePosition.Distance2DSq(newX, newY) > 4.0f)     /* 2.0f */
         updateMap = true;
 
     m_position.ChangeCoords(newX, newY, newZ, newOrientation);
-    if(IsUnit())
-        TO_UNIT(this)->movement_info.SetPosition(newX, newY, newZ, newOrientation);
-
-    if (!allowPorting && newZ < -500)
-    {
-        m_position.z = 500;
-        sLog.outDebug( "setPosition: fell through map; height ported" );
-        result = false;
-    }
-
     if (IsInWorld() && updateMap)
     {
         m_lastMapUpdatePosition.ChangeCoords(newX,newY,newZ,newOrientation);
@@ -1185,8 +975,6 @@ bool Object::SetPosition( float newX, float newY, float newZ, float newOrientati
             TO_PLAYER(this)->GetGroup()->HandlePartialChange( PARTY_UPDATE_FLAG_POSITION, TO_PLAYER(this) );
         }
     }
-
-    return result;
 }
 
 void Object::SetRotation( uint64 guid )
@@ -1374,42 +1162,6 @@ void Object::AddToWorld(MapMgr* pMapMgr)
 
     // correct incorrect instance id's
     m_instanceId = pMapMgr->GetInstanceID();
-
-    if(IsUnit())
-    {
-        Unit* unit = TO_UNIT(this);
-        if(unit->CallOnKillUnit != NULL)
-        {
-            --unit->CallOnKillUnit->links;
-            if(unit->CallOnKillUnit->links == 0)
-                delete unit->CallOnKillUnit;
-            unit->CallOnKillUnit = NULL;
-        }
-
-        if(unit->CallOnDeath != NULL)
-        {
-            --unit->CallOnDeath->links;
-            if(unit->CallOnDeath->links == 0)
-                delete unit->CallOnDeath;
-            unit->CallOnDeath = NULL;
-        }
-
-        if(unit->CallOnEnterCombat != NULL)
-        {
-            --unit->CallOnEnterCombat->links;
-            if(unit->CallOnEnterCombat->links == 0)
-                delete unit->CallOnEnterCombat;
-            unit->CallOnEnterCombat = NULL;
-        }
-
-        if(unit->CallOnCastSpell != NULL)
-        {
-            --unit->CallOnCastSpell->links;
-            if(unit->CallOnCastSpell->links == 0)
-                delete unit->CallOnCastSpell;
-            unit->CallOnCastSpell = NULL;
-        }
-    }
 }
 
 //Unlike addtoworld it pushes it directly ignoring add pool
@@ -1447,34 +1199,6 @@ void Object::PushToWorld(MapMgr* mgr)
 
     // call virtual function to handle stuff.. :P
     OnPushToWorld();
-
-    if(IsUnit())
-    {
-        Unit* unit = TO_UNIT(this);
-        if(unit->CallOnKillUnit != NULL)
-        {
-            delete unit->CallOnKillUnit;
-            unit->CallOnKillUnit = NULL;
-        }
-
-        if(unit->CallOnDeath != NULL)
-        {
-            delete unit->CallOnDeath;
-            unit->CallOnDeath = NULL;
-        }
-
-        if(unit->CallOnEnterCombat != NULL)
-        {
-            delete unit->CallOnEnterCombat;
-            unit->CallOnEnterCombat = NULL;
-        }
-
-        if(unit->CallOnCastSpell != NULL)
-        {
-            delete unit->CallOnCastSpell;
-            unit->CallOnCastSpell = NULL;
-        }
-    }
 }
 
 void Object::RemoveFromWorld(bool free_guid)
@@ -2240,14 +1964,6 @@ int32 Object::DealDamage(Unit* pVictim, uint32 damage, uint32 targetEvent, uint3
             TO_PLAYER(this)->CreateResetGuardHostileFlagEvent();
         }
 
-        if(!pVictim->CombatStatus.IsInCombat())
-            if(pVictim->CallOnEnterCombat != NULL)
-                pVictim->CallOnEnterCombat->UnitOnEnterCombat(pVictim, TO_UNIT(this));
-
-        if(!TO_UNIT(this)->CombatStatus.IsInCombat())
-            if(TO_UNIT(this)->CallOnEnterCombat != NULL)
-                TO_UNIT(this)->CallOnEnterCombat->UnitOnEnterCombat(TO_UNIT(this), pVictim);
-
         if(pVictim->IsPlayer() && !pVictim->CombatStatus.IsInCombat())
             sHookInterface.OnEnterCombat( TO_PLAYER( pVictim ), TO_UNIT(this) );
 
@@ -2622,18 +2338,6 @@ int32 Object::DealDamage(Unit* pVictim, uint32 damage, uint32 targetEvent, uint3
             }
         }
         /* -------------------------------- HONOR + BATTLEGROUND CHECKS END------------------------ */
-
-        /* ------------------------------------ CALL SCRIPTING START ------------------------------ */
-        if(IsUnit())
-        {
-            Unit* SUnit = TO_UNIT(this);
-            if( SUnit->CallOnKillUnit != NULL )
-                SUnit->CallOnKillUnit->UnitOnKillUnit(SUnit, pVictim);
-
-            if( pVictim->CallOnDeath != NULL )
-                pVictim->CallOnDeath->UnitOnDeath(SUnit);
-        }
-        /* -------------------------------------- CALL SCRIPTING END ------------------------------- */
 
         uint64 victimGuid = pVictim->GetGUID();
         SetFlag( UNIT_FIELD_FLAGS, UNIT_FLAG_DEAD );
