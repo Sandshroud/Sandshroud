@@ -15,8 +15,6 @@ Unit::Unit()
     m_duelWield = false;
 
     memset(&movement_info, 0, sizeof(MovementInfo));
-    memset(movement_packet, 0, sizeof(movement_packet));
-    movement_info.FallTime = 0;
     m_ignoreArmorPct = 0.0f;
     m_ignoreArmorPctMaceSpec = 0.0f;
     m_fearmodifiers = 0;
@@ -42,12 +40,6 @@ Unit::Unit()
     m_inVehicleSeatId = 0xFF;
     m_CurrentVehicle = NULLVEHICLE;
     ExitingVehicle = false;
-
-    //transport shit
-    m_transportPosition     = new LocationVector(0,0,0);
-    m_TransporterGUID       = NULL;
-    m_TransporterUnk        = 0.0f;
-    m_lockTransportVariables= false;
 
     //DK:modifiers
     PctRegenModifier = 0;
@@ -245,11 +237,6 @@ Unit::Unit()
     {
         m_CustomTimers[x] = 0;
     }
-
-    CallOnKillUnit = NULL;
-    CallOnDeath = NULL;
-    CallOnEnterCombat = NULL;
-    CallOnCastSpell = NULL;
 
     m_mountSpell = 0;
     m_vehicleEntry = 0;
@@ -2615,7 +2602,6 @@ int32 Unit::GetSpellBonusDamage(Unit* pVictim, SpellEntry *spellInfo,int32 base_
     uint32 school = spellInfo->School;
     float summaryPCTmod = 0.0f;
     float levelPenalty = CalculateLevelPenalty(spellInfo);
-    printf("LevelPenalty %f\n", levelPenalty);
 
     if( caster->IsPet() )
         caster = TO_UNIT(TO_PET(caster)->GetPetOwner());
@@ -3468,6 +3454,12 @@ void Unit::RemoveFromWorld(bool free_guid)
     m_AuraInterface.RelocateEvents(); // Relocate our aura's (must be done after object is removed from world
 }
 
+void Unit::SetPosition( float newX, float newY, float newZ, float newOrientation )
+{
+    Object::SetPosition(newX, newY, newZ, newOrientation);
+    movement_info.SetPosition(newX, newY, newZ, newOrientation);
+}
+
 bool Unit::IsPoisoned()
 {
     return m_AuraInterface.IsPoisoned();
@@ -3488,7 +3480,7 @@ void Unit::EnableFlight()
     if(IsCreature()) // give them a "flying" animation so they don't just airwalk lul
     {
         SetByteFlag(UNIT_FIELD_BYTES_1, 3, 0x02);
-        movement_info.flags = (0x1000000 | 0x2000000);
+        movement_info.movementFlags = (0x1000000 | 0x2000000);
     }
 
     if( IsPlayer() )
@@ -3510,7 +3502,7 @@ void Unit::DisableFlight()
     if(IsCreature()) // Remove their "flying"
     {
         RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, 0x03);
-        movement_info.flags = (MONSTER_MOVE_FLAG_STAND);
+        movement_info.movementFlags = (MONSTER_MOVE_FLAG_STAND);
     }
 
     if( IsPlayer() )
@@ -5052,12 +5044,12 @@ get dismissed because the server thinks its gone out of range
 of its passengers*/
 void Unit::MoveVehicle(float x, float y, float z, float o) //thanks andy
 {
-    SetPosition(x, y, z, o, false);
+    SetPosition(x, y, z, o);
     for(uint8 i = 0; i < 8; i++)
     {
         if(m_passengers[i] != NULL)
         {
-            m_passengers[i]->SetPosition(x,y,z,o,false);
+            m_passengers[i]->SetPosition(x,y,z,o);
         }
     }
 }
