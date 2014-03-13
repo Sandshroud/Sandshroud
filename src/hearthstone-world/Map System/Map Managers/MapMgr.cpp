@@ -200,6 +200,11 @@ MapMgr::~MapMgr()
 
 }
 
+void MapMgr::EventPushObjectToSelf(Object *obj)
+{
+    obj->PushToWorld(this);
+}
+
 void MapMgr::PushObject(Object* obj)
 {
     /////////////
