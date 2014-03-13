@@ -225,7 +225,7 @@ void GameObject::Despawn( uint32 delay, uint32 respawntime)
         SetFlags(m_spawn->flags);
     }
 
-    CALL_GO_SCRIPT_EVENT(TO_GAMEOBJECT(this), OnDespawn)();
+    CALL_GO_SCRIPT_EVENT(this, OnDespawn)();
 
     if(respawntime)
     {
@@ -616,10 +616,11 @@ Unit* GameObject::CreateTemporaryGuardian(uint32 guardian_entry,uint32 duration,
     return p;
 
 }
+
 void GameObject::_Expire()
 {
     if(IsInWorld())
-        RemoveFromWorld(true);
+        Object::RemoveFromWorld(true);
 
     Destruct();
 }

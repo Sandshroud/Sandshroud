@@ -684,6 +684,14 @@ uint32 Object::BuildValuesUpdateBlockForPlayer(ByteBuffer * buf, UpdateMask * ma
     return 1;
 }
 
+void Object::DestroyForInrange(bool anim)
+{
+    WorldPacket data(SMSG_DESTROY_OBJECT, 9);
+    data << GetGUID();
+    data << uint8(anim ? 1 : 0);
+    SendMessageToSet(&data, false);
+}
+
 void Object::DestroyForPlayer(Player* target, bool anim)
 {
     if(target == NULL)
@@ -1218,6 +1226,8 @@ void Object::RemoveFromWorld(bool free_guid)
     mSemaphoreTeleport = true;
 
     m->RemoveObject(this, free_guid);
+
+    DestroyForInrange(true);
 
     // remove any spells / free memory
     sEventMgr.RemoveEvents(this, EVENT_UNIT_SPELL_HIT);

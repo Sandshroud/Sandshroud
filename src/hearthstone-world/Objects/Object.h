@@ -203,6 +203,7 @@ public:
 
     int32 DealDamage(Unit* pVictim, uint32 damage, uint32 targetEvent, uint32 unitEvent, uint32 spellId, bool no_remove_auras = false);
 
+    void DestroyForInrange(bool anim = false);
     virtual void DestroyForPlayer( Player* target, bool anim = false );
 
     WorldPacket * BuildTeleportAckMsg( const LocationVector & v);
