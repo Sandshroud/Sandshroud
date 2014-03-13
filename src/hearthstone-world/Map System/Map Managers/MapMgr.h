@@ -191,6 +191,7 @@ public:
     void Init(bool Instance);
     void Destruct();
 
+    void EventPushObjectToSelf(Object *obj);
     void PushObject(Object* obj);
     void PushStaticObject(Object* obj);
     void RemoveObject(Object* obj, bool free_guid);

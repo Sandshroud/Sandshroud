@@ -9,6 +9,7 @@ enum EventTypes
     EVENT_UNK = 0,
     EVENT_MAPMGR_UPDATEOBJECTS,
     EVENT_MAPCELL_UNLOAD,
+    EVENT_MAPMGR_PUSH_TO_SELF,
     EVENT_WORLD_UPDATEAUCTIONS,
     EVENT_WORLD_UPDATESESSIONS,
     EVENT_CREATURE_UPDATE,
@@ -230,6 +231,7 @@ enum EventTypes
 
 enum EventFlags
 {
+    EVENT_FLAG_NONE                             = 0x0,
     EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT  = 0x1,
     EVENT_FLAG_DELETES_OBJECT                   = 0x2,
     EVENT_FLAG_FIRE_ON_DELETE                   = 0x4,
