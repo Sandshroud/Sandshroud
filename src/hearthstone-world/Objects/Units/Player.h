@@ -1455,10 +1455,6 @@ public:
 
     bool ForceSaved;
     uint32 m_nextSave;
-
-    //Tutorials
-    uint32 GetTutorialInt(uint32 intId );
-    void SetTutorialInt(uint32 intId, uint32 value);
     void SendCinematic(uint32 cinematicid) { GetSession()->OutPacket(SMSG_TRIGGER_CINEMATIC, 4, &cinematicid); };
 
     //Base stats calculations
@@ -1830,7 +1826,6 @@ public:
     HEARTHSTONE_INLINE uint32 LastHonorResetTime() const { return m_lastHonorResetTime; }
     HEARTHSTONE_INLINE void LastHonorResetTime(uint32 val) { m_lastHonorResetTime = val; }
     uint32 OnlineTime;
-    bool tutorialsDirty;
     LevelInfo * lvlinfo;
     void CalculateBaseStats();
     uint32 load_health;
@@ -2071,7 +2066,6 @@ protected:
     uint32      m_AttackMsgTimer;   // "too far away" and "wrong facing" timer
     bool        m_attacking;
     std::string m_name; // max 21 character name
-    uint32      m_Tutorials[8];
 
     // Character Ban
     uint32      m_banned;

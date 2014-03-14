@@ -156,7 +156,7 @@ void WorldSession::CharacterEnumProc(QueryResult * result)
                                 if( slot == EQUIPMENT_SLOT_MAINHAND || slot == EQUIPMENT_SLOT_OFFHAND )
                                 {
                                     // get enchant visual ID
-                                    uint32 enchantid;
+                                    uint32 enchantid = 0;
                                     const char *enchant_field = res->Fetch()[3].GetString();
                                     if( sscanf( enchant_field , "%u,0,0;" , (unsigned int *)&enchantid ) == 1 && enchantid > 0 )
                                     {
@@ -197,31 +197,6 @@ void WorldSession::HandleCharEnumOpcode( WorldPacket & recv_data )
     q->AddQuery("SELECT guid, level, race, class, gender, bytes, bytes2, name, positionX, positionY, positionZ, mapId, zoneId, banned, restState, deathstate, forced_rename_pending, player_flags, guild_data.guildid, customizable FROM characters LEFT JOIN guild_data ON characters.guid = guild_data.playerid WHERE acct=%u ORDER BY guid ASC LIMIT 10", GetAccountId());
     m_asyncQuery = true;
     CharacterDatabase.QueueAsyncQuery(q);
-}
-
-void WorldSession::LoadAccountDataProc(QueryResult * result)
-{
-    size_t len;
-    const char * data;
-    char * d;
-
-    if(!result)
-    {
-        CharacterDatabase.Execute("INSERT INTO account_data VALUES(%u, '', '', '', '', '', '', '', '', '')", _accountId);
-        return;
-    }
-
-    for(uint32 i = 0; i < 7; i++)
-    {
-        data = result->Fetch()[1+i].GetString();
-        len = data ? strlen(data) : 0;
-        if(len > 1)
-        {
-            d = new char[len+1];
-            memcpy(d, data, len+1);
-            SetAccountData(i, d, true, (uint32)len);
-        }
-    }
 }
 
 void WorldSession::HandleCharCreateOpcode( WorldPacket & recv_data )

@@ -604,7 +604,6 @@ public:
     // could add configs for every expansion..
 
     void CharacterEnumProc(QueryResultVector& results, uint32 AccountId);
-    void LoadAccountDataProc(QueryResultVector& results, uint32 AccountId);
 
     void PollCharacterInsertQueue(DatabaseConnection * con);
     void PollMailboxInsertQueue(DatabaseConnection * con);

@@ -921,17 +921,12 @@ void WorldSession::HandleUpdateAccountData(WorldPacket& recv_data)
         return;
     }
 
-    if(uiDecompressedSize > 100000)
-    {
-        SKIP_READ_PACKET(recv_data); // Spam cleanup.
-        Disconnect();
-        return;
-    }
-
-    if(uiDecompressedSize >= 65534)
+    if(uiDecompressedSize >= 65535)
     {
         SKIP_READ_PACKET(recv_data); // Spam cleanup.
         // BLOB fields can't handle any more than this.
+        if(uiDecompressedSize > 100000)
+            Disconnect();
         return;
     }
 
@@ -991,7 +986,6 @@ void WorldSession::HandleRequestAccountData(WorldPacket& recv_data)
 
     if(id > 8)
     {
-        // Shit..
         sLog.outString("WARNING: Accountdata > 8 (%d) was requested by %s of account %d!", id, GetPlayer() ? GetPlayer()->GetName() : "UNKNOWN", GetAccountId());
         return;
     }
@@ -1130,30 +1124,26 @@ void WorldSession::HandleTutorialFlag( WorldPacket & recv_data )
 
     uint32 wInt = (iFlag / 32);
     uint32 rInt = (iFlag % 32);
-
     if(wInt >= 7)
     {
         Disconnect();
         return;
     }
 
-    uint32 tutflag = GetPlayer()->GetTutorialInt( wInt );
-    tutflag |= (1 << rInt);
-    GetPlayer()->SetTutorialInt( wInt, tutflag );
-
+    m_tutorials[wInt] |= (1 << rInt);
     sLog.Debug("WorldSession","Received Tutorial Flag Set {%u}.", iFlag);
 }
 
 void WorldSession::HandleTutorialClear( WorldPacket & recv_data )
 {
     for ( uint32 iI = 0; iI < 8; iI++)
-        GetPlayer()->SetTutorialInt( iI, 0xFFFFFFFF );
+        m_tutorials[iI] = 0xFFFFFFFF;
 }
 
 void WorldSession::HandleTutorialReset( WorldPacket & recv_data )
 {
     for ( uint32 iI = 0; iI < 8; iI++)
-        GetPlayer()->SetTutorialInt( iI, 0x00000000 );
+        m_tutorials[iI] = 0x00;
 }
 
 void WorldSession::HandleSetSheathedOpcode( WorldPacket & recv_data )
@@ -2069,4 +2059,199 @@ void WorldSession::HandleHearthandResurrect(WorldPacket &recv_data)
     CHECK_INWORLD_RETURN();
     _player->ResurrectPlayer();
     _player->SafeTeleport(_player->GetBindMapId(),0,_player->GetBindPositionX(),_player->GetBindPositionY(),_player->GetBindPositionZ(),_player->GetOrientation());
+}
+
+uint8 WorldSession::CheckTeleportPrerequisites(AreaTrigger * pAreaTrigger, WorldSession * pSession, Player* pPlayer, uint32 mapid)
+{
+    MapInfo* pMapInfo = LimitedMapInfoStorage.LookupEntry(mapid);
+    MapEntry* map = dbcMap.LookupEntry(mapid);
+
+    //is this map enabled?
+    if( pMapInfo == NULL || !pMapInfo->HasFlag(WMI_INSTANCE_ENABLED))
+        return AREA_TRIGGER_FAILURE_UNAVAILABLE;
+
+    //Do we need TBC expansion?
+    if(!pSession->HasFlag(ACCOUNT_FLAG_XPACK_01) && pMapInfo->HasFlag(WMI_INSTANCE_XPACK_01))
+        return AREA_TRIGGER_FAILURE_NO_BC;
+
+    //Do we need WOTLK expansion?
+    if(!pSession->HasFlag(ACCOUNT_FLAG_XPACK_02) && pMapInfo->HasFlag(WMI_INSTANCE_XPACK_02))
+        return AREA_TRIGGER_FAILURE_NO_WOTLK;
+
+    //Are we trying to enter a non-heroic instance in heroic mode?
+    if(pMapInfo->type != INSTANCE_MULTIMODE && pMapInfo->type != INSTANCE_NULL)
+        if((map->israid() ? (pPlayer->iRaidType >= MODE_10PLAYER_HEROIC) : (pPlayer->iInstanceType >= MODE_5PLAYER_HEROIC)))
+            return AREA_TRIGGER_FAILURE_NO_HEROIC;
+
+    // These can be overridden by cheats/GM
+    if(!pPlayer->triggerpass_cheat)
+    {
+        //Do we meet the areatrigger level requirements?
+        if( pAreaTrigger != NULL && pAreaTrigger->required_level && pPlayer->getLevel() < pAreaTrigger->required_level)
+            return AREA_TRIGGER_FAILURE_LEVEL;
+
+        //Do we meet the map level requirements?
+        if( pPlayer->getLevel() < pMapInfo->minlevel )
+            return AREA_TRIGGER_FAILURE_LEVEL;
+
+        //Do we need any quests?
+        if( pMapInfo->required_quest && !( pPlayer->HasFinishedDailyQuest(pMapInfo->required_quest) || pPlayer->HasFinishedDailyQuest(pMapInfo->required_quest)))
+            return AREA_TRIGGER_FAILURE_NO_ATTUNE_Q;
+
+        //Do we need certain items?
+        if( pMapInfo->required_item && !pPlayer->GetItemInterface()->GetItemCount(pMapInfo->required_item, true))
+            return AREA_TRIGGER_FAILURE_NO_ATTUNE_I;
+
+        //Do we need to be in a group?
+        if((map->israid() || pMapInfo->type == INSTANCE_MULTIMODE ) && !pPlayer->GetGroup())
+            return AREA_TRIGGER_FAILURE_NO_GROUP;
+
+        //Does the group have to be a raid group?
+        if( map->israid() && pPlayer->GetGroup()->GetGroupType() != GROUP_TYPE_RAID )
+            return AREA_TRIGGER_FAILURE_NO_RAID;
+
+        // Need http://www.wowhead.com/?spell=46591 to enter Magisters Terrace
+        if( mapid == 585 && pPlayer->iInstanceType >= MODE_5PLAYER_HEROIC && !pPlayer->HasSpell(46591)) // Heroic Countenance
+            return AREA_TRIGGER_FAILURE_NO_HEROIC;
+
+        //Are we trying to enter a saved raid/heroic instance?
+        if(map->israid())
+        {
+            //Raid queue, did we reach our max amt of players?
+            if( pPlayer->m_playerInfo && pMapInfo->playerlimit >= 5 && (int32)((pMapInfo->playerlimit - 5)/5) < pPlayer->m_playerInfo->subGroup)
+                return AREA_TRIGGER_FAILURE_IN_QUEUE;
+
+            //All Heroic instances are automatically unlocked when reaching lvl 80, no keys needed here.
+            if( pPlayer->getLevel() < 80)
+            {
+                //otherwise we still need to be lvl 65 for heroic.
+                if( pPlayer->iRaidType && pPlayer->getLevel() < uint32(pMapInfo->HasFlag(WMI_INSTANCE_XPACK_02) ? 80 : 70))
+                    return AREA_TRIGGER_FAILURE_LEVEL_HEROIC;
+
+                //and we might need a key too.
+                bool reqkey = (pMapInfo->heroic_key[0]||pMapInfo->heroic_key[1])?true:false;
+                bool haskey = (pPlayer->GetItemInterface()->GetItemCount(pMapInfo->heroic_key[0], false) || pPlayer->GetItemInterface()->GetItemCount(pMapInfo->heroic_key[1], false))?true:false;
+                if(reqkey && !haskey)
+                    return AREA_TRIGGER_FAILURE_NO_KEY;
+            }
+        }
+    }
+
+    if(!sHookInterface.OnCheckTeleportPrerequisites(pPlayer, mapid))
+        return AREA_TRIGGER_FAILURE_UNAVAILABLE;
+
+    // Nothing more to check, should be ok
+    return AREA_TRIGGER_FAILURE_OK;
+}
+
+void WorldSession::SendGossipForObject(Object* pObject)
+{
+    list<QuestRelation *>::iterator it;
+    std::set<uint32> ql;
+
+    switch(pObject->GetTypeId())
+    {
+    case TYPEID_GAMEOBJECT:
+        {
+            GameObject* Go = TO_GAMEOBJECT(pObject);
+            GossipScript* Script = sScriptMgr.GetRegisteredGossipScript(GTYPEID_GAMEOBJECT, Go->GetEntry());
+            if(!Script)
+                return;
+
+            Script->GossipHello(Go, _player, true);
+        }break;
+    case TYPEID_ITEM:
+        {
+            Item* pItem = TO_ITEM(pObject);
+            GossipScript* Script = sScriptMgr.GetRegisteredGossipScript(GTYPEID_ITEM, pItem->GetEntry());
+            if(!Script)
+                return;
+
+            Script->GossipHello(pItem, _player, true);
+        }break;
+    case TYPEID_UNIT:
+        {
+            Creature* TalkingWith = TO_CREATURE(pObject);
+            if(!TalkingWith)
+                return;
+
+            //stop when talked to for 3 min
+            if(TalkingWith->GetAIInterface())
+                TalkingWith->GetAIInterface()->StopMovement(180000);
+
+            // unstealth meh
+            if( _player->InStealth() )
+                _player->m_AuraInterface.RemoveAllAurasOfType( SPELL_AURA_MOD_STEALTH );
+
+            // reputation
+            _player->Reputation_OnTalk(TalkingWith->m_factionDBC);
+
+            sLog.Debug( "WORLD"," Received CMSG_GOSSIP_HELLO from %u", TalkingWith->GetLowGUID());
+
+            GossipScript* Script = sScriptMgr.GetRegisteredGossipScript(GTYPEID_CTR, TalkingWith->GetEntry());
+            if(!Script)
+                return;
+
+            if (TalkingWith->isQuestGiver() && TalkingWith->HasQuests())
+            {
+                WorldPacket data(SMSG_GOSSIP_MESSAGE, 100);
+                Script->GossipHello(TalkingWith, _player, false);
+                if(!_player->CurrentGossipMenu)
+                    return;
+
+                _player->CurrentGossipMenu->BuildPacket(data);
+                uint32 count = 0;
+                size_t pos = data.wpos();
+                data << uint32(count);
+                for (it = TalkingWith->QuestsBegin(); it != TalkingWith->QuestsEnd(); it++)
+                {
+                    uint32 status = sQuestMgr.CalcQuestStatus(GetPlayer(), *it);
+                    if (status >= QMGR_QUEST_CHAT)
+                    {
+                        if((*it)->qst->qst_flags & QUEST_FLAG_AUTOCOMPLETE)
+                            status = 8;
+
+                        if (!ql.count((*it)->qst->id) )
+                        {
+                            ql.insert((*it)->qst->id);
+                            count++;
+
+                            uint32 icon;
+                            uint32 questid = (*it)->qst->id;
+                            switch(status)
+                            {
+                            case QMGR_QUEST_FINISHED:
+                                icon = 4;
+                                break;
+                            case QMGR_QUEST_CHAT:
+                                {
+                                    if((*it)->qst->qst_is_repeatable)
+                                        icon = 7;
+                                    else
+                                        icon = 8;
+                                }break;
+                            default:
+                                icon = status;
+                                break;
+                            }
+
+                            data << uint32( questid );
+                            data << uint32( icon );
+                            data << uint32( (*it)->qst->qst_max_level );
+                            data << uint32( (*it)->qst->qst_flags );
+                            data << uint8( (*it)->qst->qst_is_repeatable ? 1 : 0 );
+                            data << (*it)->qst->qst_title;
+                        }
+                    }
+                }
+                data.put<uint32>(pos, count);
+                SendPacket(&data);
+                sLog.Debug( "WORLD"," Sent SMSG_GOSSIP_MESSAGE" );
+            }
+            else
+            {
+                Script->GossipHello(TalkingWith, _player, true);
+            }
+        }break;
+    }
 }

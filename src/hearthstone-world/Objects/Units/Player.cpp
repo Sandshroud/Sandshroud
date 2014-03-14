@@ -128,8 +128,6 @@ void Player::Init()
     m_duelStatus                    = 0;
     m_duelState                     = DUEL_STATE_FINISHED;
     waypointunit                    = NULL;
-    for ( int aX = 0; aX < 8; aX++ )
-        m_Tutorials[ aX ] = 0x00;
     m_lootGuid                      = 0;
     m_banned                        = false;
     //Bind possition
@@ -271,7 +269,6 @@ void Player::Init()
     m_globalCooldown                = 0;
     m_lastHonorResetTime            = 0;
     memset(&mActions, 0, PLAYER_ACTION_BUTTON_COUNT*2*sizeof(ActionButton));
-    tutorialsDirty                  = true;
     m_TeleportState                 = 1;
     m_beingPushed                   = false;
     m_FlyingAura                    = 0;
@@ -2681,12 +2678,6 @@ void Player::SaveToDB(bool bNewCharacter /* =false */)
     else
         _SaveQuestLogEntry(buf);
 
-    // Tutorials
-    if(sWorld.DisableBufferSaving)
-        _SaveTutorials(NULL);
-    else
-        _SaveTutorials(buf);
-
     // GM Ticket
     GM_Ticket* ticket = objmgr.GetGMTicketByPlayer(GetGUID());
     if(ticket != NULL)
@@ -3067,7 +3058,6 @@ bool Player::LoadFromDB(uint32 guid)
 {
     AsyncQuery * q = new AsyncQuery( new SQLClassCallbackP0<Player>(TO_PLAYER(this), &Player::LoadFromDBProc) );
     q->AddQuery("SELECT * FROM characters WHERE guid=%u AND forced_rename_pending = 0",guid);
-    q->AddQuery("SELECT * FROM tutorials WHERE playerId=%u",guid);
     q->AddQuery("SELECT cooldown_type, cooldown_misc, cooldown_expire_time, cooldown_spellid, cooldown_itemid FROM playercooldowns WHERE player_guid=%u", guid);
     q->AddQuery("SELECT * FROM questlog WHERE player_guid=%u",guid);
     q->AddQuery("SELECT * FROM playeritems WHERE ownerguid=%u ORDER BY containerslot ASC", guid);
@@ -3225,10 +3215,10 @@ void Player::LoadFromDBProc(QueryResultVector & results)
         Counter++;
     }
 
-    QueryResult *checkskills = results[12].result;
+    QueryResult *checkskills = results[11].result;
     if(checkskills)
     {
-        _LoadSkills(results[12].result);
+        _LoadSkills(results[11].result);
         field_index++;
         sLog.Debug("WorldSession","Skills loaded");
     }
@@ -3676,9 +3666,9 @@ void Player::LoadFromDBProc(QueryResultVector & results)
         break;
     case WARLOCK:
     case HUNTER:
-        _LoadPet(results[5].result);
-        _LoadPetSpells(results[6].result);
-        _LoadPetActionBar(results[13].result);
+        _LoadPet(results[4].result);
+        _LoadPetSpells(results[5].result);
+        _LoadPetActionBar(results[12].result);
         break;
     }
 
@@ -3709,23 +3699,21 @@ void Player::LoadFromDBProc(QueryResultVector & results)
 #undef get_next_field
 
     // load properties
-    _LoadTalents(results[14].result);
-    _LoadGlyphs(results[15].result);
-    _LoadSpells(results[16].result);
-    _LoadEquipmentSets(results[17].result);
-    _LoadAreaPhaseInfo(results[18].result);
-    _LoadTutorials(results[1].result);
-    _LoadPlayerCooldowns(results[2].result);
-    m_ItemInterface->mLoadItemsFromDatabase(results[4].result);
+    _LoadTalents(results[13].result);
+    _LoadGlyphs(results[14].result);
+    _LoadSpells(results[15].result);
+    _LoadEquipmentSets(results[16].result);
+    _LoadAreaPhaseInfo(results[17].result);
+    _LoadPlayerCooldowns(results[1].result);
+    m_ItemInterface->mLoadItemsFromDatabase(results[3].result);
 
     // Note: For quest finishing to load correctly, this has to be done after loading items!
-    _LoadQuestLogEntry(results[3].result);
-    m_mailBox->Load(results[7].result);
+    _LoadQuestLogEntry(results[2].result);
+    m_mailBox->Load(results[6].result);
 
     // SOCIAL
-    if( results[8].result != NULL )         // this query is "who are our friends?"
+    if( result = results[7].result )         // this query is "who are our friends?"
     {
-        result = results[8].result;
         do
         {
             fields = result->Fetch();
@@ -3737,18 +3725,16 @@ void Player::LoadFromDBProc(QueryResultVector & results)
         } while (result->NextRow());
     }
 
-    if( results[9].result != NULL )         // this query is "who has us in their friends?"
+    if( result = results[8].result )         // this query is "who has us in their friends?"
     {
-        result = results[9].result;
         do
         {
             m_hasFriendList.insert( result->Fetch()[0].GetUInt32() );
         } while (result->NextRow());
     }
 
-    if( results[10].result != NULL )        // this query is "who are we ignoring"
+    if( result = results[9].result )        // this query is "who are we ignoring"
     {
-        result = results[10].result;
         do
         {
             m_ignores.insert( result->Fetch()[0].GetUInt32() );
@@ -3758,7 +3744,7 @@ void Player::LoadFromDBProc(QueryResultVector & results)
     // END SOCIAL
 
     // Load achievements
-    GetAchievementInterface()->LoadFromDB( results[11].result );
+    GetAchievementInterface()->LoadFromDB( results[10].result );
 
     // Set correct maximum level
     uint32 maxLevel = sWorld.GetMaxLevel(this);
@@ -5532,52 +5518,6 @@ void Player::_LoadSkills(QueryResult * result)
     _UpdateMaxSkillCounts();
 }
 
-//From Mangos Project
-void Player::_LoadTutorials(QueryResult * result)
-{
-    if(result)
-    {
-         Field *fields = result->Fetch();
-         for (int iI=0; iI<8; iI++)
-             m_Tutorials[iI] = fields[iI + 1].GetUInt32();
-    }
-    tutorialsDirty = false;
-}
-
-void Player::_SaveTutorials(QueryBuffer * buf)
-{
-    if(tutorialsDirty)
-    {
-        if(buf == NULL)
-            CharacterDatabase.Execute("REPLACE INTO tutorials VALUES('%u','%u','%u','%u','%u','%u','%u','%u','%u')", GetLowGUID(), m_Tutorials[0], m_Tutorials[1], m_Tutorials[2], m_Tutorials[3], m_Tutorials[4], m_Tutorials[5], m_Tutorials[6], m_Tutorials[7]);
-        else
-            buf->AddQuery("REPLACE INTO tutorials VALUES('%u','%u','%u','%u','%u','%u','%u','%u','%u')", GetLowGUID(), m_Tutorials[0], m_Tutorials[1], m_Tutorials[2], m_Tutorials[3], m_Tutorials[4], m_Tutorials[5], m_Tutorials[6], m_Tutorials[7]);
-
-        tutorialsDirty = false;
-    }
-}
-
-uint32 Player::GetTutorialInt(uint32 intId )
-{
-    ASSERT( intId < 8 );
-    return m_Tutorials[intId];
-}
-
-void Player::SetTutorialInt(uint32 intId, uint32 value)
-{
-    if(intId >= 8)
-        return;
-
-    ASSERT( (intId < 8) );
-    m_Tutorials[intId] = value;
-    tutorialsDirty = true;
-
-    WorldPacket data( SMSG_TUTORIAL_FLAGS, 4*8 );
-    for (int i = 0; i < 8; i++)
-        data << uint32( m_Tutorials[i] );
-    GetSession()->SendPacket(&data);
-}
-
 //Player stats calculation for saving at lvl up, etc
 /*void Player::CalcBaseStats()
 {//TO_PLAYER(TO_PLAYER(this))->getClass() == HUNTER ||
@@ -7252,12 +7192,6 @@ void Player::SendInitialLogonPackets()
     pr.ItemClass = 2;
     pr.Profinciency = weapon_proficiency;
     m_session->OutPacket( SMSG_SET_PROFICIENCY, sizeof(packetSMSG_SET_PROFICICENCY), &pr );
-
-    //Tutorial Flags
-    data.Initialize( SMSG_TUTORIAL_FLAGS );
-    for (int i = 0; i < 8; i++)
-        data << uint32( m_Tutorials[i] );
-    GetSession()->SendPacket(&data);
 
     //Initial Spells
     smsg_InitialSpells();

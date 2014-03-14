@@ -146,6 +146,8 @@ enum SessionStatus
 
 struct AccountDataEntry
 {
+    AccountDataEntry() : Time(0), data(NULL), sz(0), bIsDirty(false) { }
+
     time_t Time;
     char * data;
     uint32 sz;
@@ -250,21 +252,34 @@ public:
     HEARTHSTONE_INLINE void SetAccountData(uint32 index, char* data, bool initial, uint32 sz)
     {
         ASSERT(index < 8);
-        if(sAccountData[index].data)
-            delete [] sAccountData[index].data;
-        sAccountData[index].data = data;
-        sAccountData[index].sz = sz;
-        sAccountData[index].Time = UNIXTIME;
-        if(!initial && !sAccountData[index].bIsDirty)       // Mark as "changed" or "dirty"
-            sAccountData[index].bIsDirty = true;
-        else if(initial)
-            sAccountData[index].bIsDirty = false;
+        if(data == NULL || sz == 0)
+        {
+            if(m_accountData[index])
+            {
+                delete [] m_accountData[index]->data;
+                m_accountData[index]->data = NULL;
+                delete m_accountData[index];
+                m_accountData[index] = NULL;
+            }
+        }
+        else
+        {
+            if(m_accountData[index] == NULL)
+                m_accountData[index] = new AccountDataEntry();
+            m_accountData[index]->data = data;
+            m_accountData[index]->sz = sz;
+            m_accountData[index]->Time = UNIXTIME;
+            if(!initial && !m_accountData[index]->bIsDirty)       // Mark as "changed" or "dirty"
+                m_accountData[index]->bIsDirty = true;
+            else if(initial)
+                m_accountData[index]->bIsDirty = false;
+        }
     }
 
     HEARTHSTONE_INLINE AccountDataEntry* GetAccountData(uint32 index)
     {
         ASSERT(index < 8);
-        return &sAccountData[index];
+        return m_accountData[index];
     }
 
     void SetLogoutTimer(uint32 ms)
@@ -323,6 +338,12 @@ public:
             return false;
 
         return true;
+    }
+
+    uint32 GetTutorialFlag(uint8 i)
+    {
+        ASSERT(i < 8);
+        return m_tutorials[i];
     }
 
 protected:
@@ -789,8 +810,6 @@ private:
 
     WoWGuid m_MoverWoWGuid;
 
-    AccountDataEntry sAccountData[8];
-
     FastQueue<WorldPacket*, Mutex> _recvQueue;
     char *permissions;
     int permissioncount;
@@ -801,6 +820,16 @@ private:
     uint32 client_build;
     uint32 instanceId;
     uint8 _updatecount;
+
+    // Data
+    void LoadAccountData();
+    void SaveAccountData();
+    AccountDataEntry *m_accountData[8];
+
+    // Tutorials
+    void LoadTutorials();
+    void SaveTutorials();
+    uint32 m_tutorials[8];
 
 public:
     void ValidateText1(std::string text)
