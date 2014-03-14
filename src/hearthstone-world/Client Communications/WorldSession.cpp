@@ -39,10 +39,7 @@ _logoutTime(0), permissions(NULL), permissioncount(0), _loggingOut(false), insta
     m_jumpHackChances = 5;
 
     for(uint32 x = 0; x < 8; x++)
-    {
-        sAccountData[x].sz = NULL;
-        sAccountData[x].data = NULL;
-    }
+        m_accountData[x] = NULL;
 }
 
 WorldSession::~WorldSession()
@@ -64,10 +61,7 @@ WorldSession::~WorldSession()
         delete packet;
 
     for(uint32 x= 0;x<8;x++)
-    {
-        if(sAccountData[x].data)
-            delete [] sAccountData[x].data;
-    }
+        if(m_accountData[x]) delete m_accountData[x];
 
     if(_socket)
         _socket->SetSession(0);
@@ -372,35 +366,12 @@ void WorldSession::LogoutPlayer(bool Save)
         // Update Tracker status
         sTracker.CheckPlayerForTracker(_player, false);
 
-        // Update any dirty account_data fields.
-        bool dirty = false;
-        if( sWorld.m_useAccountData )
-        {
-            std::stringstream ss;
-            ss << "UPDATE account_data SET ";
-            for(uint32 ui= 0;ui<8; ++ui)
-            {
-                if(sAccountData[ui].bIsDirty)
-                {
-                    if(dirty)
-                        ss <<",";
-                    ss << "uiconfig"<< ui <<"=\"";
-                    if(sAccountData[ui].data)
-                    {
-                        CharacterDatabase.EscapeLongString(sAccountData[ui].data, sAccountData[ui].sz, ss);
-                        //ss.write(sAccountData[ui].data,sAccountData[ui].sz);
-                    }
-                    ss << "\"";
-                    dirty = true;
-                    sAccountData[ui].bIsDirty = false;
-                }
-            }
-            if(dirty)
-            {
-                ss  <<" WHERE acct="<< _accountId <<";";
-                CharacterDatabase.ExecuteNA(ss.str().c_str());
-            }
-        }
+        // Save our tutorials
+        SaveTutorials();
+
+        // Save our account data, if we have any
+        SaveAccountData();
+
         _player->ObjUnlock();
 
         _player->Destruct();
@@ -1107,89 +1078,6 @@ void WorldSession::HandleAchievementInspect(WorldPacket &recv_data)
     }
 }
 
-uint8 WorldSession::CheckTeleportPrerequisites(AreaTrigger * pAreaTrigger, WorldSession * pSession, Player* pPlayer, uint32 mapid)
-{
-    MapInfo* pMapInfo = LimitedMapInfoStorage.LookupEntry(mapid);
-    MapEntry* map = dbcMap.LookupEntry(mapid);
-
-    //is this map enabled?
-    if( pMapInfo == NULL || !pMapInfo->HasFlag(WMI_INSTANCE_ENABLED))
-        return AREA_TRIGGER_FAILURE_UNAVAILABLE;
-
-    //Do we need TBC expansion?
-    if(!pSession->HasFlag(ACCOUNT_FLAG_XPACK_01) && pMapInfo->HasFlag(WMI_INSTANCE_XPACK_01))
-        return AREA_TRIGGER_FAILURE_NO_BC;
-
-    //Do we need WOTLK expansion?
-    if(!pSession->HasFlag(ACCOUNT_FLAG_XPACK_02) && pMapInfo->HasFlag(WMI_INSTANCE_XPACK_02))
-        return AREA_TRIGGER_FAILURE_NO_WOTLK;
-
-    //Are we trying to enter a non-heroic instance in heroic mode?
-    if(pMapInfo->type != INSTANCE_MULTIMODE && pMapInfo->type != INSTANCE_NULL)
-        if((map->israid() ? (pPlayer->iRaidType >= MODE_10PLAYER_HEROIC) : (pPlayer->iInstanceType >= MODE_5PLAYER_HEROIC)))
-            return AREA_TRIGGER_FAILURE_NO_HEROIC;
-
-    // These can be overridden by cheats/GM
-    if(!pPlayer->triggerpass_cheat)
-    {
-        //Do we meet the areatrigger level requirements?
-        if( pAreaTrigger != NULL && pAreaTrigger->required_level && pPlayer->getLevel() < pAreaTrigger->required_level)
-            return AREA_TRIGGER_FAILURE_LEVEL;
-
-        //Do we meet the map level requirements?
-        if( pPlayer->getLevel() < pMapInfo->minlevel )
-            return AREA_TRIGGER_FAILURE_LEVEL;
-
-        //Do we need any quests?
-        if( pMapInfo->required_quest && !( pPlayer->HasFinishedDailyQuest(pMapInfo->required_quest) || pPlayer->HasFinishedDailyQuest(pMapInfo->required_quest)))
-            return AREA_TRIGGER_FAILURE_NO_ATTUNE_Q;
-
-        //Do we need certain items?
-        if( pMapInfo->required_item && !pPlayer->GetItemInterface()->GetItemCount(pMapInfo->required_item, true))
-            return AREA_TRIGGER_FAILURE_NO_ATTUNE_I;
-
-        //Do we need to be in a group?
-        if((map->israid() || pMapInfo->type == INSTANCE_MULTIMODE ) && !pPlayer->GetGroup())
-            return AREA_TRIGGER_FAILURE_NO_GROUP;
-
-        //Does the group have to be a raid group?
-        if( map->israid() && pPlayer->GetGroup()->GetGroupType() != GROUP_TYPE_RAID )
-            return AREA_TRIGGER_FAILURE_NO_RAID;
-
-        // Need http://www.wowhead.com/?spell=46591 to enter Magisters Terrace
-        if( mapid == 585 && pPlayer->iInstanceType >= MODE_5PLAYER_HEROIC && !pPlayer->HasSpell(46591)) // Heroic Countenance
-            return AREA_TRIGGER_FAILURE_NO_HEROIC;
-
-        //Are we trying to enter a saved raid/heroic instance?
-        if(map->israid())
-        {
-            //Raid queue, did we reach our max amt of players?
-            if( pPlayer->m_playerInfo && pMapInfo->playerlimit >= 5 && (int32)((pMapInfo->playerlimit - 5)/5) < pPlayer->m_playerInfo->subGroup)
-                return AREA_TRIGGER_FAILURE_IN_QUEUE;
-
-            //All Heroic instances are automatically unlocked when reaching lvl 80, no keys needed here.
-            if( pPlayer->getLevel() < 80)
-            {
-                //otherwise we still need to be lvl 65 for heroic.
-                if( pPlayer->iRaidType && pPlayer->getLevel() < uint32(pMapInfo->HasFlag(WMI_INSTANCE_XPACK_02) ? 80 : 70))
-                    return AREA_TRIGGER_FAILURE_LEVEL_HEROIC;
-
-                //and we might need a key too.
-                bool reqkey = (pMapInfo->heroic_key[0]||pMapInfo->heroic_key[1])?true:false;
-                bool haskey = (pPlayer->GetItemInterface()->GetItemCount(pMapInfo->heroic_key[0], false) || pPlayer->GetItemInterface()->GetItemCount(pMapInfo->heroic_key[1], false))?true:false;
-                if(reqkey && !haskey)
-                    return AREA_TRIGGER_FAILURE_NO_KEY;
-            }
-        }
-    }
-
-    if(!sHookInterface.OnCheckTeleportPrerequisites(pPlayer, mapid))
-        return AREA_TRIGGER_FAILURE_UNAVAILABLE;
-
-    // Nothing more to check, should be ok
-    return AREA_TRIGGER_FAILURE_OK;
-}
-
 void WorldSession::HandleTimeSyncResp( WorldPacket & recv_data )
 {
     uint32 counter, time_;
@@ -1198,551 +1086,86 @@ void WorldSession::HandleTimeSyncResp( WorldPacket & recv_data )
     // This is just a response, no need to do anything... Yet.
 }
 
-/* Crow: This will verify text that is able to be said ingame.
-    Note that spaces are handled differently in DBC and storage
-    than they are ingame, so we use string length.
-*/
-bool WorldSession::ValidateText2(std::string text)
+void WorldSession::LoadAccountData()
 {
-    size_t stringpos;
-
-    // Idiots spamming giant pictures through the chat system
-    if( text.find("|TInterface") != string::npos)
-        return false;
-    if( text.find("\n") != string::npos )
-        return false;
-
-    /* Crow
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Crow: Die color text! You don't belong in this world!
-    ColorTxt: It was not by my hand that I am once again given flesh.
-    ColorTxt: I was called here by, Humans, who wish to pay me Tribute.
-    Crow: Tribute? You steal mens souls! And make them your slaves!
-    ColorTxt: Perhaps the same could be said of all Religions...
-    Crow: Your words are as empty as your soul...
-    Crow: Mankind ill needs a savor such as you!
-    ~ColorTxt breaks wine glass~
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    */
-
-    // Quests
-    if((stringpos = text.find("|Hquest:")) != string::npos)
-    { //Hquest:2278:47|h[The Platinum Discs]|h|r
-        ///////////////////////////////////////////////////////////////////
-        size_t length = stringpos+8;
-        if(text.size() < length)
-            return false;
-
-        string newstring = text.substr(stringpos+8, text.size());
-        if(!newstring.size())
-            return false; // Their fault
-
-        char *scannedtext = (char*)newstring.c_str();
-        char* cquestid = strtok(scannedtext, "|");
-        if(!cquestid)
-            return false;
-        uint32 questid = atol(cquestid);
-        if(!questid)
-            return false;
-        ///////////////////////////////////////////////////////////////////
-
-        ///////////////////////////////////////////////////////////////////
-        length = 1+strlen(cquestid);
-        if(newstring.size() < length)
-            return false;
-
-        newstring = newstring.substr(1+strlen(cquestid), newstring.size());
-        if(!newstring.size())
-            return false; // Their fault
-
-        scannedtext = (char*)newstring.c_str();
-        char* clevel = strtok(scannedtext, "|");
-        if(!clevel)
-            return false;
-        ///////////////////////////////////////////////////////////////////
-
-        ///////////////////////////////////////////////////////////////////
-        length = 3+strlen(clevel);
-        if(newstring.size() < length)
-            return false;
-
-        newstring = newstring.substr(3+strlen(clevel), newstring.size());
-        if(!newstring.size())
-            return false; // Their fault
-
-        scannedtext = (char*)newstring.c_str();
-        char* questname = strtok(scannedtext, "]");
-        if(!questname)
-            return false;
-        ///////////////////////////////////////////////////////////////////
-
-        Quest* qst = sQuestMgr.GetQuestPointer(questid);
-        if(qst == NULL)
-            return false;
-        if(strlen(qst->qst_title) != strlen(questname))
-            return false;
-
-        // Return true here, no need to continue.
-        return true;
-    }
-
-    // Professions
-    if((stringpos = text.find("|Htrade:")) != string::npos)
-    { //|Htrade:4037:1:150:1:6AAAAAAAAAAAAAAAAAAAAAAOAADAAAAAAAAAAAAAAAAIAAAAAAAAA|h[Engineering]|h|r
-        ///////////////////////////////////////////////////////////////////
-        size_t length = stringpos+8;
-        if(text.size() < length)
-            return false;
-
-        string newstring = text.substr(stringpos+8, text.size());
-        if(!newstring.size())
-            return false; // Their fault
-
-        char *scannedtext = (char*)newstring.c_str();
-        char* tSpellId = strtok(scannedtext, ":");
-        if(!tSpellId)
-            return false;
-        uint32 SpellId = atol(tSpellId);
-        ///////////////////////////////////////////////////////////////////
-
-        ///////////////////////////////////////////////////////////////////
-        length = 1+strlen(tSpellId);
-        if(newstring.size() < length)
-            return false;
-
-        newstring = newstring.substr(1+strlen(tSpellId), newstring.size());
-        if(!newstring.size())
-            return false; // Their fault
-
-        scannedtext = (char*)newstring.c_str();
-        char* cminimum = strtok(scannedtext, ":");
-        if(!cminimum)
-            return false;
-        ///////////////////////////////////////////////////////////////////
-
-        ///////////////////////////////////////////////////////////////////
-        length = 1+strlen(cminimum);
-        if(newstring.size() < length)
-            return false;
-
-        newstring = newstring.substr(1+strlen(cminimum), newstring.size());
-        if(!newstring.size())
-            return false; // Their fault
-
-        scannedtext = (char*)newstring.c_str();
-        char* cmaximum = strtok(scannedtext, ":");
-        if(!cmaximum)
-            return false;
-        ///////////////////////////////////////////////////////////////////
-
-        ///////////////////////////////////////////////////////////////////
-        length = 1+strlen(cmaximum);
-        if(newstring.size() < length)
-            return false;
-
-        newstring = newstring.substr(1+strlen(cmaximum), newstring.size());
-        if(!newstring.size())
-            return false; // Their fault
-
-        scannedtext = (char*)newstring.c_str();
-        char* cunk = strtok(scannedtext, ":");
-        if(!cunk)
-            return false;
-        ///////////////////////////////////////////////////////////////////
-
-        ///////////////////////////////////////////////////////////////////
-        length = 1+strlen(cunk);
-        if(newstring.size() < length)
-            return false;
-
-        newstring = newstring.substr(1+strlen(cunk), newstring.size());
-        if(!newstring.size())
-            return false; // Their fault
-
-        scannedtext = (char*)newstring.c_str();
-        char* cguid = strtok(scannedtext, "|");
-        if(!cguid)
-            return false;
-        ///////////////////////////////////////////////////////////////////
-
-        ///////////////////////////////////////////////////////////////////
-        length = 3+strlen(scannedtext);
-        if(newstring.size() < length)
-            return false;
-
-        newstring = newstring.substr(3+strlen(scannedtext), newstring.size());
-        if(!newstring.size())
-            return false; // Their fault
-
-        scannedtext = (char*)newstring.c_str();
-        char* tradename = strtok(scannedtext, "]");
-        if(!tradename)
-            return false;
-        ///////////////////////////////////////////////////////////////////
-
-        SpellEntry* sp = dbcSpell.LookupEntryForced(SpellId);
-        if(sp == NULL)
-            return false;
-        if(strlen(sp->Name) != strlen(tradename))
-            return false;
-
-        // Return true here, no need to continue.
-        return true;
-    }
-
-    // Talents
-    if((stringpos = text.find("|Htalent:")) != string::npos)
-    { //Htalent:2232:-1|h[Taste for Blood]|h|r
-        ///////////////////////////////////////////////////////////////////
-        size_t length = stringpos+9;
-        if(text.size() < length)
-            return false;
-
-        string newstring = text.substr(stringpos+9, text.size());
-        if(!newstring.size())
-            return false; // Their fault
-
-        char *scannedtext = (char*)newstring.c_str();
-        char* ctalentid = strtok(scannedtext, ":");
-        if(!ctalentid)
-            return false;
-
-        uint32 talentid = atol(ctalentid);
-        if(!talentid)
-            return false;
-        ///////////////////////////////////////////////////////////////////
-
-        ///////////////////////////////////////////////////////////////////
-        length = 3+strlen(ctalentid);
-        if(newstring.size() < length)
-            return false;
-
-        newstring = newstring.substr(1+strlen(ctalentid), newstring.size());
-        if(!newstring.size())
-            return false; // Their fault
-
-        scannedtext = (char*)newstring.c_str();
-        char* cTalentPoints = strtok(scannedtext, "|");
-        if(!cTalentPoints) // Apparently, we can have -1, but not 0
-            return false;
-        ///////////////////////////////////////////////////////////////////
-
-        ///////////////////////////////////////////////////////////////////
-        length = 3+strlen(cTalentPoints);
-        if(newstring.size() < length)
-            return false;
-
-        newstring = newstring.substr(3+strlen(cTalentPoints), newstring.size());
-        if(!newstring.size())
-            return false; // Their fault
-
-        scannedtext = (char*)newstring.c_str();
-        char* TalentName = strtok(scannedtext, "]");
-        if(!TalentName)
-            return false;
-        ///////////////////////////////////////////////////////////////////
-
-        TalentEntry* TE = dbcTalent.LookupEntry(talentid);
-        if(TE == NULL)
-            return false;
-
-        return true;
-    }
-
-    // Achievements
-    if((stringpos = text.find("|Hachievement:")) != string::npos)
-    { //Hachievement:546:0000000000000001:0:0:0:-1:0:0:0:0|h[Safe Deposit]|h|r
-        return true;
-    }
-
-    // Glyphs
-    if((stringpos = text.find("|Hglyph:")) != string::npos)
-    { //Hglyph:21:762|h[Glyph of Bladestorm]|h|r
-        return true;
-    }
-
-    // Enchants
-    if((stringpos = text.find("|Henchant:")) != string::npos)
-    { //Henchant:3919|h[Engineering: Rough Dynamite]|h|r
-        return true;
-    }
-
-    // Spells
-    if((stringpos = text.find("|Hspell:")) != string::npos)
-    { //|cff71d5ff|Hspell:21563|h[Command]|h|r
-        ///////////////////////////////////////////////////////////////////
-        size_t length = stringpos+8;
-        if(text.size() < length)
-            return false;
-
-        string newstring = text.substr(stringpos+8, text.size());
-        if(!newstring.size())
-            return false; // Their fault
-
-        char *scannedtext = (char*)newstring.c_str();
-        char* cspellid = strtok(scannedtext, "|");
-        if(!cspellid)
-            return false;
-
-        uint32 spellid = atol(cspellid);
-        if(!spellid)
-            return false;
-        ///////////////////////////////////////////////////////////////////
-
-        ///////////////////////////////////////////////////////////////////
-        length = 3+strlen(cspellid);
-        if(newstring.size() < length)
-            return false;
-
-        newstring = newstring.substr(3+strlen(cspellid), newstring.size());
-        if(!newstring.size())
-            return false; // Their fault
-
-        scannedtext = (char*)newstring.c_str();
-        char* spellname = strtok(scannedtext, "]");
-        if(!spellname)
-            return false;
-        ///////////////////////////////////////////////////////////////////
-
-        SpellEntry* sp = dbcSpell.LookupEntryForced(spellid);
-        if(sp == NULL)
-            return false;
-        if(strlen(sp->Name) != strlen(spellname))
-            return false;
-        // Return true here, no need to continue.
-        return true;
-    }
-
-    // Items
-    if((stringpos = text.find("Hitem:")) != string::npos)
-    { //|cffa335ee|Hitem:812:0:0:0:0:0:0:0:70|h[Glowing Brightwood Staff]|h|r
-        ///////////////////////////////////////////////////////////////////
-        size_t length = stringpos+6;
-        if(text.size() < length)
-            return false;
-
-        string newstring = text.substr(stringpos+6, text.size());
-        if(!newstring.size())
-            return false; // Their fault
-
-        char *scannedtext = (char*)newstring.c_str();
-        char* citemid = strtok(scannedtext, ":");
-        if(!citemid)
-            return false;
-
-        uint32 itemid = atol(citemid);
-        if(!itemid)
-            return false;
-        ///////////////////////////////////////////////////////////////////
-
-        ///////////////////////////////////////////////////////////////////
-        length = strlen(citemid);
-        if(newstring.size() < length)
-            return false;
-
-        char* end = ":";
-        char* buffer[8]; // Random suffix and shit, also last one is level.
-        uint8 visuals[8];
-        newstring = newstring.substr(strlen(citemid), newstring.size());
-        if(!newstring.size())
-            return false; // Their fault
-
-        scannedtext = (char*)newstring.c_str();
-        for(uint8 i = 0; i < 8; i++)
+    if(sWorld.m_useAccountData)
+    {
+        QueryResult *pResult = CharacterDatabase.Query("SELECT * FROM account_data WHERE acct = %u", GetAccountId());
+        if( pResult == NULL )
+            CharacterDatabase.Execute("INSERT INTO account_data VALUES(%u, '', '', '', '', '', '', '', '', '')", GetAccountId());
+        else
         {
-            if(i == 7)
-                end = "|";
-
-            length = 1;
-            if(newstring.size() < length)
-                return false;
-
-            newstring = newstring.substr(1, newstring.size());
-            if(!newstring.size())
-                return true; // Our fault
-
-            scannedtext = (char*)newstring.c_str();
-            buffer[i] = strtok(scannedtext, end);
-            visuals[i] = buffer[i] ? atol(buffer[i]) : 0;
-            if(buffer[i])
+            for(uint8 i = 0; i < 8; i++)
             {
-                length = strlen(buffer[i]);
-                if(newstring.size() < length)
-                    return false;
-
-                newstring = newstring.substr(strlen(buffer[i]), newstring.size());
-                if(!newstring.size())
-                    return true; // Our fault
+                const char *data = pResult->Fetch()[1+i].GetString();
+                uint32 len = data ? strlen(data) : 0;
+                if(len == 0)
+                    continue;
+                SetAccountData(i, strdup(data), true, len);
             }
-            else
-            {
-                length = 1;
-                if(newstring.size() < length)
-                    return false;
-
-                newstring = newstring.substr(1, newstring.size());
-                if(!newstring.size())
-                    return true; // Our fault
-            }
+            delete pResult;
         }
-        ///////////////////////////////////////////////////////////////////
-
-        ///////////////////////////////////////////////////////////////////
-        length = 3;
-        if(newstring.size() < length)
-            return false;
-
-        newstring = newstring.substr(3, newstring.size());
-        if(!newstring.size())
-            return true; // Our fault
-        scannedtext = (char*)newstring.c_str();
-        char* itemname = strtok(scannedtext, "]");
-        if(!itemname)
-            return false;
-        ///////////////////////////////////////////////////////////////////
-
-        ItemPrototype* proto = ItemPrototypeStorage.LookupEntry(itemid);
-        if(proto == NULL)
-            return false;
-        if(strlen(proto->Name1) != strlen(itemname))
-        {
-            if(string(itemname).find("of") != string::npos)
-            {
-                length = strlen(proto->Name1);
-                if(newstring.size() < length)
-                    return false;
-
-                newstring = string(itemname).substr(strlen(proto->Name1), strlen(itemname));
-                if(!newstring.size())
-                    return false; // Their fault
-
-                scannedtext = (char*)newstring.c_str();
-                if(string(scannedtext).find("of") != string::npos)
-                    return true; // We have a suffix
-            }
-            return false;
-        }
-        // Return true here, no need to continue.
-        return true;
     }
-
-    // Safe to search, since we're done with items
-    if(text.find("|c") != string::npos && text.find("|r") != string::npos)
-        return false;
-    if(text.find("|c") != string::npos && text.find("|h") != string::npos)
-        return false;
-
-    return true;
 }
 
-void WorldSession::SendGossipForObject(Object* pObject)
+void WorldSession::SaveAccountData()
 {
-    list<QuestRelation *>::iterator it;
-    std::set<uint32> ql;
-
-    switch(pObject->GetTypeId())
+    if( sWorld.m_useAccountData )
     {
-    case TYPEID_GAMEOBJECT:
+        bool dirty = false;
+        std::stringstream ss;
+        ss << "UPDATE account_data SET ";
+        for(uint32 ui = 0; ui < 8; ++ui)
         {
-            GameObject* Go = TO_GAMEOBJECT(pObject);
-            GossipScript* Script = sScriptMgr.GetRegisteredGossipScript(GTYPEID_GAMEOBJECT, Go->GetEntry());
-            if(!Script)
-                return;
-
-            Script->GossipHello(Go, _player, true);
-        }break;
-    case TYPEID_ITEM:
-        {
-            Item* pItem = TO_ITEM(pObject);
-            GossipScript* Script = sScriptMgr.GetRegisteredGossipScript(GTYPEID_ITEM, pItem->GetEntry());
-            if(!Script)
-                return;
-
-            Script->GossipHello(pItem, _player, true);
-        }break;
-    case TYPEID_UNIT:
-        {
-            Creature* TalkingWith = TO_CREATURE(pObject);
-            if(!TalkingWith)
-                return;
-
-            //stop when talked to for 3 min
-            if(TalkingWith->GetAIInterface())
-                TalkingWith->GetAIInterface()->StopMovement(180000);
-
-            // unstealth meh
-            if( _player->InStealth() )
-                _player->m_AuraInterface.RemoveAllAurasOfType( SPELL_AURA_MOD_STEALTH );
-
-            // reputation
-            _player->Reputation_OnTalk(TalkingWith->m_factionDBC);
-
-            sLog.Debug( "WORLD"," Received CMSG_GOSSIP_HELLO from %u", TalkingWith->GetLowGUID());
-
-            GossipScript* Script = sScriptMgr.GetRegisteredGossipScript(GTYPEID_CTR, TalkingWith->GetEntry());
-            if(!Script)
-                return;
-
-            if (TalkingWith->isQuestGiver() && TalkingWith->HasQuests())
+            if(m_accountData[ui])
             {
-                WorldPacket data(SMSG_GOSSIP_MESSAGE, 100);
-                Script->GossipHello(TalkingWith, _player, false);
-                if(!_player->CurrentGossipMenu)
-                    return;
-
-                _player->CurrentGossipMenu->BuildPacket(data);
-                uint32 count = 0;
-                size_t pos = data.wpos();
-                data << uint32(count);
-                for (it = TalkingWith->QuestsBegin(); it != TalkingWith->QuestsEnd(); it++)
+                if(m_accountData[ui]->bIsDirty)
                 {
-                    uint32 status = sQuestMgr.CalcQuestStatus(GetPlayer(), *it);
-                    if (status >= QMGR_QUEST_CHAT)
-                    {
-                        if((*it)->qst->qst_flags & QUEST_FLAG_AUTOCOMPLETE)
-                            status = 8;
-
-                        if (!ql.count((*it)->qst->id) )
-                        {
-                            ql.insert((*it)->qst->id);
-                            count++;
-
-                            uint32 icon;
-                            uint32 questid = (*it)->qst->id;
-                            switch(status)
-                            {
-                            case QMGR_QUEST_FINISHED:
-                                icon = 4;
-                                break;
-                            case QMGR_QUEST_CHAT:
-                                {
-                                    if((*it)->qst->qst_is_repeatable)
-                                        icon = 7;
-                                    else
-                                        icon = 8;
-                                }break;
-                            default:
-                                icon = status;
-                                break;
-                            }
-
-                            data << uint32( questid );
-                            data << uint32( icon );
-                            data << uint32( (*it)->qst->qst_max_level );
-                            data << uint32( (*it)->qst->qst_flags );
-                            data << uint8( (*it)->qst->qst_is_repeatable ? 1 : 0 );
-                            data << (*it)->qst->qst_title;
-                        }
-                    }
+                    if(dirty) ss << ", ";
+                    ss << "uiconfig"<< ui <<"=\"";
+                    if(m_accountData[ui]->data)
+                        CharacterDatabase.EscapeLongString(m_accountData[ui]->data, m_accountData[ui]->sz, ss);
+                    else ss << " ";
+                    ss << "\"";
+                    dirty = true;
+                    m_accountData[ui]->bIsDirty = false;
                 }
-                data.put<uint32>(pos, count);
-                SendPacket(&data);
-                sLog.Debug( "WORLD"," Sent SMSG_GOSSIP_MESSAGE" );
             }
             else
             {
-                Script->GossipHello(TalkingWith, _player, true);
+                if(dirty) ss << ", ";
+                ss << "uiconfig"<< ui <<"=' '";
+                dirty = true;
             }
-        }break;
+        }
+
+        if(dirty)
+        {
+            ss  <<" WHERE acct = '"<< _accountId <<"';";
+            CharacterDatabase.ExecuteNA(ss.str().c_str());
+        }
     }
+}
+
+void WorldSession::LoadTutorials()
+{
+    QueryResult *result = CharacterDatabase.Query("SELECT * FROM account_tutorials WHERE acct = '%u';", GetAccountId());
+    if(result == NULL)
+        return;
+    for(uint32 ui = 0; ui < 8; ++ui)
+        m_tutorials[ui] = result->Fetch()[1+ui].GetUInt32();
+}
+
+void WorldSession::SaveTutorials()
+{
+    std::stringstream ss;
+    ss << "REPLACE INTO account_tutorials VALUES(";
+    ss << "'" << GetAccountId() << "', ";
+    for(uint32 ui = 0; ui < 8; ++ui)
+    {
+        if(ui != 0)
+            ss << ", ";
+        ss << "'" << m_tutorials[ui] << "'";
+    }
+    CharacterDatabase.ExecuteNA(ss.str().c_str());
 }

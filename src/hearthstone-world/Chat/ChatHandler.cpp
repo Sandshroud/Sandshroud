@@ -628,3 +628,440 @@ void WorldSession::HandleReportSpamOpcode(WorldPacket & recvPacket)
         return;*/
 
 }
+
+/* Crow: This will verify text that is able to be said ingame.
+    Note that spaces are handled differently in DBC and storage
+    than they are ingame, so we use string length.
+*/
+bool WorldSession::ValidateText2(std::string text)
+{
+    size_t stringpos;
+
+    // Idiots spamming giant pictures through the chat system
+    if( text.find("|TInterface") != string::npos)
+        return false;
+    if( text.find("\n") != string::npos )
+        return false;
+
+    /* Crow
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Crow: Die color text! You don't belong in this world!
+    ColorTxt: It was not by my hand that I am once again given flesh.
+    ColorTxt: I was called here by, Humans, who wish to pay me Tribute.
+    Crow: Tribute? You steal mens souls! And make them your slaves!
+    ColorTxt: Perhaps the same could be said of all Religions...
+    Crow: Your words are as empty as your soul...
+    Crow: Mankind ill needs a savor such as you!
+    ~ColorTxt breaks wine glass~
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    */
+
+    // Quests
+    if((stringpos = text.find("|Hquest:")) != string::npos)
+    { //Hquest:2278:47|h[The Platinum Discs]|h|r
+        ///////////////////////////////////////////////////////////////////
+        size_t length = stringpos+8;
+        if(text.size() < length)
+            return false;
+
+        string newstring = text.substr(stringpos+8, text.size());
+        if(!newstring.size())
+            return false; // Their fault
+
+        char *scannedtext = (char*)newstring.c_str();
+        char* cquestid = strtok(scannedtext, "|");
+        if(!cquestid)
+            return false;
+        uint32 questid = atol(cquestid);
+        if(!questid)
+            return false;
+        ///////////////////////////////////////////////////////////////////
+
+        ///////////////////////////////////////////////////////////////////
+        length = 1+strlen(cquestid);
+        if(newstring.size() < length)
+            return false;
+
+        newstring = newstring.substr(1+strlen(cquestid), newstring.size());
+        if(!newstring.size())
+            return false; // Their fault
+
+        scannedtext = (char*)newstring.c_str();
+        char* clevel = strtok(scannedtext, "|");
+        if(!clevel)
+            return false;
+        ///////////////////////////////////////////////////////////////////
+
+        ///////////////////////////////////////////////////////////////////
+        length = 3+strlen(clevel);
+        if(newstring.size() < length)
+            return false;
+
+        newstring = newstring.substr(3+strlen(clevel), newstring.size());
+        if(!newstring.size())
+            return false; // Their fault
+
+        scannedtext = (char*)newstring.c_str();
+        char* questname = strtok(scannedtext, "]");
+        if(!questname)
+            return false;
+        ///////////////////////////////////////////////////////////////////
+
+        Quest* qst = sQuestMgr.GetQuestPointer(questid);
+        if(qst == NULL)
+            return false;
+        if(strlen(qst->qst_title) != strlen(questname))
+            return false;
+
+        // Return true here, no need to continue.
+        return true;
+    }
+
+    // Professions
+    if((stringpos = text.find("|Htrade:")) != string::npos)
+    { //|Htrade:4037:1:150:1:6AAAAAAAAAAAAAAAAAAAAAAOAADAAAAAAAAAAAAAAAAIAAAAAAAAA|h[Engineering]|h|r
+        ///////////////////////////////////////////////////////////////////
+        size_t length = stringpos+8;
+        if(text.size() < length)
+            return false;
+
+        string newstring = text.substr(stringpos+8, text.size());
+        if(!newstring.size())
+            return false; // Their fault
+
+        char *scannedtext = (char*)newstring.c_str();
+        char* tSpellId = strtok(scannedtext, ":");
+        if(!tSpellId)
+            return false;
+        uint32 SpellId = atol(tSpellId);
+        ///////////////////////////////////////////////////////////////////
+
+        ///////////////////////////////////////////////////////////////////
+        length = 1+strlen(tSpellId);
+        if(newstring.size() < length)
+            return false;
+
+        newstring = newstring.substr(1+strlen(tSpellId), newstring.size());
+        if(!newstring.size())
+            return false; // Their fault
+
+        scannedtext = (char*)newstring.c_str();
+        char* cminimum = strtok(scannedtext, ":");
+        if(!cminimum)
+            return false;
+        ///////////////////////////////////////////////////////////////////
+
+        ///////////////////////////////////////////////////////////////////
+        length = 1+strlen(cminimum);
+        if(newstring.size() < length)
+            return false;
+
+        newstring = newstring.substr(1+strlen(cminimum), newstring.size());
+        if(!newstring.size())
+            return false; // Their fault
+
+        scannedtext = (char*)newstring.c_str();
+        char* cmaximum = strtok(scannedtext, ":");
+        if(!cmaximum)
+            return false;
+        ///////////////////////////////////////////////////////////////////
+
+        ///////////////////////////////////////////////////////////////////
+        length = 1+strlen(cmaximum);
+        if(newstring.size() < length)
+            return false;
+
+        newstring = newstring.substr(1+strlen(cmaximum), newstring.size());
+        if(!newstring.size())
+            return false; // Their fault
+
+        scannedtext = (char*)newstring.c_str();
+        char* cunk = strtok(scannedtext, ":");
+        if(!cunk)
+            return false;
+        ///////////////////////////////////////////////////////////////////
+
+        ///////////////////////////////////////////////////////////////////
+        length = 1+strlen(cunk);
+        if(newstring.size() < length)
+            return false;
+
+        newstring = newstring.substr(1+strlen(cunk), newstring.size());
+        if(!newstring.size())
+            return false; // Their fault
+
+        scannedtext = (char*)newstring.c_str();
+        char* cguid = strtok(scannedtext, "|");
+        if(!cguid)
+            return false;
+        ///////////////////////////////////////////////////////////////////
+
+        ///////////////////////////////////////////////////////////////////
+        length = 3+strlen(scannedtext);
+        if(newstring.size() < length)
+            return false;
+
+        newstring = newstring.substr(3+strlen(scannedtext), newstring.size());
+        if(!newstring.size())
+            return false; // Their fault
+
+        scannedtext = (char*)newstring.c_str();
+        char* tradename = strtok(scannedtext, "]");
+        if(!tradename)
+            return false;
+        ///////////////////////////////////////////////////////////////////
+
+        SpellEntry* sp = dbcSpell.LookupEntryForced(SpellId);
+        if(sp == NULL)
+            return false;
+        if(strlen(sp->Name) != strlen(tradename))
+            return false;
+
+        // Return true here, no need to continue.
+        return true;
+    }
+
+    // Talents
+    if((stringpos = text.find("|Htalent:")) != string::npos)
+    { //Htalent:2232:-1|h[Taste for Blood]|h|r
+        ///////////////////////////////////////////////////////////////////
+        size_t length = stringpos+9;
+        if(text.size() < length)
+            return false;
+
+        string newstring = text.substr(stringpos+9, text.size());
+        if(!newstring.size())
+            return false; // Their fault
+
+        char *scannedtext = (char*)newstring.c_str();
+        char* ctalentid = strtok(scannedtext, ":");
+        if(!ctalentid)
+            return false;
+
+        uint32 talentid = atol(ctalentid);
+        if(!talentid)
+            return false;
+        ///////////////////////////////////////////////////////////////////
+
+        ///////////////////////////////////////////////////////////////////
+        length = 3+strlen(ctalentid);
+        if(newstring.size() < length)
+            return false;
+
+        newstring = newstring.substr(1+strlen(ctalentid), newstring.size());
+        if(!newstring.size())
+            return false; // Their fault
+
+        scannedtext = (char*)newstring.c_str();
+        char* cTalentPoints = strtok(scannedtext, "|");
+        if(!cTalentPoints) // Apparently, we can have -1, but not 0
+            return false;
+        ///////////////////////////////////////////////////////////////////
+
+        ///////////////////////////////////////////////////////////////////
+        length = 3+strlen(cTalentPoints);
+        if(newstring.size() < length)
+            return false;
+
+        newstring = newstring.substr(3+strlen(cTalentPoints), newstring.size());
+        if(!newstring.size())
+            return false; // Their fault
+
+        scannedtext = (char*)newstring.c_str();
+        char* TalentName = strtok(scannedtext, "]");
+        if(!TalentName)
+            return false;
+        ///////////////////////////////////////////////////////////////////
+
+        TalentEntry* TE = dbcTalent.LookupEntry(talentid);
+        if(TE == NULL)
+            return false;
+
+        return true;
+    }
+
+    // Achievements
+    if((stringpos = text.find("|Hachievement:")) != string::npos)
+    { //Hachievement:546:0000000000000001:0:0:0:-1:0:0:0:0|h[Safe Deposit]|h|r
+        return true;
+    }
+
+    // Glyphs
+    if((stringpos = text.find("|Hglyph:")) != string::npos)
+    { //Hglyph:21:762|h[Glyph of Bladestorm]|h|r
+        return true;
+    }
+
+    // Enchants
+    if((stringpos = text.find("|Henchant:")) != string::npos)
+    { //Henchant:3919|h[Engineering: Rough Dynamite]|h|r
+        return true;
+    }
+
+    // Spells
+    if((stringpos = text.find("|Hspell:")) != string::npos)
+    { //|cff71d5ff|Hspell:21563|h[Command]|h|r
+        ///////////////////////////////////////////////////////////////////
+        size_t length = stringpos+8;
+        if(text.size() < length)
+            return false;
+
+        string newstring = text.substr(stringpos+8, text.size());
+        if(!newstring.size())
+            return false; // Their fault
+
+        char *scannedtext = (char*)newstring.c_str();
+        char* cspellid = strtok(scannedtext, "|");
+        if(!cspellid)
+            return false;
+
+        uint32 spellid = atol(cspellid);
+        if(!spellid)
+            return false;
+        ///////////////////////////////////////////////////////////////////
+
+        ///////////////////////////////////////////////////////////////////
+        length = 3+strlen(cspellid);
+        if(newstring.size() < length)
+            return false;
+
+        newstring = newstring.substr(3+strlen(cspellid), newstring.size());
+        if(!newstring.size())
+            return false; // Their fault
+
+        scannedtext = (char*)newstring.c_str();
+        char* spellname = strtok(scannedtext, "]");
+        if(!spellname)
+            return false;
+        ///////////////////////////////////////////////////////////////////
+
+        SpellEntry* sp = dbcSpell.LookupEntryForced(spellid);
+        if(sp == NULL)
+            return false;
+        if(strlen(sp->Name) != strlen(spellname))
+            return false;
+        // Return true here, no need to continue.
+        return true;
+    }
+
+    // Items
+    if((stringpos = text.find("Hitem:")) != string::npos)
+    { //|cffa335ee|Hitem:812:0:0:0:0:0:0:0:70|h[Glowing Brightwood Staff]|h|r
+        ///////////////////////////////////////////////////////////////////
+        size_t length = stringpos+6;
+        if(text.size() < length)
+            return false;
+
+        string newstring = text.substr(stringpos+6, text.size());
+        if(!newstring.size())
+            return false; // Their fault
+
+        char *scannedtext = (char*)newstring.c_str();
+        char* citemid = strtok(scannedtext, ":");
+        if(!citemid)
+            return false;
+
+        uint32 itemid = atol(citemid);
+        if(!itemid)
+            return false;
+        ///////////////////////////////////////////////////////////////////
+
+        ///////////////////////////////////////////////////////////////////
+        length = strlen(citemid);
+        if(newstring.size() < length)
+            return false;
+
+        char* end = ":";
+        char* buffer[8]; // Random suffix and shit, also last one is level.
+        uint8 visuals[8];
+        newstring = newstring.substr(strlen(citemid), newstring.size());
+        if(!newstring.size())
+            return false; // Their fault
+
+        scannedtext = (char*)newstring.c_str();
+        for(uint8 i = 0; i < 8; i++)
+        {
+            if(i == 7)
+                end = "|";
+
+            length = 1;
+            if(newstring.size() < length)
+                return false;
+
+            newstring = newstring.substr(1, newstring.size());
+            if(!newstring.size())
+                return true; // Our fault
+
+            scannedtext = (char*)newstring.c_str();
+            buffer[i] = strtok(scannedtext, end);
+            visuals[i] = buffer[i] ? atol(buffer[i]) : 0;
+            if(buffer[i])
+            {
+                length = strlen(buffer[i]);
+                if(newstring.size() < length)
+                    return false;
+
+                newstring = newstring.substr(strlen(buffer[i]), newstring.size());
+                if(!newstring.size())
+                    return true; // Our fault
+            }
+            else
+            {
+                length = 1;
+                if(newstring.size() < length)
+                    return false;
+
+                newstring = newstring.substr(1, newstring.size());
+                if(!newstring.size())
+                    return true; // Our fault
+            }
+        }
+        ///////////////////////////////////////////////////////////////////
+
+        ///////////////////////////////////////////////////////////////////
+        length = 3;
+        if(newstring.size() < length)
+            return false;
+
+        newstring = newstring.substr(3, newstring.size());
+        if(!newstring.size())
+            return true; // Our fault
+        scannedtext = (char*)newstring.c_str();
+        char* itemname = strtok(scannedtext, "]");
+        if(!itemname)
+            return false;
+        ///////////////////////////////////////////////////////////////////
+
+        ItemPrototype* proto = ItemPrototypeStorage.LookupEntry(itemid);
+        if(proto == NULL)
+            return false;
+        if(strlen(proto->Name1) != strlen(itemname))
+        {
+            if(string(itemname).find("of") != string::npos)
+            {
+                length = strlen(proto->Name1);
+                if(newstring.size() < length)
+                    return false;
+
+                newstring = string(itemname).substr(strlen(proto->Name1), strlen(itemname));
+                if(!newstring.size())
+                    return false; // Their fault
+
+                scannedtext = (char*)newstring.c_str();
+                if(string(scannedtext).find("of") != string::npos)
+                    return true; // We have a suffix
+            }
+            return false;
+        }
+        // Return true here, no need to continue.
+        return true;
+    }
+
+    // Safe to search, since we're done with items
+    if(text.find("|c") != string::npos && text.find("|r") != string::npos)
+        return false;
+    if(text.find("|c") != string::npos && text.find("|h") != string::npos)
+        return false;
+
+    return true;
+}
