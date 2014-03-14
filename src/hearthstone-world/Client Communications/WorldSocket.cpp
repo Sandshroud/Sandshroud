@@ -307,7 +307,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
     // Extract account information from the packet.
     string AccountName, GMFlags;
     const string * ForcedPermissions;
-    uint32 AccountID, i;
+    uint32 AccountID;
     uint8 AccountFlags;
     string lang = "enUS";
 
@@ -383,8 +383,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
     }
 
     // Allocate session
-    WorldSession * pSession = new WorldSession(AccountID, AccountName, this);
-    mSession = pSession;
+    WorldSession * pSession = (mSession = new WorldSession(AccountID, AccountName, this));
     ASSERT(mSession);
     pSession->deleteMutex.Acquire();
 
@@ -398,34 +397,8 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
     if(recvData.rpos() != recvData.wpos())
         recvData >> pSession->m_muted;
 
-    for(uint32 i = 0; i < 8; i++)
-        pSession->SetAccountData(i, NULL, true, 0);
-
-    if(sWorld.m_useAccountData)
-    {
-        QueryResult * pResult = CharacterDatabase.Query("SELECT * FROM account_data WHERE acct = %u", AccountID);
-        if( pResult == NULL )
-            CharacterDatabase.Execute("INSERT INTO account_data VALUES(%u, '', '', '', '', '', '', '', '', '')", AccountID);
-        else
-        {
-            char * d;
-            size_t len;
-            const char * data;
-            for(i = 0; i < 8; i++)
-            {
-                data = pResult->Fetch()[1+i].GetString();
-                len = data ? strlen(data) : 0;
-                if(len > 1)
-                {
-                    d = new char[len+1];
-                    memcpy(d, data, len+1);
-                    pSession->SetAccountData(i, d, true, (uint32)len);
-                }
-            }
-
-            delete pResult;
-        }
-    }
+    pSession->LoadTutorials();
+    pSession->LoadAccountData();
 
     sLog.Debug("Auth", "%s from %s:%u [%ums]", AccountName.c_str(), GetIP(), GetPort(), _latency);
 
@@ -457,6 +430,30 @@ void WorldSocket::Authenticate()
     }
 
     SendAuthResponse(AUTH_OK, false);
+
+    /*WorldPacket hotFix(true ? SMSG_HOTFIX_NOTIFY : SMSG_HOTFIX_NOTIFY_BLOP, 100); // Blop or not, client will accept the info
+    hotFix << uint32(0); // count
+    hotFix << uint32(true ? 0x919BE54E : 0x50238EC2); // This can be either, the client will ask for both if no current db2 info is found
+    uint32 count = 0;
+    for(SULF_MAP<uint32, uint8>::iterator itr = ItemPrototypeStorage.HotfixBegin(); itr != ItemPrototypeStorage.HotfixEnd(); itr++)
+    {
+        hotFix << uint32(((itr->second & 0x02) ? 0x50238EC2 : 0x919BE54E));
+        hotFix << uint32(UNIXTIME);
+        hotFix << itr->first;
+        count++;
+    }
+    hotFix.put<uint32>(0, count);
+    SendPacket(&hotFix);*/
+
+    WorldPacket data(SMSG_CLIENTCACHE_VERSION, 4);
+    data << uint32(13623);
+    SendPacket(&data);
+
+    data.Initialize(SMSG_TUTORIAL_FLAGS, 4 * 8);
+    for (uint32 i = 0; i < 8; ++i)
+        data << uint32(mSession->GetTutorialFlag(i));
+    SendPacket(&data);
+
     if(addonPacket)
     {
         sAddonMgr.SendAddonInfoPacket(addonPacket, pSession);

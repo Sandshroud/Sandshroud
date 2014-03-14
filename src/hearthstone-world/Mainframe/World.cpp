@@ -1439,15 +1439,6 @@ void World::CharacterEnumProc(QueryResultVector& results, uint32 AccountId)
     s->CharacterEnumProc(results[0].result);
 }
 
-void World::LoadAccountDataProc(QueryResultVector& results, uint32 AccountId)
-{
-    WorldSession * s = FindSession(AccountId);
-    if(s == NULL)
-        return;
-
-    s->LoadAccountDataProc(results[0].result);
-}
-
 void World::CheckForExpiredInstances()
 {
     sInstanceMgr.CheckForExpiredInstances();
