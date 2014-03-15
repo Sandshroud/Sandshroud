@@ -326,7 +326,6 @@ public:
     int32 m_clientTimeDelay;
 
     void CharacterEnumProc(QueryResult * result);
-    void LoadAccountDataProc(QueryResult * result);
     HEARTHSTONE_INLINE bool IsLoggingOut() { return _loggingOut; }
 
     bool CanCreateDeathKnight()
@@ -357,6 +356,8 @@ protected:
     void HandleCharCreateOpcode(WorldPacket& recvPacket);
     void HandleCharCustomizeOpcode(WorldPacket& recvPacket);
     void HandlePlayerLoginOpcode(WorldPacket& recvPacket);
+    void HandleWorldLoginOpcode(WorldPacket& recvPacket);
+    void HandleObjectUpdateRequest(WorldPacket& recvPacket);
 
     /// Authentification and misc opcodes (MiscHandler.cpp):
     void HandlePingOpcode(WorldPacket& recvPacket);

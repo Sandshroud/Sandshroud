@@ -6,8 +6,6 @@
 
 #include "Common.h"
 
-// Client 3.3.5.a
-
 enum LoginErrorCode
 {
     RESPONSE_SUCCESS                                            = 0x00,

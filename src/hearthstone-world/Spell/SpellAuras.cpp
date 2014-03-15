@@ -675,7 +675,8 @@ void Aura::BuildAuraUpdate()
     uint8 flags = GetAuraFlags();
 
     data << uint32(spellid);
-    data << uint16(flags);
+    data << uint8(flags);
+    data << uint8(GetUnitCaster() ? GetUnitCaster()->getLevel() : 0);
     data << uint8(stack);
 
     if(!(flags & AFLAG_NOT_GUID))

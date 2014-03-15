@@ -1778,9 +1778,6 @@ void Player::smsg_InitialSpells()
     *(uint16*)&data.contents()[pos] = (uint16)itemCount;
 
     GetSession()->SendPacket(&data);
-
-    uint32 v = 0;
-    GetSession()->OutPacket(SMSG_SERVER_BUCK_DATA, 4, &v);
 }
 
 void Player::BuildPlayerTalentsInfo(WorldPacket *data)
@@ -1796,11 +1793,10 @@ void Player::BuildPlayerTalentsInfo(WorldPacket *data)
         for(uint8 s = 0; s < m_talentSpecsCount; ++s)
         {
             PlayerSpec spec = m_specs[s];
-
+            *data << uint32(0); // Spec tree
             // Send Talents
-            uint32 size = (uint32)spec.talents.size();
-            *data << uint8(size);
-            if(size)
+            *data << uint8(spec.talents.size());
+            if(!spec.talents.empty())
             {
                 std::map<uint32, uint8>::iterator itr;
                 for(itr = spec.talents.begin(); itr != spec.talents.end(); itr++)
@@ -2288,17 +2284,23 @@ void Player::InitVisibleUpdateBits()
 {
     Player::m_visibleUpdateMask.SetCount(PLAYER_END);
     Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_GUID);
-    Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_ENTRY);
     Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_TYPE);
-    Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_SCALE_X);
     Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_DATA);
     Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_DATA+1);
+    Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_SCALE_X);
 
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHARM);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHARM+1);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_SUMMON);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_SUMMON+1);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHARMEDBY);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHARMEDBY+1);
 
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_TARGET);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_TARGET+1);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHANNEL_OBJECT);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHANNEL_OBJECT+1);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_BYTES_0);
 
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_HEALTH);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER1);
@@ -2308,6 +2310,9 @@ void Player::InitVisibleUpdateBits()
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER5);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER6);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER7);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER8);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER9);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER10);
 
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXHEALTH);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER1);
@@ -2317,13 +2322,20 @@ void Player::InitVisibleUpdateBits()
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER5);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER6);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER7);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER8);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER9);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER10);
 
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_LEVEL);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_FACTIONTEMPLATE);
+    Player::m_visibleUpdateMask.SetBit(UNIT_VIRTUAL_ITEM_SLOT_ID);
+    Player::m_visibleUpdateMask.SetBit(UNIT_VIRTUAL_ITEM_SLOT_ID+1);
+    Player::m_visibleUpdateMask.SetBit(UNIT_VIRTUAL_ITEM_SLOT_ID+2);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_BYTES_0);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_FLAGS);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_FLAGS_2);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_AURASTATE);
+
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_BASEATTACKTIME);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_BASEATTACKTIME+1);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_BOUNDINGRADIUS);
@@ -2331,31 +2343,34 @@ void Player::InitVisibleUpdateBits()
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_DISPLAYID);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_NATIVEDISPLAYID);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MOUNTDISPLAYID);
-    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_BYTES_1);
-    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MOUNTDISPLAYID);
+    Player::m_visibleUpdateMask.SetBit(UNIT_NPC_FLAGS);
+    Player::m_visibleUpdateMask.SetBit(UNIT_DYNAMIC_FLAGS);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_PETNUMBER);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_PET_NAME_TIMESTAMP);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_BYTES_1);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_BYTES_2);
+    Player::m_visibleUpdateMask.SetBit(UNIT_CHANNEL_SPELL);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHANNEL_OBJECT);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHANNEL_OBJECT+1);
-    Player::m_visibleUpdateMask.SetBit(UNIT_CHANNEL_SPELL);
-    Player::m_visibleUpdateMask.SetBit(UNIT_DYNAMIC_FLAGS);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_BASE_MANA);
     Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_HOVERHEIGHT);
 
     Player::m_visibleUpdateMask.SetBit(PLAYER_FLAGS);
     Player::m_visibleUpdateMask.SetBit(PLAYER_BYTES);
     Player::m_visibleUpdateMask.SetBit(PLAYER_BYTES_2);
     Player::m_visibleUpdateMask.SetBit(PLAYER_BYTES_3);
+    Player::m_visibleUpdateMask.SetBit(PLAYER_GUILDRANK);
+    Player::m_visibleUpdateMask.SetBit(PLAYER_GUILDDELETE_DATE);
+    Player::m_visibleUpdateMask.SetBit(PLAYER_GUILDLEVEL);
     Player::m_visibleUpdateMask.SetBit(PLAYER_GUILD_TIMESTAMP);
     Player::m_visibleUpdateMask.SetBit(PLAYER_DUEL_TEAM);
     Player::m_visibleUpdateMask.SetBit(PLAYER_DUEL_ARBITER);
     Player::m_visibleUpdateMask.SetBit(PLAYER_DUEL_ARBITER+1);
-    Player::m_visibleUpdateMask.SetBit(PLAYER_GUILDRANK);
-    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_BYTES_2);
 
-    for(uint16 i = PLAYER_QUEST_LOG_1_1; i <= PLAYER_QUEST_LOG_25_1; i += 5)
+    for(uint32 i = PLAYER_QUEST_LOG_1_1; i <= PLAYER_QUEST_LOG_50_1; i += 5)
         Player::m_visibleUpdateMask.SetBit(i);
 
-    for(uint16 i = 0; i < EQUIPMENT_SLOT_END; i++)
+    for(uint8 i = 0; i < EQUIPMENT_SLOT_END; i++)
     {
         uint32 offset = i * PLAYER_VISIBLE_ITEM_LENGTH;
 
@@ -2363,8 +2378,6 @@ void Player::InitVisibleUpdateBits()
         Player::m_visibleUpdateMask.SetBit(PLAYER_VISIBLE_ITEM_1_ENTRYID + offset);
         // enchant
         Player::m_visibleUpdateMask.SetBit(PLAYER_VISIBLE_ITEM_1_ENCHANTMENT + offset);
-
-        offset = NULL; // Nullify
     }
 
     Player::m_visibleUpdateMask.SetBit(PLAYER_CHOSEN_TITLE);
@@ -2777,7 +2790,7 @@ void Player::_LoadGlyphs(QueryResult * result)
                     spec, fields[0].GetUInt32());
                 continue;
             }
-            for(uint32 i=0; i < GLYPHS_COUNT; i++)
+            for(uint32 i=0; i < 6; i++)
             {
                 m_specs[spec].glyphs[i] = fields[2 + i].GetUInt16();
             }
@@ -2809,14 +2822,12 @@ void Player::_SaveGlyphsToDB(QueryBuffer * buf)
         ss << "REPLACE INTO playerglyphs (guid, spec, glyph1, glyph2, glyph3, glyph4, glyph5, glyph6) VALUES "
             << "(" << GetLowGUID() << ","
             << uint32(s) << ",";
-        for(uint32 i = 0; i < GLYPHS_COUNT; i++)
+        for(uint32 i = 0; i < 6; i++)
         {
+            if(i != 0) ss << ", ";
             ss << uint32(m_specs[s].glyphs[i]);
-            if(i != GLYPHS_COUNT - 1)
-                ss << ",";
-            else
-                ss << ")";
         }
+        ss << ")";
 
         if(buf == NULL)
             CharacterDatabase.Execute(ss.str().c_str());
@@ -4207,6 +4218,82 @@ void Player::OnPushToWorld()
             GetAchievementInterface()->ForceEarnedAchievement(sWorld.AnniversaryAchievement);
         }
     }
+}
+
+void Player::OnWorldLogin()
+{
+    ResetSpeedHack();
+
+    // Unlock player movement
+    WorldPacket syncPacket(SMSG_TIME_SYNC_REQ, 4);
+    syncPacket << uint32(0);
+    CopyAndSendDelayedPacket(&syncPacket);
+
+    CastSpell(this, 836, true); // LOGINEFFECT
+
+    sWorld.mInWorldPlayerCount++;
+
+    // Update PVP Situation
+    LoginPvPSetup();
+
+//  m_AuraInterface.BuildAllAuraUpdates();
+//  Thetruecrow: Send a single packet
+    WorldPacket* data = new WorldPacket(SMSG_AURA_UPDATE_ALL, 28 * MAX_AURAS);
+    *data << GetNewGUID();
+    if(m_AuraInterface.BuildAuraUpdateAllPacket(data))
+        SendPacket(data);
+    else delete data;
+
+    // force area update (needed for world states)
+    _EventExploration();
+
+    // send world states
+    if( m_mapMgr != NULL )
+        m_mapMgr->GetStateManager().SendWorldStates(TO_PLAYER(this));
+
+    ResetHeartbeatCoords();
+    m_heartbeatDisable = 0;
+    m_speedChangeInProgress = false;
+    m_lastMoveType = 0;
+
+    /* send weather */
+    sWeatherMgr.SendWeather(this);
+
+    if( !GetSession()->HasGMPermissions() )
+        GetItemInterface()->CheckAreaItems(); 
+
+    z_axisposition = 0.0f;
+}
+
+void Player::SendObjectUpdate(uint64 guid)
+{
+    uint32 count = 1;
+    WorldPacket data(SMSG_UPDATE_OBJECT, 200);
+    data << uint16(GetMapId());
+    data << count;
+    if(guid == GetGUID())
+    {
+        count += Object::BuildCreateUpdateBlockForPlayer(&data, this);
+    }
+    else if(IsInWorld())
+    {
+        Object* obj = GetMapMgr()->_GetObject(guid);
+        if(obj != NULL)
+        {
+            count += obj->BuildCreateUpdateBlockForPlayer(&data, this);
+        }
+    }
+    else
+    {
+        // We aren't pushed yet.
+        return;
+    }
+
+    printf("Sending update with size %u type %s %s\n", data.size(), (guid == GetGUID() ? "Player" : "Non Player"), (IsInWorld() ? "Is in world" : "Out of world"));
+    data.put<uint32>(2, count);
+    // send uncompressed because it's specified
+    m_session->SendPacket(&data);
+    ProcessPendingUpdates(NULL, NULL);
 }
 
 void Player::ResetHeartbeatCoords()
@@ -7196,6 +7283,10 @@ void Player::SendInitialLogonPackets()
     //Initial Spells
     smsg_InitialSpells();
 
+    data.Initialize(SMSG_SEND_UNLEARN_SPELLS, 4);
+    data << uint32(0);                                      // count, for (count) uint32;
+    GetSession()->SendPacket(&data);
+
     //Initial Actions
     SendInitialActions();
 
@@ -7261,8 +7352,8 @@ void Player::SendInitialLogonPackets()
     gameTime|= ((CurrentMonth << MONTH_SHIFTMASK) & MONTH_BITMASK);
     gameTime|= ((CurrentYear << YEAR_SHIFTMASK) & YEAR_BITMASK);
 
-    data << (uint32)gameTime;
-    data << (float)0.0166666669777748f;  // Normal Game Speed
+    data << uint32(gameTime);
+    data << float(0.0166666669777748f);  // Normal Game Speed
     data << uint32(0);
     GetSession()->SendPacket( &data );
 
@@ -8703,7 +8794,7 @@ void Player::ProcessPendingUpdates(ByteBuffer *pBuildBuffer, ByteBuffer *pCompre
         return;
     }
 
-    size_t bBuffer_size =  (bCreationBuffer.size() > bUpdateBuffer.size() ? bCreationBuffer.size() : bUpdateBuffer.size()) + 10 + (mOutOfRangeIds.size() * 9);
+    size_t bBuffer_size =  (bCreationBuffer.size() > bUpdateBuffer.size() ? bCreationBuffer.size() : bUpdateBuffer.size()) + 14 + (mOutOfRangeIds.size() * 9);
     uint8 * update_buffer = NULL;
     if(pBuildBuffer != NULL)
     {
@@ -8717,13 +8808,15 @@ void Player::ProcessPendingUpdates(ByteBuffer *pBuildBuffer, ByteBuffer *pCompre
     //build out of range updates if creation updates are queued
     if(bCreationBuffer.size() || mOutOfRangeIdCount)
     {
+        *(uint16*)&update_buffer[c] = (uint16)GetMapId();
+        c += 2;
         *(uint32*)&update_buffer[c] = ((mOutOfRangeIds.size() > 0) ? (mCreationCount + 1) : mCreationCount);
         c += 4;
 
         // append any out of range updates
         if(mOutOfRangeIdCount)
         {
-            update_buffer[c]                = UPDATETYPE_OUT_OF_RANGE_OBJECTS;
+            update_buffer[c] = UPDATETYPE_OUT_OF_RANGE_OBJECTS;
             ++c;
             *(uint32*)&update_buffer[c]  = mOutOfRangeIdCount;
             c += 4;
@@ -8742,7 +8835,7 @@ void Player::ProcessPendingUpdates(ByteBuffer *pBuildBuffer, ByteBuffer *pCompre
         mCreationCount = 0;
 
         // compress update packet
-        if(c < size_t(1000) || !CompressAndSendUpdateBuffer((uint32)c, update_buffer, pCompressionBuffer))
+        if(c < size_t(500) || !CompressAndSendUpdateBuffer((uint32)c, update_buffer, pCompressionBuffer))
         {
             // send uncompressed packet -> because we failed
             m_session->OutPacket(SMSG_UPDATE_OBJECT, (uint16)c, update_buffer);
@@ -8752,9 +8845,12 @@ void Player::ProcessPendingUpdates(ByteBuffer *pBuildBuffer, ByteBuffer *pCompre
     if(bUpdateBuffer.size())
     {
         c = 0;
-        *(uint32*)&update_buffer[c] = ((mOutOfRangeIds.size() > 0) ? (mUpdateCount + 1) : mUpdateCount);
+        *(uint16*)&update_buffer[c] = (uint16)GetMapId();
+        c += 2;
+        *(uint32*)&update_buffer[c] = mUpdateCount;
         c += 4;
-        memcpy(&update_buffer[c], bUpdateBuffer.contents(), bUpdateBuffer.size());  c += bUpdateBuffer.size();
+        memcpy(&update_buffer[c], bUpdateBuffer.contents(), bUpdateBuffer.size());
+        c += bUpdateBuffer.size();
 
         // clear our update buffer
         bUpdateBuffer.clear();
@@ -8762,7 +8858,7 @@ void Player::ProcessPendingUpdates(ByteBuffer *pBuildBuffer, ByteBuffer *pCompre
 
         // compress update packet
         // while we said 350 before, I'm gonna make it 500 :D
-        if(c < size_t(1000) || !CompressAndSendUpdateBuffer((uint32)c, update_buffer, pCompressionBuffer))
+        if(c < size_t(500) || !CompressAndSendUpdateBuffer((uint32)c, update_buffer, pCompressionBuffer))
         {
             // send uncompressed packet -> because we failed
             m_session->OutPacket(SMSG_UPDATE_OBJECT, (uint16)c, update_buffer);
@@ -8802,10 +8898,12 @@ void Player::ProcessPendingUpdates(ByteBuffer *pBuildBuffer, ByteBuffer *pCompre
 
 bool Player::CompressAndSendUpdateBuffer(uint32 size, const uint8* update_buffer, ByteBuffer *pCompressionBuffer)
 {
-    uint32 destsize = size + size/10 + 16;
-    int rate = 1;
+    uint32 destsize = compressBound(size);
+    int rate = 3;
     if(size >= 40000 && rate < 6)
         rate = 6;
+    if(rate < 1 || rate > 9)
+        rate = 1;
 
     // set up stream
     z_stream stream;
@@ -8824,15 +8922,10 @@ bool Player::CompressAndSendUpdateBuffer(uint32 size, const uint8* update_buffer
     {
         pCompressionBuffer->resize(destsize);
         buffer = (uint8*)pCompressionBuffer->contents();
-    }
-    else
-    {
-        buffer = new uint8[destsize];
-        //memset(buffer,0,destsize);    /* fix umr - burlex */
-    }
+    } else buffer = new uint8[destsize];
 
     // set up stream pointers
-    stream.next_out  = (Bytef*)buffer+4;
+    stream.next_out  = (Bytef*)buffer;
     stream.avail_out = destsize;
     stream.next_in   = (Bytef*)update_buffer;
     stream.avail_in  = size;
@@ -8872,17 +8965,18 @@ bool Player::CompressAndSendUpdateBuffer(uint32 size, const uint8* update_buffer
     }
 
     // fill in the full size of the compressed stream
-    *(uint32*)&buffer[0] = size;
+    WorldPacket data(SMSG_COMPRESSED_UPDATE_OBJECT, destsize);
+    data << uint32(stream.total_in);
+    data.append(buffer, uint32(stream.total_out));
 
     // send it
-    m_session->OutPacket(SMSG_COMPRESSED_UPDATE_OBJECT, (uint16)stream.total_out + 4, buffer);
+    SendPacket(&data);
 
     // cleanup memory
     if(pCompressionBuffer != NULL)
         pCompressionBuffer->clear();
     else
         delete [] buffer;
-
     return true;
 }
 
@@ -9776,8 +9870,7 @@ void Player::CompleteLoading()
                     continue;
             }
 
-            Spell* spell = NULLSPELL;
-            spell = (new Spell(TO_PLAYER(this),info,true,NULLAURA));
+            Spell* spell = new Spell(this, info, true, NULLAURA);
             spell->prepare(&targets);
         }
     }

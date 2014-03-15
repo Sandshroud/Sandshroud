@@ -68,27 +68,37 @@ enum OBJECT_UPDATE_TYPE {
     UPDATETYPE_VALUES = 0,
     //  8 bytes - GUID
     //  Goto Update Block
-    UPDATETYPE_MOVEMENT = 1,
-    //  8 bytes - GUID
-    //  Goto Position Update
-    UPDATETYPE_CREATE_OBJECT = 2,
+    UPDATETYPE_CREATE_OBJECT = 1,
     //  8 bytes - GUID
     //  1 byte - Object Type (*)
     //  Goto Position Update
     //  Goto Update Block
-    UPDATETYPE_CREATE_YOURSELF = 3, // looks like 3 & 4 do the same thing
+    UPDATETYPE_CREATE_YOURSELF = 2, // looks like 2 & 3 do the same thing
     //  4 bytes - Count
     //  Loop Count Times:
     //  8 bytes - GUID
-    UPDATETYPE_OUT_OF_RANGE_OBJECTS = 4, // <- this is correct, not sure about 3
+    UPDATETYPE_OUT_OF_RANGE_OBJECTS = 3 // <- this is correct, not sure about 4
     //  4 bytes - Count
     //  Loop Count Times:
     //  8 bytes - GUID
+};
 
-    UPDATETYPE_NEAR_OBJECTS = 5,
-    //  4 bytes - Count
-    //  Loop Count Times:
-    //  8 bytes - GUID
+enum OBJECT_UPDATE_FLAGS {
+    UPDATEFLAG_NONE         = 0x0000,
+    UPDATEFLAG_SELF         = 0x0001,
+    UPDATEFLAG_TRANSPORT    = 0x0002,
+    UPDATEFLAG_HAS_TARGET   = 0x0004,
+    UPDATEFLAG_STA_MODEL    = 0x0008,
+    UPDATEFLAG_DYN_MODEL    = 0x0010,
+    UPDATEFLAG_LIVING       = 0x0020,
+    UPDATEFLAG_HAS_POSITION = 0x0040,
+    UPDATEFLAG_VEHICLE      = 0x0080,
+    UPDATEFLAG_POSITION     = 0x0100,
+    UPDATEFLAG_ROTATION     = 0x0200,
+    UPDATEFLAG_UNK3         = 0x0400,
+    UPDATEFLAG_ANIMKITS     = 0x0800,
+    UPDATEFLAG_UNK5         = 0x1000,
+    UPDATEFLAG_UNK6         = 0x2000
 };
 
 enum ObjectAreaFlags
@@ -565,7 +575,7 @@ protected:
     //! Mark values that player should get when he/she/it sees object for first time.
     virtual void _SetCreateBits(UpdateMask *updateMask, Player* target) const;
 
-    void _BuildMovementUpdate( ByteBuffer *data, uint32 flags, uint32 moveflags, Player* target );
+    void _BuildMovementUpdate( ByteBuffer *data, uint16 flags, Player* target );
     void _BuildValuesUpdate( ByteBuffer *data, UpdateMask *updateMask, Player* target );
 
     /* Main Function called by isInFront(); */

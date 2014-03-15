@@ -436,7 +436,7 @@ void WintergraspScript::OnChangeArea(Player* pPlayer, uint32 ZoneID, uint32 NewA
         if(result)
         {
             WorldPacket data(SMSG_INIT_WORLD_STATES, 10); // Clear our Wintergrasp states.
-            data << uint32(571) << uint16(ZONE_WINTERGRASP) << uint16(ZONE_WINTERGRASP) << uint16(0);
+            data << uint32(571) << uint32(ZONE_WINTERGRASP) << uint32(ZONE_WINTERGRASP) << uint16(0);
             pPlayer->GetSession()->SendPacket(&data);
         }
     }

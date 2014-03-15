@@ -486,9 +486,12 @@ void Object::DisablePhase(int32 phaseMode)
 
 void Object::SendPhaseShift(uint8 phaseMode)
 {
-    WorldPacket data(SMSG_SET_PHASE_SHIFT, 9);
-    data << GetNewGUID() << uint8(m_phaseMask);
-    SendMessageToSet(&data, (IsPlayer() ? true : false));
+    /*WorldPacket data(SMSG_SET_PHASE_SHIFT, 9);
+    data << GetGUID();
+    data << uint32(0) << uint32(0);
+    data << uint32(4) << uint16(m_phaseMask);
+    data << uint32(0) << uint32(0x08);
+    SendMessageToSet(&data, (IsPlayer() ? true : false));*/
 }
 
 void Object::_Create( uint32 mapid, float x, float y, float z, float ang )
@@ -501,81 +504,62 @@ void Object::_Create( uint32 mapid, float x, float y, float z, float ang )
 
 uint32 Object::BuildCreateUpdateBlockForPlayer(ByteBuffer *data, Player* target)
 {
-//  sLog.outDebug("Building update block for Player"); // Too heavy for the core.
-    uint16 flags = 0;
-    uint32 flags2 = 0;
-
+    uint16 updateFlags = UPDATEFLAG_NONE;
     uint8 updatetype = UPDATETYPE_CREATE_OBJECT;
-    if(m_objectTypeId == TYPEID_CORPSE)
-    {
-        if(m_uint32Values[CORPSE_FIELD_DISPLAY_ID] == 0)
-            return 0;
-    }
 
     // any other case
     switch(m_objectTypeId)
     {
-        // items + containers: 0x8
     case TYPEID_ITEM:
     case TYPEID_CONTAINER:
         {
-            flags = 0x0010;
+            updateFlags = UPDATEFLAG_DYN_MODEL;
         }break;
-
-        // player/unit: 0x68 (except self)
     case TYPEID_UNIT:
     case TYPEID_PLAYER:
         {
-            flags = 0x0070;
+            updateFlags = UPDATEFLAG_DYN_MODEL|UPDATEFLAG_LIVING|UPDATEFLAG_HAS_POSITION;
         }break;
-
-    // gameobject/dynamicobject
     case TYPEID_GAMEOBJECT:
         {
-            flags = 0x0350;//200|100|40|10
-
+            updateFlags = UPDATEFLAG_DYN_MODEL|UPDATEFLAG_HAS_POSITION|UPDATEFLAG_POSITION|UPDATEFLAG_ROTATION;
             switch(GetByte(GAMEOBJECT_BYTES_1, GAMEOBJECT_BYTES_TYPE_ID))
             {
-                case GAMEOBJECT_TYPE_MO_TRANSPORT:
-                    {
-                        if(GetTypeFromGUID() != HIGHGUID_TYPE_TRANSPORTER)
-                            return 0;   // bad transporter
-                        else
-                            flags |= 0x0002;
-                    }break;
-
-                case GAMEOBJECT_TYPE_TRANSPORT:
-                    {
-                        /* deeprun tram, etc */
-                        flags |= 0x0002;
-                    }break;
-
-                case GAMEOBJECT_TYPE_DUEL_ARBITER:
-                    {
-                        // duel flags have to stay as updatetype 3, otherwise
-                        // it won't animate
-                        updatetype = UPDATETYPE_CREATE_YOURSELF;
-                    }break;
+            case GAMEOBJECT_TYPE_TRANSPORT:
+            case GAMEOBJECT_TYPE_MO_TRANSPORT:
+                {
+                    updateFlags |= UPDATEFLAG_TRANSPORT;
+                }break;
+            case GAMEOBJECT_TYPE_TRAP:
+            case GAMEOBJECT_TYPE_DUEL_ARBITER:
+            case GAMEOBJECT_TYPE_FLAGSTAND:
+            case GAMEOBJECT_TYPE_FLAGDROP:
+                {
+                    // duel flags have to stay as updatetype 3, otherwise
+                    // it won't animate
+                    updatetype = UPDATETYPE_CREATE_YOURSELF;
+                }break;
             }
         }break;
-
-    case TYPEID_DYNAMICOBJECT:
-        flags = 0x0150;
-        break;
-
     case TYPEID_CORPSE:
-        flags = 0x0150;
+    case TYPEID_DYNAMICOBJECT:
+        updateFlags = UPDATEFLAG_STA_MODEL|UPDATEFLAG_HAS_POSITION|UPDATEFLAG_POSITION;
         break;
     }
 
     if(GetTypeFromGUID() == HIGHGUID_TYPE_VEHICLE)
-        flags |= 0x0080;
-
+        updateFlags |= UPDATEFLAG_VEHICLE;
     if(target == this)
     {
         // player creating self
-        flags |= 0x0001;
+        updateFlags |= UPDATEFLAG_SELF;
         updatetype = UPDATETYPE_CREATE_YOURSELF;
+    }
+
+    if(IsUnit())
+    {
+        if (TO_UNIT(this)->GetUInt64Value(UNIT_FIELD_TARGET))
+            updateFlags |= UPDATEFLAG_HAS_TARGET;
     }
 
     // build our actual update
@@ -587,7 +571,7 @@ uint32 Object::BuildCreateUpdateBlockForPlayer(ByteBuffer *data, Player* target)
 
     *data << m_objectTypeId;
 
-    _BuildMovementUpdate(data, flags, flags2, target);
+    _BuildMovementUpdate(data, updateFlags, target);
 
     // we have dirty data, or are creating for ourself.
     UpdateMask updateMask;
@@ -610,20 +594,9 @@ WorldPacket *Object::BuildFieldUpdatePacket( uint32 index,uint32 value)
     // uint64 guidfields = GetGUID();
     // uint8 guidmask = 0;
     WorldPacket * packet = new WorldPacket(SMSG_UPDATE_OBJECT, 1500);
+    *packet << uint16(GetMapId());
     *packet << (uint32)1;//number of update/create blocks
-
-    *packet << (uint8) UPDATETYPE_VALUES;       // update type == update
-    *packet << GetNewGUID();
-
-    uint32 mBlocks = index/32+1;
-    *packet << (uint8)mBlocks;
-
-    for(uint32 dword_n=mBlocks-1;dword_n;dword_n--)
-        *packet <<(uint32)0;
-
-    *packet <<(((uint32)(1))<<(index%32));
-    *packet << value;
-
+    BuildFieldUpdatePacket(index, value);
     return packet;
 }
 
@@ -706,14 +679,11 @@ void Object::DestroyForPlayer(Player* target, bool anim)
 ///////////////////////////////////////////////////////////////
 /// Build the Movement Data portion of the update packet
 /// Fills the data with this object's movement/speed info
-/// TODO: rewrite this stuff, document unknown fields and flags
-uint32 TimeStamp();
-
-void Object::_BuildMovementUpdate(ByteBuffer * data, uint32 flags, uint32 moveflags, Player* target )
+void Object::_BuildMovementUpdate(ByteBuffer * data, uint16 flags, Player* target )
 {
     *data << uint16(flags);
 
-    if(flags & 0x20)
+    if(flags & UPDATEFLAG_LIVING)
     {
         if(!IsUnit())
             return;
@@ -731,7 +701,7 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint32 flags, uint32 movefl
         *data << m_turnRate;        // turn rate
         *data << m_pitchRate;       // pitch rate
     }
-    else if(flags & 0x100)
+    else if(flags & UPDATEFLAG_POSITION)
     {
         *data << uint8(0);              // unk PGUID!
         *data << float(m_position.x);
@@ -743,9 +713,9 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint32 flags, uint32 movefl
         *data << float(m_position.o);
         *data << float(0);
     }
-    else if(flags & 0x40)
+    else if(flags & UPDATEFLAG_HAS_POSITION)
     {
-        if(flags & 0x2 && (GetByte(GAMEOBJECT_BYTES_1, GAMEOBJECT_BYTES_TYPE_ID) == GAMEOBJECT_TYPE_MO_TRANSPORT))
+        if(flags & UPDATEFLAG_TRANSPORT && (GetByte(GAMEOBJECT_BYTES_1, GAMEOBJECT_BYTES_TYPE_ID) == GAMEOBJECT_TYPE_MO_TRANSPORT))
         {
             *data << float(0);
             *data << float(0);
@@ -760,24 +730,24 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint32 flags, uint32 movefl
         *data << float(m_position.o);
     }
 
-    if(flags & 0x0004)
+    if(flags & UPDATEFLAG_HAS_TARGET)
         FastGUIDPack(*data, GetUInt64Value(UNIT_FIELD_TARGET)); // Compressed target guid.
 
-    if(flags & 0x0002)
+    if(flags & UPDATEFLAG_TRANSPORT)
     {
         if(IsTransport())
             *data << TO_TRANSPORT(this)->m_timer;
         else *data << (uint32)getMSTime();
     }
 
-    if(flags & 0x0080) //if ((_BYTE)flags_ < 0)
+    if(flags & UPDATEFLAG_VEHICLE)
         *data << TO_VEHICLE(this)->GetVehicleEntry() << float(TO_VEHICLE(this)->GetOrientation());
 
-    if(flags & 0x800)
+    if(flags & UPDATEFLAG_ANIMKITS)
         *data << uint16(0) << uint16(0) << uint16(0);
 
     // 0x200
-    if(flags & 0x0200)
+    if(flags & UPDATEFLAG_ROTATION)
     {
         uint64 rotation = 0;
         if(IsGameObject())
@@ -785,7 +755,7 @@ void Object::_BuildMovementUpdate(ByteBuffer * data, uint32 flags, uint32 movefl
         *data << uint64(rotation); //blizz 64bit rotation
     }
 
-    if(flags & 0x1000)
+    if(flags & UPDATEFLAG_UNK5)
         *data << uint8(0);
 }
 
