@@ -179,8 +179,6 @@ void WorldSocket::UpdateQueuedPackets()
     queueLock.Release();
 }
 
-//set<uint32> Uniques;
-
 OUTPACKET_RESULT WorldSocket::_OutPacket(uint16 opcode, size_t len, const void* data, bool InWorld)
 {
     bool rv;
@@ -188,9 +186,19 @@ OUTPACKET_RESULT WorldSocket::_OutPacket(uint16 opcode, size_t len, const void* 
         return OUTPACKET_RESULT_NOT_CONNECTED;
     uint16 newOpcode = sOpcodeMgr.ConvertOpcodeForOutput(opcode);
     if(newOpcode == MSG_NULL_ACTION)
+    {
+        printf("Unset packet %u rejected\n", opcode);
         return OUTPACKET_RESULT_PACKET_ERROR;
+    }
     if( GetWriteBuffer()->GetSpace() < (len+4) )
         return OUTPACKET_RESULT_NO_ROOM_IN_BUFFER;
+/*  FILE *codeLog = NULL;
+    fopen_s(&codeLog, "OpcodeLog.txt", "a+b");
+    if(codeLog)
+    {
+        fprintf(codeLog, "Sending packet %s(%03u) with size %u\r\n", sOpcodeMgr.GetOpcodeName(opcode), opcode, len);
+        fclose(codeLog);
+    }*/
 
     LockWriteBuffer();
     // Encrypt the packet
@@ -291,13 +299,9 @@ void WorldSocket::_HandleAuthSession(WorldPacket* recvPacket)
 
 void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 requestid)
 {
-    if(requestid != mRequestID)
-        return;
-
     uint32 error;
     recvData >> error;
-
-    if(error != 0)
+    if(error != 0 || requestid != mRequestID)
     {
         // something happened wrong @ the logon server
         OutPacket(SMSG_AUTH_RESPONSE, 1, "\x0D");
@@ -326,8 +330,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
     BigNumber BNK;
     BNK.SetBinary(K, 40);
 
-    if(recvData.rpos() != recvData.wpos())
-        recvData.read((uint8*)lang.data(), 4);
+    recvData.read((uint8*)lang.data(), 4);
 
     //checking if player is already connected
     //disconnect current player and login this one(blizzlike)
@@ -393,9 +396,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
     pSession->LoadSecurity(GMFlags);
     pSession->SetAccountFlags(AccountFlags);
     pSession->m_lastPing = (uint32)UNIXTIME;
-
-    if(recvData.rpos() != recvData.wpos())
-        recvData >> pSession->m_muted;
+    recvData >> pSession->m_muted;
 
     pSession->LoadTutorials();
     pSession->LoadAccountData();
@@ -421,8 +422,8 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 
 void WorldSocket::Authenticate()
 {
-    WorldSession * pSession = mSession;
     mQueued = false;
+    WorldSession *pSession = mSession;
     if(!pSession)
     {
         sLog.Debug( "WorldSocket","Lost Session");
@@ -587,6 +588,9 @@ void WorldSocket::OnRecvData()
         case MSG_NULL_ACTION:
             { // We need to log opcodes that are non existent
                 //mUnaltered
+                printf("Received unhandled packet %u(%u)\n", mUnaltered, Packet->GetOpcode());
+                delete Packet;
+                Packet = NULL;
             }break;
         default:
             {

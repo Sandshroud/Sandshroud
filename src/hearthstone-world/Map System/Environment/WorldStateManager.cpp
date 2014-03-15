@@ -123,7 +123,7 @@ void WorldStateManager::SendWorldStates(Player* pPlayer)
     //m_lock.Release();
 
     // append the count, and send away
-    *(uint16*)(&data.contents()[12]) = state_count;
+    *(uint16*)(&data.contents()[12]) = (uint16)state_count;
     pPlayer->GetSession()->SendPacket(&data);
 }
 

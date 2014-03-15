@@ -137,51 +137,11 @@ WorldPacket* AchievementInterface::BuildAchievementData(bool forInspect)
         return m_achievementInspectPacket;
 
     WorldPacket * data = new WorldPacket(forInspect ? SMSG_RESPOND_INSPECT_ACHIEVEMENTS : SMSG_ALL_ACHIEVEMENT_DATA, 400);
-    if(forInspect)
-        *data << m_player->GetNewGUID();
-
-    std::map<uint32,AchievementData*>::iterator itr = m_achivementDataMap.begin();
-    for(; itr != m_achivementDataMap.end(); itr++)
-    {
-        if( itr->second->completed )
-        {
-            *data << uint32(itr->second->id);
-            *data << uint32( unixTimeToTimeBitfields(itr->second->date) );
-        }
-    }
-
-    *data << int32(-1);
-    itr = m_achivementDataMap.begin(); // Re-loop, luls
-    for(; itr != m_achivementDataMap.end(); itr++)
-    {
-        if( !itr->second->completed )
-        {
-            AchievementEntry * ae = dbcAchievement.LookupEntry( itr->second->id );
-            if(ae == NULL)
-            {
-                m_achivementDataMap.erase(itr);
-                continue;
-            }
-
-            // Loop over the associated criteria
-            for(uint32 i = 0; i < ae->AssociatedCriteriaCount; i++)
-            {
-                *data << uint32( ae->AssociatedCriteria[i] );
-                uint32 counterVar = itr->second->counter[i];
-                FastGUIDPack( *data, counterVar );
-                *data << m_player->GetNewGUID();
-                *data << uint32(0);
-                *data << uint32( unixTimeToTimeBitfields( time(NULL) ) );
-                *data << uint32(0);
-                *data << uint32(0);
-            }
-        }
-    }
-    *data << int32(-1);
-
+    *data << uint32(0);
+    *data << m_player->GetNewGUID();
+    *data << uint32(0);
     if(forInspect)
         m_achievementInspectPacket = data;
-
     return data;
 }
 

@@ -4512,6 +4512,7 @@ void Unit::SendPowerUpdate(int8 power)
     uint8 PowerType = power != -1 ? power : GetPowerType();
     WorldPacket data(SMSG_POWER_UPDATE, 14);
     FastGUIDPack(data, GetGUID());
+    data << int32(1);
     data << uint8(power);
     data << GetUInt32Value(UNIT_FIELD_POWER1 + power);
     SendMessageToSet(&data, IsPlayer() ? true : false);

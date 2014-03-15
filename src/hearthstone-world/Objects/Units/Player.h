@@ -26,7 +26,7 @@ struct LevelInfo;
 /* action button defines */
 #define PLAYER_ACTION_BUTTON_COUNT 144
 #define MAX_SPEC_COUNT 2
-#define GLYPHS_COUNT 6
+#define GLYPHS_COUNT 9
 
 #define ALLIANCE 0
 #define HORDE 1
@@ -1830,11 +1830,16 @@ public:
     void CalculateBaseStats();
     uint32 load_health;
     uint32 load_mana;
-    void CompleteLoading();
     set<SpellEntry *> castSpellAtLogin;
+
+    /////
     void OnPushToWorld();
     void OnPrePushToWorld();
     void OnWorldPortAck();
+    void OnWorldLogin();
+    void CompleteLoading();
+    void SendObjectUpdate(uint64 guid);
+
     uint32 m_TeleportState;
     set<Unit* > visiblityChangableSet;
     bool m_beingPushed;

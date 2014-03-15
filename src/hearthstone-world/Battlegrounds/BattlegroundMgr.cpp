@@ -1624,7 +1624,7 @@ void CBattleground::RemovePlayer(Player* plr, bool logout)
 
         /* send some null world states */
         data.Initialize(SMSG_INIT_WORLD_STATES);
-        data << uint32(plr->GetMapId()) << uint32(0) << uint32(0);
+        data << uint32(plr->GetMapId()) << uint32(0) << uint32(0) << uint16(0);
         plr->GetSession()->SendPacket(&data);
     }
 
