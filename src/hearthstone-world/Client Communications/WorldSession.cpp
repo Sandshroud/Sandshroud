@@ -504,6 +504,10 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_PLAYER_LOGIN].handler                          = &WorldSession::HandlePlayerLoginOpcode;
     WorldPacketHandlers[CMSG_PLAYER_LOGIN].status                           = STATUS_AUTHED;
 
+    WorldPacketHandlers[CMSG_WORLD_LOGIN].handler                           = &WorldSession::HandleWorldLoginOpcode;
+    WorldPacketHandlers[CMSG_WORLD_LOGIN].status                            = STATUS_AUTHED;
+    WorldPacketHandlers[CMSG_UPDATE_OBJECT_REQUEST].handler                 = &WorldSession::HandleObjectUpdateRequest;
+
     // Queries
     WorldPacketHandlers[MSG_CORPSE_QUERY].handler                           = &WorldSession::HandleCorpseQueryOpcode;
     WorldPacketHandlers[CMSG_NAME_QUERY].handler                            = &WorldSession::HandleNameQueryOpcode;
@@ -1063,6 +1067,30 @@ void WorldSession::HandleRealmSplit(WorldPacket & recv_data)
     SendPacket(&data);
 }
 
+void WorldSession::HandleWorldLoginOpcode(WorldPacket & recv_data)
+{
+    if(_player == NULL)
+        return;
+
+    uint8 unk;
+    uint32 mapId;
+    recv_data >> unk >> mapId;
+
+    printf("OnWorldLogin\n");
+    //_player->OnWorldLogin();
+}
+
+void WorldSession::HandleObjectUpdateRequest(WorldPacket & recv_data)
+{
+    if(_player == NULL)
+        return;
+
+    uint64 guid;
+    recv_data >> guid;
+
+    _player->SendObjectUpdate(guid);
+}
+
 void WorldSession::HandleAchievementInspect(WorldPacket &recv_data)
 {
     CHECK_PACKET_SIZE(recv_data, 2);
@@ -1167,5 +1195,6 @@ void WorldSession::SaveTutorials()
             ss << ", ";
         ss << "'" << m_tutorials[ui] << "'";
     }
+    ss << ");";
     CharacterDatabase.ExecuteNA(ss.str().c_str());
 }

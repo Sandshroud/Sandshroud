@@ -63,13 +63,15 @@ void WorldSession::CharacterEnumProc(QueryResult * result)
     {
         struct
         {
+            void clear() { displayid = 0; invtype = 0; enchantment = 0; }
             uint32 displayid;
             uint8 invtype;
             uint32 enchantment;
         } items[19];
         do
         {
-            memset(items, 0, (sizeof(uint32)+sizeof(uint8)+sizeof(uint32))*EQUIPMENT_SLOT_END);
+            for(uint8 i = 0; i < 19; i++)
+                items[i].clear();
 
             Field *fields = result->Fetch();
             std::string name = fields[7].GetString();
@@ -106,18 +108,18 @@ void WorldSession::CharacterEnumProc(QueryResult * result)
                 data << uint32(0x1FF6) << fields[18].GetUInt32();
             else data << uint64(0);
 
-            uint32 player_flags;
-            if(fields[17].GetUInt32() & PLAYER_FLAG_NOHELM)
-                player_flags |= 0x00000400;
-            if(fields[17].GetUInt32() & PLAYER_FLAG_NOCLOAK)
-                player_flags |= 0x00000800;
+            uint32 player_flags = 0;
+            if(flags & PLAYER_FLAG_NOHELM)
+                player_flags |= 0x400;
+            if(flags & PLAYER_FLAG_NOCLOAK)
+                player_flags |= 0x800;
             if(fields[15].GetUInt32() != 0)
-                player_flags |= 0x00002000;
+                player_flags |= 0x2000;
             if(fields[16].GetUInt32() != 0)
-                player_flags |= 0x00004000;
+                player_flags |= 0x4000;
             uint64 banned = fields[13].GetUInt64();
             if(banned && (banned < 10 || banned > UNIXTIME))
-                player_flags |= 0x01000000;
+                player_flags |= 0x1000000;
             data << player_flags << uint32(fields[19].GetUInt8());
             data << fields[14].GetUInt8();          // Rest State
 
@@ -149,23 +151,17 @@ void WorldSession::CharacterEnumProc(QueryResult * result)
                         if(proto)
                         {
                             // slot0 = head, slot14 = cloak
-                            if(!(slot == 0 && ((player_flags & 0x400) != 0) && !(slot == 14 && ((player_flags & 0x800) != 0))))
+                            items[slot].displayid = proto->DisplayInfoID;
+                            items[slot].invtype = proto->InventoryType;
+                            if( slot == EQUIPMENT_SLOT_MAINHAND || slot == EQUIPMENT_SLOT_OFFHAND )
                             {
-                                items[slot].displayid = proto->DisplayInfoID;
-                                items[slot].invtype = proto->InventoryType;
-                                if( slot == EQUIPMENT_SLOT_MAINHAND || slot == EQUIPMENT_SLOT_OFFHAND )
+                                // get enchant visual ID
+                                uint32 enchantid = 0;
+                                const char *enchant_field = res->Fetch()[3].GetString();
+                                if( sscanf( enchant_field , "%u,0,0;" , (unsigned int *)&enchantid ) == 1 && enchantid > 0 )
                                 {
-                                    // get enchant visual ID
-                                    uint32 enchantid = 0;
-                                    const char *enchant_field = res->Fetch()[3].GetString();
-                                    if( sscanf( enchant_field , "%u,0,0;" , (unsigned int *)&enchantid ) == 1 && enchantid > 0 )
-                                    {
-                                        EnchantEntry *enc = dbcEnchant.LookupEntry( enchantid );
-                                        if( enc != NULL )
-                                            items[slot].enchantment = enc->visual;
-                                        else
-                                            items[slot].enchantment = 0;
-                                    }
+                                    EnchantEntry *enc = dbcEnchant.LookupEntry( enchantid );
+                                    if( enc != NULL ) items[slot].enchantment = enc->visual;
                                 }
                             }
                         }
@@ -641,8 +637,8 @@ void WorldSession::FullLogin(Player* plr)
     plr->m_playerInfo = info;
     if(plr->m_playerInfo->GuildId)
     {
-        plr->m_uint32Values[PLAYER_GUILDID] = plr->m_playerInfo->GuildId;
-        plr->m_uint32Values[PLAYER_GUILDRANK] = plr->m_playerInfo->GuildRank;
+        plr->SetGuildId(plr->m_playerInfo->GuildId);
+        plr->SetGuildRank(plr->m_playerInfo->GuildRank);
     }
 
     for(uint32 z = 0; z < NUM_ARENA_TEAM_TYPES; ++z)
