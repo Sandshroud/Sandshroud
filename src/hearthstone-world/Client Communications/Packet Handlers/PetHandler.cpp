@@ -393,7 +393,7 @@ void WorldSession::HandlePetSetActionOpcode(WorldPacket& recv_data)
         return;
 
     Pet* pet = _player->GetSummon();
-    SpellEntry * spe = dbcSpell.LookupEntryForced( spell );
+    SpellEntry * spe = dbcSpell.LookupEntry( spell );
     if( spe == NULL )
         return;
 
@@ -514,7 +514,7 @@ void WorldSession::HandlePetLearnTalent( WorldPacket & recvPacket )
     {
         // find the talent that we require
         // to be able to add this one
-        TalentEntry *requiredTalent = dbcTalent.LookupEntryForced( talentEntry->DependsOn );
+        TalentEntry *requiredTalent = dbcTalent.LookupEntry( talentEntry->DependsOn );
         if( requiredTalent == NULL )
             return;
 
@@ -579,7 +579,7 @@ void WorldSession::HandleCancelPetAura(WorldPacket& recvPacket)
     recvPacket >> guid;
     recvPacket >> spellId;
 
-    SpellEntry const *spellInfo = dbcSpell.LookupEntryForced(spellId);
+    SpellEntry const *spellInfo = dbcSpell.LookupEntry(spellId);
     if (!spellInfo)
     {
         sLog.outError("WORLD: unknown PET spell id %u", spellId);

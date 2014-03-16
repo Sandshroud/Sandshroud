@@ -350,14 +350,14 @@ void TaxiMgr::_LoadTaxiPaths()
 
                 if (pathnode)
                 {
-                    if (pathnode->path == p->id)
+                    if (pathnode->PathId == p->id)
                     {
                         TaxiPathNode *pn = new TaxiPathNode;
-                        pn->x = pathnode->x;
-                        pn->y = pathnode->y;
-                        pn->z = pathnode->z;
-                        pn->mapid = pathnode->mapid;
-                        p->AddPathNode(pathnode->seq, pn);
+                        pn->x = pathnode->LocX;
+                        pn->y = pathnode->LocY;
+                        pn->z = pathnode->LocZ;
+                        pn->mapid = pathnode->ContinentID;
+                        p->AddPathNode(pathnode->NodeIndex, pn);
                     }
                 }
             }

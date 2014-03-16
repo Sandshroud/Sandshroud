@@ -9,8 +9,9 @@ initialiseSingleton( LfgMgr );
 LfgMgr::LfgMgr()
 {
     MaxDungeonID = 0;
-    DBCStorage<LookingForGroup>::iterator itr;
-    for(itr = dbcLookingForGroup.begin(); itr != dbcLookingForGroup.end(); ++itr)
+
+    ConstructDBCStorageIterator(LookingForGroup) itr;
+    for(;;)//itr = dbcLookingForGroup.begin(); itr != dbcLookingForGroup.end(); ++itr)
     {
         if(MaxDungeonID < (*itr)->ID)
             MaxDungeonID = (*itr)->ID;

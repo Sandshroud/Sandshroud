@@ -165,7 +165,7 @@ void Creature::OnRemoveCorpse()
 
         sLog.Debug("Creature","OnRemoveCorpse Removing corpse of "I64FMT"...", GetGUID());
 
-        if((GetMapMgr()->GetMapInfo() && GetMapMgr()->GetdbcMap()->israid() && proto && proto->boss) || m_noRespawn)
+        if((GetMapMgr()->GetMapInfo() && GetMapMgr()->GetdbcMap()->IsRaid() && proto && proto->boss) || m_noRespawn)
         {
             RemoveFromWorld(false, true);
         }
@@ -658,7 +658,7 @@ void Creature::AddVendorItem(uint32 itemid, uint32 amount, uint32 vendormask, ui
     ci.vendormask = vendormask;
     ci.extended_cost = NULL;
     if(ec)
-        ci.extended_cost = dbcItemExtendedCost.LookupEntry(ec);
+        ci.extended_cost = NULL;//dbcItemExtendedCost.LookupEntry(ec);
 
     if(!m_SellItems)
     {
@@ -1150,7 +1150,7 @@ bool Creature::Load(CreatureSpawn *spawn, uint32 mode, MapInfo *info)
     uint32 tmpitemid;
     if(tmpitemid = proto->Item1)
     {
-        ItemEntry* DBCItem = dbcItem.LookupEntry(tmpitemid);
+        ItemDataEntry* DBCItem = db2Item.LookupEntry(tmpitemid);
         if(DBCItem)
         {
             if(DBCItem->InventoryType == INVTYPE_SHIELD)
@@ -1165,7 +1165,7 @@ bool Creature::Load(CreatureSpawn *spawn, uint32 mode, MapInfo *info)
 
     if(tmpitemid = proto->Item2)
     {
-        ItemEntry* DBCItem = dbcItem.LookupEntry(tmpitemid);
+        ItemDataEntry* DBCItem = db2Item.LookupEntry(tmpitemid);
         if(DBCItem)
         {
             if(!b_has_shield && DBCItem->InventoryType == INVTYPE_SHIELD)
@@ -1487,7 +1487,7 @@ bool Creature::Load(CreatureProto * proto_, uint32 mode, float x, float y, float
     uint32 tmpitemid;
     if(tmpitemid = proto->Item1)
     {
-        ItemEntry* DBCItem = dbcItem.LookupEntry(tmpitemid);
+        ItemDataEntry* DBCItem = db2Item.LookupEntry(tmpitemid);
         if(DBCItem)
         {
             if(DBCItem->InventoryType == INVTYPE_SHIELD)
@@ -1502,7 +1502,7 @@ bool Creature::Load(CreatureProto * proto_, uint32 mode, float x, float y, float
 
     if(!b_has_shield && (tmpitemid = proto->Item2))
     {
-        ItemEntry* DBCItem = dbcItem.LookupEntry(tmpitemid);
+        ItemDataEntry* DBCItem = db2Item.LookupEntry(tmpitemid);
         if(DBCItem)
         {
             if(DBCItem->InventoryType == INVTYPE_SHIELD)

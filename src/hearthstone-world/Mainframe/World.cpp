@@ -406,7 +406,7 @@ bool World::SetInitialWorldSettings()
         flag_ = area.getRecord(i).getUInt(3);
         zone_ = area.getRecord(i).getUInt(2);
 
-        mAreaIDToTable[flag_] = dbcArea.LookupEntryForced(area_);
+        mAreaIDToTable[flag_] = dbcArea.LookupEntry(area_);
         if(mZoneIDToTable.find(zone_) != mZoneIDToTable.end())
         {
             if(mZoneIDToTable[zone_]->AreaFlags != 312 &&
@@ -579,8 +579,7 @@ bool World::SetInitialWorldSettings()
 
     int8 team = -1;
     AreaTable *areaentry = NULL;
-    DBCStorage<AreaTable>::iterator area_itr;
-    for( area_itr = dbcArea.begin(); area_itr != dbcArea.end(); ++area_itr )
+    for( ConstructDBCStorageIterator(AreaTable) area_itr = dbcArea.begin(); area_itr != dbcArea.end(); ++area_itr )
     {
         areaentry = (*area_itr);
         if(areaentry == NULL)
@@ -2392,7 +2391,7 @@ void World::SetAnniversary(uint32 anniversarynumber)
     }
 
     if(AnniversaryAchievement)
-        RealAchievement = (dbcAchievement.LookupEntryForced(AnniversaryAchievement) != NULL);
+        RealAchievement = (dbcAchievement.LookupEntry(AnniversaryAchievement) != NULL);
 }
 
 void World::OnHolidayChange(uint32 IgnoreHolidayId)
@@ -2406,12 +2405,12 @@ void World::OnHolidayChange(uint32 IgnoreHolidayId)
     m_sessionlock.ReleaseReadLock();
     std::stringstream ss;
     ss << "DELETE FROM `playeritems` WHERE `entry` IN(";
-    StorageContainerIterator<ItemPrototype> * itemitr = ItemPrototypeStorage.MakeIterator();
+    ItemPrototypeSystem::iterator iter = ItemPrototypeStorage.begin();
     ItemPrototype * pItemPrototype;
     bool first = true;
-    while(!itemitr->AtEnd())
+    while(iter != ItemPrototypeStorage.end())
     {
-        pItemPrototype = itemitr->Get();
+        pItemPrototype = (*iter)->second;
         if(pItemPrototype->HolidayId != 0 && pItemPrototype->HolidayId != IgnoreHolidayId)
         {
             if(first)
@@ -2421,11 +2420,9 @@ void World::OnHolidayChange(uint32 IgnoreHolidayId)
             ss << "'" << uint32(pItemPrototype->ItemId) << "'";
         }
 
-        if(!itemitr->Inc())
-            break;
+        ++iter;
     }
 
-    itemitr->Destruct();
     if(!first)
     {
         CharacterDatabase.Execute(ss.str().c_str());

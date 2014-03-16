@@ -151,7 +151,6 @@ ${DEPENDENCY_SOURCES}/pcre
 ${DEPENDENCY_SOURCES}/zlib
 ${DEPENDENCY_SOURCES}/recast
 ${DEPENDENCY_SOURCES}/detour
-${DEPENDENCY_SOURCES}/libmpq1
 ${DEPENDENCY_SOURCES}/bzip2
 ${DEPENDENCY_SOURCES}/libmpq2 )
 
@@ -169,6 +168,7 @@ SET(HEARTHSTONE_SOURCE_DIRECTORIES
 "${ROOT_PATH}/src/hearthstone-world/Intersystem/Logon"
 "${ROOT_PATH}/src/hearthstone-world/Intersystem/Management"
 "${ROOT_PATH}/src/hearthstone-world/Intersystem/Management/Guild"
+"${ROOT_PATH}/src/hearthstone-world/Intersystem/Management/Items"
 "${ROOT_PATH}/src/hearthstone-world/Intersystem/Voice"
 "${ROOT_PATH}/src/hearthstone-world/Mainframe"
 "${ROOT_PATH}/src/hearthstone-world/Map System"

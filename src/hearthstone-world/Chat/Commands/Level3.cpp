@@ -163,7 +163,7 @@ bool ChatHandler::HandleLearnCommand(const char* args, WorldSession *m_session)
 
     sWorld.LogGM(m_session, "taught %s spell %u", plr->GetName(), spell);
 
-    SpellEntry * sp = dbcSpell.LookupEntryForced(spell);
+    SpellEntry * sp = dbcSpell.LookupEntry(spell);
     if( sp == NULL )
     {
         RedSystemMessage(m_session, "Spell id %u does not exist.", spell);
@@ -1474,7 +1474,7 @@ bool ChatHandler::HandleCastAllCommand(const char* args, WorldSession* m_session
     if(spellid == 0)
         spellid = GetSpellIDFromLink( args );
 
-    SpellEntry * info = dbcSpell.LookupEntryForced(spellid);
+    SpellEntry * info = dbcSpell.LookupEntry(spellid);
     if(info == NULL)
     {
         RedSystemMessage(m_session, "Invalid spell specified.");
@@ -1633,7 +1633,7 @@ bool ChatHandler::HandleItemReqCheatCommand(const char* args, WorldSession * m_s
 
 bool ChatHandler::HandleResetSkillsCommand(const char* args, WorldSession * m_session)
 {
-    skilllineentry * se;
+    SkillLineEntry * se;
     Player* plr = getSelectedChar(m_session, true);
     if(!plr) return true;
 
@@ -2215,14 +2215,14 @@ bool ChatHandler::HandleLookupItemCommand(const char * args, WorldSession * m_se
         return true;
     }
 
-    StorageContainerIterator<ItemPrototype> * itr = ItemPrototypeStorage.MakeIterator();
+    ItemPrototypeSystem::iterator itr = ItemPrototypeStorage.begin();
     BlueSystemMessage(m_session, "Starting search of item `%s`...", x.c_str());
     t = getMSTime();
     ItemPrototype * it;
     uint32 count = 0;
-    while(!itr->AtEnd())
+    while(itr != ItemPrototypeStorage.end())
     {
-        it = itr->Get();
+        it = (*itr)->second;
         if(FindXinYString(x, HEARTHSTONE_TOLOWER_RETURN(it->Name1)))
         {
             // Print out the name in a cool highlighted fashion
@@ -2237,11 +2237,8 @@ bool ChatHandler::HandleLookupItemCommand(const char * args, WorldSession * m_se
                 break;
             }
         }
-
-        if(!itr->Inc())
-            break;
+        ++itr;
     }
-    itr->Destruct();
 
     BlueSystemMessage(m_session, "Search completed in %u ms.", getMSTime() - t);
     return true;
@@ -3061,19 +3058,19 @@ bool ChatHandler::HandleFactionSetStanding(const char *args, WorldSession *m_ses
     if(sscanf(args, "%u %u", &faction, &standing) != 2)
         return false;
 
-    FactionDBC* RealFaction = dbcFaction.LookupEntryForced(faction);
+    FactionDBC* RealFaction = dbcFaction.LookupEntry(faction);
     if(RealFaction == NULL || RealFaction->RepListId < 0)
     {
         stringstream ss;
         ss << "Incorrect faction, searching...";
-        FactionTemplateDBC* FactionTemplate = dbcFactionTemplate.LookupEntryForced(faction);
+        FactionTemplateDBC* FactionTemplate = dbcFactionTemplate.LookupEntry(faction);
         if(FactionTemplate == NULL)
         {
             ss << " Faction template not found.";
             RedSystemMessage(m_session, ss.str().c_str());
             return true;
         }
-        RealFaction = dbcFaction.LookupEntryForced(FactionTemplate->Faction);
+        RealFaction = dbcFaction.LookupEntry(FactionTemplate->Faction);
         ss << " Template found!";
         BlueSystemMessage(m_session, ss.str().c_str());
     }
@@ -3099,19 +3096,19 @@ bool ChatHandler::HandleFactionModStanding(const char *args, WorldSession *m_ses
     if(sscanf(args, "%u %i", &faction, &standing) != 2)
         return false;
 
-    FactionDBC* RealFaction = dbcFaction.LookupEntryForced(faction);
+    FactionDBC* RealFaction = dbcFaction.LookupEntry(faction);
     if(RealFaction == NULL || RealFaction->RepListId < 0)
     {
         stringstream ss;
         ss << "Incorrect faction, searching...";
-        FactionTemplateDBC* FactionTemplate = dbcFactionTemplate.LookupEntryForced(faction);
+        FactionTemplateDBC* FactionTemplate = dbcFactionTemplate.LookupEntry(faction);
         if(FactionTemplate == NULL)
         {
             ss << " Faction template not found.";
             RedSystemMessage(m_session, ss.str().c_str());
             return true;
         }
-        RealFaction = dbcFaction.LookupEntryForced(FactionTemplate->Faction);
+        RealFaction = dbcFaction.LookupEntry(FactionTemplate->Faction);
         ss << " Template found!";
         BlueSystemMessage(m_session, ss.str().c_str());
     }

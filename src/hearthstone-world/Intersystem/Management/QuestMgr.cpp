@@ -2003,7 +2003,7 @@ uint32 QuestMgr::GenerateQuestXP(Player* plr, Quest *qst)
             }
         }
 
-        if(QuestXP* pXPData = dbcQuestXP.LookupEntry(baseLevel))
+        if(QuestXP* pXPData = NULL)//dbcQuestXP.LookupEntry(baseLevel))
         {
             float rawXP = xpMultiplier * pXPData->xpIndex[ qst->rewards->reward_xp_index ] / 10;
 

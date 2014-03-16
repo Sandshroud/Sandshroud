@@ -156,15 +156,7 @@ public:
 
     HEARTHSTONE_INLINE uint32 getState() { return m_spellState; }
     HEARTHSTONE_INLINE void SetUnitTarget(Unit* punit){unitTarget=punit;}
-    HEARTHSTONE_INLINE SpellEntry *GetSpellProto() { if(m_spellInfo_override != NULL) return m_spellInfo_override; else return m_spellInfo; }
-
-    void InitProtoOverride()
-    {
-        if (m_spellInfo_override != NULL)
-            return;
-
-        m_spellInfo_override = dbcSpell.CreateCopy(m_spellInfo);
-    }
+    HEARTHSTONE_INLINE SpellEntry *GetSpellProto() { return m_spellInfo; }
 
     HEARTHSTONE_INLINE bool RequiresComboPoints(SpellEntry const* spellInfo)
     {
@@ -190,7 +182,6 @@ public:
     void HandleAddAura(uint64 guid);
     void writeSpellGoTargets( WorldPacket * data );
 
-    SpellEntry* m_spellInfo_override; // Used by spells that should have dynamic variables in spellentry.
     SpellEntry* m_spellInfo;
     uint32 pSpellId;
     SpellEntry *ProcedOnSpell;  //some spells need to know the origins of the proc too
@@ -511,7 +502,7 @@ public:
     HEARTHSTONE_INLINE uint32 GetDifficultySpell(SpellEntry * sp, uint32 difficulty)
     {
         uint32 spellid = 0;
-        SpellDifficultyEntry * sd = dbcSpellDifficulty.LookupEntry(sp->SpellDifficulty);
+        SpellDifficultyEntry * sd = NULL;//dbcSpellDifficulty.LookupEntry(sp->SpellDifficulty);
         if(sd != NULL && sd->SpellId[difficulty] != 0 )
             if(dbcSpell.LookupEntry(sd->SpellId[difficulty]) != NULL)
                 spellid = sd->SpellId[difficulty];

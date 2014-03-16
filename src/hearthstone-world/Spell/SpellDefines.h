@@ -1553,7 +1553,7 @@ HEARTHSTONE_INLINE bool IsHealingSpell(SpellEntry *sp)
 
                 case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
                     {
-                        SpellEntry * triggered = dbcSpell.LookupEntryForced(sp->EffectTriggerSpell[i]);
+                        SpellEntry * triggered = dbcSpell.LookupEntry(sp->EffectTriggerSpell[i]);
                         if(triggered && triggered != sp && IsHealingSpell(triggered))
                             return true;
                     }break;

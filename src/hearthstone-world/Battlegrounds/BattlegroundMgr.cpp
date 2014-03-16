@@ -1595,7 +1595,7 @@ void CBattleground::RemovePlayer(Player* plr, bool logout)
     {
         if ( !m_ended )
         {
-            SpellEntry *spellInfo = dbcSpell.LookupEntryForced( BG_DESERTER );// escape from BG
+            SpellEntry *spellInfo = dbcSpell.LookupEntry( BG_DESERTER );// escape from BG
             if ( spellInfo )
             {
                 SpellCastTargets targets;

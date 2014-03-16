@@ -596,7 +596,7 @@ WorldPacket *Object::BuildFieldUpdatePacket( uint32 index,uint32 value)
     WorldPacket * packet = new WorldPacket(SMSG_UPDATE_OBJECT, 1500);
     *packet << uint16(GetMapId());
     *packet << (uint32)1;//number of update/create blocks
-    BuildFieldUpdatePacket(index, value);
+    BuildFieldUpdatePacket(packet, index, value);
     return packet;
 }
 
@@ -1113,7 +1113,7 @@ void Object::AddToWorld()
         }
 
         // players who's group disbanded cannot remain in a raid instances alone(no soloing them:P)
-        if( !p->triggerpass_cheat && p->GetGroup()== NULL && (mapMgr->GetdbcMap()->israid() || mapMgr->GetMapInfo()->type == INSTANCE_MULTIMODE))
+        if( !p->triggerpass_cheat && p->GetGroup()== NULL && (mapMgr->GetdbcMap()->IsRaid() || mapMgr->GetMapInfo()->type == INSTANCE_MULTIMODE))
             return;
     }
 
@@ -2771,8 +2771,8 @@ int32 Object::SpellNonMeleeDamageLog(Unit* pVictim, uint32 spellID, uint32 damag
 
 //------------------------------absorption--------------------------------------------------
     uint32 ress = (uint32)res;
-    uint32 abs_dmg = pVictim->AbsorbDamage(this, school, &ress, dbcSpell.LookupEntryForced(spellID));
-    uint32 ms_abs_dmg= pVictim->ManaShieldAbsorb(ress, dbcSpell.LookupEntryForced(spellID));
+    uint32 abs_dmg = pVictim->AbsorbDamage(this, school, &ress, dbcSpell.LookupEntry(spellID));
+    uint32 ms_abs_dmg= pVictim->ManaShieldAbsorb(ress, dbcSpell.LookupEntry(spellID));
     if (ms_abs_dmg)
     {
         if(ms_abs_dmg > ress)
@@ -2870,7 +2870,7 @@ int32 Object::SpellNonMeleeDamageLog(Unit* pVictim, uint32 spellID, uint32 damag
                 if( TO_UNIT( this )->HasDummyAura(SPELL_HASH_PAIN_AND_SUFFERING) )
                     damage += float2int32(damage * ((TO_UNIT( this )->GetDummyAura(SPELL_HASH_PAIN_AND_SUFFERING)->EffectBasePoints[1]+1) / 100.0f));
 
-                uint32 absorbed = TO_UNIT(this)->AbsorbDamage(this, school, &damage, dbcSpell.LookupEntryForced(spellID) );
+                uint32 absorbed = TO_UNIT(this)->AbsorbDamage(this, school, &damage, dbcSpell.LookupEntry(spellID) );
                 DealDamage( TO_UNIT(this), damage, 2, 0, spellID );
                 SendSpellNonMeleeDamageLog( this, TO_UNIT(this), spellID, damage, school, absorbed, 0, false, 0, false, IsPlayer() );
             }
@@ -3288,7 +3288,7 @@ int32 Object::GetSpellBaseCost(SpellEntry *sp)
     }
     else
     {
-        cost = (float)sp->manaCost;
+        cost = (float)sp->ManaCost;
     }
 
     switch(sp->NameHash)

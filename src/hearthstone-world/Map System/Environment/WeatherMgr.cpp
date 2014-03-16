@@ -240,7 +240,7 @@ void WeatherInfo::SendUpdate()
 {
     WorldPacket data(SMSG_WEATHER, 9);
     BuildWeatherPacket(&data, m_currentEffect, m_currentDensity);
-//  MapMgr* mgr = sInstanceMgr.GetMapMgr(dbcArea.LookupEntryForced(m_zoneId)->mapId);
+//  MapMgr* mgr = sInstanceMgr.GetMapMgr(dbcArea.LookupEntry(m_zoneId)->mapId);
 //  if(mgr)
 //      mgr->SendPacketToPlayers(m_zoneId, FACTION_MASK_ALL, &data);
     //MapSessions aren't threadsafe, reverted to old way until solved.
