@@ -373,8 +373,8 @@ void Spell::SpellEffectSchoolDMG(uint32 i) // dmg school
             Item* it = p_caster->GetItemInterface()->GetInventoryItem(EQUIPMENT_SLOT_MAINHAND);
             if( it && it->GetProto() )
             {
-                WMIN = it->GetProto()->Damage[0].Min;
-                WMAX = it->GetProto()->Damage[0].Max;
+                WMIN = it->GetProto()->minDamage;
+                WMAX = it->GetProto()->maxDamage;
                 MWS = it->GetProto()->Delay / 1000.0f;
             }   // Crow: Do not randomize 0, it will crash.
 
@@ -382,7 +382,7 @@ void Spell::SpellEffectSchoolDMG(uint32 i) // dmg school
         }
         else
         {
-            int32 reduce = (int32)(GetSpellProto()->dmg_multiplier[i] * 100.0f);
+            int32 reduce = (int32)(GetSpellProto()->EffectDamageMultiplier[i] * 100.0f);
 
             if(reduce && chaindamage)
                 chaindamage = chaindamage * reduce / 100;
@@ -657,7 +657,7 @@ void Spell::SpellEffectHealthLeech(uint32 i) // Health Leech
 
     TotalDamage += m_caster->DealDamage(unitTarget, damage, 0, 0, GetSpellProto()->Id);
 
-    float coef = GetSpellProto()->EffectMultipleValue[i]; // how much health is restored per damage dealt
+    float coef = GetSpellProto()->EffectValueMultiplier[i]; // how much health is restored per damage dealt
     if( u_caster && GetSpellProto() )
     {
         SM_FFValue(u_caster->SM[SMT_MULTIPLE_VALUE][0], &coef, GetSpellProto()->SpellGroupType);
@@ -702,7 +702,7 @@ void Spell::SpellEffectHeal(uint32 i) // Heal
         }
         else
         {
-            int32 reduce = (int32)(GetSpellProto()->dmg_multiplier[i] * 100.0f);
+            int32 reduce = (int32)(GetSpellProto()->EffectDamageMultiplier[i] * 100.0f);
             chaindamage -= (reduce * chaindamage) / 100;
             Heal((int32)chaindamage);
         }
@@ -1003,7 +1003,7 @@ void Spell::SpellEffectCreateItem(uint32 i) // Create item
             break;
     }
 
-    skilllinespell* skill = objmgr.GetSpellSkill(GetSpellProto()->Id);
+    SkillLineSpell* skill = objmgr.GetSpellSkill(GetSpellProto()->Id);
     if(skill)
     {
         // Alchemy Specializations
@@ -1504,7 +1504,7 @@ void Spell::SpellEffectOpenLock(uint32 i) // Open Lock
                 if(gameObjTarget->GetState() == 0)
                     return;
 
-                Lock *lock = dbcLock.LookupEntryForced(gameObjTarget->GetInfo()->GetLockID());
+                Lock *lock = dbcLock.LookupEntry(gameObjTarget->GetInfo()->GetLockID());
                 if( lock == NULL )
                     return;
 
@@ -1686,10 +1686,10 @@ void Spell::SpellEffectOpenLockItem(uint32 i)
 void Spell::SpellEffectProficiency(uint32 i)
 {
     uint32 skill = 0;
-    skilllinespell* skillability = objmgr.GetSpellSkill(GetSpellProto()->Id);
+    SkillLineSpell* skillability = objmgr.GetSpellSkill(GetSpellProto()->Id);
     if (skillability)
         skill = skillability->skilline;
-    skilllineentry* sk = dbcSkillLine.LookupEntry(skill);
+    SkillLineEntry* sk = dbcSkillLine.LookupEntry(skill);
     if(skill)
     {
         if(playerTarget != NULL)
@@ -1781,7 +1781,7 @@ void Spell::SpellEffectLearnSpell(uint32 i) // Learn Spell
             }
         }
 
-        if( !spellid || !dbcSpell.LookupEntryForced(spellid) )
+        if( !spellid || !dbcSpell.LookupEntry(spellid) )
             return;
 
         // learn me!
@@ -2054,7 +2054,7 @@ void Spell::SpellEffectSkillStep(uint32 i) // Skill Step
     if( skill == 242 )
         skill = SKILL_LOCKPICKING; // somehow for lockpicking misc is different than the skill :s
 
-    skilllineentry* sk = NULL;
+    SkillLineEntry* sk = NULL;
     sk = dbcSkillLine.LookupEntry( skill );
     if( sk == NULL )
         return;
@@ -2501,7 +2501,7 @@ void Spell::SpellEffectEnchantItemTemporary(uint32 i)  // Enchant Item Temporary
     if(Slot < 0)
         return; // Apply failed
 
-    skilllinespell* skill = objmgr.GetSpellSkill(GetSpellProto()->Id);
+    SkillLineSpell* skill = objmgr.GetSpellSkill(GetSpellProto()->Id);
     if(skill)
         DetermineSkillUp(skill->skilline,itemTarget->GetProto()->ItemLevel);
 
@@ -2761,7 +2761,7 @@ void Spell::SpellEffectPowerBurn(uint32 i) // power burn
 
     unitTarget->ModUnsigned32Value(UNIT_FIELD_POWER1,-mana);
 
-    float coef = GetSpellProto()->EffectMultipleValue[i]; // damage per mana burned
+    float coef = GetSpellProto()->EffectValueMultiplier[i]; // damage per mana burned
     if(u_caster)
     {
         SM_FFValue(u_caster->SM[SMT_MULTIPLE_VALUE][0], &coef, GetSpellProto()->SpellGroupType);
@@ -2787,7 +2787,7 @@ void Spell::SpellEffectTriggerSpell(uint32 i) // Trigger Spell
     if(unitTarget == NULL || m_caster == NULL )
         return;
 
-    SpellEntry *spe = dbcSpell.LookupEntryForced(GetSpellProto()->EffectTriggerSpell[i]);
+    SpellEntry *spe = dbcSpell.LookupEntry(GetSpellProto()->EffectTriggerSpell[i]);
     if(spe == NULL )
         return;
 
@@ -3038,7 +3038,7 @@ void Spell::SpellEffectDuel(uint32 i) // Duel
         return;
 
     uint32 areaId = p_caster->GetAreaId();
-    AreaTable * at = dbcArea.LookupEntryForced(areaId);
+    AreaTable * at = dbcArea.LookupEntry(areaId);
     if( sWorld.FunServerMall != -1 && areaId == (uint32)sWorld.FunServerMall )
     {
         if(at != NULL)
@@ -3670,7 +3670,7 @@ void Spell::SpellEffectDestroyAllTotems(uint32 i)
     uint32 energize_amt = 0;
     for(uint32 x = 0; x < 4; x++)
     {
-        SummonPropertiesEntry * spe = dbcSummonProps.LookupEntryForced(TotemSpells[x]);
+        SummonPropertiesEntry * spe = NULL;//dbcSummonProps.LookupEntry(TotemSpells[x]);
         if(spe == NULL)
             continue;
 
@@ -3682,8 +3682,8 @@ void Spell::SpellEffectDestroyAllTotems(uint32 i)
                 SpellEntry * sp = dbcSpell.LookupEntry((*itr)->GetUInt32Value(UNIT_CREATED_BY_SPELL));
                 if (sp != NULL)
                 {
-                    if( sp->manaCost )
-                        energize_amt += float2int32( (sp->manaCost) * (damage/100.0f) );
+                    if( sp->ManaCost )
+                        energize_amt += float2int32( (sp->ManaCost) * (damage/100.0f) );
                     else if( sp->ManaCostPercentage )
                         energize_amt += float2int32(((p_caster->GetUInt32Value(UNIT_FIELD_BASE_MANA)*sp->ManaCostPercentage)/100.0f) * (damage/100.0f) );
                 }
@@ -4296,7 +4296,7 @@ void Spell::SpellEffectForceCast( uint32 i )
     if( unitTarget == NULL )
         return;
 
-    SpellEntry* TriggeredSpell = dbcSpell.LookupEntryForced( GetSpellProto()->EffectTriggerSpell[i] );
+    SpellEntry* TriggeredSpell = dbcSpell.LookupEntry( GetSpellProto()->EffectTriggerSpell[i] );
     if( TriggeredSpell == NULL )
         return;
 
@@ -4311,7 +4311,7 @@ void Spell::SpellEffectTriggerSpellWithValue(uint32 i)
     if( unitTarget == NULL )
         return;
 
-    SpellEntry* TriggeredSpell = dbcSpell.LookupEntryForced(GetSpellProto()->EffectTriggerSpell[i]);
+    SpellEntry* TriggeredSpell = dbcSpell.LookupEntry(GetSpellProto()->EffectTriggerSpell[i]);
     if( TriggeredSpell == NULL )
         return;
 
@@ -4503,7 +4503,7 @@ void Spell::SpellEffectCreateRandomItem(uint32 i) // Create Random Item
     uint32 itemid;
     SlotResult slotresult;
 
-    skilllinespell* skill = NULL;
+    SkillLineSpell* skill = NULL;
     skill = objmgr.GetSpellSkill(GetSpellProto()->Id);
 
     itemid = GetSpellProto()->EffectItemType[i];

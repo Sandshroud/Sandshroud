@@ -39,14 +39,14 @@ bool FillPathVector(uint32 PathID, TransportPath & Path)
     for(uint32 j = 0; j < dbcTaxiPathNode.GetNumRows(); j++)
     {
         DBCTaxiPathNode *pathnode = dbcTaxiPathNode.LookupRow(j);
-        if(pathnode->path == PathID)
+        if(pathnode->PathId == PathID)
         {
-            Path[i].mapid       = pathnode->mapid;
-            Path[i].x           = pathnode->x;
-            Path[i].y           = pathnode->y;
-            Path[i].z           = pathnode->z;
-            Path[i].actionFlag  = pathnode->flag;
-            Path[i].delay       = pathnode->waittime;
+            Path[i].mapid       = pathnode->ContinentID;
+            Path[i].x           = pathnode->LocX;
+            Path[i].y           = pathnode->LocY;
+            Path[i].z           = pathnode->LocZ;
+            Path[i].actionFlag  = pathnode->flags;
+            Path[i].delay       = pathnode->delay;
             ++i;
         }
     }

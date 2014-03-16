@@ -185,24 +185,3 @@ enum Poi_Icon
     ICON_POI_RWHORSE            =   39,
     ICON_POI_REDHORSE           =   40
 };
-
-HEARTHSTONE_INLINE bool CheckItemFaction(uint32 ItemFaction, uint32 PlayerTeam)
-{
-    // Client sets alliance = 2 since 0 = NULL
-    // So reverse our checks, this is fucking bullshit.
-    if(ItemFaction == 0)
-        return true;
-    else if(ItemFaction == 1)
-    {
-        if(PlayerTeam == 1)
-            return true;
-    }
-    else if(ItemFaction == 2)
-    {
-        if(PlayerTeam == 0)
-            return true;
-    }
-    else return true; // Fucked up DB.
-
-    return false;
-};

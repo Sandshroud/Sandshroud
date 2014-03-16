@@ -699,7 +699,7 @@ struct EquipmentSet
 
 struct PlayerSkill
 {
-    skilllineentry * Skill;
+    SkillLineEntry * Skill;
     uint32 CurrentValue;
     uint32 MaximumValue;
     uint32 BonusValue;
@@ -1026,7 +1026,7 @@ public:
     void EventPortToGM(uint32 guid);
     HEARTHSTONE_INLINE uint32 GetTeam() { return m_team; }
     HEARTHSTONE_INLINE void SetTeam(uint32 t) { m_team = t; m_bgTeam=t; }
-    HEARTHSTONE_INLINE void ResetTeam() { m_team = myRace->team_id; m_bgTeam=m_team; }
+    HEARTHSTONE_INLINE void ResetTeam() { m_team = myRace->TeamId; m_bgTeam=m_team; }
 
     HEARTHSTONE_INLINE bool IsInFeralForm()
     {

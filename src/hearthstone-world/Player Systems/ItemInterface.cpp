@@ -290,11 +290,6 @@ AddItemResult ItemInterface::m_AddItem( Item* item, int16 ContainerSlot, int16 s
         m_pOwner->ApplyItemMods( item, slot, true );
     }
 
-    if(slot >= CURRENCYTOKEN_SLOT_START && slot < CURRENCYTOKEN_SLOT_END)
-    {
-        m_pOwner->UpdateKnownCurrencies(item->GetEntry(), true);
-    }
-
     if( ContainerSlot == INVENTORY_SLOT_NOT_SET && slot == EQUIPMENT_SLOT_OFFHAND && item->GetProto()->Class == ITEM_CLASS_WEAPON )
         m_pOwner->SetDuelWield(true);
 
@@ -406,7 +401,7 @@ Item* ItemInterface::SafeRemoveAndRetreiveItemByGuid(uint64 guid, bool destroy)
         }
     }
 
-    for(i = INVENTORY_KEYRING_START; i < CURRENCYTOKEN_SLOT_END; i++)
+    for(i = INVENTORY_KEYRING_START; i < MAX_INVENTORY_SLOT; i++)
     {
         Item* item = GetInventoryItem(i);
 
@@ -553,7 +548,7 @@ Item* ItemInterface::SafeRemoveAndRetreiveItemByGuidRemoveStats(uint64 guid, boo
         }
     }
 
-    for(i = INVENTORY_KEYRING_START; i < CURRENCYTOKEN_SLOT_END; i++)
+    for(i = INVENTORY_KEYRING_START; i < MAX_INVENTORY_SLOT; i++)
     {
         Item* item = GetInventoryItem(i);
 
@@ -653,7 +648,7 @@ bool ItemInterface::SafeFullRemoveItemByGuid(uint64 guid)
         }
     }
 
-    for(i = INVENTORY_KEYRING_START; i < CURRENCYTOKEN_SLOT_END; i++)
+    for(i = INVENTORY_KEYRING_START; i < MAX_INVENTORY_SLOT; i++)
     {
         Item* item = GetInventoryItem(i);
 
@@ -794,18 +789,6 @@ Item* ItemInterface::FindItemLessMax(uint32 itemid, uint32 cnt, bool IncBank)
         }
     }
 
-    for(i = CURRENCYTOKEN_SLOT_START; i < CURRENCYTOKEN_SLOT_END; i++)
-    {
-        Item* item = GetInventoryItem(i);
-        if(item)
-        {
-            if((item->GetEntry() == itemid && item->wrapped_item_id == 0) && (item->GetProto()->MaxCount < 0 || ((uint32)item->GetProto()->MaxCount >= (item->GetUInt32Value(ITEM_FIELD_STACK_COUNT) + cnt))))
-            {
-                return item;
-            }
-        }
-    }
-
     if(IncBank)
     {
         for(i = BANK_SLOT_ITEM_START; i < BANK_SLOT_ITEM_END; i++)
@@ -899,7 +882,7 @@ uint32 ItemInterface::GetItemCount(uint32 itemid, bool IncBank, Item* exclude, u
         }
     }
 
-    for(i = INVENTORY_KEYRING_START; i < CURRENCYTOKEN_SLOT_END; i++)
+    for(i = INVENTORY_KEYRING_START; i < MAX_INVENTORY_SLOT; i++)
     {
         Item* item = GetInventoryItem(i);
 
@@ -1073,7 +1056,7 @@ uint32 ItemInterface::RemoveItemAmt(uint32 id, uint32 amt)
         }
     }
 
-    for(i = INVENTORY_KEYRING_START; i < CURRENCYTOKEN_SLOT_END; i++)
+    for(i = INVENTORY_KEYRING_START; i < MAX_INVENTORY_SLOT; i++)
     {
         Item* item = GetInventoryItem(i);
         if (item)
@@ -1212,7 +1195,7 @@ uint32 ItemInterface::RemoveItemAmt_ProtectPointer(uint32 id, uint32 amt, Item**
         }
     }
 
-    for(i = INVENTORY_KEYRING_START; i < CURRENCYTOKEN_SLOT_END; i++)
+    for(i = INVENTORY_KEYRING_START; i < MAX_INVENTORY_SLOT; i++)
     {
         Item* item = GetInventoryItem(i);
         if (item)
@@ -1306,15 +1289,6 @@ int16 ItemInterface::GetInventorySlotById(uint32 ID)
             }
         }
     }
-    ItemPrototype* proto = ItemPrototypeStorage.LookupEntry(ID);
-    if(proto->BagFamily & ITEM_TYPE_CURRENCY)
-    {
-        CurrencyTypesEntry* store = dbcCurrencyTypes.LookupEntry(ID);
-        if(store)
-        {
-            return (CURRENCYTOKEN_SLOT_START + (store->BitIndex - 1));
-        }
-    }
 
     return ITEM_NO_SLOT_AVAILABLE;
 }
@@ -1343,15 +1317,6 @@ int16 ItemInterface::GetInventorySlotByGuid(uint64 guid)
             {
                 return i;
             }
-        }
-    }
-    ItemPrototype* proto = GetItemByGUID(guid) ? GetItemByGUID(guid)->GetProto() : NULL;
-    if(proto && proto->BagFamily & ITEM_TYPE_CURRENCY)
-    {
-        CurrencyTypesEntry* store = dbcCurrencyTypes.LookupEntry(proto->ItemId);
-        if(store)
-        {
-            return (CURRENCYTOKEN_SLOT_START + (store->BitIndex - 1));
         }
     }
 
@@ -1430,51 +1395,6 @@ AddItemResult ItemInterface::AddItemToFreeSlot(Item* item)
                         result.Result = true;
                         return ADD_ITEM_RESULT_OK;
                     }
-                }
-            }
-        }
-        else if( item->GetProto()->BagFamily & ITEM_TYPE_CURRENCY )
-        {
-            CurrencyTypesEntry* currency = dbcCurrencyTypes.LookupEntry(item->GetProto()->ItemId);
-            if(currency)
-            {
-                uint16 currencyslot = ((CURRENCYTOKEN_SLOT_START-1) + currency->BitIndex);
-
-                if(m_pItems[currencyslot])
-                {
-                    ItemPrototype* proto = item->GetProto();
-                    uint32 stackincrease = item->GetUInt32Value(ITEM_FIELD_STACK_COUNT);
-                    uint32 currentstack = m_pItems[currencyslot]->GetUInt32Value(ITEM_FIELD_STACK_COUNT);
-                    uint32 endstack = stackincrease + currentstack;
-                    if(proto->Unique > 0)
-                    {
-                        if(endstack > (uint32)proto->Unique)
-                            endstack = proto->Unique;
-                    }
-                    else
-                        if(proto->MaxCount > 0)
-                            if(endstack > (uint32)proto->MaxCount)
-                                endstack = proto->MaxCount;
-
-                    m_pItems[currencyslot]->SetUInt32Value(ITEM_FIELD_STACK_COUNT, endstack);
-                    item = m_pItems[currencyslot];
-                    m_pItems[currencyslot]->m_isDirty = true;
-
-                    result.ContainerSlot = INVENTORY_SLOT_NOT_SET;
-                    result.Slot = currencyslot;
-                    result.Result = true;
-                    return ADD_ITEM_RESULT_OK;
-                }
-                else
-                {
-                    result3 = SafeAddItem( item, INVENTORY_SLOT_NOT_SET, currencyslot );
-                }
-                if( result3 )
-                {
-                    result.ContainerSlot = INVENTORY_SLOT_NOT_SET;
-                    result.Slot = currencyslot;
-                    result.Result = true;
-                    return ADD_ITEM_RESULT_OK;
                 }
             }
         }
@@ -1728,7 +1648,7 @@ int16 ItemInterface::CanEquipItemInSlot2(int8 DstInvSlot, int8 slot, Item* item,
                     if(ip->ItemLimitCategory > 0)
                     {
                         uint32 LimitId = ip->ItemLimitCategory;
-                        ItemLimitCategoryEntry* ile = dbcItemLimitCategory.LookupEntryForced(LimitId);
+                        ItemLimitCategoryEntry* ile = dbcItemLimitCategory.LookupEntry(LimitId);
                         if(ile)
                         {
                             uint32 gemCount = 0;
@@ -1769,7 +1689,7 @@ int16 ItemInterface::CanEquipItemInSlot(int16 DstInvSlot, int16 slot, ItemProtot
     
         if( proto->ItemLimitCategory )
         {
-            ItemLimitCategoryEntry * il = dbcItemLimitCategory.LookupEntryForced( proto->ItemLimitCategory );
+            ItemLimitCategoryEntry * il = dbcItemLimitCategory.LookupEntry( proto->ItemLimitCategory );
             if( il != NULL && GetEquippedItemCountWithLimitId( proto->ItemLimitCategory ) >= il->MaxAmount )
                 return INV_ERR_ITEM_MAX_LIMIT_CATEGORY_COUNT_EXCEEDED;
         }
@@ -1797,9 +1717,6 @@ int16 ItemInterface::CanEquipItemInSlot(int16 DstInvSlot, int16 slot, ItemProtot
                 return INV_ERR_YOU_CAN_NEVER_USE_THAT_ITEM2;
         }
 
-        if( !m_pOwner->ignoreitemreq_cheat && !CheckItemFaction(proto->Faction, m_pOwner->GetTeam()))
-            return INV_ERR_YOU_CAN_NEVER_USE_THAT_ITEM2;
-
         // Check to see if we have the reqs for that reputation
         if(proto->RequiredFaction)
         {
@@ -1817,10 +1734,9 @@ int16 ItemInterface::CanEquipItemInSlot(int16 DstInvSlot, int16 slot, ItemProtot
 
         if(!m_pOwner->ignoreitemreq_cheat && proto->Class == ITEM_CLASS_ARMOR)
         {
-            uint32 fakeclass = (proto->DummySubClass ? ((GetOwner() && GetOwner()->getLevel() < 40) ?
-                proto->DummySubClass : proto->SubClass) : proto->SubClass);
-
-            if(!(m_pOwner->GetArmorProficiency()&(((uint32)(1))<<fakeclass)))
+            uint32 subClass = proto->SubClass;
+            if(proto->ScalingStatsEntry > 0) subClass -= 1;
+            if(!(m_pOwner->GetArmorProficiency()&(((uint32)(1))<<subClass)))
                 return INV_ERR_NO_REQUIRED_PROFICIENCY;
 
         }
@@ -2134,43 +2050,6 @@ int16 ItemInterface::CanEquipItemInSlot(int16 DstInvSlot, int16 slot, ItemProtot
                 return 0;
             return INV_ERR_ITEM_DOESNT_GO_INTO_BAG;
         }break;
-    case CURRENCYTOKEN_SLOT_1:
-    case CURRENCYTOKEN_SLOT_2:
-    case CURRENCYTOKEN_SLOT_3:
-    case CURRENCYTOKEN_SLOT_4:
-    case CURRENCYTOKEN_SLOT_5:
-    case CURRENCYTOKEN_SLOT_6:
-    case CURRENCYTOKEN_SLOT_7:
-    case CURRENCYTOKEN_SLOT_8:
-    case CURRENCYTOKEN_SLOT_9:
-    case CURRENCYTOKEN_SLOT_10:
-    case CURRENCYTOKEN_SLOT_11:
-    case CURRENCYTOKEN_SLOT_12:
-    case CURRENCYTOKEN_SLOT_13:
-    case CURRENCYTOKEN_SLOT_14:
-    case CURRENCYTOKEN_SLOT_15:
-    case CURRENCYTOKEN_SLOT_16:
-    case CURRENCYTOKEN_SLOT_17:
-    case CURRENCYTOKEN_SLOT_18:
-    case CURRENCYTOKEN_SLOT_19:
-    case CURRENCYTOKEN_SLOT_20:
-    case CURRENCYTOKEN_SLOT_21:
-    case CURRENCYTOKEN_SLOT_22:
-    case CURRENCYTOKEN_SLOT_23:
-    case CURRENCYTOKEN_SLOT_24:
-    case CURRENCYTOKEN_SLOT_25:
-    case CURRENCYTOKEN_SLOT_26:
-    case CURRENCYTOKEN_SLOT_27:
-    case CURRENCYTOKEN_SLOT_28:
-    case CURRENCYTOKEN_SLOT_29:
-    case CURRENCYTOKEN_SLOT_30:
-    case CURRENCYTOKEN_SLOT_31:
-    case CURRENCYTOKEN_SLOT_32:
-        {
-            if( proto->BagFamily & ITEM_TYPE_CURRENCY )
-                return 0;
-            return INV_ERR_ITEM_DOESNT_GO_INTO_BAG;
-        }break;
     default:
         return 0;
         break;
@@ -2180,7 +2059,7 @@ int16 ItemInterface::CanEquipItemInSlot(int16 DstInvSlot, int16 slot, ItemProtot
 //-------------------------------------------------------------------//
 //Description: Checks if player can receive the item
 //-------------------------------------------------------------------//
-int8 ItemInterface::CanReceiveItem(ItemPrototype * item, uint32 amount, ItemExtendedCostEntry *ec)
+int8 ItemInterface::CanReceiveItem(ItemPrototype * item, uint32 amount, ExtendedCostEntry *ec)
 {
     if(item == NULL)
         return 0;
@@ -2196,7 +2075,7 @@ int8 ItemInterface::CanReceiveItem(ItemPrototype * item, uint32 amount, ItemExte
     return 0;
 }
 
-void ItemInterface::BuyItem(ItemPrototype *item, uint32 total_amount, Creature* pVendor, ItemExtendedCostEntry *ec)
+void ItemInterface::BuyItem(ItemPrototype *item, uint32 total_amount, Creature* pVendor, ExtendedCostEntry *ec)
 {
     if(item->BuyPrice)
     {
@@ -2239,7 +2118,7 @@ enum CanAffordItem
     CAN_AFFORD_ITEM_ERROR_REPUTATION                = 12,
 };
 
-int8 ItemInterface::CanAffordItem(ItemPrototype * item,uint32 amount, Creature* pVendor, ItemExtendedCostEntry *ec)
+int8 ItemInterface::CanAffordItem(ItemPrototype * item,uint32 amount, Creature* pVendor, ExtendedCostEntry *ec)
 {
     if( ec != NULL )
     {
@@ -2447,7 +2326,7 @@ Item* ItemInterface::GetItemByGUID(uint64 Guid)
     }
 
     //Keyring && Currency
-    for(i=INVENTORY_KEYRING_START;i<CURRENCYTOKEN_SLOT_END;++i)
+    for(i=INVENTORY_KEYRING_START;i<MAX_INVENTORY_SLOT;++i)
     {
         if(m_pItems[i] != 0)
         {
@@ -3047,17 +2926,6 @@ SlotResult ItemInterface::FindFreeInventorySlot(ItemPrototype *proto)
                         result.Result = true;
                         return result;
                     }
-                }
-            }
-            else if( proto->BagFamily & ITEM_TYPE_CURRENCY )
-            {
-                CurrencyTypesEntry* store = dbcCurrencyTypes.LookupEntry(proto->ItemId);
-                if(store)
-                {
-                    result.ContainerSlot = ITEM_NO_SLOT_AVAILABLE;
-                    result.Slot = ((CURRENCYTOKEN_SLOT_START - 1) + store->BitIndex);
-                    result.Result = true;
-                    return result;
                 }
             }
             else

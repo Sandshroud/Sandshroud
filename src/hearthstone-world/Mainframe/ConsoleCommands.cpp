@@ -251,7 +251,7 @@ bool HandlePlayerInfoCommand(BaseConsole * pConsole, int argc, const char * argv
     }
 
     pConsole->Write("Player: %s\r\n", plr->GetName());
-    pConsole->Write("Race: %s\r\n", plr->myRace->name1);
+    pConsole->Write("Race: %s\r\n", plr->myRace->Name);
     pConsole->Write("Class: %s\r\n", plr->myClass->name);
     pConsole->Write("IP: %s\r\n", plr->GetSession()->GetSocket() ? plr->GetSession()->GetSocket()->GetIP() : "disconnected");
     pConsole->Write("Level: %u\r\n", plr->getLevel());
@@ -329,7 +329,7 @@ bool HandleNameHashCommand(BaseConsole * pConsole, int argc, const char * argv[]
     string spstring;
         ConcatArgs(spstring, argc, 0, argv);
     uint32 spellid = (int)atoi((char*)spstring.c_str());
-    SpellEntry * sp = dbcSpell.LookupEntryForced(spellid);
+    SpellEntry * sp = dbcSpell.LookupEntry(spellid);
     if ( !sp )
     {
         pConsole->Write( "Spell %u could not be found in spell.dbc\n", spellid );

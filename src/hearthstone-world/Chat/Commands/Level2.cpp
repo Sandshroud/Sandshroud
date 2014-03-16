@@ -377,7 +377,7 @@ bool ChatHandler::HandleCastSpellCommand(const char* args, WorldSession *m_sessi
     if(spellid == 0)
         spellid = GetSpellIDFromLink( args );
 
-    SpellEntry *spellentry = dbcSpell.LookupEntryForced(spellid);
+    SpellEntry *spellentry = dbcSpell.LookupEntry(spellid);
     if(spellentry == NULL)
     {
         RedSystemMessage(m_session, "Invalid spell id!");
@@ -411,7 +411,7 @@ bool ChatHandler::HandleMonsterCastCommand(const char * args, WorldSession * m_s
     if(spellId == 0)
         spellId = GetSpellIDFromLink( args );
 
-    SpellEntry * tmpsp = dbcSpell.LookupEntryForced(spellId);
+    SpellEntry * tmpsp = dbcSpell.LookupEntry(spellId);
     if(tmpsp == NULL)
         return false;
 
@@ -507,7 +507,7 @@ bool ChatHandler::HandleCastSpellNECommand(const char* args, WorldSession *m_ses
         target = caster;
 
     uint32 spellId = atol(args);
-    SpellEntry *spellentry = dbcSpell.LookupEntryForced(spellId);
+    SpellEntry *spellentry = dbcSpell.LookupEntry(spellId);
     if(spellentry == NULL)
     {
         RedSystemMessage(m_session, "Invalid spell id!");

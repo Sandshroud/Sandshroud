@@ -515,7 +515,6 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_CREATURE_QUERY].handler                        = &WorldSession::HandleCreatureQueryOpcode;
     WorldPacketHandlers[CMSG_GAMEOBJECT_QUERY].handler                      = &WorldSession::HandleGameObjectQueryOpcode;
     WorldPacketHandlers[CMSG_PAGE_TEXT_QUERY].handler                       = &WorldSession::HandlePageTextQueryOpcode;
-    WorldPacketHandlers[CMSG_ITEM_NAME_QUERY].handler                       = &WorldSession::HandleItemNameQueryOpcode;
 
     // Movement
     WorldPacketHandlers[CMSG_MOVE_FALL_RESET].handler                       = &WorldSession::HandleMoveFallResetOpcode;

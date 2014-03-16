@@ -1393,7 +1393,7 @@ AI_Spell * Pet::HandleAutoCastEvent()
         {
             // spells still spammed, I think the cooldowntime is being set incorrectly somewhere else
             if( chance && itr->second->info && getMSTime() >= itr->second->cooldown && //cebernic:crashfix
-                GetPower(itr->second->info->powerType) >= itr->second->info->manaCost )
+                GetPower(itr->second->info->powerType) >= itr->second->info->ManaCost )
             {
                 return itr->second;
             }
@@ -1573,7 +1573,7 @@ bool Pet::ResetTalents(bool costs)
                 {
                     if(sp->Effect[k] == SPELL_EFFECT_LEARN_SPELL)
                     {
-                        SpellEntry * sp2 = dbcSpell.LookupEntryForced(sp->EffectTriggerSpell[k]);
+                        SpellEntry * sp2 = dbcSpell.LookupEntry(sp->EffectTriggerSpell[k]);
                         if(!sp2) continue;
                         RemoveSpell(sp2);
                     }

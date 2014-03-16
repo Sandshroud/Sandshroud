@@ -299,7 +299,7 @@ void ApplySingleSpellFixes(SpellEntry *sp)
     case 52025:// shaman    -   Disease Cleansing   Totem
         {
                 
-            SpellEntry*  sp2 = dbcSpell.LookupEntryForced( 58780 );
+            SpellEntry*  sp2 = dbcSpell.LookupEntry( 58780 );
             if( sp2 != NULL)
             {
                 sp->EffectRadiusIndex[0] = sp2->EffectRadiusIndex[0];   //30 yards
@@ -1188,7 +1188,7 @@ void ApplySingleSpellFixes(SpellEntry *sp)
     case 61846:
     case 61847: // Aspect of the Dragonhawk
         {   // need to copy Mod Dodge Percent aura from a separate spell
-            CopyEffect(dbcSpell.LookupEntryForced(61848), 0, sp, 2);
+            CopyEffect(dbcSpell.LookupEntry(61848), 0, sp, 2);
         }break;
 
         //Hunter - Unleashed Fury
@@ -2073,7 +2073,7 @@ void ApplySingleSpellFixes(SpellEntry *sp)
         // warrior - Titan's Grip
     case 46917: // main spell
         {
-            SpellEntry * sp2 = dbcSpell.LookupEntryForced(  49152   );  // move this aura   into main   spell
+            SpellEntry * sp2 = dbcSpell.LookupEntry(  49152   );  // move this aura   into main   spell
                 if(sp != NULL)
                 {
                 sp->Effect[1] = sp2->Effect[0];
@@ -2398,7 +2398,7 @@ void ApplySingleSpellFixes(SpellEntry *sp)
         // Nitro Boosts
     case 55004:
         {
-            CopyEffect(dbcSpell.LookupEntryForced(54861), 0, sp, 2);
+            CopyEffect(dbcSpell.LookupEntry(54861), 0, sp, 2);
             sp->DurationIndex = 39;
         }break;
 
@@ -2948,7 +2948,7 @@ void ApplySingleSpellFixes(SpellEntry *sp)
         // Glyph of Vigor
     case 56805:
         {
-            CopyEffect(dbcSpell.LookupEntryForced(21975), 0, sp, 2);
+            CopyEffect(dbcSpell.LookupEntry(21975), 0, sp, 2);
         }break;
 
         // Glyph of Lesser Healing Wave
@@ -3460,7 +3460,7 @@ void ApplySingleSpellFixes(SpellEntry *sp)
         // Viper String
     case 3034:
         {
-            sp->EffectMultipleValue[0] = 3;
+            sp->EffectValueMultiplier[0] = 3;
         }break;
         // Improved Steady Shot
     case 53221:

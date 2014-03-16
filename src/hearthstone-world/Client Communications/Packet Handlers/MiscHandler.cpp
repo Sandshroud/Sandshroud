@@ -1084,7 +1084,7 @@ void WorldSession::HandleTogglePVPOpcode(WorldPacket& recv_data)
     uint32 areaId = _player->GetAreaId();
     if(sWorld.FunServerMall != -1 && areaId == (uint32)sWorld.FunServerMall)
     {
-        if(AreaTable *at = dbcArea.LookupEntryForced(areaId))
+        if(AreaTable *at = dbcArea.LookupEntry(areaId))
         {
             error.append("You cannot flag for PvP while in the area: ");
             error.append(at->name);
@@ -1561,8 +1561,8 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recv_data)
         pItem->DeleteFromDB();
         lootmgr.FillItemLoot(&pItem->m_loot, pItem->GetEntry(), _player->GetTeam());
 
-        if(pItem->GetProto()->Lootgold > 0) // Gold can be looted from items. http://www.wowhead.com/?item=45724
-            pItem->m_loot.gold = pItem->GetProto()->Lootgold;
+        /*if(pItem->GetProto()->Lootgold > 0) // Gold can be looted from items. http://www.wowhead.com/?item=45724
+            pItem->m_loot.gold = pItem->GetProto()->Lootgold;*/
 
         if(pItem->m_loot.gold)
             pItem->m_loot.gold = int32(float(pItem->m_loot.gold) * sWorld.getRate(RATE_MONEY));
@@ -2080,7 +2080,7 @@ uint8 WorldSession::CheckTeleportPrerequisites(AreaTrigger * pAreaTrigger, World
 
     //Are we trying to enter a non-heroic instance in heroic mode?
     if(pMapInfo->type != INSTANCE_MULTIMODE && pMapInfo->type != INSTANCE_NULL)
-        if((map->israid() ? (pPlayer->iRaidType >= MODE_10PLAYER_HEROIC) : (pPlayer->iInstanceType >= MODE_5PLAYER_HEROIC)))
+        if((map->IsRaid() ? (pPlayer->iRaidType >= MODE_10PLAYER_HEROIC) : (pPlayer->iInstanceType >= MODE_5PLAYER_HEROIC)))
             return AREA_TRIGGER_FAILURE_NO_HEROIC;
 
     // These can be overridden by cheats/GM
@@ -2103,11 +2103,11 @@ uint8 WorldSession::CheckTeleportPrerequisites(AreaTrigger * pAreaTrigger, World
             return AREA_TRIGGER_FAILURE_NO_ATTUNE_I;
 
         //Do we need to be in a group?
-        if((map->israid() || pMapInfo->type == INSTANCE_MULTIMODE ) && !pPlayer->GetGroup())
+        if((map->IsRaid() || pMapInfo->type == INSTANCE_MULTIMODE ) && !pPlayer->GetGroup())
             return AREA_TRIGGER_FAILURE_NO_GROUP;
 
         //Does the group have to be a raid group?
-        if( map->israid() && pPlayer->GetGroup()->GetGroupType() != GROUP_TYPE_RAID )
+        if( map->IsRaid() && pPlayer->GetGroup()->GetGroupType() != GROUP_TYPE_RAID )
             return AREA_TRIGGER_FAILURE_NO_RAID;
 
         // Need http://www.wowhead.com/?spell=46591 to enter Magisters Terrace
@@ -2115,7 +2115,7 @@ uint8 WorldSession::CheckTeleportPrerequisites(AreaTrigger * pAreaTrigger, World
             return AREA_TRIGGER_FAILURE_NO_HEROIC;
 
         //Are we trying to enter a saved raid/heroic instance?
-        if(map->israid())
+        if(map->IsRaid())
         {
             //Raid queue, did we reach our max amt of players?
             if( pPlayer->m_playerInfo && pMapInfo->playerlimit >= 5 && (int32)((pMapInfo->playerlimit - 5)/5) < pPlayer->m_playerInfo->subGroup)

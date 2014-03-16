@@ -381,7 +381,7 @@ public:
     typedef HM_NAMESPACE::hash_map<uint32, CorpseData*>                         CorpseCollectorMap;
     typedef HM_NAMESPACE::hash_map<uint32, PlayerInfo*>                         PlayerNameMap;
     typedef HM_NAMESPACE::hash_map<uint32, PlayerCreateInfo*>                   PlayerCreateInfoMap;
-    typedef HM_NAMESPACE::hash_map<uint32, skilllinespell*>                     SLMap;
+    typedef HM_NAMESPACE::hash_map<uint32, SkillLineSpell*>                     SLMap;
     typedef HM_NAMESPACE::hash_map<uint32, std::map<uint32, CreatureItem>* >    VendorMap;
     typedef HM_NAMESPACE::hash_map<uint32, Transporter* >                       TransportMap;
     typedef HM_NAMESPACE::hash_map<uint32, Trainer*>                            TrainerMap;
@@ -505,7 +505,7 @@ public:
     GM_Ticket* GetGMTicket(uint64 ticketGuid);
     GM_Ticket* GetGMTicketByPlayer(uint64 playerGuid);
 
-    skilllinespell* GetSpellSkill(uint32 id);
+    SkillLineSpell* GetSpellSkill(uint32 id);
 
     //Vendors
     std::map<uint32, CreatureItem> *GetVendorList(uint32 entry);

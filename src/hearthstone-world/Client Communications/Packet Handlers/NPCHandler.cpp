@@ -234,7 +234,7 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket& recvPacket)
                     _player->_AddSkillLine( skill, val, val );
                 else
                 {
-                    skilllineentry* sle = dbcSkillLine.LookupEntryForced(pSpell->RequiredSkillLine);
+                    SkillLineEntry* sle = dbcSkillLine.LookupEntry(pSpell->RequiredSkillLine);
                     if( _player->_HasSkillLine(skill) )
                         _player->_ModifySkillMaximum(skill, val);
                     else if(sWorld.StartLevel > 1 && (sle == NULL || (sle->type != SKILL_TYPE_PROFESSION && sle->type != SKILL_TYPE_SECONDARY)))
@@ -303,7 +303,7 @@ uint8 WorldSession::TrainerGetSpellStatus(TrainerSpell* pSpell)
     bool hasskill = true;
     if(pSpell->RequiredSkillLine)
     {
-        skilllineentry* sle = dbcSkillLine.LookupEntry(pSpell->RequiredSkillLine);
+        SkillLineEntry* sle = dbcSkillLine.LookupEntry(pSpell->RequiredSkillLine);
         if(sle != NULL) // It is a skill.
         {
             if(_player->_GetSkillLineCurrent(pSpell->RequiredSkillLine,true) < pSpell->RequiredSkillLineValue)
@@ -314,7 +314,7 @@ uint8 WorldSession::TrainerGetSpellStatus(TrainerSpell* pSpell)
             SpellEntry* sp = dbcSpell.LookupEntry(pSpell->RequiredSkillLine);
             if(sp != NULL) // We accidentally put a spell here... -_-
             {
-                skilllinespell* sls = dbcSkillLineSpell.LookupEntry(sp->Id);
+                SkillLineSpell* sls = dbcSkillLineSpell.LookupEntry(sp->Id);
                 if(sls) // We purposely put a spell here, but we're still wrong... -_-
                 {
                     if(_player->_GetSkillLineCurrent(sls->skilline, true) < pSpell->RequiredSkillLineValue)

@@ -73,7 +73,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         return;
 
     // check for spell id
-    SpellEntry *spellInfo = dbcSpell.LookupEntryForced( spellId );
+    SpellEntry *spellInfo = dbcSpell.LookupEntry( spellId );
 
     if(!spellInfo)
     {
@@ -131,12 +131,6 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     }
 
     if( !_player->ignoreitemreq_cheat && (itemProto->AllowableClass && !(_player->getClassMask() & itemProto->AllowableClass) || itemProto->AllowableRace && !(_player->getRaceMask() & itemProto->AllowableRace) ))
-    {
-        _player->GetItemInterface()->BuildInventoryChangeError(tmpItem,NULLITEM,INV_ERR_YOU_CAN_NEVER_USE_THAT_ITEM);
-        return;
-    }
-
-    if( !_player->ignoreitemreq_cheat && !CheckItemFaction(itemProto->Faction, _player->GetTeam()))
     {
         _player->GetItemInterface()->BuildInventoryChangeError(tmpItem,NULLITEM,INV_ERR_YOU_CAN_NEVER_USE_THAT_ITEM);
         return;
@@ -204,7 +198,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         return;
     }
     // check for spell id
-    SpellEntry *spellInfo = dbcSpell.LookupEntryForced(spellId);
+    SpellEntry *spellInfo = dbcSpell.LookupEntry(spellId);
 
     if(!spellInfo || !sHookInterface.OnCastSpell(_player, spellInfo))
     {
@@ -243,7 +237,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         // Some spells the player doesn't actually know, but are given to him by his current shapeshift.
         // These spells should be allowed to be cast.
         uint8 shapeshift = GetPlayer()->GetShapeShift();
-        SpellShapeshiftForm * ssf = dbcSpellShapeshiftForm.LookupEntryForced(shapeshift);
+        SpellShapeshiftForm * ssf = NULL;//dbcSpellShapeshiftForm.LookupEntry(shapeshift);
         if(!ssf) return;
 
         bool ok = false;
@@ -372,7 +366,7 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
         _player->m_currentSpell->cancel();
     else
     {
-        SpellEntry* info = dbcSpell.LookupEntryForced(spellId);
+        SpellEntry* info = dbcSpell.LookupEntry(spellId);
         _player->m_AuraInterface.RemoveAllPosAurasByNameHash(info->NameHash);
         sLog.Debug("Aura","Removing aura with names %s", info->Name);
     }
@@ -418,7 +412,7 @@ void WorldSession::HandleCharmForceCastSpell(WorldPacket & recvPacket)
     uint8 castFlags;
     recvPacket >> guid >> castnumber >> spellid >> castFlags;
 
-    SpellEntry* sp = dbcSpell.LookupEntryForced(spellid);
+    SpellEntry* sp = dbcSpell.LookupEntry(spellid);
     SpellCastTargets targets;
     targets.read(recvPacket, caster->GetGUID(), castFlags);
 

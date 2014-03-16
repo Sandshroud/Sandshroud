@@ -175,7 +175,7 @@ public:
         if(!pInstance->m_isBattleground)
         {
             // Matching the requested mode?
-            if( pInstance->m_difficulty != (pInstance->m_dbcMap->israid() ? pPlayer->iRaidType : pPlayer->iInstanceType) )
+            if( pInstance->m_difficulty != (pInstance->m_dbcMap->IsRaid() ? pPlayer->iRaidType : pPlayer->iInstanceType) )
                 return OWNER_CHECK_DIFFICULT;
         }
 
@@ -184,7 +184,7 @@ public:
             return OWNER_CHECK_MIN_LEVEL;
 
         //Need to be in group?
-        if(!pPlayer->GetGroup() && pInstance->m_dbcMap->israid() && !pPlayer->triggerpass_cheat)
+        if(!pPlayer->GetGroup() && pInstance->m_dbcMap->IsRaid() && !pPlayer->triggerpass_cheat)
             return OWNER_CHECK_NO_GROUP;
 
         // Are we on the saved list?
@@ -256,7 +256,7 @@ public:
     HEARTHSTONE_INLINE bool HasInstanceExpired(Instance * pInstance)
     {
         MapEntry* map = dbcMap.LookupEntry(pInstance->m_mapId);
-        if(map && map->israid())
+        if(map && map->IsRaid())
             return false;
 
         // expired? (heroic instances never expire, they are reset every day at 05:00).

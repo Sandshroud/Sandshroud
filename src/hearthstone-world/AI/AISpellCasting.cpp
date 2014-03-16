@@ -87,7 +87,7 @@ bool AIInterface::CanCastAISpell(AI_Spell* toCast, uint32 currentTime)
         if( toCast->info->ManaCostPercentage)//Percentage spells cost % of !!!BASE!!! mana
             cost = (m_Unit->GetUInt32Value(UNIT_FIELD_BASE_MANA)*toCast->info->ManaCostPercentage)/100;
         else 
-            cost = toCast->info->manaCost;
+            cost = toCast->info->ManaCost;
         cost += m_Unit->PowerCostMod[toCast->info->School];//this is not percent!
         cost += float2int32(cost*m_Unit->GetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER+toCast->info->School));
 

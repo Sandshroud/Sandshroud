@@ -160,7 +160,7 @@ void WorldSession::_HandleAreaTriggerOpcode(uint32 id)
 
                 // Try to find a saved instance and
                 // do not handle Hyjal Inn (trigger 4319), since we need a unique mapid when generating our instance_id.
-                if( id != 4319 && pMi && ( map->israid() || _player->iRaidType >= MODE_25PLAYER_NORMAL && pMi->type == INSTANCE_MULTIMODE ) )
+                if( id != 4319 && pMi && ( map->IsRaid() || _player->iRaidType >= MODE_25PLAYER_NORMAL && pMi->type == INSTANCE_MULTIMODE ) )
                 {
                     //Do we have a saved instance we should use?
                     Instance * in = sInstanceMgr.GetSavedInstance( pMi->mapid,_player->GetLowGUID(), _player->iRaidType );

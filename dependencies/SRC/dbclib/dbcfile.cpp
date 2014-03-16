@@ -35,14 +35,24 @@ bool DBCFile::open(const char*fn)
     fread(&recordSize,4,1,pf); // Size of a record
     fread(&stringSize,4,1,pf); // String size
 
+    maxId = 0;
     data = new unsigned char[recordSize*recordCount];
     stringTable = new unsigned char[stringSize];
     //data = (unsigned char *)malloc (recordSize*recordCount); 
     //stringTable = (unsigned char *)malloc ( stringSize ) ;
     fread( data ,recordSize*recordCount,1,pf);
     fread( stringTable , stringSize,1,pf);
-
     fclose(pf);
+
+    if(data)
+    {
+        for(size_t i = 0; i < recordCount; ++i)
+        {
+            Record m_rec(*this, data + i*recordSize);
+            if(maxId < m_rec.getUInt(0))
+                maxId = m_rec.getUInt(0);
+        }
+    }
     return true;
 }
 
@@ -86,10 +96,6 @@ bool DBCFile::DumpBufferToFile(const char*fn)
     return true;
 }
 
-/*
-//Don't uncomment these since we cant mix realloc with new
-//these could be reimplemented by using a vector, but do we really need them?!
-
 int DBCFile::AddRecord() //simply add an empty record to the end of the data section
 {
     recordCount++;
@@ -106,7 +112,7 @@ int DBCFile::AddRecord() //simply add an empty record to the end of the data sec
         return 0;
     }
 
-    //seems like an error ocured
+    //seems like an error occurred
     if ( !data )
     {
         printf(" Error : Could not resize DBC data partition\n");
@@ -126,9 +132,7 @@ int DBCFile::AddString(const char *new_string) //simply add an empty record to t
         return 0; //we do not add 0 len strings
 
     if( stringTable )
-    {
         stringTable = (unsigned char *)realloc( stringTable, stringSize + new_str_len );
-    }
     else 
     {
         //the dbc file is not yet opened
@@ -153,4 +157,3 @@ int DBCFile::AddString(const char *new_string) //simply add an empty record to t
 
     return ret;
 }
-*/

@@ -1388,7 +1388,7 @@ void Aura::SpellAuraPeriodicDamage(bool apply)
                         Item* weapon = NULL;
                             weapon = TO_PLAYER(m_caster)->GetItemInterface()->GetInventoryItem(EQUIPMENT_SLOT_MAINHAND);
                         if( weapon != NULL && weapon->GetProto() )
-                            dmg += float2int32( ( weapon->GetProto()->Delay * m_caster->GetAP() / 14 + (weapon->GetProto()->Damage[0].Min + weapon->GetProto()->Damage[0].Max)/2 ) * (GetBaseDuration() / 1000) * (743 / 300000 ) );
+                            dmg += float2int32( ( weapon->GetProto()->Delay * m_caster->GetAP() / 14 + (weapon->GetProto()->minDamage + weapon->GetProto()->maxDamage)/2 ) * (GetBaseDuration() / 1000) * (743 / 300000 ) );
                     }
                 }break;
             case SPELL_HASH_DEEP_WOUNDS:
@@ -1405,9 +1405,8 @@ void Aura::SpellAuraPeriodicDamage(bool apply)
                                 if(it != NULL && it->GetProto())
                                 {
                                     dmg = 0;
-                                    for(int i=0;i<5;++i)
-                                        if(it->GetProto()->Damage[i].Type==SCHOOL_NORMAL)
-                                            dmg += int32((it->GetProto()->Damage[i].Min + it->GetProto()->Damage[i].Max) / 2);
+                                    if(it->GetProto()->DamageType == SCHOOL_NORMAL)
+                                        dmg += int32((it->GetProto()->minDamage + it->GetProto()->maxDamage) / 2);
                                     dmg = multiplyer * dmg /100;
                                 }
                             }
@@ -5323,7 +5322,7 @@ void Aura::EventPeriodicLeech(uint32 amount, SpellEntry* sp)
 
     if(sp)
     {
-        float coef = sp->EffectMultipleValue[mod->i]; // how much health is restored per damage dealt
+        float coef = sp->EffectValueMultiplier[mod->i]; // how much health is restored per damage dealt
         SM_FFValue(m_caster->SM[SMT_MULTIPLE_VALUE][0], &coef, sp->SpellGroupType);
         SM_PFValue(m_caster->SM[SMT_MULTIPLE_VALUE][1], &coef, sp->SpellGroupType);
         Amount = float2int32((float)Amount * coef);
@@ -5857,7 +5856,7 @@ void Aura::EventPeriodicManaLeech(uint32 amount)
     amt = (int32)min( (uint32)amt, m_target->GetUInt32Value( UNIT_FIELD_POWER1 ) );
     m_target->ModUnsigned32Value(UNIT_FIELD_POWER1, -amt);
 
-    float coef = m_spellProto->EffectMultipleValue[mod->i] > 0 ? m_spellProto->EffectMultipleValue[mod->i] : 1; // how much mana is restored per mana leeched
+    float coef = m_spellProto->EffectValueMultiplier[mod->i] > 0 ? m_spellProto->EffectValueMultiplier[mod->i] : 1; // how much mana is restored per mana leeched
     SM_FFValue(m_caster->SM[SMT_MULTIPLE_VALUE][0], &coef, m_spellProto->SpellGroupType);
     SM_PFValue(m_caster->SM[SMT_MULTIPLE_VALUE][1], &coef, m_spellProto->SpellGroupType);
     amt = float2int32((float)amt * coef);
@@ -9263,7 +9262,7 @@ void Aura::SendPeriodicAuraLog(uint64 CasterGuid, Unit* Target, SpellEntry *sp, 
             data << uint32(sp->EffectMiscValue[mod->i]);
             data << uint32(Amount);
             if(Flags == FLAG_PERIODIC_LEECH)
-                data << float(sp->EffectMultipleValue[mod->i]);
+                data << float(sp->EffectValueMultiplier[mod->i]);
         }break;
     default:
         {

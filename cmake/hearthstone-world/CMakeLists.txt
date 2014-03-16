@@ -81,6 +81,12 @@ FILE(GLOB intersystem_management_guild_sources
 source_group("Interserver\\Management\\Guild" FILES ${intersystem_management_guild_sources})
 SET(group_sources ${group_sources} ${intersystem_management_guild_sources})
 
+FILE(GLOB intersystem_management_item_sources
+"${prefix}/Intersystem/Management/Items/*.h"
+"${prefix}/Intersystem/Management/Items/*.cpp")
+source_group("Interserver\\Management\\Items" FILES ${intersystem_management_item_sources})
+SET(group_sources ${group_sources} ${intersystem_management_item_sources})
+
 FILE(GLOB intersystem_voice_sources
 "${prefix}/Intersystem/Voice/*.h"
 "${prefix}/Intersystem/Voice/*.cpp")

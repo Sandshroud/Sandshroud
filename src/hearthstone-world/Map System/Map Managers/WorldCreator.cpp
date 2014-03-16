@@ -149,7 +149,7 @@ uint32 InstanceMgr::PreTeleport(uint32 mapid, Player* plr, uint32 instanceid)
     if(inf->type == INSTANCE_PVP)
         return INSTANCE_ABORT_NOT_FOUND;
 
-    if(map->israid()) // check that heroic mode is available if the player has requested it.
+    if(map->IsRaid()) // check that heroic mode is available if the player has requested it.
     {
         if(plr->iRaidType > 1 && inf->type != INSTANCE_MULTIMODE)
             return INSTANCE_ABORT_HEROIC_MODE_NOT_AVAILABLE;
@@ -162,13 +162,13 @@ uint32 InstanceMgr::PreTeleport(uint32 mapid, Player* plr, uint32 instanceid)
     if( !plr->triggerpass_cheat )
     {
         // players without groups cannot enter raid instances (no soloing them:P)
-        if( pGroup == NULL && (map->israid() || inf->type == INSTANCE_MULTIMODE))
+        if( pGroup == NULL && (map->IsRaid() || inf->type == INSTANCE_MULTIMODE))
             return INSTANCE_ABORT_NOT_IN_RAID_GROUP;
 
         //and has the required level
         if( plr->getLevel() < 80)
         {
-            if(!map->israid())
+            if(!map->IsRaid())
             {
                 //otherwise we still need to be lvl 70/80 for heroic.
                 if( plr->iInstanceType && plr->getLevel() < uint32(inf->HasFlag(WMI_INSTANCE_XPACK_02) ? 80 : 70))
@@ -231,7 +231,7 @@ uint32 InstanceMgr::PreTeleport(uint32 mapid, Player* plr, uint32 instanceid)
                         }
                     }
 
-                    uint32 plrdiff = map->israid() ? plr->iRaidType : plr->iInstanceType;
+                    uint32 plrdiff = map->IsRaid() ? plr->iRaidType : plr->iInstanceType;
                     if(in->m_difficulty == plrdiff)
                     {
                         //wakeup call for saved instances
@@ -288,7 +288,7 @@ uint32 InstanceMgr::PreTeleport(uint32 mapid, Player* plr, uint32 instanceid)
                         }
                     }
 
-                    uint32 plrdiff = map->israid() ? plr->iRaidType : plr->iInstanceType;
+                    uint32 plrdiff = map->IsRaid() ? plr->iRaidType : plr->iInstanceType;
                     if(in->m_difficulty == plrdiff)
                     {
                         //wakeup call for saved instances
@@ -327,7 +327,7 @@ uint32 InstanceMgr::PreTeleport(uint32 mapid, Player* plr, uint32 instanceid)
     }
 
     // if we're here, it means we need to create a new instance.
-    bool raid = map->israid();
+    bool raid = map->IsRaid();
     in = new Instance;
     in->m_creation = UNIXTIME;
     in->m_expiration = (raid ? UNIXTIME + inf->cooldown : 0);       // expire time 0 is 10 minutes after last player leaves
@@ -606,7 +606,7 @@ MapMgr* InstanceMgr::_CreateInstance(Instance * in)
     if(!dbcMap.LookupEntry(in->m_mapId)) // SHOULD NEVER HAPPEN!
         return NULL;
 
-    sLog.Notice("InstanceMgr", "Creating %s %u(%s) Difficulty %u", dbcMap.LookupEntry(in->m_mapId)->israid() ? "Raid" : "Instance", in->m_instanceId, m_maps[in->m_mapId]->GetName(), in->m_difficulty);
+    sLog.Notice("InstanceMgr", "Creating %s %u(%s) Difficulty %u", dbcMap.LookupEntry(in->m_mapId)->IsRaid() ? "Raid" : "Instance", in->m_instanceId, m_maps[in->m_mapId]->GetName(), in->m_difficulty);
 
     // we don't have to check for world map info here, since the instance wouldn't have been saved if it didn't have any.
     in->m_mapMgr = (new MapMgr(m_maps[in->m_mapId], in->m_mapId, in->m_instanceId));
@@ -894,7 +894,7 @@ void InstanceMgr::ResetSavedInstances(Player* plr)
                 in = itr->second;
                 ++itr;
 
-                if(!map->israid() && plr->GetGroupID() == in->m_creatorGroup)
+                if(!map->IsRaid() && plr->GetGroupID() == in->m_creatorGroup)
                 {
                     found = true;
                     if( in->m_difficulty == MODE_5PLAYER_HEROIC && in->m_SavedPlayers.size() )//heroic instances can't be reset once they are saved.
@@ -952,7 +952,7 @@ void InstanceMgr::ResetHeroicInstances()
                 in = itr->second;
                 ++itr;
 
-                if(!in->m_dbcMap->israid())
+                if(!in->m_dbcMap->IsRaid())
                 {
                     // use a "soft" delete here.
                     if(in->m_difficulty == MODE_5PLAYER_HEROIC)
@@ -1067,7 +1067,7 @@ void InstanceMgr::BuildSavedInstancesForPlayer(Player* plr)
                     in = itr->second;
                     ++itr;
 
-                    if( !in->m_dbcMap->israid() && (PlayerOwnsInstance(in, plr) >= OWNER_CHECK_OK) )
+                    if( !in->m_dbcMap->IsRaid() && (PlayerOwnsInstance(in, plr) >= OWNER_CHECK_OK) )
                     {
                         m_mapLock.Release();
 
@@ -1106,7 +1106,7 @@ void InstanceMgr::BuildSavedRaidInstancesForPlayer(Player* plr)
         if(map)
         {
             in = GetSavedInstance(i, plr->GetLowGUID(), plr->iRaidType);
-            if(in && map->israid())
+            if(in && map->IsRaid())
             {
                 data << in->m_mapId;
                 data << in->m_difficulty;
@@ -1130,7 +1130,7 @@ void InstanceMgr::BuildSavedRaidInstancesForPlayer(Player* plr)
 void Instance::SaveToDB()
 {
     // don't save non-raid instances.
-    if(!dbcMap.LookupEntry(m_mapId)->israid() || m_isBattleground)
+    if(!dbcMap.LookupEntry(m_mapId)->IsRaid() || m_isBattleground)
         return;
 
     // don't save instance if nothing is killed yet

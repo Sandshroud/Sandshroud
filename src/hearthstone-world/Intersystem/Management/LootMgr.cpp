@@ -118,7 +118,7 @@ RandomProps * LootMgr::GetRandomProperties(ItemPrototype * proto)
     return RandomChoiceVector<RandomProps>(itr->second);
 }
 
-ItemRandomSuffixEntry * LootMgr::GetRandomSuffix(ItemPrototype * proto)
+RandomSuffixEntry * LootMgr::GetRandomSuffix(ItemPrototype * proto)
 {
     map<uint32,RandomSuffixVector>::iterator itr;
 
@@ -129,7 +129,7 @@ ItemRandomSuffixEntry * LootMgr::GetRandomSuffix(ItemPrototype * proto)
     if(itr==_randomsuffix.end())
         return NULL;
 
-    return RandomChoiceVector<ItemRandomSuffixEntry>(itr->second);
+    return RandomChoiceVector<RandomSuffixEntry>(itr->second);
 }
 
 
@@ -138,7 +138,7 @@ void LootMgr::LoadLootProp()
     QueryResult * result = WorldDatabase.Query("SELECT * FROM item_randomprop_groups");
     uint32 id, eid;
     RandomProps * rp;
-    ItemRandomSuffixEntry * rs;
+    RandomSuffixEntry * rs;
     float ch;
 
     if(result)
@@ -150,7 +150,7 @@ void LootMgr::LoadLootProp()
             eid = result->Fetch()[1].GetUInt32();
             ch = result->Fetch()[2].GetFloat();
 
-            rp = dbcRandomProps.LookupEntryForced(eid);
+            rp = dbcRandomProps.LookupEntry(eid);
             if(rp == NULL)
             {
                 sLog.Error("LoadLootProp", "RandomProp group %u references non-existant randomprop %u.", id, eid);
@@ -181,7 +181,7 @@ void LootMgr::LoadLootProp()
             eid = result->Fetch()[1].GetUInt32();
             ch = result->Fetch()[2].GetFloat();
 
-            rs = dbcItemRandomSuffix.LookupEntryForced(eid);
+            rs = NULL;//dbcItemRandomSuffix.LookupEntry(eid);
             if(rs == NULL)
             {
                 sLog.Error("LoadLootProp", "RandomSuffix group %u references non-existant randomsuffix %u.", id, eid);
@@ -416,9 +416,8 @@ void LootMgr::PushLoot(StoreLootList *list,Loot * loot, uint8 difficulty, uint8 
             float chance = list->items[x].chance[difficulty];
             if(chance == 0.0f)
                 continue;
-
             ItemPrototype *itemproto = list->items[x].item.itemproto;
-            if(!CheckItemFaction(itemproto->Faction, team))
+            if(itemproto== NULL)
                 continue;
 
             int lucky;
@@ -993,7 +992,7 @@ void LootRoll::PlayerRolled(PlayerInfo* pInfo, uint8 choice)
         }break;
     case DISENCHANT:
         {
-            if(acceptableroll)
+            /*if(acceptableroll)
             {
                 if(proto->DisenchantReqSkill < 0)
                     acceptableroll = false;
@@ -1001,7 +1000,7 @@ void LootRoll::PlayerRolled(PlayerInfo* pInfo, uint8 choice)
                     acceptableroll = pInfo->m_Group->HasAcceptableDisenchanters(proto->DisenchantReqSkill);
                 else
                     acceptableroll = (pInfo->m_loggedInPlayer->_HasSkillLine(333) && (pInfo->m_loggedInPlayer->_GetSkillLineCurrent(333) > uint32(proto->DisenchantReqSkill)));
-            }
+            }*/
 
             if(acceptableroll)
             {

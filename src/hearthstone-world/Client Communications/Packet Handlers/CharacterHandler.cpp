@@ -742,7 +742,7 @@ void WorldSession::FullLogin(Player* plr)
         sWorld.AlliancePlayers++;
 
     if(sWorld.SendMovieOnJoin && plr->m_FirstLogin && !HasGMPermissions())
-        plr->SendCinematic(plr->myRace->cinematic_id);
+        plr->SendCinematic(plr->myRace->CinematicId);
 
     sLog.Debug( "WorldSession","Created new player for existing players (%s)", plr->GetName() );
 
@@ -870,8 +870,8 @@ void WorldSession::HandleAlterAppearance(WorldPacket & recv_data)
     uint32 hair, colour, facialhair;
     recv_data >> hair >> colour >> facialhair;
 
-    BarberShopStyleEntry * Hair = dbcBarberShopStyle.LookupEntry(hair);
-    BarberShopStyleEntry * facialHair = dbcBarberShopStyle.LookupEntry(facialhair);
+    BarberShopStyleEntry * Hair = NULL;//dbcBarberShopStyle.LookupEntry(hair);
+    BarberShopStyleEntry * facialHair = NULL;//dbcBarberShopStyle.LookupEntry(facialhair);
     if(!facialHair || !Hair)
         return;
 

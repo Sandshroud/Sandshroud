@@ -722,7 +722,7 @@ bool ChatHandler::xxx(const char* args, WorldSession *m_session)
             if(!end)break;
             *end = 0;
             //mSpells.insert(atol(start));
-            spProto = dbcSpell.LookupEntryForced(atol(start));
+            spProto = dbcSpell.LookupEntry(atol(start));
 
             if(spProto)
                 m_spells.insert(spProto->Id);

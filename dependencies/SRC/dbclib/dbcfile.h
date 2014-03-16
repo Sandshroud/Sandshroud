@@ -150,11 +150,10 @@ public:
     /// Trivial
     size_t getRecordCount() const { return recordCount;}
     size_t getFieldCount() const { return fieldCount; }
+    size_t getMaxId() const { return maxId; }
 ////////////////////////////////////////////////////////////////////////////////////////////
-/*
     int AddRecord(); //simply add an empty record to the end of the data section
     int AddString(const char *new_string); //simply add an empty record to the end of the string section
-*/
     int GetRecordSize() { return recordSize; }
 ////////////////////////////////////////////////////////////////////////////////////////////
 private:
@@ -163,6 +162,7 @@ private:
     unsigned int recordCount;
     unsigned int fieldCount;
     unsigned int stringSize;
+    unsigned int maxId;
     unsigned char *data;
     unsigned char *stringTable;
     char header[4];
