@@ -1172,13 +1172,7 @@ uint32 Unit::GetSpellDidHitResult( Unit* pVictim, uint32 weapon_damage_type, Spe
         if( !backAttack )
         {
             if( c->b_has_shield && !pVictim->disarmedShield && pVictim->GetUInt32Value(UNIT_FIELD_STRENGTH))
-            {   // We have a shield, wether data exists in DB or not.
-                if(c->IP_shield && c->IP_shield->Block > 0) // We have DB data for our shield, use it.
-                    block = 5.0f+(victim_skill*0.04f)+(c->IP_shield->Block*0.004f)+(pVictim->GetUInt32Value(UNIT_FIELD_STRENGTH)/2); // Crow: Shield Block Value + Strength/2
-                else // Just use some basic info, start at 5, go up based on strength
-                    block = 5.0f+(pVictim->GetUInt32Value(UNIT_FIELD_STRENGTH)/2); // Crow: Strength/2
-            }
-
+                block = 5.0f+(victim_skill*0.04f)+(pVictim->GetUInt32Value(UNIT_FIELD_STRENGTH)/2);
             if(pVictim->can_parry && !disarmed) // VictimSkill*0.04 per point
                 parry = (victim_skill*0.04f);
         }
@@ -1559,7 +1553,7 @@ int32 Unit::Strike( Unit* pVictim, uint32 weapon_damage_type, SpellEntry* abilit
             self_skill = float2int32( pr->CalcRating( PLAYER_RATING_MODIFIER_MELEE_MAIN_HAND_SKILL ) );
             if (it && it->GetProto())
             {
-                dmg.school_type = it->GetProto()->Damage[0].Type;
+                dmg.school_type = it->GetProto()->DamageType;
                 if( it->GetProto()->SubClass == ITEM_SUBCLASS_WEAPON_MACE )
                     armorreducepct += m_ignoreArmorPctMaceSpec;
             }
@@ -1570,7 +1564,7 @@ int32 Unit::Strike( Unit* pVictim, uint32 weapon_damage_type, SpellEntry* abilit
             hit_status |= HITSTATUS_DUALWIELD;//animation
             if (it && it->GetProto())
             {
-                dmg.school_type = it->GetProto()->Damage[0].Type;
+                dmg.school_type = it->GetProto()->DamageType;
                 if( it->GetProto()->SubClass == ITEM_SUBCLASS_WEAPON_MACE )
                     armorreducepct += m_ignoreArmorPctMaceSpec;
             }
@@ -1579,7 +1573,7 @@ int32 Unit::Strike( Unit* pVictim, uint32 weapon_damage_type, SpellEntry* abilit
             it = disarmed ? NULLITEM : pr->GetItemInterface()->GetInventoryItem( EQUIPMENT_SLOT_RANGED );
             self_skill = float2int32( pr->CalcRating( PLAYER_RATING_MODIFIER_RANGED_SKILL ) );
             if (it && it->GetProto())
-                dmg.school_type = it->GetProto()->Damage[0].Type;
+                dmg.school_type = it->GetProto()->DamageType;
             break;
         }
 

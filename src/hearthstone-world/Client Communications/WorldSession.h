@@ -414,7 +414,6 @@ protected:
     void HandleQueryTimeOpcode(WorldPacket& recvPacket);
     void HandleCreatureQueryOpcode(WorldPacket& recvPacket);
     void HandleGameObjectQueryOpcode(WorldPacket& recvPacket);
-    void HandleItemNameQueryOpcode( WorldPacket & recv_data );
     void HandlePageTextQueryOpcode( WorldPacket & recv_data );
 
     /// Opcodes implemented in MovementHandler.cpp

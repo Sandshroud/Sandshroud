@@ -512,7 +512,6 @@ int LuaSpell_ResetAllVars(lua_State * L, Spell * sp)
     if(sp == NULL)
         RET_NIL(false);
 
-    sp->m_spellInfo_override = NULL;
     return 1;
 }
 

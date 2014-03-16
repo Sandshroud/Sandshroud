@@ -220,56 +220,6 @@ void WorldSession::HandlePageTextQueryOpcode( WorldPacket & recv_data )
     }
 }
 
-//////////////////////////////////////////////////////////////
-/// This function handles CMSG_ITEM_NAME_QUERY:
-//////////////////////////////////////////////////////////////
-void WorldSession::HandleItemNameQueryOpcode( WorldPacket & recv_data )
-{
-    CHECK_PACKET_SIZE(recv_data, 4);
-    uint32 itemid;
-    uint64 guid;
-    recv_data >> itemid;
-    recv_data >> guid;
-
-    ItemEntry* itemE = dbcItem.LookupEntry(itemid);
-    WorldPacket reply(SMSG_ITEM_NAME_QUERY_RESPONSE, 1000);
-    ItemPrototype *proto = ItemPrototypeStorage.LookupEntry(itemid);
-
-    reply << itemid;
-    if(proto)
-    {
-        reply << proto->Name1;
-        reply << uint32(proto->InventoryType);
-    }   // Crow: This could all be done on server load by the way...
-    else if(objmgr.ItemsInSets.find(itemid) != objmgr.ItemsInSets.end() && itemE != NULL)
-    {
-        std::list<ItemPrototype*>* protoset = objmgr.GetListForItemSet(objmgr.ItemsInSets.at(itemid));
-        for(std::list<ItemPrototype*>::iterator itr = protoset->begin(); itr != protoset->end(); itr++)
-        {
-            if((*itr)->ItemSetRank == 1 && (*itr)->InventoryType == itemE->InventoryType)
-                proto = (*itr);
-        }
-
-        if(proto != NULL)
-        {
-            reply << proto->Name1;
-            reply << uint32(proto->InventoryType);
-        }
-        else
-        {
-            reply << "Unknown Item";
-            reply << (itemE ? itemE->InventoryType : uint32(0));
-        }
-    }
-    else
-    {
-        reply << "Unknown Item";
-        reply << (itemE ? itemE->InventoryType : uint32(0));
-    }
-
-    SendPacket(&reply);
-}
-
 void WorldSession::HandleInrangeQuestgiverQuery(WorldPacket & recv_data)
 {
     CHECK_INWORLD_RETURN();

@@ -236,7 +236,7 @@ void AIInterface::AttackReaction(Unit* pUnit, uint32 damage_dealt, uint32 spellI
             return;
     }
 
-    uint32 threat = _CalcThreat(damage_dealt, spellId ? dbcSpell.LookupEntryForced(spellId) : NULL, pUnit);
+    uint32 threat = _CalcThreat(damage_dealt, spellId ? dbcSpell.LookupEntry(spellId) : NULL, pUnit);
     if( m_AIState == STATE_IDLE || m_AIState == STATE_FOLLOWING )
     {
         WipeTargetList();
@@ -667,13 +667,13 @@ uint32 AIInterface::GetWeaponEmoteType(bool ranged)
         Creature* ctr = TO_CREATURE(m_Unit);
         if(ctr->GetProto())
         {
-            ItemEntry* ItemE = NULL;
+            ItemDataEntry* ItemE = NULL;
             if(!ranged)
             {
                 uint32 weaponids[2] = { ctr->GetProto()->Item1, ctr->GetProto()->Item2 };
                 if(weaponids[0])
                 {
-                    ItemE = dbcItem.LookupEntry(weaponids[0]);
+                    ItemE = db2Item.LookupEntry(weaponids[0]);
                     if(ItemE != NULL)
                     {
                         switch(ItemE->InventoryType)
@@ -694,7 +694,7 @@ uint32 AIInterface::GetWeaponEmoteType(bool ranged)
                 }
                 if(weaponids[1])
                 {
-                    ItemE = dbcItem.LookupEntry(weaponids[1]);
+                    ItemE = db2Item.LookupEntry(weaponids[1]);
                     if(ItemE != NULL)
                     {
                         switch(ItemE->InventoryType)
@@ -725,7 +725,7 @@ uint32 AIInterface::GetWeaponEmoteType(bool ranged)
             {
                 if(ctr->GetProto()->Item3)
                 {
-                    ItemE = dbcItem.LookupEntry(ctr->GetProto()->Item3);
+                    ItemE = db2Item.LookupEntry(ctr->GetProto()->Item3);
                     if(ItemE != NULL && (ItemE->SubClass == ITEM_SUBCLASS_WEAPON_GUN || ItemE->SubClass == ITEM_SUBCLASS_WEAPON_CROSSBOW))
                     {
                         emotetype = EMOTE_STATE_READYRIFLE;

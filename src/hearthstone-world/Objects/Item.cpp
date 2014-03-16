@@ -265,7 +265,7 @@ void Item::ApplyRandomProperties( bool apply )
         }
         else
         {
-            ItemRandomSuffixEntry* rs = dbcItemRandomSuffix.LookupEntry( abs( int( m_uint32Values[ITEM_FIELD_RANDOM_PROPERTIES_ID] ) ) );
+            RandomSuffixEntry* rs = NULL;//dbcItemRandomSuffix.LookupEntry( abs( int( m_uint32Values[ITEM_FIELD_RANDOM_PROPERTIES_ID] ) ) );
             if(rs == NULL)
                 return;
             int32 Slot;
@@ -761,7 +761,7 @@ void Item::ApplyEnchantmentBonus( uint32 Slot, bool Apply )
 
                         if( Entry->spell[c] != 0 )
                         {
-                            sp = dbcSpell.LookupEntryForced( Entry->spell[c] );
+                            sp = dbcSpell.LookupEntry( Entry->spell[c] );
                             if( sp == NULL )
                                 continue;
 
@@ -884,42 +884,6 @@ void Item::ApplyEnchantmentBonuses()
             m_owner->CalcResistance(RESISTANCE_ARMOR);
         }
 
-        if( proto->HolyRes )
-        {
-            m_owner->FlatResistanceModifierPos[RESISTANCE_HOLY] += proto->HolyRes;
-            m_owner->CalcResistance(RESISTANCE_HOLY);
-        }
-
-        if( proto->FireRes )
-        {
-            m_owner->FlatResistanceModifierPos[RESISTANCE_FIRE] += proto->FireRes;
-            m_owner->CalcResistance(RESISTANCE_FIRE);
-        }
-
-        if( proto->NatureRes )
-        {
-            m_owner->FlatResistanceModifierPos[RESISTANCE_NATURE] += proto->NatureRes;
-            m_owner->CalcResistance(RESISTANCE_NATURE);
-        }
-
-        if( proto->FrostRes )
-        {
-            m_owner->FlatResistanceModifierPos[RESISTANCE_FROST] += proto->FrostRes;
-            m_owner->CalcResistance(RESISTANCE_FROST);
-        }
-
-        if( proto->ShadowRes )
-        {
-            m_owner->FlatResistanceModifierPos[RESISTANCE_SHADOW] += proto->ShadowRes;
-            m_owner->CalcResistance(RESISTANCE_SHADOW);
-        }
-
-        if( proto->ArcaneRes )
-        {
-            m_owner->FlatResistanceModifierPos[RESISTANCE_ARCANE] += proto->ArcaneRes;
-            m_owner->CalcResistance(RESISTANCE_ARCANE);
-        }
-
         for(uint32 i = 0; i < 10; i++)
         {
             if(value = proto->Stats[i].Value)
@@ -954,42 +918,6 @@ void Item::RemoveEnchantmentBonuses()
         {
             m_owner->BaseResistance[RESISTANCE_ARMOR] -= proto->Armor;
             m_owner->CalcResistance(RESISTANCE_ARMOR);
-        }
-
-        if( proto->HolyRes )
-        {
-            m_owner->FlatResistanceModifierPos[RESISTANCE_HOLY] -= proto->HolyRes;
-            m_owner->CalcResistance(RESISTANCE_HOLY);
-        }
-
-        if( proto->FireRes )
-        {
-            m_owner->FlatResistanceModifierPos[RESISTANCE_FIRE] -= proto->FireRes;
-            m_owner->CalcResistance(RESISTANCE_FIRE);
-        }
-
-        if( proto->NatureRes )
-        {
-            m_owner->FlatResistanceModifierPos[RESISTANCE_NATURE] -= proto->NatureRes;
-            m_owner->CalcResistance(RESISTANCE_NATURE);
-        }
-
-        if( proto->FrostRes )
-        {
-            m_owner->FlatResistanceModifierPos[RESISTANCE_FROST] -= proto->FrostRes;
-            m_owner->CalcResistance(RESISTANCE_FROST);
-        }
-
-        if( proto->ShadowRes )
-        {
-            m_owner->FlatResistanceModifierPos[RESISTANCE_SHADOW] -= proto->ShadowRes;
-            m_owner->CalcResistance(RESISTANCE_SHADOW);
-        }
-
-        if( proto->ArcaneRes )
-        {
-            m_owner->FlatResistanceModifierPos[RESISTANCE_ARCANE] -= proto->ArcaneRes;
-            m_owner->CalcResistance(RESISTANCE_ARCANE);
         }
 
         for(uint32 i = 0; i < 10; i++)
@@ -1166,7 +1094,7 @@ uint32 Item::GetMaxSocketsCount()
 {
     uint32 c = 0;
     for( uint32 x = 0; x < 3; x++ )
-        if( GetProto()->Sockets[x].SocketColor )
+        if( GetProto()->ItemSocket[x] )
             c++;
     return c;
 }
@@ -1228,7 +1156,7 @@ string ItemPrototype::ConstructItemLink(uint32 random_prop, uint32 random_suffix
     // lookup properties
     if( random_prop != 0 )
     {
-        RandomProps *rp = dbcRandomProps.LookupEntryForced(random_prop);
+        RandomProps *rp = dbcRandomProps.LookupEntry(random_prop);
         if( rp != NULL )
             snprintf(rptxt, 100, " %s", rp->rpname);
     }
@@ -1236,7 +1164,7 @@ string ItemPrototype::ConstructItemLink(uint32 random_prop, uint32 random_suffix
     // suffix
     if( random_suffix != 0 )
     {
-        ItemRandomSuffixEntry *rs = dbcItemRandomSuffix.LookupEntryForced(random_suffix);
+        RandomSuffixEntry *rs = NULL;//dbcItemRandomSuffix.LookupEntry(random_suffix);
         if( rs != NULL )
             snprintf(rstxt, 100, " %s", rs->name);
     }
@@ -1259,99 +1187,4 @@ bool ItemPrototype::ValidateItemSpell(uint32 SpellId)
         if(Spells[i].Id == SpellId)
             return true;
     return false;
-}
-
-char* ItemPrototype::CreateInsertString()
-{
-    stringstream ss;
-    ss << "INSERT INTO items VALUES (";
-    ss << ItemId << ", ";
-    ss << Class << ", ";
-    ss << SubClass << ", ";
-    ss << unknown_bc << ", \"";
-    ss << Name1 << "\", ";
-    ss << DisplayInfoID << ", ";
-    ss << Quality << ", ";
-    ss << Flags << ", ";
-    ss << Faction << ", ";
-    ss << BuyPrice << ", ";
-    ss << SellPrice << ", ";
-    ss << InventoryType << ", ";
-    ss << AllowableClass << ", ";
-    ss << AllowableRace << ", ";
-    ss << ItemLevel << ", ";
-    ss << RequiredLevel << ", ";
-    ss << RequiredSkill << ", ";
-    ss << RequiredSkillRank << ", ";
-    ss << RequiredSpell << ", ";
-    ss << RequiredPlayerRank1 << ", ";
-    ss << RequiredPlayerRank2 << ", ";
-    ss << RequiredFaction << ", ";
-    ss << RequiredFactionStanding << ", ";
-    ss << Unique << ", ";
-    ss << MaxCount << ", ";
-    ss << ContainerSlots << ", ";
-    for(uint32 i = 0; i < 10; i++)
-    {
-        ss << Stats[i].Type << ", ";
-        ss << Stats[i].Value << ", ";
-    }
-    ss << ScalingStatsEntry << ", ";
-    ss << ScalingStatsFlag << ", ";
-    ss << Damage[0].Min << ", ";
-    ss << Damage[0].Max << ", ";
-    ss << Damage[0].Type << ", ";
-    ss << Damage[1].Min << ", ";
-    ss << Damage[1].Max << ", ";
-    ss << Damage[1].Type << ", ";
-    ss << Armor << ", ";
-    ss << HolyRes << ", ";
-    ss << FireRes << ", ";
-    ss << NatureRes << ", ";
-    ss << FrostRes << ", ";
-    ss << ShadowRes << ", ";
-    ss << ArcaneRes << ", ";
-    ss << Delay << ", ";
-    ss << AmmoType << ", ";
-    ss << Range << ", ";
-    for(uint32 i = 0; i < 5; i++)
-    {
-        ss << Spells[i].Id << ", ";
-        ss << Spells[i].Trigger << ", ";
-        ss << Spells[i].Charges << ", ";
-        ss << Spells[i].Cooldown << ", ";
-        ss << Spells[i].Category << ", ";
-        ss << Spells[i].CategoryCooldown << ", ";
-    }
-    ss << Bonding << ", \"";
-    ss << Description << "\", ";
-    ss << PageId << ", ";
-    ss << PageLanguage << ", ";
-    ss << PageMaterial << ", ";
-    ss << QuestId << ", ";
-    ss << LockId << ", ";
-    ss << LockMaterial << ", ";
-    ss << SheathId << ", ";
-    ss << RandomPropId << ", ";
-    ss << RandomSuffixId << ", ";
-    ss << Block << ", ";
-    ss << ItemSet << ", ";
-    ss << MaxDurability << ", ";
-    ss << ZoneNameID << ", ";
-    ss << MapID << ", ";
-    ss << BagFamily << ", ";
-    ss << TotemCategory << ", ";
-    for(uint32 i = 0; i < 3; i++)
-    {
-        ss << Sockets[i].SocketColor << ", ";
-        ss << Sockets[i].Unk << ", ";
-    }
-    ss << SocketBonus << ", ";
-    ss << GemProperties << ", ";
-    ss << DisenchantReqSkill << ", ";
-    ss << Lootgold << ", ";
-    ss << ArmorDamageModifier << ", ";
-    ss << ItemLimitCategory << ", ";
-    ss << HolidayId << ");";
-    return strdup(ss.str().c_str());
 }

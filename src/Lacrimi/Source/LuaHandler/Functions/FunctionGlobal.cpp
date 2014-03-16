@@ -297,9 +297,7 @@ int LuaGlobalFunctions_ReloadTable(lua_State * L)
     }
     else
     {
-        if (!stricmp(TableName, "items"))                   // Items
-            ItemPrototypeStorage.Reload();
-        else if (!stricmp(TableName, "creature_proto"))     // Creature Proto
+        if (!stricmp(TableName, "creature_proto"))     // Creature Proto
             CreatureProtoStorage.Reload();
         else if (!stricmp(TableName, "creature_names"))     // Creature Names
             CreatureNameStorage.Reload();

@@ -1,7 +1,14 @@
+/*
+ * Thetruecrow
+ * Citric
+ * CactusEMU
+ */
+
 #ifndef DBCFILE_H
 #define DBCFILE_H
 #include <cassert>
 #include <string>
+#include "MPQFile.h"
 
 class DBCFile
 {
@@ -10,7 +17,7 @@ public:
     ~DBCFile();
 
     // Open database. It must be openened before it can be used.
-    void open();
+    bool open();
 
     // Database exceptions
     class Exception
@@ -70,13 +77,13 @@ public:
     class Iterator
     {
     public:
-        Iterator(DBCFile &file, unsigned char *offset): 
+        Iterator(DBCFile &file, unsigned char *offset):
             record(file, offset) {}
         /// Advance (prefix only)
-        Iterator & operator++() { 
+        Iterator & operator++() {
             record.offset += record.file.recordSize;
-            return *this; 
-        }   
+            return *this;
+        }
         /// Return address of current instance
         Record const & operator*() const { return record; }
         const Record* operator->() const {
@@ -116,3 +123,4 @@ private:
 };
 
 #endif
+

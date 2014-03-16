@@ -199,7 +199,7 @@ bool Player::IsHostileBasedOnReputation(FactionDBC * dbc)
 void Player::ModStanding(uint32 Faction, int32 Value)
 {
     ReputationMap::iterator itr = m_reputation.find(Faction);
-    FactionDBC* dbc = dbcFaction.LookupEntryForced(Faction);
+    FactionDBC* dbc = dbcFaction.LookupEntry(Faction);
     if (dbc == NULL || dbc->RepListId < 0)
         return;
 
@@ -388,11 +388,11 @@ bool Player::AddNewFaction( FactionDBC * dbc, int32 standing, bool base )
     uint32 ClassMask = getClassMask();
     for ( uint32 i = 0; i < 4; i++ )
     {
-        if( ( dbc->baseRepMask[i] & RaceMask || ( dbc->baseRepMask[i] == 0 && dbc->baseRepClassMask[i] != 0 ) ) &&
-            ( dbc->baseRepClassMask[i] & ClassMask || dbc->baseRepClassMask[i] == 0 ) )
+        if( ( dbc->RaceMask[i] & RaceMask || ( dbc->RaceMask[i] == 0 && dbc->ClassMask[i] != 0 ) ) &&
+            ( dbc->ClassMask[i] & ClassMask || dbc->ClassMask[i] == 0 ) )
         {
             FactionReputation * rep = new FactionReputation;
-            rep->flag = uint8(dbc->reputationFlags[i]);
+            rep->flag = uint8(dbc->repFlags[i]);
             rep->baseStanding = dbc->baseRepValue[i];
             rep->standing = ( base ) ? dbc->baseRepValue[i] : standing;
             m_reputation[dbc->ID] = rep;

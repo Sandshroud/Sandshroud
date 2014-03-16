@@ -567,7 +567,7 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recv_data )
         }
     }
 
-    emoteentry *em = dbcEmoteEntry.LookupEntry(text_emote);
+    EmoteEntry *em = dbcEmoteEntry.LookupEntry(text_emote);
     if(em)
     {
         WorldPacket data(SMSG_EMOTE, 28 + namelen);
@@ -811,7 +811,7 @@ bool WorldSession::ValidateText2(std::string text)
             return false;
         ///////////////////////////////////////////////////////////////////
 
-        SpellEntry* sp = dbcSpell.LookupEntryForced(SpellId);
+        SpellEntry* sp = dbcSpell.LookupEntry(SpellId);
         if(sp == NULL)
             return false;
         if(strlen(sp->Name) != strlen(tradename))
@@ -935,7 +935,7 @@ bool WorldSession::ValidateText2(std::string text)
             return false;
         ///////////////////////////////////////////////////////////////////
 
-        SpellEntry* sp = dbcSpell.LookupEntryForced(spellid);
+        SpellEntry* sp = dbcSpell.LookupEntry(spellid);
         if(sp == NULL)
             return false;
         if(strlen(sp->Name) != strlen(spellname))

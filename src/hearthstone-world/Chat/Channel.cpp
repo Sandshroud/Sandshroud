@@ -42,7 +42,7 @@ Channel::Channel(const char * name, uint32 team, uint32 type_id, uint32 id)
     m_channelId = id;
     m_deleted = false;
 
-    pDBC = dbcChatChannels.LookupEntryForced(type_id);
+    pDBC = dbcChatChannels.LookupEntry(type_id);
     if( pDBC != NULL )
     {
         m_general = true;

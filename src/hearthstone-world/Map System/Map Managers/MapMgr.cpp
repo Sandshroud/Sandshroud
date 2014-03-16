@@ -2162,7 +2162,7 @@ void MapMgr::RemovePositiveAuraFromPlayers(int32 iFactionMask, uint32 uAuraId)
 
 void MapMgr::CastSpellOnPlayers(int32 iFactionMask, uint32 uSpellId)
 {
-    SpellEntry * sp = dbcSpell.LookupEntryForced(uSpellId);
+    SpellEntry * sp = dbcSpell.LookupEntry(uSpellId);
     if( !sp )
         return;
 

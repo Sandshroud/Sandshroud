@@ -820,8 +820,8 @@ void GameObject::Damage()
     SetFlags(GO_FLAG_DAMAGED);
     if(pInfo->DestructableBuilding.DestructibleData != 0)
     {
-        DestructibleModelDataEntry * display = dbcDestructibleModelDataEntry.LookupEntry( pInfo->DestructableBuilding.DestructibleData );
-        SetDisplayId(display->GetDisplayId(1));
+        if(DestructibleModelDataEntry *display = NULL)//dbcDestructibleModelDataEntry.LookupEntry( pInfo->DestructableBuilding.DestructibleData ))
+            SetDisplayId(display->GetDisplayId(1));
     }
     else
         SetDisplayId(pInfo->DestructableBuilding.DamagedDisplayId);
@@ -833,8 +833,8 @@ void GameObject::Destroy()
     SetFlags(GO_FLAG_DESTROYED);
     if(pInfo->DestructableBuilding.DestructibleData != 0)
     {
-        DestructibleModelDataEntry * display = dbcDestructibleModelDataEntry.LookupEntry( pInfo->DestructableBuilding.DestructibleData );
-        SetDisplayId(display->GetDisplayId(3));
+        if(DestructibleModelDataEntry *display = NULL)//dbcDestructibleModelDataEntry.LookupEntry( pInfo->DestructableBuilding.DestructibleData ))
+            SetDisplayId(display->GetDisplayId(3));
     }
     else
         SetDisplayId(pInfo->DestructableBuilding.DestroyedDisplayId);
@@ -1174,7 +1174,7 @@ void GameObject::Use(Player *p)
         }break;
     case GAMEOBJECT_TYPE_GOOBER:
         {
-            SpellEntry * sp = dbcSpell.LookupEntryForced(goinfo->GetSpellID());
+            SpellEntry * sp = dbcSpell.LookupEntry(goinfo->GetSpellID());
             if(sp == NULL)
             {
                 sLog.outError("Gameobject Type Goober doesn't have a spell to cast or page to read entry %u (May be false positive if object has a script)", goinfo->ID);

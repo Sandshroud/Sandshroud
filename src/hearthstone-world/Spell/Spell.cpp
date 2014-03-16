@@ -236,7 +236,6 @@ Spell::Spell(Object* Caster, SpellEntry *info, bool triggered, Aura* aur)
 
     chaindamage = 0;
     m_spellInfo = info;
-    m_spellInfo_override = NULL;
     m_caster = Caster;
     duelSpell = false;
     m_pushbackCount = 0;
@@ -1775,7 +1774,7 @@ void Spell::cast(bool check)
                         {
                             if( Rand( p_totemOwner->GetDummyAura(SPELL_HASH_EARTHEN_POWER)->RankNumber * 50 ) )
                             {
-                                SpellEntry* totemSpell = dbcSpell.LookupEntryForced( 59566 );
+                                SpellEntry* totemSpell = dbcSpell.LookupEntry( 59566 );
                                 Spell* pSpell = NULLSPELL;
                                 pSpell = (new Spell(u_caster, totemSpell, true, NULLAURA));
                                 SpellCastTargets targets;
@@ -2321,7 +2320,7 @@ void Spell::SendSpellStart()
         if(GetSpellProto()->powerType != POWER_HEALTH)
             cast_flags |= SPELL_CAST_FLAGS_POWER_UPDATE;
 
-    if(p_caster && p_caster->getClass() == DEATHKNIGHT && GetSpellProto()->runeCostID)
+    if(p_caster && p_caster->getClass() == DEATHKNIGHT && GetSpellProto()->RuneCostID)
     {
         cast_flags |= SPELL_CAST_FLAGS_ITEM_CASTER;
         cast_flags |= SPELL_CAST_FLAGS_RUNE_UPDATE;
@@ -2359,7 +2358,7 @@ void Spell::SendSpellStart()
 
     if( cast_flags & SPELL_CAST_FLAGS_RUNE_UPDATE ) //send new runes
     {
-        SpellRuneCostEntry * runecost = dbcSpellRuneCost.LookupEntry(GetSpellProto()->runeCostID);
+        SpellRuneCostEntry * runecost = dbcSpellRuneCost.LookupEntry(GetSpellProto()->RuneCostID);
         uint8 theoretical = p_caster->TheoreticalUseRunes(runecost->bloodRuneCost, runecost->frostRuneCost, runecost->unholyRuneCost);
         data << p_caster->m_runemask << theoretical;
 
@@ -2595,9 +2594,9 @@ bool Spell::HasPower()
     case POWER_TYPE_ENERGY: { powerField = UNIT_FIELD_POWER4; }break;
     case POWER_TYPE_RUNE:
         {
-            if(GetSpellProto()->runeCostID && p_caster)
+            if(GetSpellProto()->RuneCostID && p_caster)
             {
-                SpellRuneCostEntry * runecost = dbcSpellRuneCost.LookupEntry(GetSpellProto()->runeCostID);
+                SpellRuneCostEntry * runecost = dbcSpellRuneCost.LookupEntry(GetSpellProto()->RuneCostID);
                 if( !p_caster->CanUseRunes( runecost->bloodRuneCost, runecost->frostRuneCost, runecost->unholyRuneCost) )
                     return false;
             }
@@ -2678,9 +2677,9 @@ bool Spell::TakePower()
     case POWER_TYPE_RUNIC:  { powerField = UNIT_FIELD_POWER7; }break;
     case POWER_TYPE_RUNE:
         {
-            if(GetSpellProto()->runeCostID && p_caster)
+            if(GetSpellProto()->RuneCostID && p_caster)
             {
-                SpellRuneCostEntry * runecost = dbcSpellRuneCost.LookupEntry(GetSpellProto()->runeCostID);
+                SpellRuneCostEntry * runecost = dbcSpellRuneCost.LookupEntry(GetSpellProto()->RuneCostID);
                 if( !p_caster->CanUseRunes( runecost->bloodRuneCost, runecost->frostRuneCost, runecost->unholyRuneCost) )
                     return false;
 
@@ -4285,9 +4284,6 @@ void Spell::RemoveItems()
 
 int32 Spell::CalculateEffect(uint32 i, Unit* target)
 {
-    if( GetSpellProto()->Id == 3018 )
-        m_spellInfo_override = dbcSpell.LookupEntry(75);
-
     int32 value = 0;
     int32 randomPoints = GetSpellProto()->EffectDieSides[i];
     int32 basePoints = (forced_basepoints[i] ? forced_basepoints[i] : (GetSpellProto()->EffectBasePoints[i]+1));
@@ -4644,7 +4640,7 @@ void Spell::Heal(int32 amount)
 
                     if(unitTarget->GetDistanceSq((*itr)) <= 64.0f)
                     {
-                        SpellEntry* HLH = dbcSpell.LookupEntryForced( 54968 );
+                        SpellEntry* HLH = dbcSpell.LookupEntry( 54968 );
                         Spell* pSpell(new Spell(u_caster, HLH, true, NULLAURA));
                         pSpell->forced_basepoints[0] = GHL;
                         SpellCastTargets tgt;
@@ -4892,20 +4888,20 @@ void Spell::DetermineSkillUp(uint32 skillid)
     if(p_caster == NULL)
         return;
     float chance = 0.0f;
-    skilllinespell* skill = objmgr.GetSpellSkill(GetSpellProto()->Id);
+    SkillLineSpell* skill = objmgr.GetSpellSkill(GetSpellProto()->Id);
     if( skill != NULL && TO_PLAYER( m_caster )->_HasSkillLine( skill->skilline ) )
     {
         uint32 amt = TO_PLAYER( m_caster )->_GetSkillLineCurrent( skill->skilline, false );
         uint32 max = TO_PLAYER( m_caster )->_GetSkillLineMax( skill->skilline );
         if( amt >= max )
             return;
-        if( amt >= skill->grey ) //grey
+        if( amt >= skill->RankMax ) //grey
             chance = 0.0f;
-        else if( ( amt >= ( ( ( skill->grey - skill->green) / 2 ) + skill->green ) ) ) //green
+        else if( ( amt >= ( ( ( skill->RankMax - skill->RankMin) / 2 ) + skill->RankMin ) ) ) //green
             chance = 33.0f;
-        else if( amt >= skill->green ) //yellow
+        else if( amt >= skill->RankMin ) //yellow
             chance = 66.0f;
-        else //brown
+        else //orange
             chance=100.0f;
     }
     if(Rand(chance*sWorld.getRate(RATE_SKILLCHANCE)))

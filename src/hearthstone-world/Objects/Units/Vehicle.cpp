@@ -285,7 +285,7 @@ void Vehicle::SendSpells(uint32 entry, Player* plr)
         if (!spellId)
             continue;
 
-        SpellEntry const *spellInfo = dbcSpell.LookupEntryForced( spellId );
+        SpellEntry const *spellInfo = dbcSpell.LookupEntry( spellId );
         if (!spellInfo)
             continue;
         if(spellInfo->Attributes & ATTRIBUTES_PASSIVE)
@@ -297,7 +297,7 @@ void Vehicle::SendSpells(uint32 entry, Player* plr)
         {
             if(spellInfo->SpellDifficulty && GetMapMgr()->pInstance)
             {
-                SpellDifficultyEntry * sd = dbcSpellDifficulty.LookupEntry(spellInfo->SpellDifficulty);
+                SpellDifficultyEntry * sd = NULL;//dbcSpellDifficulty.LookupEntry(spellInfo->SpellDifficulty);
                 if( sd->SpellId[GetMapMgr()->iInstanceMode] == 0 )
                 {
                     uint32 mode;
@@ -320,7 +320,7 @@ void Vehicle::SendSpells(uint32 entry, Player* plr)
                 {
                     if(IsInInstance())
                     {
-                        if(dbcMap.LookupEntry(GetMapId())->israid()) // Difficulty Check
+                        if(dbcMap.LookupEntry(GetMapId())->IsRaid()) // Difficulty Check
                         {
                             if(plr->iRaidType > MODE_10PLAYER_NORMAL)
                             {

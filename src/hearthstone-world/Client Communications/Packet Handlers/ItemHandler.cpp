@@ -177,7 +177,7 @@ void WorldSession::HandleSwapItemOpcode(WorldPacket& recv_data)
                 }
             }
 
-            if(SrcSlot <  CURRENCYTOKEN_SLOT_END)
+            if(SrcSlot < MAX_INVENTORY_SLOT)
             {
                 if((error = GetPlayer()->GetItemInterface()->CanEquipItemInSlot(SrcInvSlot, SrcSlot, DstItem->GetProto())))
                 {
@@ -221,7 +221,7 @@ void WorldSession::HandleSwapItemOpcode(WorldPacket& recv_data)
                 }
             }
 
-            if(DstSlot <  CURRENCYTOKEN_SLOT_END)
+            if(DstSlot < MAX_INVENTORY_SLOT)
             {
                 if((error=GetPlayer()->GetItemInterface()->CanEquipItemInSlot(DstInvSlot, DstSlot, SrcItem->GetProto())))
                 {
@@ -308,7 +308,7 @@ void WorldSession::HandleSwapInvItemOpcode( WorldPacket & recv_data )
 
     if( ( error = _player->GetItemInterface()->CanEquipItemInSlot( INVENTORY_SLOT_NOT_SET, dstslot, srcitem->GetProto(), skip_combat ) ) )
     {
-        if( dstslot < CURRENCYTOKEN_SLOT_END )
+        if( dstslot < MAX_INVENTORY_SLOT )
         {
             _player->GetItemInterface()->BuildInventoryChangeError( srcitem, dstitem, error );
             return;
@@ -319,7 +319,7 @@ void WorldSession::HandleSwapInvItemOpcode( WorldPacket & recv_data )
     {
         if((error=_player->GetItemInterface()->CanEquipItemInSlot(INVENTORY_SLOT_NOT_SET, srcslot, dstitem->GetProto(), skip_combat)))
         {
-            if(srcslot < CURRENCYTOKEN_SLOT_END)
+            if(srcslot < MAX_INVENTORY_SLOT)
             {
                 data.Initialize( SMSG_INVENTORY_CHANGE_FAILURE );
                 data << error;
@@ -1043,11 +1043,7 @@ void WorldSession::SendInventoryList(Creature* unit)
                     {
                         if(curItem->AllowableClass && !(_player->getClassMask() & curItem->AllowableClass))
                             continue;
-
                         if(curItem->AllowableRace && !(_player->getRaceMask() & curItem->AllowableRace))
-                            continue;
-
-                        if(!CheckItemFaction(curItem->Faction, _player->GetTeam()))
                             continue;
 
                         if(curItem->Class == ITEM_CLASS_ARMOR && curItem->SubClass >= ITEM_SUBCLASS_ARMOR_LIBRAM && curItem->SubClass <= ITEM_SUBCLASS_ARMOR_SIGIL)
@@ -1159,7 +1155,7 @@ void WorldSession::HandleAutoStoreBagItemOpcode( WorldPacket & recv_data )
         {
             if((error=_player->GetItemInterface()->CanEquipItemInSlot(DstInv,  DstInv, srcitem->GetProto())))
             {
-                if(DstInv < CURRENCYTOKEN_SLOT_END)
+                if(DstInv < MAX_INVENTORY_SLOT)
                 {
                     _player->GetItemInterface()->BuildInventoryChangeError(srcitem,dstitem, error);
                     return;
@@ -1242,7 +1238,7 @@ void WorldSession::HandleReadItemOpcode(WorldPacket &recvPacket)
 
 HEARTHSTONE_INLINE uint32 RepairItemCost(Player* pPlayer, Item* pItem)
 {
-    DurabilityCostsEntry * dcosts = dbcDurabilityCosts.LookupEntryForced(pItem->GetProto()->ItemLevel);
+    DurabilityCostsEntry * dcosts = dbcDurabilityCosts.LookupEntry(pItem->GetProto()->ItemLevel);
     if(!dcosts)
     {
         sLog.outDebug("Repair: Unknown item level (%u)", dcosts);
@@ -1569,7 +1565,7 @@ void WorldSession::HandleInsertGemOpcode(WorldPacket &recvPacket)
 {
     uint64 itemguid;
     uint64 gemguid[3];
-    GemPropertyEntry * gp;
+    GemPropertyEntry * gp = NULL;
     EnchantEntry * Enchantment;
     recvPacket >> itemguid;
 
@@ -1602,14 +1598,13 @@ void WorldSession::HandleInsertGemOpcode(WorldPacket &recvPacket)
         EnchantmentInstance * EI = TargetItem->GetEnchantment(2+i);
         if(EI)
         {
+            gp = NULL;
             FilledSlots++;
             ItemPrototype * ip = ItemPrototypeStorage.LookupEntry(EI->Enchantment->GemEntry);
-            if(ip == NULL)
-                gp = 0;
-            else
-                gp = dbcGemProperty.LookupEntry(ip->GemProperties);
+            if(ip != NULL)
+                gp = NULL;//dbcGemProperty.LookupEntry(ip->GemProperties);
 
-            if(gp && !(gp->SocketMask & TargetItem->GetProto()->Sockets[i].SocketColor) && TargetItem->GetProto()->Sockets[i].SocketColor != 0)
+            if(gp && !(gp->SocketMask & TargetItem->GetProto()->ItemSocket[i]) && TargetItem->GetProto()->ItemSocket[i] != 0)
                 ColorMatch[i] = false;
         }
 
@@ -1644,7 +1639,7 @@ void WorldSession::HandleInsertGemOpcode(WorldPacket &recvPacket)
 
                 if( ip->ItemLimitCategory )
                 {
-                    ItemLimitCategoryEntry * il = dbcItemLimitCategory.LookupEntryForced( ip->ItemLimitCategory );
+                    ItemLimitCategoryEntry * il = NULL;//dbcItemLimitCategory.LookupEntry( ip->ItemLimitCategory );
                     if( il != NULL && itemi->GetSocketedGemCountWithLimitId( ip->ItemLimitCategory ) >= il->MaxAmount )
                     {
                         itemi->BuildInventoryChangeError(it, TargetItem, INV_ERR_ITEM_MAX_COUNT_EQUIPPED_SOCKETED);
@@ -1676,10 +1671,10 @@ void WorldSession::HandleInsertGemOpcode(WorldPacket &recvPacket)
                 FilledSlots++;
 
             uint32 EnchantID = 0;
-            gp = dbcGemProperty.LookupEntry(ip->GemProperties);
+            gp = NULL;//dbcGemProperty.LookupEntry(ip->GemProperties);
             if(gp != NULL)
             {
-                if(!(gp->SocketMask & TargetItem->GetProto()->Sockets[i].SocketColor))
+                if(!(gp->SocketMask & TargetItem->GetProto()->ItemSocket[i]))
                     ColorMatch[i] = false;
                 Enchantment = dbcEnchant.LookupEntry(gp->EnchantmentID);
                 if(gp->EnchantmentID && Enchantment != NULL)
@@ -1688,7 +1683,7 @@ void WorldSession::HandleInsertGemOpcode(WorldPacket &recvPacket)
             else
             {   // Lacking DBC data, pull from proto.
                 uint32 gemmask = ConvertDB2DBCGemType(ip->SubClass);
-                if(gemmask == -1 || !(gemmask & TargetItem->GetProto()->Sockets[i].SocketColor))
+                if(gemmask == -1 || !(gemmask & TargetItem->GetProto()->ItemSocket[i]))
                     ColorMatch[i] = false;
 
                 if(ip->GemProperties < 0)
@@ -1707,7 +1702,7 @@ void WorldSession::HandleInsertGemOpcode(WorldPacket &recvPacket)
 
     for(uint32 i = 0; i < 3; i++)
     {
-        if(TargetItem->GetProto()->Sockets[i].SocketColor)
+        if(TargetItem->GetProto()->ItemSocket[i])
         {
             if(i <= TargetItem->GetMaxSocketsCount())
             {

@@ -72,7 +72,7 @@ void ApplyNormalFixes()
                 temp = sp->EffectRadiusIndex[col1_swap];            sp->EffectRadiusIndex[col1_swap] = sp->EffectRadiusIndex[col2_swap];                    sp->EffectRadiusIndex[col2_swap] = temp;
                 temp = sp->EffectApplyAuraName[col1_swap];          sp->EffectApplyAuraName[col1_swap] = sp->EffectApplyAuraName[col2_swap];                sp->EffectApplyAuraName[col2_swap] = temp;
                 temp = sp->EffectAmplitude[col1_swap];              sp->EffectAmplitude[col1_swap] = sp->EffectAmplitude[col2_swap];                        sp->EffectAmplitude[col2_swap] = temp;
-                ftemp = sp->EffectMultipleValue[col1_swap];         sp->EffectMultipleValue[col1_swap] = sp->EffectMultipleValue[col2_swap];                sp->EffectMultipleValue[col2_swap] = ftemp;
+                ftemp = sp->EffectValueMultiplier[col1_swap];       sp->EffectValueMultiplier[col1_swap] = sp->EffectValueMultiplier[col2_swap];            sp->EffectValueMultiplier[col2_swap] = ftemp;
                 temp = sp->EffectChainTarget[col1_swap];            sp->EffectChainTarget[col1_swap] = sp->EffectChainTarget[col2_swap];                    sp->EffectChainTarget[col2_swap] = temp;
                 temp = sp->EffectSpellClassMask[col1_swap][0];      sp->EffectSpellClassMask[col1_swap][0] = sp->EffectSpellClassMask[col2_swap][0];        sp->EffectSpellClassMask[col2_swap][0] = temp;
                 temp = sp->EffectSpellClassMask[col1_swap][1];      sp->EffectSpellClassMask[col1_swap][1] = sp->EffectSpellClassMask[col2_swap][1];        sp->EffectSpellClassMask[col2_swap][1] = temp;
@@ -103,7 +103,7 @@ void ApplyNormalFixes()
                             temp = sp->EffectRadiusIndex[col1_swap];            sp->EffectRadiusIndex[col1_swap] = sp->EffectRadiusIndex[col2_swap];                    sp->EffectRadiusIndex[col2_swap] = temp;
                             temp = sp->EffectApplyAuraName[col1_swap];          sp->EffectApplyAuraName[col1_swap] = sp->EffectApplyAuraName[col2_swap];                sp->EffectApplyAuraName[col2_swap] = temp;
                             temp = sp->EffectAmplitude[col1_swap];              sp->EffectAmplitude[col1_swap] = sp->EffectAmplitude[col2_swap];                        sp->EffectAmplitude[col2_swap] = temp;
-                            ftemp = sp->EffectMultipleValue[col1_swap];         sp->EffectMultipleValue[col1_swap] = sp->EffectMultipleValue[col2_swap];                sp->EffectMultipleValue[col2_swap] = ftemp;
+                            ftemp = sp->EffectValueMultiplier[col1_swap];       sp->EffectValueMultiplier[col1_swap] = sp->EffectValueMultiplier[col2_swap];            sp->EffectValueMultiplier[col2_swap] = ftemp;
                             temp = sp->EffectChainTarget[col1_swap];            sp->EffectChainTarget[col1_swap] = sp->EffectChainTarget[col2_swap];                    sp->EffectChainTarget[col2_swap] = temp;
                             temp = sp->EffectSpellClassMask[col1_swap][0];      sp->EffectSpellClassMask[col1_swap][0] = sp->EffectSpellClassMask[col2_swap][0];        sp->EffectSpellClassMask[col2_swap][0] = temp;
                             temp = sp->EffectSpellClassMask[col1_swap][1];      sp->EffectSpellClassMask[col1_swap][1] = sp->EffectSpellClassMask[col2_swap][1];        sp->EffectSpellClassMask[col2_swap][1] = temp;
@@ -120,7 +120,7 @@ void ApplyNormalFixes()
 
         for(uint32 b = 0; b < 3; ++b)
         {
-            if(sp->EffectTriggerSpell[b] != 0 && dbcSpell.LookupEntryForced(sp->EffectTriggerSpell[b]) == NULL)
+            if(sp->EffectTriggerSpell[b] != 0 && dbcSpell.LookupEntry(sp->EffectTriggerSpell[b]) == NULL)
             {
                 /* proc spell referencing non-existant spell. create a dummy spell for use w/ it. */
                 DummySpells.insert(sp->EffectTriggerSpell[b]);
@@ -148,7 +148,7 @@ void ApplyNormalFixes()
         else
             sp->talent_tree = talentSpellIterator->second;
 
-        skilllinespell *sk = objmgr.GetSpellSkill(sp->Id);
+        SkillLineSpell *sk = objmgr.GetSpellSkill(sp->Id);
         sp->skilline = sk ? sk->skilline : 0;
 
         //Rogue: Posion time fix for 2.3
@@ -365,7 +365,7 @@ void ApplyNormalFixes()
 
                 if(teachspell)
                 {
-                    SpellEntry *spellInfo = dbcSpell.LookupEntryForced(teachspell);
+                    SpellEntry *spellInfo = dbcSpell.LookupEntry(teachspell);
                     if(spellInfo == NULL)
                     {
                         DummySpells.insert(teachspell);
@@ -801,7 +801,7 @@ void ApplyNormalFixes()
         do
         {
             Field * f = resultfcst->Fetch();
-            sp = dbcSpell.LookupEntryForced( f[0].GetUInt32() );
+            sp = dbcSpell.LookupEntry( f[0].GetUInt32() );
             if( sp )
                 sp->forced_creature_target = f[1].GetUInt32();
 
@@ -812,7 +812,7 @@ void ApplyNormalFixes()
 //  GenerateNameHashesFile();
 //  GenerateSpellCoeffFile();
 
-    sp = dbcSpell.LookupEntryForced( 26659 );
+    sp = dbcSpell.LookupEntry( 26659 );
     SpellEntry* sp2 = sp;
     sp2->Id = 62388;
     sp2->Name = ((char*)"Dummy Shit");
@@ -1087,8 +1087,6 @@ SpellEntry* CreateDummySpell(uint32 id)
     sp->Effect[0] = SPELL_EFFECT_DUMMY;
     sp->EffectImplicitTargetA[0] = 25;
     sp->NameHash = crc32((const unsigned char*)name.c_str(), (unsigned int)name.length());
-    sp->dmg_multiplier[0] = 1.0f;
-    sp->StanceBarOrder = -1;
     dbcSpell.SetRow(id, sp);
     sWorld.dummyspells.push_back(sp);
     return sp;

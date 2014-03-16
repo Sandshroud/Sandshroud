@@ -202,7 +202,7 @@ void ObjectMgr::LoadAchievements()
                 acs->insert( ace );
             }
 
-            AchievementEntry * ae = dbcAchievement.LookupEntryForced( ace->referredAchievement );
+            AchievementEntry * ae = dbcAchievement.LookupEntry( ace->referredAchievement );
             if( ae )
             {
                 if(ae->AssociatedCriteriaCount >= 32)
@@ -335,7 +335,7 @@ void ObjectMgr::LoadSpellSkills()
 
     for(i = 0; i < dbcSkillLineSpell.GetNumRows(); i++)
     {
-        skilllinespell *sp = dbcSkillLineSpell.LookupRow(i);
+        SkillLineSpell *sp = dbcSkillLineSpell.LookupRow(i);
         if (sp)
         {
             mSpellSkills[sp->spell] = sp;
@@ -344,7 +344,7 @@ void ObjectMgr::LoadSpellSkills()
     sLog.Notice("ObjectMgr", "%u spell skills loaded.", mSpellSkills.size());
 }
 
-skilllinespell* ObjectMgr::GetSpellSkill(uint32 id)
+SkillLineSpell* ObjectMgr::GetSpellSkill(uint32 id)
 {
     return mSpellSkills[id];
 }
@@ -379,8 +379,8 @@ void ObjectMgr::LoadPlayersInfo()
             pn->lastpositiony = fields[12].GetFloat();
             pn->lastpositionz = fields[13].GetFloat();
             pn->lastorientation = fields[14].GetFloat();
-            CharRaceEntry * race = dbcCharRace.LookupEntryForced(pn->race);
-            pn->team = race->team_id;
+            CharRaceEntry * race = dbcCharRace.LookupEntry(pn->race);
+            pn->team = race->TeamId;
 
             if( GetPlayerInfoByName(pn->name) != NULL )
             {
@@ -1145,7 +1145,7 @@ void ObjectMgr::LoadVendors()
             uint32 ec = fields[6].GetUInt32();
             if( ec != 0 )
             {
-                itm.extended_cost = dbcItemExtendedCost.LookupEntryForced(ec);
+                itm.extended_cost = dbcItemExtendedCost.LookupEntry(ec);
                 if( itm.extended_cost == NULL )
                 {
                     if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
@@ -1221,7 +1221,7 @@ void ObjectMgr::LoadAIThreatToSpellId()
     {
         Field *fields = result->Fetch();
         spellid = fields[0].GetUInt32();
-        sp = dbcSpell.LookupEntryForced( spellid );
+        sp = dbcSpell.LookupEntry( spellid );
         if( sp != NULL )
             sp->ThreatForSpell = fields[1].GetUInt32();
         else
@@ -1277,7 +1277,7 @@ void ObjectMgr::LoadSpellFixes()
 
             if( sf_spellId )
             {
-                sp = dbcSpell.LookupEntryForced( sf_spellId );
+                sp = dbcSpell.LookupEntry( sf_spellId );
                 if( sp != NULL )
                 {
                     if( sf_procFlags )
@@ -1574,14 +1574,14 @@ void ObjectMgr::LoadTrainers()
 
         if( CastSpellID != 0 )
         {
-            ts.pCastSpell = dbcSpell.LookupEntryForced( CastSpellID );
+            ts.pCastSpell = dbcSpell.LookupEntry( CastSpellID );
             if( ts.pCastSpell )
             {
                 for( int k = 0; k < 3; ++k )
                 {
                     if( ts.pCastSpell->Effect[k] == SPELL_EFFECT_LEARN_SPELL )
                     {
-                        ts.pCastRealSpell = dbcSpell.LookupEntryForced(ts.pCastSpell->EffectTriggerSpell[k]);
+                        ts.pCastRealSpell = dbcSpell.LookupEntry(ts.pCastSpell->EffectTriggerSpell[k]);
                         if( ts.pCastRealSpell == NULL )
                         {
                             sLog.Warning("Trainers", "Trainer %u contains cast spell %u that is non-teaching", entry, CastSpellID);
@@ -1596,7 +1596,7 @@ void ObjectMgr::LoadTrainers()
         }
 
         if( LearnSpellID != 0 )
-            ts.pLearnSpell = dbcSpell.LookupEntryForced( LearnSpellID );
+            ts.pLearnSpell = dbcSpell.LookupEntry( LearnSpellID );
 
         if( ts.pCastSpell == NULL && ts.pLearnSpell == NULL )
         {
@@ -2460,7 +2460,7 @@ bool ObjectMgr::HandleInstanceReputationModifiers(Player* pPlayer, Unit* pVictim
 
     is_boss = (TO_CREATURE( pVictim )->proto && TO_CREATURE( pVictim )->proto->boss) ? true : false;
 
-    if(map->israid()) // We are good here I guess.
+    if(map->IsRaid()) // We are good here I guess.
         is_heroic = (pPlayer->IsInWorld() && pPlayer->iRaidType >= MODE_10PLAYER_HEROIC && pPlayer->GetMapMgr()->GetMapInfo()->type != INSTANCE_NULL) ? true : false;
     else
         is_heroic = (pPlayer->IsInWorld() && pPlayer->iInstanceType == MODE_5PLAYER_HEROIC && pPlayer->GetMapMgr()->GetMapInfo()->type != INSTANCE_NULL) ? true : false;
@@ -2519,7 +2519,7 @@ void ObjectMgr::ReloadDisabledSpells()
 
 void ObjectMgr::HashWMOAreaTables()
 {
-    for(DBCStorage<WMOAreaTableEntry>::iterator itr = dbcWMOAreaTable.begin(); itr != dbcWMOAreaTable.end(); ++itr)
+    for(ConstructDBCStorageIterator(WMOAreaTableEntry) itr = dbcWMOAreaTable.begin(); itr != dbcWMOAreaTable.end(); ++itr)
     {
         std::pair<uint32, std::pair<uint32, uint32> > WMOID((*itr)->groupId, std::make_pair((*itr)->rootId, (*itr)->adtId));
         WMOAreaTables.insert(std::make_pair(WMOID, *itr));
@@ -2789,7 +2789,7 @@ void ObjectMgr::LoadPetLevelupSpellMap()
 {
     CreatureFamilyEntry * creatureFamily;
     SpellEntry * sp;
-    skilllinespell * sk;
+    SkillLineSpell * sk;
     uint32 count = 0;
 
     for (uint32 i = 0; i < dbcCreatureFamily.GetNumRows(); i++)
@@ -2803,7 +2803,7 @@ void ObjectMgr::LoadPetLevelupSpellMap()
         {
             //Valid skill line?
             sk = dbcSkillLineSpell.LookupEntry(j);
-            if(!sk || sk->racemask != 0 || sk->classmask != 0)
+            if(!sk || sk->raceMask != 0 || sk->classMask != 0)
                 continue;
 
             //Vaild pet-family spell?

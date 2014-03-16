@@ -637,8 +637,8 @@ uint32 CalculateDamage( Unit* pAttacker, Unit* pVictim, uint32 weapon_damage_typ
     float max_damage = pAttacker->GetFloatValue(offset+1);
     if(it)
     {
-        min_damage -= it->GetProto()->Damage[0].Min;
-        max_damage -= it->GetProto()->Damage[0].Max;
+        min_damage -= it->GetProto()->minDamage;
+        max_damage -= it->GetProto()->maxDamage;
     }
 
     float ap = 0;
