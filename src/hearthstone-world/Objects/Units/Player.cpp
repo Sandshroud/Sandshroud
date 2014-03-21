@@ -1519,9 +1519,9 @@ void Player::_EventExploration()
         return;
     }
 
-    AreaTable* at = dbcArea.LookupEntry(m_areaId);
+    AreaTableEntry* at = dbcAreaTable.LookupEntry(m_areaId);
     if(at == NULL)
-        at = dbcArea.LookupEntry(m_zoneId); // These maps need their own chat channels.
+        at = dbcAreaTable.LookupEntry(m_zoneId); // These maps need their own chat channels.
     if(at == NULL)
     {
         if(m_FlyingAura)
@@ -3914,7 +3914,7 @@ uint32 Player::FindHighestRankingSpellWithNamehash(uint32 namehash)
 // Use instead of cold weather flying
 bool Player::CanFlyInCurrentZoneOrMap()
 {
-    AreaTable *area = dbcArea.LookupEntry(GetAreaId());
+    AreaTableEntry *area = dbcAreaTable.LookupEntry(GetAreaId());
     if(area == NULL || !(area->AreaFlags & AREA_FLYING_PERMITTED))
         return false; // can't fly in non-flying zones
 
@@ -8235,14 +8235,14 @@ void Player::RegenerateHealth( bool inCombat )
 
     float Spirit = (float) GetUInt32Value(UNIT_FIELD_STAT4);
     uint8 Class = getClass(), level = ((getLevel() > MAXIMUM_ATTAINABLE_LEVEL) ? MAXIMUM_ATTAINABLE_LEVEL : getLevel());
-    gtFloat *HPRegen = dbcHPRegen.LookupEntry((Class-1)*MAXIMUM_ATTAINABLE_LEVEL + (level-1)), *HPRegenBase = dbcHPRegenBase.LookupEntry((Class-1)*MAXIMUM_ATTAINABLE_LEVEL + (level-1));
-    if(HPRegen == NULL && HPRegenBase == NULL)
+    gtFloat *HPRegen = dbcHPRegen.LookupEntry((Class-1)*MAXIMUM_ATTAINABLE_LEVEL + (level-1));
+    if(HPRegen == NULL)
         return;
 
     // This has some bad naming. HPRegen* is actually out of combat base, while HPRegenBase* is mana per spirit.
     float basespirit = ((Spirit > 50) ? 50 : Spirit);
     float basespiritdiff = Spirit - basespirit;
-    float amt = ((basespirit *HPRegen->val) + (basespiritdiff*HPRegenBase->val));
+    float amt = ((basespiritdiff *HPRegen->val)+basespirit);
 
     if(PctRegenModifier)
         amt += (amt * PctRegenModifier) / 100;
@@ -8944,7 +8944,7 @@ void Player::Gossip_Complete()
     CleanupGossipMenu();
 }
 
-bool Player::AllowChannelAtLocation(uint32 dbcID, AreaTable *areaTable)
+bool Player::AllowChannelAtLocation(uint32 dbcID, AreaTableEntry *areaTable)
 {
     bool result = true;
     switch(dbcID)
@@ -8962,7 +8962,7 @@ bool Player::AllowChannelAtLocation(uint32 dbcID, AreaTable *areaTable)
     return result;
 }
 
-bool Player::UpdateChatChannel(const char* areaName, AreaTable *areaTable, ChatChannelDBC* entry, Channel* channel)
+bool Player::UpdateChatChannel(const char* areaName, AreaTableEntry *areaTable, ChatChannelDBC* entry, Channel* channel)
 {
     if(!AllowChannelAtLocation(entry->id, areaTable))
     {
@@ -8995,9 +8995,9 @@ bool Player::UpdateChatChannel(const char* areaName, AreaTable *areaTable, ChatC
 void Player::EventDBCChatUpdate(uint32 dbcID)
 {
     char areaName[255];
-    AreaTable *areaTable = dbcArea.LookupEntry(m_zoneId);
+    AreaTableEntry *areaTable = dbcAreaTable.LookupEntry(m_zoneId);
     if(areaTable == NULL)
-        areaTable = dbcArea.LookupEntry(m_areaId);
+        areaTable = dbcAreaTable.LookupEntry(m_areaId);
     if(areaTable)
         sprintf(areaName, "%s", areaTable->name);
     else if(IsInWorld() && GetMapMgr()->GetMapInfo())
@@ -9562,7 +9562,7 @@ void Player::SafeTeleport(MapMgr* mgr, LocationVector vec, int32 phase)
 
 void Player::UpdatePvPArea()
 {
-    AreaTable *areaDBC = dbcArea.LookupEntry(GetAreaId()), *zoneDBC = dbcArea.LookupEntry(GetZoneId());
+    AreaTableEntry *areaDBC = dbcAreaTable.LookupEntry(GetAreaId()), *zoneDBC = dbcAreaTable.LookupEntry(GetZoneId());
     if(areaDBC == NULL)
     {
         RemoveFFAPvPFlag();
@@ -9683,7 +9683,7 @@ void Player::PvPToggle()
     if( sWorld.FunServerMall != -1 && GetAreaId() == (uint32)sWorld.FunServerMall )
         return;
 
-    AreaTable* at = dbcArea.LookupEntry(GetAreaId());
+    AreaTableEntry* at = dbcAreaTable.LookupEntry(GetAreaId());
     if(!sWorld.IsPvPRealm)
     {
         if(m_pvpTimer > 0)

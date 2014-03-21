@@ -85,7 +85,7 @@ bool DeathGrip(uint32 i, Spell* pSpell)
         if(!(unitTarget->IsCreature() && isTargetDummy(unitTarget->GetEntry())))
         {
             // Move Effect
-            unitTarget->CastSpellAoF( pSpell->u_caster->GetPositionX(), pSpell->u_caster->GetPositionY(), pSpell->u_caster->GetPositionZ(), dbcSpell.LookupEntryForced(49575), true);
+            unitTarget->CastSpellAoF( pSpell->u_caster->GetPositionX(), pSpell->u_caster->GetPositionY(), pSpell->u_caster->GetPositionZ(), dbcSpell.LookupEntry(49575), true);
             pSpell->u_caster->CastSpell( unitTarget, 51399, true ); // Taunt Effect
         }
     }

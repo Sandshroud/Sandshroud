@@ -104,7 +104,7 @@ void LootMgr::LoadDelayedLoot()
     is_loading = false;
 }
 
-RandomProps * LootMgr::GetRandomProperties(ItemPrototype * proto)
+ItemRandomPropertiesEntry* LootMgr::GetRandomProperties(ItemPrototype * proto)
 {
     map<uint32,RandomPropertyVector>::iterator itr;
 
@@ -115,10 +115,10 @@ RandomProps * LootMgr::GetRandomProperties(ItemPrototype * proto)
     if(itr==_randomprops.end())
         return NULL;
 
-    return RandomChoiceVector<RandomProps>(itr->second);
+    return RandomChoiceVector<ItemRandomPropertiesEntry>(itr->second);
 }
 
-RandomSuffixEntry * LootMgr::GetRandomSuffix(ItemPrototype * proto)
+ItemRandomSuffixEntry * LootMgr::GetRandomSuffix(ItemPrototype * proto)
 {
     map<uint32,RandomSuffixVector>::iterator itr;
 
@@ -129,7 +129,7 @@ RandomSuffixEntry * LootMgr::GetRandomSuffix(ItemPrototype * proto)
     if(itr==_randomsuffix.end())
         return NULL;
 
-    return RandomChoiceVector<RandomSuffixEntry>(itr->second);
+    return RandomChoiceVector<ItemRandomSuffixEntry>(itr->second);
 }
 
 
@@ -137,8 +137,8 @@ void LootMgr::LoadLootProp()
 {
     QueryResult * result = WorldDatabase.Query("SELECT * FROM item_randomprop_groups");
     uint32 id, eid;
-    RandomProps * rp;
-    RandomSuffixEntry * rs;
+    ItemRandomPropertiesEntry * rp;
+    ItemRandomSuffixEntry * rs;
     float ch;
 
     if(result)
@@ -150,7 +150,7 @@ void LootMgr::LoadLootProp()
             eid = result->Fetch()[1].GetUInt32();
             ch = result->Fetch()[2].GetFloat();
 
-            rp = dbcRandomProps.LookupEntry(eid);
+            rp = dbcItemRandomProperties.LookupEntry(eid);
             if(rp == NULL)
             {
                 sLog.Error("LoadLootProp", "RandomProp group %u references non-existant randomprop %u.", id, eid);
@@ -181,7 +181,7 @@ void LootMgr::LoadLootProp()
             eid = result->Fetch()[1].GetUInt32();
             ch = result->Fetch()[2].GetFloat();
 
-            rs = NULL;//dbcItemRandomSuffix.LookupEntry(eid);
+            rs = dbcItemRandomSuffix.LookupEntry(eid);
             if(rs == NULL)
             {
                 sLog.Error("LoadLootProp", "RandomSuffix group %u references non-existant randomsuffix %u.", id, eid);

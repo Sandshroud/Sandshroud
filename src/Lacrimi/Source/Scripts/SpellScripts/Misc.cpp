@@ -652,7 +652,7 @@ bool Todo2(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targ
     case 18118:
         {
             //only trigger effect for specified spells
-            skilllinespell* skillability = objmgr.GetSpellSkill(casting->Id);
+            SkillLineSpell* skillability = objmgr.GetSpellSkill(casting->Id);
             if( !skillability )
                 return false;
 
@@ -1592,7 +1592,7 @@ bool Todo2(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targ
                                 if( p_target->GetPowerType() != POWER_TYPE_MANA )
                                     return false;
 
-                                SpellEntry* Replinishment = dbcSpell.LookupEntryForced( 57669 );
+                                SpellEntry* Replinishment = dbcSpell.LookupEntry( 57669 );
                                 Spell* pSpell = NULLSPELL;
                                 pSpell = (new Spell(TO_PLAYER( target ), Replinishment, true, NULLAURA));
                                 pSpell->forced_basepoints[0] = float2int32(p_target->GetUInt32Value(UNIT_FIELD_BASE_MANA) * 0.0025f);
@@ -1615,7 +1615,7 @@ bool Todo2(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targ
             if( !target->IsPlayer() )
                 return false;
 
-            SpellRuneCostEntry * sr = dbcSpellRuneCost.LookupEntryForced( casting->runeCostID );
+            SpellRuneCostEntry * sr = dbcSpellRuneCost.LookupEntry( casting->RuneCostID );
             if( !sr || sr->bloodRuneCost == 0 ) // not costing blood.
                 return false;
             if( TO_PLAYER(target)->m_runes[0] == RUNE_TYPE_BLOOD || TO_PLAYER(target)->m_runes[1] == RUNE_TYPE_BLOOD )

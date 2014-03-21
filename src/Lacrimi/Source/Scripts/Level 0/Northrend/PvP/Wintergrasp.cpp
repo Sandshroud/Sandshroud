@@ -409,7 +409,7 @@ void WintergraspScript::UpdateWorldState(uint32 WorldState, uint32 Value)
 void WintergraspScript::OnChangeArea(Player* pPlayer, uint32 ZoneID, uint32 NewAreaID, uint32 OldAreaID)
 {
     bool result = false;
-    AreaTable *area = dbcArea.LookupEntryForced(NewAreaID);
+    AreaTableEntry *area = dbcAreaTable.LookupEntry(NewAreaID);
     if(NewAreaID == ZONE_WINTERGRASP || (area != NULL && area->ZoneId == ZONE_WINTERGRASP))
     {
         _playerslock.Acquire();

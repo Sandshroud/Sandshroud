@@ -391,37 +391,6 @@ bool World::SetInitialWorldSettings()
         return false;
     }
 
-    /* Convert area table ids/flags */
-    DBCFile area;
-    if( !area.open( format("%s/AreaTable.dbc", sWorld.DBCPath.c_str()).c_str() ) )
-    {
-        sLog.Error( "World", "Cannot find file %s/AreaTable.dbc", sWorld.DBCPath.c_str() );
-        return false;
-    }
-
-    uint32 flag_, area_, zone_;
-    for(uint32 i = 0; i < area.getRecordCount(); i++)
-    {
-        area_ = area.getRecord(i).getUInt(0);
-        flag_ = area.getRecord(i).getUInt(3);
-        zone_ = area.getRecord(i).getUInt(2);
-
-        mAreaIDToTable[flag_] = dbcArea.LookupEntry(area_);
-        if(mZoneIDToTable.find(zone_) != mZoneIDToTable.end())
-        {
-            if(mZoneIDToTable[zone_]->AreaFlags != 312 &&
-                mAreaIDToTable[flag_]->AreaFlags == 312)
-            {
-                // over ride.
-                mZoneIDToTable[zone_] = mAreaIDToTable[flag_];
-            }
-        }
-        else
-        {
-            mZoneIDToTable[zone_] = mAreaIDToTable[flag_];
-        }
-    }
-
     new ObjectMgr();
     new QuestMgr();
     new LootMgr();
@@ -433,6 +402,7 @@ bool World::SetInitialWorldSettings()
     new WarnSystem();
     new Tracker();
     new GuildMgr();
+    new ItemPrototypeSystem();
 
     // Fill the task list with jobs to do.
     TaskList tl;
@@ -459,6 +429,7 @@ bool World::SetInitialWorldSettings()
     tl.wait();
 
     ApplyNormalFixes();
+    ItemPrototypeStorage.Init();
     MAKE_TASK(GuildMgr, LoadAllGuilds);
     MAKE_TASK(GuildMgr, LoadGuildCharters);
     MAKE_TASK(ObjectMgr, LoadQuestPOI);
@@ -578,8 +549,8 @@ bool World::SetInitialWorldSettings()
     }
 
     int8 team = -1;
-    AreaTable *areaentry = NULL;
-    for( ConstructDBCStorageIterator(AreaTable) area_itr = dbcArea.begin(); area_itr != dbcArea.end(); ++area_itr )
+    AreaTableEntry *areaentry = NULL;
+    for( ConstructDBCStorageIterator(AreaTableEntry) area_itr = dbcAreaTable.begin(); area_itr != dbcAreaTable.end(); ++area_itr )
     {
         areaentry = (*area_itr);
         if(areaentry == NULL)

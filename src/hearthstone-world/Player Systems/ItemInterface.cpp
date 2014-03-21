@@ -1735,7 +1735,7 @@ int16 ItemInterface::CanEquipItemInSlot(int16 DstInvSlot, int16 slot, ItemProtot
         if(!m_pOwner->ignoreitemreq_cheat && proto->Class == ITEM_CLASS_ARMOR)
         {
             uint32 subClass = proto->SubClass;
-            if(proto->ScalingStatsEntry > 0) subClass -= 1;
+            //if(subClass && proto->ScalingStatsEntry > 0) subClass -= 1;
             if(!(m_pOwner->GetArmorProficiency()&(((uint32)(1))<<subClass)))
                 return INV_ERR_NO_REQUIRED_PROFICIENCY;
 
@@ -2059,7 +2059,7 @@ int16 ItemInterface::CanEquipItemInSlot(int16 DstInvSlot, int16 slot, ItemProtot
 //-------------------------------------------------------------------//
 //Description: Checks if player can receive the item
 //-------------------------------------------------------------------//
-int8 ItemInterface::CanReceiveItem(ItemPrototype * item, uint32 amount, ExtendedCostEntry *ec)
+int8 ItemInterface::CanReceiveItem(ItemPrototype * item, uint32 amount, ItemExtendedCostEntry *ec)
 {
     if(item == NULL)
         return 0;
@@ -2075,7 +2075,7 @@ int8 ItemInterface::CanReceiveItem(ItemPrototype * item, uint32 amount, Extended
     return 0;
 }
 
-void ItemInterface::BuyItem(ItemPrototype *item, uint32 total_amount, Creature* pVendor, ExtendedCostEntry *ec)
+void ItemInterface::BuyItem(ItemPrototype *item, uint32 total_amount, Creature* pVendor, ItemExtendedCostEntry *ec)
 {
     if(item->BuyPrice)
     {
@@ -2089,18 +2089,11 @@ void ItemInterface::BuyItem(ItemPrototype *item, uint32 total_amount, Creature* 
     {
         for(int i = 0;i<5;++i)
         {
-            if(ec->item[i])
-                m_pOwner->GetItemInterface()->RemoveItemAmt( ec->item[i], total_amount * ec->count[i] );
+            if(ec->reqItem[i])
+                m_pOwner->GetItemInterface()->RemoveItemAmt( ec->reqItem[i], total_amount * ec->reqItemCount[i] );
+            /*if(ec->reqCurrency[i])
+                m_pOwner->GetCurrencyInterface();*/
         }
-
-        int32 val = (int32)(ec->honor * total_amount);
-
-        if( m_pOwner->m_honorPoints >= (uint32)val )
-            m_pOwner->m_honorPoints -= val;
-
-        val = (int32)(ec->arena * total_amount);
-        if( m_pOwner->m_arenaPoints >= (uint32)val )
-            m_pOwner->m_arenaPoints -= val;
     }
 }
 
@@ -2118,24 +2111,20 @@ enum CanAffordItem
     CAN_AFFORD_ITEM_ERROR_REPUTATION                = 12,
 };
 
-int8 ItemInterface::CanAffordItem(ItemPrototype * item,uint32 amount, Creature* pVendor, ExtendedCostEntry *ec)
+int8 ItemInterface::CanAffordItem(ItemPrototype * item,uint32 amount, Creature* pVendor, ItemExtendedCostEntry *ec)
 {
     if( ec != NULL )
     {
         for(int i = 0;i<5;++i)
         {
-            if(ec->item[i])
+            if(ec->reqItem[i])
             {
-                if(m_pOwner->GetItemInterface()->GetItemCount(ec->item[i], false) < (ec->count[i]*amount))
+                if(m_pOwner->GetItemInterface()->GetItemCount(ec->reqItem[i], false) < (ec->reqItemCount[i]*amount))
                     return CAN_AFFORD_ITEM_ERROR_DONT_HAVE_ENOUGH_MONEY;
             }
         }
 
-        if(m_pOwner->m_honorPoints < (ec->honor*amount))
-            return CAN_AFFORD_ITEM_ERROR_DONT_HAVE_ENOUGH_MONEY;
-        if(m_pOwner->m_arenaPoints < (ec->arena*amount))
-            return CAN_AFFORD_ITEM_ERROR_DONT_HAVE_ENOUGH_MONEY;
-        if(m_pOwner->GetMaxPersonalRating(ec->Ignore2v2Team > 0) < ec->personalrating)
+        if(m_pOwner->GetMaxPersonalRating(ec->reqArenaSlot > 0) < ec->reqPersonalRating)
             return CAN_AFFORD_ITEM_ERROR_NOT_REQUIRED_RANK;
     }
 

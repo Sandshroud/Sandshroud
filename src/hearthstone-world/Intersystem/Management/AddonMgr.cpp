@@ -120,10 +120,12 @@ void AddonMgr::SendAddonInfoPacket(WorldPacket *source, WorldSession *m_session)
         sLog.Debug("AddonMgr","Warning, Incomplete auth session sent.");
         return;
     }
+    uint32 pos = (*source).rpos();
 
     uLongf rsize = realsize;
     ByteBuffer unpacked(realsize);
-    int32 result = uncompress((uint8*)unpacked.contents(), &rsize, (uint8*)(*source).contents(), (uLong)((*source).size()));
+    unpacked.resize(realsize);
+    int32 result = uncompress((uint8*)unpacked.contents(), &rsize, (uint8*)(*source).contents()+pos, (uLong)((*source).size()-pos));
     if(result != Z_OK)
     {
         sLog.Debug("AddonMgr","Decompression of addon section of CMSG_AUTH_SESSION failed.");
@@ -133,7 +135,12 @@ void AddonMgr::SendAddonInfoPacket(WorldPacket *source, WorldSession *m_session)
     sLog.Debug("AddonMgr","Decompression of addon section of CMSG_AUTH_SESSION succeeded.");
 
     uint32 addonCount;
-    unpacked >> addonCount;
+    try { unpacked >> addonCount; }
+    catch (ByteBufferException &)
+    {
+        sLog.Debug("AddonMgr","Warning, Incomplete auth session sent.");
+        return;
+    }
 
     std::string name;
     uint32 crc, unknown;
@@ -154,14 +161,26 @@ void AddonMgr::SendAddonInfoPacket(WorldPacket *source, WorldSession *m_session)
             return;
         }
 
-        returnpacket << uint8(0x02) << uint8(0x01) << uint8(crc != 0x4C1C776D ? 1 : 0);
-        if (crc != 0x4C1C776D) // CRC of public key version 2.0.1
-            returnpacket.append(publicAddonKey, 256);
-        returnpacket << uint32(0) << uint8(0);
+        returnpacket << uint8(Enable ? 0x02 : 0x01);
+        returnpacket << uint8(Enable ? 0x01 : 0x00);
+        if(Enable)
+        {
+            uint8 unk = (crc != 0x4c1c776d);           // If addon is Standard addon CRC
+            returnpacket << uint8(unk);
+            if (unk)
+                returnpacket.append(publicAddonKey, 256);
+            returnpacket << uint32(0);
+        }
+
+        uint8 unk3 = (Enable ? 0 : 1);
+        returnpacket << uint8(unk3);
+        if (unk3)
+            returnpacket << uint8(0);
     }
 
     uint32 timeStamp;
     unpacked >> timeStamp;
+    returnpacket << uint32(0); // Crow: NOT A TIMESTAMP
     m_session->SendPacket(&returnpacket);
 }
 

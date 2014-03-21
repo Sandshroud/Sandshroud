@@ -360,21 +360,21 @@ int luaItem_HasFlag(lua_State * L, Item * ptr)
 int luaItem_IsSoulbound(lua_State * L, Item * ptr)
 {
     TEST_ITEM_RET();
-    ptr->IsSoulbound() ? lua_pushboolean(L,1) : lua_pushboolean(L,0);
+    lua_pushboolean(L,ptr->IsSoulbound());
     return 1;
 }
 
 int luaItem_IsAccountbound(lua_State * L, Item * ptr)
 {
     TEST_ITEM_RET();
-    (ptr->GetProto()->ScalingStatsEntry > 0) ? lua_pushboolean(L,1) : lua_pushboolean(L,0);
+    lua_pushboolean(L, ptr->IsAccountbound());
     return 1;
 }
 
 int luaItem_IsContainer(lua_State * L, Item * ptr)
 {
     TEST_ITEM_RET();
-    ptr->IsContainer() ? lua_pushboolean(L,1) : lua_pushboolean(L,0);
+    lua_pushboolean(L,ptr->IsContainer());
     return 1;
 }
 

@@ -98,6 +98,7 @@ struct ItemPrototype
     uint32 FoodType;        //pet food type
     int32 ForcedPetId;
     uint32 ItemSetRank;
+    uint32 DisenchantReqSkill;
 
     string ConstructItemLink(uint32 random_prop, uint32 random_suffix, uint32 stack);
     bool ValidateItemLink(const char *szLink);
@@ -138,7 +139,6 @@ public: // Item System
     bool HasHotfix(uint32 entry) { return (Overridden.find(entry) == Overridden.end() ? true : false); };
 
 private:
-    bool initialized;
     iterator find(uint32 entry) { return iterator(ItemPrototypeContainer.find(entry)); }
     std::map<uint32, ItemPrototype*> ItemPrototypeContainer;
     std::map<uint32, uint8> Overridden;

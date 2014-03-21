@@ -432,11 +432,11 @@ void WorldSocket::Authenticate()
 
     SendAuthResponse(AUTH_OK, false);
 
-    /*WorldPacket hotFix(true ? SMSG_HOTFIX_NOTIFY : SMSG_HOTFIX_NOTIFY_BLOP, 100); // Blop or not, client will accept the info
+    WorldPacket hotFix(true ? SMSG_HOTFIX_NOTIFY : SMSG_HOTFIX_NOTIFY_BLOP, 100); // Blop or not, client will accept the info
     hotFix << uint32(0); // count
     hotFix << uint32(true ? 0x919BE54E : 0x50238EC2); // This can be either, the client will ask for both if no current db2 info is found
     uint32 count = 0;
-    for(SULF_MAP<uint32, uint8>::iterator itr = ItemPrototypeStorage.HotfixBegin(); itr != ItemPrototypeStorage.HotfixEnd(); itr++)
+    for(std::map<uint32, uint8>::iterator itr = ItemPrototypeStorage.HotfixBegin(); itr != ItemPrototypeStorage.HotfixEnd(); itr++)
     {
         hotFix << uint32(((itr->second & 0x02) ? 0x50238EC2 : 0x919BE54E));
         hotFix << uint32(UNIXTIME);
@@ -444,7 +444,7 @@ void WorldSocket::Authenticate()
         count++;
     }
     hotFix.put<uint32>(0, count);
-    SendPacket(&hotFix);*/
+    SendPacket(&hotFix);
 
     WorldPacket data(SMSG_CLIENTCACHE_VERSION, 4);
     data << uint32(13623);

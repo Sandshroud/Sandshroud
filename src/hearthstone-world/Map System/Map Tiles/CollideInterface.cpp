@@ -302,7 +302,7 @@ bool VMapInterface::IsIncity(uint32 mapId, float x, float y, float z)
             WMOAreaTableEntry * WMOEntry = objmgr.GetWMOAreaTable(adtId, rootId, groupid);
             if(WMOEntry != NULL)
             {
-                AreaTable* ate = dbcArea.LookupEntry(WMOEntry->areaId);
+                AreaTableEntry* ate = dbcAreaTable.LookupEntry(WMOEntry->areaId);
                 if(ate != NULL)
                 {
                     if(ate->AreaFlags & AREA_CITY_AREA || ate->AreaFlags & AREA_CITY)

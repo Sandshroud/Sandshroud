@@ -3038,7 +3038,7 @@ void Spell::SpellEffectDuel(uint32 i) // Duel
         return;
 
     uint32 areaId = p_caster->GetAreaId();
-    AreaTable * at = dbcArea.LookupEntry(areaId);
+    AreaTableEntry * at = dbcAreaTable.LookupEntry(areaId);
     if( sWorld.FunServerMall != -1 && areaId == (uint32)sWorld.FunServerMall )
     {
         if(at != NULL)
@@ -3670,7 +3670,7 @@ void Spell::SpellEffectDestroyAllTotems(uint32 i)
     uint32 energize_amt = 0;
     for(uint32 x = 0; x < 4; x++)
     {
-        SummonPropertiesEntry * spe = NULL;//dbcSummonProps.LookupEntry(TotemSpells[x]);
+        SummonPropertiesEntry * spe = dbcSummonProperties.LookupEntry(TotemSpells[x]);
         if(spe == NULL)
             continue;
 

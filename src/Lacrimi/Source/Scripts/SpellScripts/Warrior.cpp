@@ -61,7 +61,7 @@ bool Execute(uint32 i, Spell* pSpell)
     if( pSpell->u_caster->HasDummyAura(SPELL_HASH_GLYPH_OF_EXECUTION) )
         rageUsed += 100; //Your Execute ability deals damage as if you had 10 additional rage.
 
-    value += (int32) (rageUsed * pSpell->GetSpellProto()->dmg_multiplier[0]);
+    value += (int32) (rageUsed * pSpell->GetSpellProto()->EffectDamageMultiplier[0]);
     pSpell->u_caster->SetPower(POWER_TYPE_RAGE, rageLeft);
     SpellEntry *spellInfo = dbcSpell.LookupEntry(20647);
     pSpell->TotalDamage += pSpell->u_caster->Strike(unitTarget,MELEE,spellInfo,0,0,value,false,false);

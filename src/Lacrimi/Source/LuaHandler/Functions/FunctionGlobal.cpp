@@ -401,7 +401,7 @@ int LuaGlobalFunctions_SendPvPCaptureMessage(lua_State * L)
 {
     uint32 zoneid = luaL_checkint(L, 1);
     const char* msg = luaL_checkstring(L, 2);
-    AreaTable * at = dbcArea.LookupEntry(zoneid);
+    AreaTableEntry * at = dbcAreaTable.LookupEntry(zoneid);
     if(!zoneid || !msg || !at)
         return 1;
 
@@ -498,7 +498,7 @@ int LuaGlobalFunctions_SetDBCSpellVar(lua_State * L)
     if (subindex)
         valindex++;
 
-    SpellEntry * proto = dbcSpell.LookupEntryForced(entry);
+    SpellEntry * proto = dbcSpell.LookupEntry(entry);
     if (!entry || !var || subindex < 0 || !proto)
         RET_BOOL(false);
 
@@ -533,7 +533,7 @@ int LuaGlobalFunctions_GetDBCSpellVar(lua_State * L)
     uint32 entry = luaL_checkinteger(L,1);
     const char* var = luaL_checkstring(L,2);
     int subindex = luaL_optint(L,3,0);
-    SpellEntry * proto = dbcSpell.LookupEntryForced(entry);
+    SpellEntry * proto = dbcSpell.LookupEntry(entry);
     if (!entry || !var || subindex < 0 || !proto)
         RET_NIL(true);
 

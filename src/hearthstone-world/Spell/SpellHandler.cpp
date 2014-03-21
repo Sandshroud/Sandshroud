@@ -237,7 +237,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         // Some spells the player doesn't actually know, but are given to him by his current shapeshift.
         // These spells should be allowed to be cast.
         uint8 shapeshift = GetPlayer()->GetShapeShift();
-        SpellShapeshiftForm * ssf = NULL;//dbcSpellShapeshiftForm.LookupEntry(shapeshift);
+        SpellShapeshiftFormEntry * ssf = dbcSpellShapeshiftForm.LookupEntry(shapeshift);
         if(!ssf) return;
 
         bool ok = false;

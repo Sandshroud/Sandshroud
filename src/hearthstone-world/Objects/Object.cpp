@@ -3069,7 +3069,7 @@ void Object::UpdateAreaInfo(MapMgr *mgr)
     m_zoneId = m_areaId = mgr->GetAreaID(GetPositionX(), GetPositionY(), GetPositionZ());
     if(uint32 forcedZone = GetZoneForMap(mgr->GetMapId(), m_areaId))
         m_zoneId = m_areaId = forcedZone;
-    AreaTable* at = dbcArea.LookupEntry(m_areaId);
+    AreaTableEntry* at = dbcAreaTable.LookupEntry(m_areaId);
     if(at != NULL && at->ZoneId) // Set our Zone on add to world!
         SetZoneId(at->ZoneId);
 
@@ -3080,9 +3080,9 @@ void Object::UpdateAreaInfo(MapMgr *mgr)
     {
         if(sWorld.CheckSanctuary(GetMapId(), m_zoneId, m_areaId))
             m_areaFlags |= OBJECT_AREA_FLAG_INSANCTUARY;
-        AreaTable* at = dbcArea.LookupEntry(m_areaId);
+        AreaTableEntry* at = dbcAreaTable.LookupEntry(m_areaId);
         if(at == NULL)
-            at = dbcArea.LookupEntry(m_zoneId);
+            at = dbcAreaTable.LookupEntry(m_zoneId);
         if(at)
         {
             if(at->category == AREAC_CONTESTED)

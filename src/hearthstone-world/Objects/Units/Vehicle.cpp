@@ -297,7 +297,7 @@ void Vehicle::SendSpells(uint32 entry, Player* plr)
         {
             if(spellInfo->SpellDifficulty && GetMapMgr()->pInstance)
             {
-                SpellDifficultyEntry * sd = NULL;//dbcSpellDifficulty.LookupEntry(spellInfo->SpellDifficulty);
+                SpellDifficultyEntry * sd = dbcSpellDifficulty.LookupEntry(spellInfo->SpellDifficulty);
                 if( sd->SpellId[GetMapMgr()->iInstanceMode] == 0 )
                 {
                     uint32 mode;
