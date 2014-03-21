@@ -1065,7 +1065,7 @@ void WorldSession::SendInventoryList(Creature* unit)
                 data << itr->second.amount;
 
                 if( itr->second.extended_cost != NULL )
-                    data << itr->second.extended_cost->costid;
+                    data << itr->second.extended_cost->Id;
                 else
                     data << uint32(0);
             }
@@ -1412,25 +1412,19 @@ void WorldSession::HandleRepairItemOpcode(WorldPacket &recvPacket)
 
 void WorldSession::HandleBuyBankSlotOpcode(WorldPacket& recvPacket)
 {
-    CHECK_INWORLD_RETURN();
-    //CHECK_PACKET_SIZE(recvPacket, 12);
-    uint32 bytes,slots;
-    int32 price;
     sLog.Debug("WorldSession","Received CMSG_BUY_bytes_SLOT");
+    CHECK_INWORLD_RETURN();
 
-    bytes = GetPlayer()->GetUInt32Value(PLAYER_BYTES_2);
-    slots =(uint8) (bytes >> 16);
-
-    sLog.Debug("WorldSession","HandleBuyBankSlotOpcode: slot number = %d", slots);
-    BankSlotPrice* bsp = dbcBankSlotPrices.LookupEntry(slots+1);
+    uint8 currentSlot = _player->GetByte(PLAYER_BYTES_2, 3);
+    BankSlotPriceEntry* bsp = dbcBankSlotPrices.LookupEntry(currentSlot+1);
     if(bsp == NULL)
         return;
-    price = (bsp != NULL ) ? bsp->Price : 99999999;
 
-    if ((int32)_player->GetUInt32Value(PLAYER_FIELD_COINAGE) >= price)
+    sLog.Debug("WorldSession","HandleBuyBankSlotOpcode: slot number = %d", currentSlot);
+    if (_player->GetUInt32Value(PLAYER_FIELD_COINAGE) >= bsp->Price)
     {
-        _player->SetUInt32Value(PLAYER_BYTES_2, (bytes&0xff00ffff) | ((slots+1) << 16) );
-        _player->ModUnsigned32Value(PLAYER_FIELD_COINAGE, -price);
+        _player->SetByte(PLAYER_BYTES_2, 3, currentSlot+1);
+        _player->ModUnsigned32Value(PLAYER_FIELD_COINAGE, -((int32)bsp->Price));
         _player->GetAchievementInterface()->HandleAchievementCriteriaBuyBankSlot();
     }
 }
@@ -1602,7 +1596,7 @@ void WorldSession::HandleInsertGemOpcode(WorldPacket &recvPacket)
             FilledSlots++;
             ItemPrototype * ip = ItemPrototypeStorage.LookupEntry(EI->Enchantment->GemEntry);
             if(ip != NULL)
-                gp = NULL;//dbcGemProperty.LookupEntry(ip->GemProperties);
+                gp = dbcGemProperty.LookupEntry(ip->GemProperties);
 
             if(gp && !(gp->SocketMask & TargetItem->GetProto()->ItemSocket[i]) && TargetItem->GetProto()->ItemSocket[i] != 0)
                 ColorMatch[i] = false;
@@ -1639,7 +1633,7 @@ void WorldSession::HandleInsertGemOpcode(WorldPacket &recvPacket)
 
                 if( ip->ItemLimitCategory )
                 {
-                    ItemLimitCategoryEntry * il = NULL;//dbcItemLimitCategory.LookupEntry( ip->ItemLimitCategory );
+                    ItemLimitCategoryEntry * il = dbcItemLimitCategory.LookupEntry( ip->ItemLimitCategory );
                     if( il != NULL && itemi->GetSocketedGemCountWithLimitId( ip->ItemLimitCategory ) >= il->MaxAmount )
                     {
                         itemi->BuildInventoryChangeError(it, TargetItem, INV_ERR_ITEM_MAX_COUNT_EQUIPPED_SOCKETED);
@@ -1671,7 +1665,7 @@ void WorldSession::HandleInsertGemOpcode(WorldPacket &recvPacket)
                 FilledSlots++;
 
             uint32 EnchantID = 0;
-            gp = NULL;//dbcGemProperty.LookupEntry(ip->GemProperties);
+            gp = dbcGemProperty.LookupEntry(ip->GemProperties);
             if(gp != NULL)
             {
                 if(!(gp->SocketMask & TargetItem->GetProto()->ItemSocket[i]))

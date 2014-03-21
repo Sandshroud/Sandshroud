@@ -502,7 +502,7 @@ public:
     HEARTHSTONE_INLINE uint32 GetDifficultySpell(SpellEntry * sp, uint32 difficulty)
     {
         uint32 spellid = 0;
-        SpellDifficultyEntry * sd = NULL;//dbcSpellDifficulty.LookupEntry(sp->SpellDifficulty);
+        SpellDifficultyEntry * sd = dbcSpellDifficulty.LookupEntry(sp->SpellDifficulty);
         if(sd != NULL && sd->SpellId[difficulty] != 0 )
             if(dbcSpell.LookupEntry(sd->SpellId[difficulty]) != NULL)
                 spellid = sd->SpellId[difficulty];

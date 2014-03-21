@@ -87,7 +87,7 @@ bool Vanish(uint32 i, Spell* pSpell)
         pSpell->p_caster->m_AuraInterface.RemoveAllAurasByMechanic(7);
         pSpell->p_caster->m_AuraInterface.RemoveAllAurasByMechanic(11);
         pSpell->p_caster->m_AuraInterface.RemoveAuraNegByNameHash(SPELL_HASH_HUNTER_S_MARK);
-        pSpell->p_caster->CastSpell(pSpell->p_caster->GetGUID(), dbcSpell.LookupEntryForced(1784), true);
+        pSpell->p_caster->CastSpell(pSpell->p_caster->GetGUID(), dbcSpell.LookupEntry(1784), true);
     }
     return true;
 }

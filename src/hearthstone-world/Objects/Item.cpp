@@ -241,7 +241,7 @@ void Item::ApplyRandomProperties( bool apply )
     {
         if( int32( m_uint32Values[ITEM_FIELD_RANDOM_PROPERTIES_ID] ) > 0 )      // Random Property
         {
-            RandomProps* rp= dbcRandomProps.LookupEntry( m_uint32Values[ITEM_FIELD_RANDOM_PROPERTIES_ID] );
+            ItemRandomPropertiesEntry* rp= dbcItemRandomProperties.LookupEntry( m_uint32Values[ITEM_FIELD_RANDOM_PROPERTIES_ID] );
             if(rp == NULL)
                 return;
 
@@ -265,7 +265,7 @@ void Item::ApplyRandomProperties( bool apply )
         }
         else
         {
-            RandomSuffixEntry* rs = NULL;//dbcItemRandomSuffix.LookupEntry( abs( int( m_uint32Values[ITEM_FIELD_RANDOM_PROPERTIES_ID] ) ) );
+            ItemRandomSuffixEntry* rs = dbcItemRandomSuffix.LookupEntry( abs( int( m_uint32Values[ITEM_FIELD_RANDOM_PROPERTIES_ID] ) ) );
             if(rs == NULL)
                 return;
             int32 Slot;
@@ -1156,7 +1156,7 @@ string ItemPrototype::ConstructItemLink(uint32 random_prop, uint32 random_suffix
     // lookup properties
     if( random_prop != 0 )
     {
-        RandomProps *rp = dbcRandomProps.LookupEntry(random_prop);
+        ItemRandomPropertiesEntry *rp = dbcItemRandomProperties.LookupEntry(random_prop);
         if( rp != NULL )
             snprintf(rptxt, 100, " %s", rp->rpname);
     }
@@ -1164,7 +1164,7 @@ string ItemPrototype::ConstructItemLink(uint32 random_prop, uint32 random_suffix
     // suffix
     if( random_suffix != 0 )
     {
-        RandomSuffixEntry *rs = NULL;//dbcItemRandomSuffix.LookupEntry(random_suffix);
+        ItemRandomSuffixEntry *rs = dbcItemRandomSuffix.LookupEntry(random_suffix);
         if( rs != NULL )
             snprintf(rstxt, 100, " %s", rs->name);
     }

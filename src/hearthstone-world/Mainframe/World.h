@@ -234,8 +234,6 @@ struct MapInfo
 
 #pragma pack(PRAGMA_POP)
 
-struct AreaTable;
-
 struct insert_playeritem
 {
     uint32 ownerguid;
@@ -490,8 +488,6 @@ public:
     vector<NameGenData> _namegendata[3];
     void LoadNameGenData();
     std::string GenerateName(uint32 type = 0);
-
-    std::map<uint32, AreaTable*> mAreaIDToTable, mZoneIDToTable;
 
     std::map<uint32,uint32> TeachingSpellMap;
     uint32 GetTeachingSpell(uint32 NormalSpellId)

@@ -43,8 +43,8 @@ private:
     MapMgr* _mgr;
 };
 
-typedef vector<pair<RandomProps*, float> > RandomPropertyVector;
-typedef vector<pair<RandomSuffixEntry*, float> > RandomSuffixVector;
+typedef vector<pair<ItemRandomPropertiesEntry*, float> > RandomPropertyVector;
+typedef vector<pair<ItemRandomSuffixEntry*, float> > RandomSuffixVector;
 
 typedef struct _LootItem
 {
@@ -58,8 +58,8 @@ typedef struct __LootItem
 {
     _LootItem item;
     uint32 StackSize;
-    RandomProps * iRandomProperty;
-    RandomSuffixEntry * iRandomSuffix;
+    ItemRandomPropertiesEntry * iRandomProperty;
+    ItemRandomSuffixEntry * iRandomSuffix;
     LootRoll* roll;
     bool passed;
     LooterSet has_looted;
@@ -169,8 +169,8 @@ public:
     LootStore   PickpocketingLoot;
     std::map<uint32, std::set<uint32> > quest_loot_go;
 
-    RandomProps * GetRandomProperties(ItemPrototype * proto);
-    RandomSuffixEntry * GetRandomSuffix(ItemPrototype * proto);
+    ItemRandomPropertiesEntry* GetRandomProperties(ItemPrototype * proto);
+    ItemRandomSuffixEntry * GetRandomSuffix(ItemPrototype * proto);
 
     bool is_loading;
 

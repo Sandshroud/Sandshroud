@@ -870,8 +870,8 @@ void WorldSession::HandleAlterAppearance(WorldPacket & recv_data)
     uint32 hair, colour, facialhair;
     recv_data >> hair >> colour >> facialhair;
 
-    BarberShopStyleEntry * Hair = NULL;//dbcBarberShopStyle.LookupEntry(hair);
-    BarberShopStyleEntry * facialHair = NULL;//dbcBarberShopStyle.LookupEntry(facialhair);
+    BarberShopStyleEntry * Hair = dbcBarberShopStyle.LookupEntry(hair);
+    BarberShopStyleEntry * facialHair = dbcBarberShopStyle.LookupEntry(facialhair);
     if(!facialHair || !Hair)
         return;
 

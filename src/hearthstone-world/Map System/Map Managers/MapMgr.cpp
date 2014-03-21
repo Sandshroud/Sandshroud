@@ -1105,7 +1105,7 @@ void MapMgr::UpdateAllCells(bool apply, uint32 areamask)
                 if(!GetBaseMap()->CellHasAreaID(x, y, AreaID))
                     continue;
 
-                AreaTable* at = dbcArea.LookupEntry( AreaID );
+                AreaTableEntry* at = dbcAreaTable.LookupEntry( AreaID );
                 if(at == NULL)
                     continue;
                 if(at->ZoneId != areamask)

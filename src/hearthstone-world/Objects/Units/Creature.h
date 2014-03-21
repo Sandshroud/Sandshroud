@@ -20,7 +20,7 @@ struct CreatureItem
     uint32 max_amount;
     uint32 incrtime;
     uint32 vendormask;
-    ExtendedCostEntry *extended_cost;
+    ItemExtendedCostEntry *extended_cost;
     bool IsDependent;
 };
 

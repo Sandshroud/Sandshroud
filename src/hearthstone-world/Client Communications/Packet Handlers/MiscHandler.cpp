@@ -1084,7 +1084,7 @@ void WorldSession::HandleTogglePVPOpcode(WorldPacket& recv_data)
     uint32 areaId = _player->GetAreaId();
     if(sWorld.FunServerMall != -1 && areaId == (uint32)sWorld.FunServerMall)
     {
-        if(AreaTable *at = dbcArea.LookupEntry(areaId))
+        if(AreaTableEntry *at = dbcAreaTable.LookupEntry(areaId))
         {
             error.append("You cannot flag for PvP while in the area: ");
             error.append(at->name);

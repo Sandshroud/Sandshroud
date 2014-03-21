@@ -163,13 +163,13 @@ bool Illumination(uint32 i, Spell* pSpell)
                 uint32 maxmana = pSpell->p_caster->GetUInt32Value(UNIT_FIELD_MAXPOWER1);
                 cost = maxmana*(float(sp->ManaCostPercentage)/100);
             }
-            else if(sp->manaCostPerlevel)
+            else if(sp->ManaCostPerlevel)
             {
-                cost = sp->manaCostPerlevel*pSpell->p_caster->getLevel();
+                cost = sp->ManaCostPerlevel*pSpell->p_caster->getLevel();
             }
-            else if(sp->manaCost)
+            else if(sp->ManaCost)
             {
-                cost = sp->manaCost;
+                cost = sp->ManaCost;
             }
 
             if(cost > 0)
@@ -188,7 +188,7 @@ bool Illumination(uint32 i, Spell* pSpell)
 
 bool JudgementsoftheWise(uint32 i, Spell* pSpell)
 {
-    SpellEntry* Replinishment = dbcSpell.LookupEntryForced( 57669 );
+    SpellEntry* Replinishment = dbcSpell.LookupEntry( 57669 );
     if( pSpell->p_caster != NULL && Replinishment != NULL )
     {
         //cast Replenishment
@@ -323,7 +323,7 @@ void ShieldOfRighteousness(uint32 i, Spell* pSpell, uint32 effect)
             Item* it = TO_ITEM(pSpell->p_caster->GetItemInterface()->GetInventoryItem(EQUIPMENT_SLOT_OFFHAND));
             if( it && it->GetProto() && it->GetProto()->InventoryType == INVTYPE_SHIELD )
             {
-                pSpell->damage += float2int32(1.3f * it->GetProto()->Block);
+                //pSpell->damage += float2int32(1.3f * it->GetProto()->Block);
             }
         }
     }

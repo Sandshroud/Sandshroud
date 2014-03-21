@@ -658,7 +658,7 @@ void Creature::AddVendorItem(uint32 itemid, uint32 amount, uint32 vendormask, ui
     ci.vendormask = vendormask;
     ci.extended_cost = NULL;
     if(ec)
-        ci.extended_cost = NULL;//dbcItemExtendedCost.LookupEntry(ec);
+        ci.extended_cost = dbcItemExtendedCost.LookupEntry(ec);
 
     if(!m_SellItems)
     {
