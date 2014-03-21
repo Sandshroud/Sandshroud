@@ -251,7 +251,7 @@ void Spell::SpellEffectSummon(uint32 i)
     if(u_caster == NULL )
          return;
 
-    SummonPropertiesEntry * spe = NULL;//dbcSummonProps.LookupEntry( GetSpellProto()->EffectMiscValueB[i] );
+    SummonPropertiesEntry * spe = dbcSummonProperties.LookupEntry( GetSpellProto()->EffectMiscValueB[i] );
     if( spe == NULL )
         return;
 

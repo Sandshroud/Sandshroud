@@ -448,7 +448,7 @@ void AIInterface::CallGuards()
     {
         m_guardTimer = getMSTime() + 15000;
         uint16 AreaId = m_Creature->GetAreaId();
-        AreaTable * at = dbcArea.LookupEntry(AreaId);
+        AreaTableEntry * at = dbcAreaTable.LookupEntry(AreaId);
         if(at == NULL)
             return;
 

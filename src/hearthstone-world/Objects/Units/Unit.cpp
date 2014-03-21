@@ -5007,7 +5007,7 @@ uint32 Unit::GetCreatureType()
         Player *plr = TO_PLAYER(this);
         if(plr->GetShapeShift())
         {
-            SpellShapeshiftForm* ssf = dbcSpellShapeshiftForm.LookupEntry(plr->GetShapeShift());
+            SpellShapeshiftFormEntry* ssf = dbcSpellShapeshiftForm.LookupEntry(plr->GetShapeShift());
             if(ssf && ssf->creatureType)
                 return ssf->creatureType;
             else

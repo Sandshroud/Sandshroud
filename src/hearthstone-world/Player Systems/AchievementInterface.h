@@ -153,11 +153,6 @@ enum AchievementCriteriaCompletionFlags
     ACHIEVEMENT_CRITERIA_COMPLETE_ONE_FLAG = 2,
 };
 
-enum AchievementCriteriaGroupFlags
-{
-    ACHIEVEMENT_CRITERIA_GROUP_NOT_IN_GROUP = 2,
-};
-
 inline uint32 unixTimeToTimeBitfields(time_t secs)
 {
     tm* lt = localtime(&secs);

@@ -83,7 +83,7 @@ public:
     uint32 RemoveItemAmt_ProtectPointer(uint32 id, uint32 amt, Item** pointer);
     uint32 RemoveItemAmtByGuid(uint64 guid, uint32 amt);
     void RemoveAllConjured();
-    void BuyItem(ItemPrototype *item, uint32 total_amount, Creature* pVendor, ExtendedCostEntry *ec);
+    void BuyItem(ItemPrototype *item, uint32 total_amount, Creature* pVendor, ItemExtendedCostEntry *ec);
 
     uint32 CalculateFreeSlots(ItemPrototype *proto);
     void ReduceItemDurability();
@@ -103,8 +103,8 @@ public:
     uint32 GetEquippedCountByItemLimit(uint32 LimitId);
     int16 CanEquipItemInSlot(int16 DstInvSlot, int16 slot, ItemPrototype* item, bool ignore_combat = false, bool skip_2h_check = false);
     int16 CanEquipItemInSlot2(int8 DstInvSlot, int8 slot, Item* item, bool ignore_combat = false, bool skip_2h_check = false);
-    int8 CanReceiveItem(ItemPrototype * item, uint32 amount, ExtendedCostEntry *ec);
-    int8 CanAffordItem(ItemPrototype * item,uint32 amount, Creature* pVendor, ExtendedCostEntry *ec);
+    int8 CanReceiveItem(ItemPrototype * item, uint32 amount, ItemExtendedCostEntry *ec);
+    int8 CanAffordItem(ItemPrototype * item,uint32 amount, Creature* pVendor, ItemExtendedCostEntry *ec);
     int8 GetItemSlotByType(ItemPrototype* proto);
     Item* GetItemByGUID(uint64 itemGuid);
 

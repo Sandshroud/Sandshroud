@@ -877,8 +877,8 @@ public:
 public:
     void EventDBCChatUpdate(uint32 dbcID);
 protected:
-    bool AllowChannelAtLocation(uint32 dbcID, AreaTable *areaTable);
-    bool UpdateChatChannel(const char* areaName, AreaTable *areaTable, ChatChannelDBC* entry, Channel* channel);
+    bool AllowChannelAtLocation(uint32 dbcID, AreaTableEntry *areaTable);
+    bool UpdateChatChannel(const char* areaName, AreaTableEntry *areaTable, ChatChannelDBC* entry, Channel* channel);
 
 protected:
 

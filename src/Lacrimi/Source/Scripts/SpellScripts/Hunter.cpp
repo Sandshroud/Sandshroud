@@ -41,7 +41,7 @@ bool ChimeraShotEffect(uint32 i, Spell* pSpell)
                 {
                     uint32 ticks = float2int32(actdur * 0.003f);
 
-                    SpellEntry* spellInfo = dbcSpell.LookupEntryForced( 53353 );
+                    SpellEntry* spellInfo = dbcSpell.LookupEntry( 53353 );
                     Spell* sp = new Spell( pSpell->p_caster, spellInfo, true, NULLAURA );
                     sp->forced_basepoints[0] = float2int32(((sting_proto->EffectBasePoints[0] / 5) * ticks) * 0.4f);
                     SpellCastTargets tgt;
@@ -52,7 +52,7 @@ bool ChimeraShotEffect(uint32 i, Spell* pSpell)
                 {
                     uint32 ticks = float2int32(actdur * 0.002f);
 
-                    SpellEntry* spellInfo = dbcSpell.LookupEntryForced( 53358 );
+                    SpellEntry* spellInfo = dbcSpell.LookupEntry( 53358 );
                     Spell* sp = new Spell( pSpell->p_caster, spellInfo, true, NULLAURA );
                     sp->forced_basepoints[0] = float2int32(((unitTarget->GetUInt32Value(UNIT_FIELD_MAXPOWER1) * 0.04f) * ((16 / 4) * ticks)) * 0.6f);
                     SpellCastTargets tgt;

@@ -1,19 +1,15 @@
 
 #include "StdAfx.h"
 
+initialiseSingleton( ItemPrototypeSystem );
+
 void ItemPrototypeSystem::Init()
 {
-    if(!ItemPrototypeContainer.size())
-        initialized = false;
-}
-
-void ItemPrototypeSystem::InitializeItemSystem()
-{
-    if(initialized)
+    // It has to be empty for us to fill in db2 data
+    if(!ItemPrototypeContainer.empty())
         return;
 
     sLog.Notice("ItemPrototypeSystem", "Loading %u items!", db2Item.GetNumRows());
-    initialized = true;
     ItemDataEntry *itemData = NULL;
     ItemSparseEntry *sparse = NULL;
     for(ConstructDB2StorageIterator(ItemDataEntry) itr = db2Item.begin(); itr != db2Item.end(); ++itr)
@@ -607,8 +603,11 @@ void ItemPrototypeSystem::LoadItemOverrides()
             proto->Armor = ArmorS->mod_Resist[Quality];
         else if(ArmorQ && proto->SubClass <= 4)
         {
+            uint8 armorClass = 0;
+            if(proto->SubClass)
+                armorClass = proto->SubClass-1;
             if(ArmorLocationEntry* entry = dbcArmorLocation.LookupEntry(proto->InventoryType))
-                proto->Armor = uint32(ArmorQ->mod_Resist[Quality] * ArmorT->mod_Resist[proto->SubClass-1] * entry->Value[proto->SubClass-1] + 0.5f);
+                proto->Armor = uint32(ArmorQ->mod_Resist[Quality] * ArmorT->mod_Resist[armorClass] * entry->Value[armorClass] + 0.5f);
         }
     }
 }

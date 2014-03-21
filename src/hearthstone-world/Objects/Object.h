@@ -293,7 +293,7 @@ public:
     //! Set uint32 property
     void SetByte(uint32 index, uint32 index1,uint8 value);
 
-    HEARTHSTONE_INLINE uint8 GetByte(uint32 i,uint32 i1) { return ((uint8*)m_uint32Values)[i*4+i1]; }
+    HEARTHSTONE_INLINE uint8 GetByte(uint32 index, uint32 byteIndex) { return ((uint8*)m_uint32Values)[index*4+byteIndex]; }
 
     HEARTHSTONE_INLINE void SetNewGuid(uint32 Guid)
     {

@@ -297,52 +297,57 @@ int __cdecl HandleCrash(PEXCEPTION_POINTERS pExceptPtrs)
 
     died = true;
 
-    // Create the date/time string
-    time_t curtime = time(NULL);
-    tm * pTime = localtime(&curtime);
-    char filename[MAX_PATH];
-    TCHAR modname[MAX_PATH*2];
-    ZeroMemory(modname, sizeof(modname));
-    if(GetModuleFileName(0, modname, MAX_PATH*2-2) <= 0)
-        strcpy(modname, "UNKNOWN");
-
-    char * mname = strrchr(modname, '\\');
-    (void*)mname++;  // Remove the last
-
-    sprintf(filename, "CrashDumps\\dump-%s-%u-%u-%u-%u-%u-%u-%u.dmp",
-        mname, pTime->tm_year+1900, pTime->tm_mon, pTime->tm_mday,
-        pTime->tm_hour, pTime->tm_min, pTime->tm_sec, GetCurrentThreadId());
-
-
-    HANDLE hDump = CreateFile(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
-        FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH, 0);
-
-    if(hDump == INVALID_HANDLE_VALUE)
+#ifndef NDEBUG
+    if(false)
+#endif
     {
-        // Create the directory first
-        CreateDirectory("CrashDumps", 0);
-        hDump = CreateFile(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
+        // Create the date/time string
+        time_t curtime = time(NULL);
+        tm * pTime = localtime(&curtime);
+        char filename[MAX_PATH];
+        TCHAR modname[MAX_PATH*2];
+        ZeroMemory(modname, sizeof(modname));
+        if(GetModuleFileName(0, modname, MAX_PATH*2-2) <= 0)
+            strcpy(modname, "UNKNOWN");
+
+        char * mname = strrchr(modname, '\\');
+        (void*)mname++;  // Remove the last
+
+        sprintf(filename, "CrashDumps\\dump-%s-%u-%u-%u-%u-%u-%u-%u.dmp",
+            mname, pTime->tm_year+1900, pTime->tm_mon, pTime->tm_mday,
+            pTime->tm_hour, pTime->tm_min, pTime->tm_sec, GetCurrentThreadId());
+
+
+        HANDLE hDump = CreateFile(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
             FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH, 0);
-    }
 
-    PrintCrashInformation(pExceptPtrs);
-    printf("\nCreating crash dump file %s\n", filename);
+        if(hDump == INVALID_HANDLE_VALUE)
+        {
+            // Create the directory first
+            CreateDirectory("CrashDumps", 0);
+            hDump = CreateFile(filename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
+                FILE_ATTRIBUTE_NORMAL | FILE_FLAG_WRITE_THROUGH, 0);
+        }
 
-    if(hDump == INVALID_HANDLE_VALUE)
-    {
-        MessageBox(0, "Could not open crash dump file.", "Crash dump error.", MB_OK);
-    }
-    else
-    {
-        MINIDUMP_EXCEPTION_INFORMATION info;
-        info.ClientPointers = FALSE;
-        info.ExceptionPointers = pExceptPtrs;
-        info.ThreadId = GetCurrentThreadId();
+        PrintCrashInformation(pExceptPtrs);
+        printf("\nCreating crash dump file %s\n", filename);
 
-        MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
-            hDump, MiniDumpWithIndirectlyReferencedMemory, &info, 0, 0);
+        if(hDump == INVALID_HANDLE_VALUE)
+        {
+            MessageBox(0, "Could not open crash dump file.", "Crash dump error.", MB_OK);
+        }
+        else
+        {
+            MINIDUMP_EXCEPTION_INFORMATION info;
+            info.ClientPointers = FALSE;
+            info.ExceptionPointers = pExceptPtrs;
+            info.ThreadId = GetCurrentThreadId();
 
-        CloseHandle(hDump);
+            MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
+                hDump, MiniDumpWithIndirectlyReferencedMemory, &info, 0, 0);
+
+            CloseHandle(hDump);
+        }
     }
 
     SetPriorityClass(GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS);

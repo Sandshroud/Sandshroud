@@ -321,10 +321,7 @@ bool AchievementInterface::CanCompleteAchievement(AchievementData * ad)
 
         uint32 ReqCount = ace->raw.field4 ? ace->raw.field4 : 1;
 
-        if( ace->groupFlag & ACHIEVEMENT_CRITERIA_GROUP_NOT_IN_GROUP && m_player->GetGroup() )
-            return false;
-
-        if( ace->timeLimit && ace->timeLimit < ad->completionTimeLast )
+        if( ace->timedData[2] && ace->timedData[2] < ad->completionTimeLast )
             thisFail = true;
 
         if( ad->counter[i] < ReqCount )
@@ -1177,42 +1174,47 @@ void AchievementInterface::HandleAchievementCriteriaExploreArea(uint32 areaId, u
         WorldMapOverlayEntry * wmoe = dbcWorldMapOverlay.LookupEntry( ReqFlags );
         if(!wmoe) continue;
 
-        AreaTable * at = dbcArea.LookupEntry(wmoe->AreaTableID);
-        if(!at || !(ReqFlags & at->explorationFlag) )
-            continue;
-
-        uint32 offset = at->explorationFlag / 32;
-        offset += PLAYER_EXPLORED_ZONES_1;
-
-        uint32 val = (uint32)(1 << (at->explorationFlag % 32));
-        uint32 currFields = m_player->GetUInt32Value(offset);
-
-        // Not explored /sadface
-        if( !(currFields & val) )
-            continue;
-
-        AchievementCriteriaEntry * compareCriteria = NULL;
-        AchievementData * ad = GetAchievementDataByAchievementID(AchievementID);
-        if(ad == NULL)
-            continue;
-        if(ad->completed)
-            continue;
-        if(!HandleBeforeChecks(ad))
-            continue;
-
-        // Figure out our associative ID.
-        for(uint32 i = 0; i < pAchievementEntry->AssociatedCriteriaCount; i++)
+        for(uint8 i = 0; i < 4; i++)
         {
-            compareCriteria = dbcAchievementCriteria.LookupEntry( pAchievementEntry->AssociatedCriteria[i] );
-            if( compareCriteria == ace )
-            {
-                ad->counter[i] = 1;
-                SendCriteriaUpdate(ad, i); break;
-            }
-        }
+            if(!wmoe->AreaTableID[i])
+                continue;
+            AreaTableEntry * at = dbcAreaTable.LookupEntry(wmoe->AreaTableID[i]);
+            if(!at || !(ReqFlags & at->explorationFlag) )
+                continue;
 
-        if( CanCompleteAchievement(ad) )
-            EventAchievementEarned(ad);
+            uint32 offset = at->explorationFlag / 32;
+            offset += PLAYER_EXPLORED_ZONES_1;
+
+            uint32 val = (uint32)(1 << (at->explorationFlag % 32));
+            uint32 currFields = m_player->GetUInt32Value(offset);
+
+            // Not explored /sadface
+            if( !(currFields & val) )
+                continue;
+
+            AchievementCriteriaEntry * compareCriteria = NULL;
+            AchievementData * ad = GetAchievementDataByAchievementID(AchievementID);
+            if(ad == NULL)
+                continue;
+            if(ad->completed)
+                continue;
+            if(!HandleBeforeChecks(ad))
+                continue;
+
+            // Figure out our associative ID.
+            for(uint32 i = 0; i < pAchievementEntry->AssociatedCriteriaCount; i++)
+            {
+                compareCriteria = dbcAchievementCriteria.LookupEntry( pAchievementEntry->AssociatedCriteria[i] );
+                if( compareCriteria == ace )
+                {
+                    ad->counter[i] = 1;
+                    SendCriteriaUpdate(ad, i); break;
+                }
+            }
+
+            if( CanCompleteAchievement(ad) )
+                EventAchievementEarned(ad);
+        }
     }
 }
 

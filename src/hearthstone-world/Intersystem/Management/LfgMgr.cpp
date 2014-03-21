@@ -9,21 +9,6 @@ initialiseSingleton( LfgMgr );
 LfgMgr::LfgMgr()
 {
     MaxDungeonID = 0;
-
-    ConstructDBCStorageIterator(LookingForGroup) itr;
-    for(;;)//itr = dbcLookingForGroup.begin(); itr != dbcLookingForGroup.end(); ++itr)
-    {
-        if(MaxDungeonID < (*itr)->ID)
-            MaxDungeonID = (*itr)->ID;
-
-        uint32 levelgroup = GetPlayerLevelGroup((*itr)->minlevel);
-        if(levelgroup != LFG_LEVELGROUP_NONE)
-            DungeonsByLevel[levelgroup].insert((*itr)->ID);
-
-        if(uint32 levelgroup2 = GetPlayerLevelGroup((*itr)->maxlevel))
-            if(levelgroup != levelgroup2)
-                DungeonsByLevel[levelgroup2].insert((*itr)->ID);
-    }
 }
 
 LfgMgr::~LfgMgr()
