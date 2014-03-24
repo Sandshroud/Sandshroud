@@ -65,7 +65,7 @@ void ExtractMapsFromMpq(uint32 build)
             continue;
         }
 
-        sprintf_s(output_filename, "maps\\Map_%u.bin", map_ids[z].id);
+        sprintf_s(output_filename, "maps\\Map_%03u.bin", map_ids[z].id);
         printf("Creating output file %s.\n", output_filename);
         FILE * out_file;
         fopen_s(&out_file, output_filename, "wb");
