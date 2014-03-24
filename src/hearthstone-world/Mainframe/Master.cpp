@@ -194,7 +194,7 @@ bool Master::Run(int argc, char ** argv)
     WorldSession::InitPacketHandlerTable();
 
     string host = mainIni->ReadString( "Listen", "Host", DEFAULT_HOST );
-    int wsport = mainIni->ReadInteger( "ServerSettings", "WorldServerPort", DEFAULT_WORLDSERVER_PORT );
+    int wsport = mainIni->ReadInteger( "RealmData", "WorldServerPort", DEFAULT_WORLDSERVER_PORT );
 
     new ScriptMgr();
 
