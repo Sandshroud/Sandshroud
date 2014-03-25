@@ -36,14 +36,13 @@ struct CreatureInfo
     uint32 TypeFlags;
     uint32 Family;
     uint32 Rank;
-    uint32 Unknown1;
-    uint32 SpellDataID;
+    uint32 Unk[2];
     uint32 Male_DisplayID;
     uint32 Female_DisplayID;
     uint32 Male_DisplayID2;
     uint32 Female_DisplayID2;
-    float unkfloat1; // Something to do with elites.
-    float unkfloat2; // Something to do with unkfloat1.
+    float  modHealth;
+    float  modMana;
     uint8  Civilian;
     uint8  Leader;
 
@@ -86,12 +85,11 @@ struct CreatureInfo
             ++max;
         }
 
-        uint32 r = RandomUInt(max ? max - 1 : 0);
+        uint32 r = max > 1 ? RandomUInt(max-1) : 0;
         *dest = modelchoices[r];
 
         if( *dest == Male_DisplayID || *dest == Male_DisplayID2 )
             return 0;
-
         return 1;
     }
 };

@@ -92,16 +92,6 @@ struct Loot
     bool HasLoot(Player* Looter);
 };
 
-struct tempy
-{
-    uint32 itemid;
-    float chance[4];
-    uint32 mincount;
-    uint32 maxcount;
-    uint32 ffa_loot;
-};
-
-
 //////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -133,8 +123,9 @@ enum PARTY_ROLL
     PASS        = 4
 };
 
-struct CreatureQuestLoot
+struct ObjectQuestLoot
 {
+    uint8 index;
     uint32 QuestLoot[6];
 };
 
@@ -167,7 +158,6 @@ public:
     LootStore   GOLoot;
     LootStore   ItemLoot;
     LootStore   PickpocketingLoot;
-    std::map<uint32, std::set<uint32> > quest_loot_go;
 
     ItemRandomPropertiesEntry* GetRandomProperties(ItemPrototype * proto);
     ItemRandomSuffixEntry * GetRandomSuffix(ItemPrototype * proto);
@@ -176,13 +166,15 @@ public:
 
     void FillObjectLootMap(map<uint32, vector<uint32> > *dest);
 
-    CreatureQuestLoot* GetCreatureQuestLoot(uint32 entry) { if(_creaturequestloot.find(entry) == _creaturequestloot.end()) return NULL; return _creaturequestloot[entry]; };
+    ObjectQuestLoot* GetCreatureQuestLoot(uint32 entry) { if(_creaturequestloot.find(entry) == _creaturequestloot.end()) return NULL; return _creaturequestloot[entry]; };
+    ObjectQuestLoot* GetGameObjectQuestLoot(uint32 entry) { if(_gameobjectquestloot.find(entry) == _gameobjectquestloot.end()) return NULL; return _gameobjectquestloot[entry]; };
 
 private:
     void LoadLootTables(const char * szTableName, LootStore * LootTable, bool MultiDifficulty);
     void PushLoot(StoreLootList *list,Loot * loot, uint8 difficulty, uint8 team, bool disenchant);
 
-    map<uint32, CreatureQuestLoot*> _creaturequestloot;
+    map<uint32, ObjectQuestLoot*> _creaturequestloot;
+    map<uint32, ObjectQuestLoot*> _gameobjectquestloot;
     map<uint32, RandomPropertyVector> _randomprops;
     map<uint32, RandomSuffixVector> _randomsuffix;
 };

@@ -11,9 +11,8 @@ DynamicObject::DynamicObject(uint32 high, uint32 low)
     m_uint32Values = _fields;
     memset(m_uint32Values, 0,(DYNAMICOBJECT_END)*sizeof(uint32));
     m_updateMask.SetCount(DYNAMICOBJECT_END);
-    m_uint32Values[OBJECT_FIELD_TYPE] = TYPE_DYNAMICOBJECT|TYPE_OBJECT;
-    m_uint32Values[OBJECT_FIELD_GUID] = low;
-    m_uint32Values[OBJECT_FIELD_GUID+1] = high;
+    m_uint32Values[OBJECT_FIELD_TYPE] = TYPEMASK_DYNAMICOBJECT|TYPEMASK_OBJECT;
+    SetUInt64Value( OBJECT_FIELD_GUID, MAKE_NEW_GUID(low, 0, high));
     m_wowGuid.Init(GetGUID());
     m_floatValues[OBJECT_FIELD_SCALE_X] = 1.f;
     m_aliveDuration = 0;
@@ -92,7 +91,7 @@ void DynamicObject::OnRemoveInRangeObject( Object* pObj )
 void DynamicObject::UpdateTargets(uint32 p_time)
 {
     Unit* u_caster = NULL;
-    if(GET_TYPE_FROM_GUID(casterGuid) == HIGHGUID_TYPE_GAMEOBJECT)
+    if(GUID_HIPART(casterGuid) == HIGHGUID_TYPE_GAMEOBJECT)
     {
         GameObject* goCaster = GetMapMgr()->GetGameObject(casterGuid);
         if(goCaster == NULL || !goCaster->IsInWorld())
@@ -205,7 +204,7 @@ void DynamicObject::Remove()
         data << GetGUID();
         SendMessageToSet(&data, true);
 
-        if(m_spellProto->IsChannelSpell() && GET_TYPE_FROM_GUID(casterGuid) != HIGHGUID_TYPE_GAMEOBJECT)
+        if(m_spellProto->IsChannelSpell() && GUID_HIPART(casterGuid) != HIGHGUID_TYPE_GAMEOBJECT)
         {
             if(Unit* u_caster = GetMapMgr()->GetUnit(casterGuid))
             {

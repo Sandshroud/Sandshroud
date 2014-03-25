@@ -42,7 +42,7 @@ void WorldSession::HandleTaxiQueryAvaibleNodesOpcode( WorldPacket & recv_data )
     sLog.Debug( "WORLD"," Received CMSG_TAXIQUERYAVAILABLENODES" );
     uint64 guid;
     recv_data >> guid;
-    Creature* pCreature = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    Creature* pCreature = _player->GetMapMgr()->GetCreature(GUID_LOPART(guid));
     if(!pCreature) return;
 
     SendTaxiList(pCreature);

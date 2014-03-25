@@ -2060,46 +2060,6 @@ void QuestMgr::SendQuestLogFull(Player* plyr)
     sLog.outDebug("WORLD:Sent QUEST_LOG_FULL_MESSAGE");
 }
 
-uint32 QuestMgr::GetGameObjectLootQuest(uint32 GO_Entry)
-{
-    HM_NAMESPACE::hash_map<uint32, uint32>::iterator itr = m_ObjectLootQuestList.find(GO_Entry);
-    if(itr == m_ObjectLootQuestList.end()) return 0;
-
-    return itr->second;
-}
-
-void QuestMgr::SetGameObjectLootQuest(uint32 GO_Entry, uint32 Item_Entry)
-{
-    if(m_ObjectLootQuestList.find(GO_Entry) != m_ObjectLootQuestList.end())
-    {
-        //sLog.outError("WARNING: Gameobject %d has more than 1 quest item allocated in it's loot template!", GO_Entry);
-    }
-
-    // Find the quest that has that item
-    uint32 QuestID = 0;
-    uint32 i;
-    QuestStorageMap::iterator itr = QuestStorage.begin();
-    while(itr != QuestStorage.end())
-    {
-        Quest *qst = itr->second;
-        if(qst->objectives)
-        {
-            for(i = 0; i < 4; i++)
-            {
-                if(qst->objectives->required_item[i] == Item_Entry)
-                {
-                    QuestID = qst->id;
-                    m_ObjectLootQuestList[GO_Entry] = QuestID;
-                    return;
-                }
-            }
-        }
-        itr++;
-    }
-
-    //sLog.outError("WARNING: No coresponding quest was found for quest item %d", Item_Entry);
-}
-
 void QuestMgr::BuildQuestFailed(WorldPacket* data, uint32 questid)
 {
     data->Initialize(SMSG_QUESTUPDATE_FAILEDTIMER);

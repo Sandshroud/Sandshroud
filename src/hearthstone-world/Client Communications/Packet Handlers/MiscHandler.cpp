@@ -40,7 +40,7 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recv_data )
 
     // handle item loot
     uint64 guid = _player->GetLootGUID();
-    if( GET_TYPE_FROM_GUID(guid) == HIGHGUID_TYPE_ITEM )
+    if( GUID_HIPART(guid) == HIGHGUID_TYPE_ITEM )
         pLootObj = _player->GetItemInterface()->GetItemByGUID(guid);
     else
         pLootObj = _player->GetMapMgr()->_GetObject(guid);
@@ -213,7 +213,7 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & recv_data )
 
     // lookup the object we will be looting
     Object* pLootObj = NULL;
-    if( GET_TYPE_FROM_GUID(_player->GetLootGUID()) == HIGHGUID_TYPE_ITEM )
+    if( GUID_HIPART(_player->GetLootGUID()) == HIGHGUID_TYPE_ITEM )
         pLootObj = _player->GetItemInterface()->GetItemByGUID(_player->GetLootGUID());
     else
         pLootObj = _player->GetMapMgr()->_GetObject(_player->GetLootGUID());
@@ -347,9 +347,9 @@ void WorldSession::HandleLootReleaseOpcode( WorldPacket & recv_data )
     _player->m_currentLoot = 0;
 
     // special case
-    if( GET_TYPE_FROM_GUID( guid ) == HIGHGUID_TYPE_GAMEOBJECT )
+    if( GUID_HIPART( guid ) == HIGHGUID_TYPE_GAMEOBJECT )
     {
-        GameObject* pGO = _player->GetMapMgr()->GetGameObject( GET_LOWGUID_PART(guid) );
+        GameObject* pGO = _player->GetMapMgr()->GetGameObject( GUID_LOPART(guid) );
         if( pGO == NULL )
             return;
 
@@ -434,7 +434,7 @@ void WorldSession::HandleLootReleaseOpcode( WorldPacket & recv_data )
         }
         return;
     }
-    else if( GET_TYPE_FROM_GUID(guid) == HIGHGUID_TYPE_ITEM )
+    else if( GUID_HIPART(guid) == HIGHGUID_TYPE_ITEM )
     {
         // if we have no items left, destroy the item.
         Item* pItem = _player->GetItemInterface()->GetItemByGUID(guid);
@@ -446,7 +446,7 @@ void WorldSession::HandleLootReleaseOpcode( WorldPacket & recv_data )
 
         return;
     }
-    else if( GET_TYPE_FROM_GUID(guid) == HIGHGUID_TYPE_CREATURE )
+    else if( GUID_HIPART(guid) == HIGHGUID_TYPE_CREATURE )
     {
         Unit* pLootTarget = _player->GetMapMgr()->GetUnit(guid);
         if( pLootTarget != NULL )
@@ -465,7 +465,7 @@ void WorldSession::HandleLootReleaseOpcode( WorldPacket & recv_data )
             }
         }
     }
-    else if( GET_TYPE_FROM_GUID(guid) == HIGHGUID_TYPE_CORPSE )
+    else if( GUID_HIPART(guid) == HIGHGUID_TYPE_CORPSE )
     {
         Corpse* pCorpse = objmgr.GetCorpse((uint32)guid);
         if( pCorpse != NULL && !pCorpse->m_loot.HasLoot(_player) )
@@ -1111,7 +1111,7 @@ void WorldSession::HandleGameObjectUse(WorldPacket & recv_data)
     recv_data >> guid;
     sLog.outDebug("WORLD: CMSG_GAMEOBJ_USE: [GUID %d]", guid);
 
-    GameObject* obj = _player->GetMapMgr()->GetGameObject(GET_LOWGUID_PART(guid));
+    GameObject* obj = _player->GetMapMgr()->GetGameObject(GUID_LOPART(guid));
     if (!obj)
         return;
     obj->Use(_player);
@@ -1329,9 +1329,9 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recv_data)
         return;
 
     //now its time to give the loot to the target player
-    if(GET_TYPE_FROM_GUID(GetPlayer()->GetLootGUID()) == HIGHGUID_TYPE_CREATURE)
+    if(GUID_HIPART(GetPlayer()->GetLootGUID()) == HIGHGUID_TYPE_CREATURE)
     {
-        pCreature = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(creatureguid));
+        pCreature = _player->GetMapMgr()->GetCreature(GUID_LOPART(creatureguid));
         if (!pCreature)return;
         pLoot=&pCreature->m_loot;
     }
@@ -1453,10 +1453,10 @@ void WorldSession::HandleLootRollOpcode(WorldPacket& recv_data)
 
     LootRoll* li = NULLROLL;
 
-    uint32 guidtype = GET_TYPE_FROM_GUID(creatureguid);
+    uint32 guidtype = GUID_HIPART(creatureguid);
     if (guidtype == HIGHGUID_TYPE_GAMEOBJECT)
     {
-        GameObject* pGO = _player->GetMapMgr()->GetGameObject(GET_LOWGUID_PART(creatureguid));
+        GameObject* pGO = _player->GetMapMgr()->GetGameObject(GUID_LOPART(creatureguid));
         if (!pGO)
             return;
         if (slotid >= pGO->m_loot.items.size() || pGO->m_loot.items.size() == 0)
@@ -1467,7 +1467,7 @@ void WorldSession::HandleLootRollOpcode(WorldPacket& recv_data)
     else if (guidtype == HIGHGUID_TYPE_CREATURE)
     {
         // Creatures
-        Creature* pCreature = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(creatureguid));
+        Creature* pCreature = _player->GetMapMgr()->GetCreature(GUID_LOPART(creatureguid));
         if (!pCreature)
             return;
 
@@ -1823,7 +1823,7 @@ void WorldSession::HandleGameobjReportUseOpCode( WorldPacket& recv_data )
 
     uint64 guid;
     recv_data >> guid;
-    GameObject* gameobj = _player->GetMapMgr()->GetGameObject(GET_LOWGUID_PART(guid));
+    GameObject* gameobj = _player->GetMapMgr()->GetGameObject(GUID_LOPART(guid));
     if(gameobj != NULLGOB && gameobj->GetInfo())
     {
         // Gossip Script
