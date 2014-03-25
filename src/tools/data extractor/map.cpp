@@ -45,9 +45,11 @@ void ExtractMapsFromMpq(uint32 build)
             continue;
         }
 
+        FILE *out_file;
         char output_filename[50];
         uint32 Offsets[64][64];
         memset(Offsets, 0, sizeof(Offsets));
+        sprintf_s(output_filename, "maps\\Map_%03u.bin", map_ids[z].id);
 
         // Loadup map grid data
         sprintf_s(mpq_map_name, "World\\Maps\\%s\\%s.wdt", mapName.c_str(), mapName.c_str());
@@ -57,17 +59,17 @@ void ExtractMapsFromMpq(uint32 build)
             not_found.push_back(map_ids[z].name);
             printf("Extract %s (%d/%d) -- not found\n", mapName.c_str(), z+1, map_count);
             printf("Creating dummy bin file %s.\n", output_filename);
-            sprintf_s(output_filename, "maps\\Map_%u.bin", map_ids[z].id);
-            FILE * out_file;
+
             fopen_s(&out_file, output_filename, "wb");
-            fwrite(Offsets, sizeof(Offsets), 1, out_file);
-            fclose(out_file);
+            if(out_file)
+            {
+                fwrite(Offsets, sizeof(Offsets), 1, out_file);
+                fclose(out_file);
+            }
             continue;
         }
 
-        sprintf_s(output_filename, "maps\\Map_%03u.bin", map_ids[z].id);
         printf("Creating output file %s.\n", output_filename);
-        FILE * out_file;
         fopen_s(&out_file, output_filename, "wb");
         if(!out_file)
         {
