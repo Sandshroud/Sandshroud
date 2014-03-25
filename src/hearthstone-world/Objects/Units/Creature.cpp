@@ -20,7 +20,7 @@ Creature::Creature(uint64 guid)
     m_uint32Values = _fields;
     memset(m_uint32Values, 0,(UNIT_END)*sizeof(uint32));
     m_updateMask.SetCount(UNIT_END);
-    SetUInt32Value( OBJECT_FIELD_TYPE, TYPE_UNIT|TYPE_OBJECT);
+    SetUInt32Value( OBJECT_FIELD_TYPE, TYPEMASK_UNIT|TYPEMASK_OBJECT);
     SetUInt64Value( OBJECT_FIELD_GUID, guid);
     SetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER, 1);
     SetFloatValue(UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER, 1);

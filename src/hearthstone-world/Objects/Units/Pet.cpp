@@ -815,19 +815,6 @@ void Pet::SetDefaultSpells()
             }
         }
     }
-    else
-    {
-
-        uint32 Line = GetCreatureInfo()->SpellDataID;
-        if(Line)
-        {
-            CreatureSpellDataEntry * SpellData = dbcCreatureSpellData.LookupEntry(Line);
-            if(SpellData)
-                for(uint32 i = 0; i < 3; i++)
-                    if(SpellData->Spells[i] != 0)
-                        AddSpell(dbcSpell.LookupEntry(SpellData->Spells[i]), false, false); //add spell to pet
-        }
-    }
 }
 
 void Pet::AddSpell(SpellEntry * sp, bool learning, bool sendspells)

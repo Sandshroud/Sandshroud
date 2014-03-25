@@ -11,7 +11,7 @@ GameObject::GameObject(uint64 guid)
     m_uint32Values = _fields;
     memset(m_uint32Values, 0,(GAMEOBJECT_END)*sizeof(uint32));
     m_updateMask.SetCount(GAMEOBJECT_END);
-    SetUInt32Value( OBJECT_FIELD_TYPE,TYPE_GAMEOBJECT|TYPE_OBJECT);
+    SetUInt32Value( OBJECT_FIELD_TYPE,TYPEMASK_GAMEOBJECT|TYPEMASK_OBJECT);
     SetUInt64Value( OBJECT_FIELD_GUID,guid);
     m_wowGuid.Init(GetGUID());
     SetFloatValue( OBJECT_FIELD_SCALE_X, 1);

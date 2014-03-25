@@ -15,9 +15,9 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
     recv_data >> misc;
     recv_data >> action;
 
-    if(GET_TYPE_FROM_GUID(petGuid) == HIGHGUID_TYPE_CREATURE)
+    if(GUID_HIPART(petGuid) == HIGHGUID_TYPE_CREATURE)
     {
-        Creature* pCharm = GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(petGuid));
+        Creature* pCharm = GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART(petGuid));
         if(!pCharm)
             return;
 
@@ -42,7 +42,7 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
         return;
     }
 
-    Pet* pPet = _player->GetMapMgr()->GetPet(GET_LOWGUID_PART(petGuid));
+    Pet* pPet = _player->GetMapMgr()->GetPet(GUID_LOPART(petGuid));
     if(pPet == NULL)
         return;
     if(!pPet->isAlive())
@@ -204,7 +204,7 @@ void WorldSession::HandlePetNameQuery(WorldPacket & recv_data)
     uint64 petGuid = 0;
 
     recv_data >> reqNumber >> petGuid;
-    Pet* pPet = _player->GetMapMgr()->GetPet(GET_LOWGUID_PART(petGuid));
+    Pet* pPet = _player->GetMapMgr()->GetPet(GUID_LOPART(petGuid));
     if(!pPet)
         return;
 
@@ -585,7 +585,7 @@ void WorldSession::HandleCancelPetAura(WorldPacket& recvPacket)
         sLog.outError("WORLD: unknown PET spell id %u", spellId);
         return;
     }
-    if(GET_TYPE_FROM_GUID(guid) == HIGHGUID_TYPE_PET)
+    if(GUID_HIPART(guid) == HIGHGUID_TYPE_PET)
     {
         Pet* p = _player->GetMapMgr()->GetPet((uint32)guid);
         if (!p)
@@ -609,7 +609,7 @@ void WorldSession::HandleCancelPetAura(WorldPacket& recvPacket)
         }
         p->RemoveAura(spellId);
     }
-    if(GET_TYPE_FROM_GUID(guid) == HIGHGUID_TYPE_VEHICLE)
+    if(GUID_HIPART(guid) == HIGHGUID_TYPE_VEHICLE)
     {
         Vehicle* p = _player->GetMapMgr()->GetVehicle((uint32)guid);
         if (!p)

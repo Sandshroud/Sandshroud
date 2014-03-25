@@ -742,7 +742,7 @@ void WorldSession::HandleSellItemOpcode( WorldPacket & recv_data )
         return;
     }
 
-    Creature* unit = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(vendorguid));
+    Creature* unit = _player->GetMapMgr()->GetCreature(GUID_LOPART(vendorguid));
     // Check if Vendor exists
     if (unit == NULL)
     {
@@ -841,7 +841,7 @@ void WorldSession::HandleBuyItemOpcode( WorldPacket & recv_data ) // right-click
     recv_data >> slot >> amount;
 
 
-    Creature* unit = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(srcguid));
+    Creature* unit = _player->GetMapMgr()->GetCreature(GUID_LOPART(srcguid));
     if (unit == NULL || !unit->HasItems())
         return;
 
@@ -978,7 +978,7 @@ void WorldSession::HandleListInventoryOpcode( WorldPacket & recv_data )
 
     recv_data >> guid;
 
-    Creature* unit = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    Creature* unit = _player->GetMapMgr()->GetCreature(GUID_LOPART(guid));
     if (unit == NULL)
         return;
 
@@ -1296,7 +1296,7 @@ void WorldSession::HandleRepairItemOpcode(WorldPacket &recvPacket)
     int32 j, i;
 
     recvPacket >> npcguid >> itemguid >> guildmoney;
-    Creature* pCreature = _player->GetMapMgr()->GetCreature( GET_LOWGUID_PART(npcguid) );
+    Creature* pCreature = _player->GetMapMgr()->GetCreature( GUID_LOPART(npcguid) );
     if( pCreature == NULL )
         return;
 

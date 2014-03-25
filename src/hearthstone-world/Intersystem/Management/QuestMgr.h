@@ -95,9 +95,6 @@ public:
     QuestRelationList* GetGOQuestList(uint32 entryid);
     QuestAssociationList* GetQuestAssociationListForItemId (uint32 itemId);
 
-    uint32 GetGameObjectLootQuest(uint32 GO_Entry);
-    void SetGameObjectLootQuest(uint32 GO_Entry, uint32 Item_Entry);
-
     HEARTHSTONE_INLINE bool IsQuestRepeatable(Quest *qst) { return (qst->qst_is_repeatable != 0 ? true : false); }
     HEARTHSTONE_INLINE bool IsQuestDaily(Quest *qst) { return (qst->qst_is_repeatable == 2 ? true : false); }
 

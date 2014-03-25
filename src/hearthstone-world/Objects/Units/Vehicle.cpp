@@ -984,7 +984,7 @@ void WorldSession::HandleRequestSeatChange( WorldPacket & recv_data )
     }
 
     uint64 guid = Vehicleguid.GetOldGuid();
-    Vehicle* vehicle = GetPlayer()->GetMapMgr()->GetVehicle(GET_LOWGUID_PART(guid));
+    Vehicle* vehicle = GetPlayer()->GetMapMgr()->GetVehicle(GUID_LOPART(guid));
 
     if(cv->GetPassengerSlot(vehicle) != -1 || cv->GetVehicle() == vehicle)
     {

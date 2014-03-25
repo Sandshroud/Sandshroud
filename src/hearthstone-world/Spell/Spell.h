@@ -11,17 +11,17 @@ public:
     void write ( WorldPacket & data);
 
     SpellCastTargets() : m_targetMask(0), m_unitTarget(0), m_itemTarget(0), m_srcX(0), m_srcY(0), m_srcZ(0),
-        m_destX(0), m_destY(0), m_destZ(0), missilespeed(0), missilepitch(0), traveltime(0), unkUint64_1(0), unkUint64_2(0) {}
+        m_destX(0), m_destY(0), m_destZ(0), missilespeed(0), missilepitch(0), traveltime(0), m_dest_transGuid(), m_src_transGuid() {}
 
     SpellCastTargets(uint16 TargetMask, uint64 unitTarget, uint64 itemTarget, float srcX, float srcY, float srcZ, float destX, float destY, float destZ)
         : m_targetMask(TargetMask), m_unitTarget(unitTarget), m_itemTarget(itemTarget), m_srcX(srcX), m_srcY(srcY), m_srcZ(srcZ),
-        m_destX(destX), m_destY(destY), m_destZ(destZ), missilespeed(0), missilepitch(0), traveltime(0), unkUint64_1(0), unkUint64_2(0) {}
+        m_destX(destX), m_destY(destY), m_destZ(destZ), missilespeed(0), missilepitch(0), traveltime(0), m_dest_transGuid(), m_src_transGuid() {}
 
     SpellCastTargets(uint64 unitTarget) : m_targetMask(0x2), m_unitTarget(unitTarget), m_itemTarget(0), m_srcX(0), m_srcY(0), m_srcZ(0),
-        m_destX(0), m_destY(0), m_destZ(0), missilespeed(0), missilepitch(0), traveltime(0), unkUint64_1(0), unkUint64_2(0) {}
+        m_destX(0), m_destY(0), m_destZ(0), missilespeed(0), missilepitch(0), traveltime(0), m_dest_transGuid(), m_src_transGuid() {}
 
     SpellCastTargets(WorldPacket & data, uint64 caster) : m_targetMask(0), m_unitTarget(0), m_itemTarget(0), m_srcX(0), m_srcY(0), m_srcZ(0),
-        m_destX(0), m_destY(0), m_destZ(0), missilespeed(0), missilepitch(0), traveltime(0), unkUint64_1(0), unkUint64_2(0)
+        m_destX(0), m_destY(0), m_destZ(0), missilespeed(0), missilepitch(0), traveltime(0), m_dest_transGuid(), m_src_transGuid()
     {
         read(data, caster);
     }
@@ -45,8 +45,8 @@ public:
         missilepitch = target.missilepitch;
         m_strTarget = target.m_strTarget;
 
-        unkUint64_1 = target.unkUint64_1;
-        unkUint64_2 = target.unkUint64_2;
+        m_dest_transGuid = target.m_dest_transGuid;
+        m_src_transGuid = target.m_src_transGuid;
         return *this;
     }
 
@@ -54,7 +54,7 @@ public:
     uint64 m_unitTarget;
     uint64 m_itemTarget;
 
-    uint64 unkUint64_1, unkUint64_2;
+    WoWGuid m_src_transGuid, m_dest_transGuid;
     float m_srcX, m_srcY, m_srcZ;
     float m_destX, m_destY, m_destZ;
     float traveltime, missilespeed, missilepitch;

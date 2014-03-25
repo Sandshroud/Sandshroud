@@ -225,11 +225,20 @@ LootMgr::~LootMgr()
         delete [] iter->second.items;
 }
 
+struct tempLootData
+{
+    uint32 itemid;
+    float chance[4];
+    uint32 mincount;
+    uint32 maxcount;
+    uint32 ffa_loot;
+};
+
 void LootMgr::LoadLootTables(const char * szTableName, LootStore * LootTable, bool MultiDifficulty)
 {
     sLog.Debug("LootMgr","Attempting to load loot from table %s...", szTableName);
-    vector< pair< uint32, vector< tempy > > > db_cache;
-    vector< pair< uint32, vector< tempy > > >::iterator itr;
+    vector< pair< uint32, vector< tempLootData > > > db_cache;
+    vector< pair< uint32, vector< tempLootData > > >::iterator itr;
     db_cache.reserve(10000);
     LootStore::iterator tab;
     QueryResult *result = WorldDatabase.Query("SELECT * FROM %s ORDER BY entryid ASC",szTableName);
@@ -253,13 +262,13 @@ void LootMgr::LoadLootTables(const char * szTableName, LootStore * LootTable, bo
         return;
     }
 
+    uint32 pos = 0;
     uint32 entry_id = 0;
     uint32 last_entry = 0;
-
     uint32 total = (uint32) result->GetRowCount();
-    int pos = 0;
-    vector< tempy > ttab;
-    tempy t;
+
+    tempLootData t;
+    vector< tempLootData > ttab;
     Field *fields = NULL;
     do
     {
@@ -281,7 +290,7 @@ void LootMgr::LoadLootTables(const char * szTableName, LootStore * LootTable, bo
         if(MultiDifficulty) // We have multiple difficulties.
         {
             t.itemid = fields[1].GetUInt32();
-            for(int i = 0; i < 4; i++)
+            for(int8 i = 0; i < 4; i++)
                 t.chance[i] = fields[2+i].GetFloat();
             t.mincount = fields[6].GetUInt32();
             t.maxcount = fields[7].GetUInt32();
@@ -294,7 +303,7 @@ void LootMgr::LoadLootTables(const char * szTableName, LootStore * LootTable, bo
             t.mincount = fields[3].GetUInt32();
             t.maxcount = fields[4].GetUInt32();
             t.ffa_loot = fields[5].GetUInt32();
-            for(int i = 1; i < 4; i++) // Other difficulties.
+            for(int8 i = 1; i < 4; i++) // Other difficulties.
                 t.chance[i] = 0.0f;
         }
 
@@ -306,88 +315,66 @@ void LootMgr::LoadLootTables(const char * szTableName, LootStore * LootTable, bo
         last_entry = entry_id;
     } while( result->NextRow() );
 
-    //last list was not pushed in
-    if(last_entry != 0 && ttab.size())
-        db_cache.push_back( make_pair( last_entry, ttab) );
-    pos = 0;
     total = uint32(db_cache.size());
     ItemPrototype* proto = NULL;
     StoreLootList *list = NULL;
     uint32 itemid;
-
-    //for(itr=loot_db.begin();itr!=loot_db.end();itr++)
     for( itr = db_cache.begin(); itr != db_cache.end(); itr++)
     {
         entry_id = (*itr).first;
-        if(LootTable->end() == LootTable->find(entry_id))
+        if(LootTable->find(entry_id) == LootTable->end())
         {
-            list = new StoreLootList();
-            //list.count = itr->second.size();
-            list->count = (uint32)(*itr).second.size();
-            list->items = new StoreLootItem[list->count];
+            StoreLootList &list = ((*LootTable)[entry_id]);
+            list.count = (uint32)(*itr).second.size();
+            list.items = new StoreLootItem[list.count];
 
             uint32 ind = 0;
-            //for(std::vector<loot_tb>::iterator itr2=itr->second.begin();itr2!=itr->second.end();itr2++)
-            for(vector< tempy >::iterator itr2 = (*itr).second.begin(); itr2 != (*itr).second.end(); itr2++)
+            for(vector< tempLootData >::iterator itr2 = (*itr).second.begin(); itr2 != (*itr).second.end(); itr2++)
             {
-                //Omit items that are not in db to prevent future bugs
-                //uint32 itemid=(*itr2).itemid;
-                itemid = itr2->itemid;
-                proto = ItemPrototypeStorage.LookupEntry(itemid);
+                // Omit items that are not in db to prevent future bugs
+                proto = ItemPrototypeStorage.LookupEntry((itemid = itr2->itemid));
                 if(!proto)
                 {
-                    list->items[ind].item.itemproto = NULL;
+                    list.items[ind].item.itemproto = NULL;
                     if(mainIni->ReadBoolean("Server", "CleanDatabase", false))
                         WorldDatabase.Query("DELETE FROM %s where entryid ='%u' AND itemid = '%u'", szTableName, entry_id, itemid);
                     sLog.Warning("LootMgr", "Loot for %u contains non-existant item(%u). (%s)", entry_id, itemid, szTableName);
                 }
                 else
                 {
-                    list->items[ind].item.itemproto=proto;
-                    list->items[ind].item.displayid=proto->DisplayInfoID;
-                    //list->items[ind].chance=(*itr2).chance;
+                    list.items[ind].item.itemproto=proto;
+                    list.items[ind].item.displayid=proto->DisplayInfoID;
                     for(int i = 0; i < 4; i++)
-                        list->items[ind].chance[i] = itr2->chance[i];
-                    list->items[ind].mincount = itr2->mincount;
-                    list->items[ind].maxcount = itr2->maxcount;
-                    list->items[ind].ffa_loot = itr2->ffa_loot;
-
-                    if(LootTable == &GOLoot)
+                        list.items[ind].chance[i] = itr2->chance[i];
+                    list.items[ind].mincount = itr2->mincount;
+                    list.items[ind].maxcount = itr2->maxcount;
+                    list.items[ind].ffa_loot = itr2->ffa_loot;
+                    if(proto->Class == ITEM_CLASS_QUEST)
                     {
-                        if(proto->Class == ITEM_CLASS_QUEST)
+                        ObjectQuestLoot *objQloot = NULL;
+                        if(LootTable == &GOLoot)
                         {
-                            //printf("Quest item \"%s\" allocated to quest ", proto->Name1.c_str());
-                            sQuestMgr.SetGameObjectLootQuest(itr->first, itemid);
-                            quest_loot_go[entry_id].insert(proto->ItemId);
+                            if(_gameobjectquestloot[entry_id] == NULL)
+                            {
+                                _gameobjectquestloot[entry_id] = objQloot = new ObjectQuestLoot();
+                                objQloot->index = 0; memset(&objQloot->QuestLoot, 0, sizeof(uint32)*6);
+                            } else objQloot = _gameobjectquestloot.at(entry_id);
                         }
-                    }
-                    else if(LootTable == &CreatureLoot)
-                    {
-                        if(proto->Class == ITEM_CLASS_QUEST)
+                        else if(LootTable == &CreatureLoot)
                         {
                             if(_creaturequestloot[entry_id] == NULL)
                             {
-                                _creaturequestloot[entry_id] = new CreatureQuestLoot();
-                                memset(&_creaturequestloot[entry_id]->QuestLoot, 0, sizeof(uint32)*6);
-                            }
-
-                            uint8 i = 0;
-                            while(i < 6)
-                            {
-                                if(_creaturequestloot[entry_id]->QuestLoot[i] == 0)
-                                    break;
-                                i++;
-                            }
-
-                            if(i < 6)
-                                _creaturequestloot[entry_id]->QuestLoot[i] = proto->ItemId;
+                                _creaturequestloot[entry_id] = objQloot = new ObjectQuestLoot();
+                                objQloot->index = 0; memset(&objQloot->QuestLoot, 0, sizeof(uint32)*6);
+                            } else objQloot = _creaturequestloot.at(entry_id);
                         }
+
+                        if(objQloot && objQloot->index < 6)
+                            objQloot->QuestLoot[objQloot->index++] = proto->ItemId;
                     }
                 }
                 ++ind;
             }
-            (*LootTable)[entry_id] = (*list);
-            delete list;
         }
     }
 
@@ -758,15 +745,15 @@ void LootRoll::Finalize()
 
 
     Loot * pLoot = 0;
-    uint32 guidtype = GET_TYPE_FROM_GUID(_guid);
+    uint32 guidtype = GUID_HIPART(_guid);
     if( guidtype == HIGHGUID_TYPE_CREATURE )
     {
-        Creature* pc = _mgr->GetCreature(GET_LOWGUID_PART(_guid));
+        Creature* pc = _mgr->GetCreature(GUID_LOPART(_guid));
         if(pc) pLoot = &pc->m_loot;
     }
     else if( guidtype == HIGHGUID_TYPE_GAMEOBJECT )
     {
-        GameObject* go = _mgr->GetGameObject(GET_LOWGUID_PART(_guid));
+        GameObject* go = _mgr->GetGameObject(GUID_LOPART(_guid));
         if(go) pLoot = &go->m_loot;
     }
 

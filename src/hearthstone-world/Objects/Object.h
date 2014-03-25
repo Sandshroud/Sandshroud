@@ -11,42 +11,39 @@ class DynamicObject;
 
 enum HIGHGUID_TYPE
 {
-    HIGHGUID_TYPE_VEHICLE           = 0xF1500000,
-    HIGHGUID_TYPE_CREATURE          = 0xF1300000,
-    HIGHGUID_TYPE_PET               = 0xF1400000,
-    HIGHGUID_TYPE_GAMEOBJECT        = 0xF1100000,
-    HIGHGUID_TYPE_ITEM              = 0x40000000,
-    HIGHGUID_TYPE_CONTAINER         = 0x50000000,           // confirm this pl0x
-    HIGHGUID_TYPE_PLAYER            = 0x00000000,
-    HIGHGUID_TYPE_DYNAMICOBJECT     = 0x60000000,
-    HIGHGUID_TYPE_TRANSPORTER       = 0x1FC00000,
-    HIGHGUID_TYPE_WAYPOINT          = 0x10000000,
-    HIGHGUID_TYPE_CORPSE            = 0x30000000,
+    HIGHGUID_TYPE_PLAYER            = 0x0000,
+    HIGHGUID_TYPE_WAYPOINT          = 0x1000,
+    HIGHGUID_TYPE_ITEM              = 0x4000,
+    HIGHGUID_TYPE_CONTAINER         = 0x4000,
+    HIGHGUID_TYPE_GAMEOBJECT        = 0xF110,
+    HIGHGUID_TYPE_TRANSPORTER       = 0xF120,
+    HIGHGUID_TYPE_CREATURE          = 0xF130,
+    HIGHGUID_TYPE_UNIT              = 0xF130,
+    HIGHGUID_TYPE_PET               = 0xF140,
+    HIGHGUID_TYPE_VEHICLE           = 0xF150,
+    HIGHGUID_TYPE_DYNAMICOBJECT     = 0xF100,
+    HIGHGUID_TYPE_CORPSE            = 0xF101,
+    HIGHGUID_TYPE_MO_TRANSPORT      = 0x1FC0,
+    HIGHGUID_TYPE_GROUP             = 0x1F50,
+    HIGHGUID_TYPE_GUILD             = 0x1FF6,
 //===============================================
-    HIGHGUID_TYPE_MASK              = 0xFFF00000,
-    LOWGUID_ENTRY_MASK              = 0x00FFFFFF,
+    HIGHGUID_TYPE_MASK              = 0xFFFF0000,
+    LOWGUID_ENTRY_MASK              = 0x0000FFFF,
 };
 
-// Externals
-#define HIGHGUID_TYPE_UNIT HIGHGUID_TYPE_CREATURE
-
-#define GET_TYPE_FROM_GUID(x) (GUID_HIPART((x)) & HIGHGUID_TYPE_MASK)
-#define GET_LOWGUID_PART(x) (GUID_LOPART((x)) & LOWGUID_ENTRY_MASK)
-
-// TODO: fix that type mess
-
-enum TYPE
+enum TypeMask
 {
-    TYPE_OBJECT         = 1,
-    TYPE_ITEM           = 2,
-    TYPE_CONTAINER      = 4,
-    TYPE_UNIT           = 8,
-    TYPE_PLAYER         = 16,
-    TYPE_GAMEOBJECT     = 32,
-    TYPE_DYNAMICOBJECT  = 64,
-    TYPE_CORPSE         = 128,
-    TYPE_AIGROUP        = 256,
-    TYPE_AREATRIGGER    = 512,
+    TYPEMASK_OBJECT         = 0x000001,
+    TYPEMASK_ITEM           = 0x000002,
+    TYPEMASK_CONTAINER      = 0x000004,
+    TYPEMASK_UNIT           = 0x000008,
+    TYPEMASK_PLAYER         = 0x000010,
+    TYPEMASK_GAMEOBJECT     = 0x000020,
+    TYPEMASK_DYNAMICOBJECT  = 0x000040,
+    TYPEMASK_CORPSE         = 0x000080,
+    TYPEMASK_AIGROUP        = 0x000100,
+    TYPEMASK_AREATRIGGER    = 0x000200,
+    TYPEMASK_IN_GUILD       = 0x010000
 };
 
 enum TYPEID
@@ -174,11 +171,11 @@ public:
 //  float GetScale() { return m_floatValues[ OBJECT_FIELD_SCALE_X ]; }
     void SetScale(float scale) { SetFloatValue(OBJECT_FIELD_SCALE_X, scale); };
 
-    HEARTHSTONE_INLINE uint32 GetEntryFromGUID() const  { return uint32( (*(uint64*)m_uint32Values >> 24) & 0xFFFFFFFF ); }
-    HEARTHSTONE_INLINE uint32 GetTypeFromGUID() const { return (m_uint32Values[1] & HIGHGUID_TYPE_MASK); }
-    HEARTHSTONE_INLINE uint32 GetUIdFromGUID() const { return (m_uint32Values[0] & LOWGUID_ENTRY_MASK); }
-    HEARTHSTONE_INLINE uint32 GetHighGUID() const { return (m_uint32Values[1]); } /// Sooooooooooooooooooooooooooooooooooo high
-    HEARTHSTONE_INLINE uint32 GetLowGUID() const { return (m_uint32Values[0]); }
+    HEARTHSTONE_INLINE uint32 GetEntryFromGUID() const  { return GUID_ENPART(GetGUID()); }
+    HEARTHSTONE_INLINE uint32 GetTypeFromGUID() const { return GUID_HIPART(GetGUID()); }
+    HEARTHSTONE_INLINE uint32 GetUIdFromGUID() const { return GUID_LOPART(GetGUID()); }
+    HEARTHSTONE_INLINE uint32 GetHighGUID() const { return GUID_HIPART(GetGUID()); }
+    HEARTHSTONE_INLINE uint32 GetLowGUID() const { return GUID_LOPART(GetGUID()); }
 
     bool m_isTransport;
     bool m_isVehicle;
@@ -191,7 +188,7 @@ public:
     HEARTHSTONE_INLINE bool IsUnit()    { return ( m_objectTypeId == TYPEID_UNIT || m_objectTypeId == TYPEID_PLAYER ); }
     HEARTHSTONE_INLINE bool IsPlayer() { return m_objectTypeId == TYPEID_PLAYER; }
     HEARTHSTONE_INLINE bool IsCreature() { return m_objectTypeId == TYPEID_UNIT; }
-    HEARTHSTONE_INLINE bool IsDynamicObj() { return m_objectTypeId == TYPE_DYNAMICOBJECT; }
+    HEARTHSTONE_INLINE bool IsDynamicObj() { return m_objectTypeId == TYPEID_DYNAMICOBJECT; }
     HEARTHSTONE_INLINE bool IsGameObject() { return m_objectTypeId == TYPEID_GAMEOBJECT; }
     HEARTHSTONE_INLINE bool IsContainer()   { return m_objectTypeId == TYPEID_CONTAINER; }
     HEARTHSTONE_INLINE bool IsItem()    { return m_objectTypeId == TYPEID_ITEM; }

@@ -23,8 +23,8 @@ Player::Player( uint32 guid )
     m_uint32Values = _fields;
     memset(m_uint32Values, 0,(PLAYER_END)*sizeof(uint32));
     m_updateMask.SetCount(PLAYER_END);
-    SetUInt32Value( OBJECT_FIELD_TYPE,TYPE_PLAYER|TYPE_UNIT|TYPE_OBJECT);
-    SetUInt32Value( OBJECT_FIELD_GUID,guid);
+    SetUInt32Value( OBJECT_FIELD_TYPE,TYPEMASK_PLAYER|TYPEMASK_UNIT|TYPEMASK_OBJECT);
+    SetUInt64Value( OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid, 0, HIGHGUID_TYPE_PLAYER));
     m_wowGuid.Init(GetGUID());
     m_deathRuneMasteryChance = 0;
 }
@@ -2276,7 +2276,6 @@ void Player::_SetUpdateBits(UpdateMask *updateMask, Player* target) const
     }
 }
 
-
 void Player::InitVisibleUpdateBits()
 {
     Player::m_visibleUpdateMask.SetCount(PLAYER_END);
@@ -4113,10 +4112,20 @@ void Player::OnPushToWorld()
     SendDelayedPacket(data);
     sWorld.mInWorldPlayerCount++;
 
+    // Login spell
+    CastSpell(this, 836, true);
+
     Unit::OnPushToWorld();
 
     // Update PVP Situation
     LoginPvPSetup();
+
+    // Send our auras
+    data = new WorldPacket(SMSG_AURA_UPDATE_ALL, 28 * MAX_AURAS);
+    *data << GetNewGUID();
+    if(m_AuraInterface.BuildAuraUpdateAllPacket(data))
+        SendDelayedPacket(data);
+    else delete data;
 
     if(m_FirstLogin)
     {
@@ -4219,47 +4228,7 @@ void Player::OnPushToWorld()
 
 void Player::OnWorldLogin()
 {
-    ResetSpeedHack();
 
-    // Unlock player movement
-    WorldPacket syncPacket(SMSG_TIME_SYNC_REQ, 4);
-    syncPacket << uint32(0);
-    CopyAndSendDelayedPacket(&syncPacket);
-
-    CastSpell(this, 836, true); // LOGINEFFECT
-
-    sWorld.mInWorldPlayerCount++;
-
-    // Update PVP Situation
-    LoginPvPSetup();
-
-//  m_AuraInterface.BuildAllAuraUpdates();
-//  Thetruecrow: Send a single packet
-    WorldPacket* data = new WorldPacket(SMSG_AURA_UPDATE_ALL, 28 * MAX_AURAS);
-    *data << GetNewGUID();
-    if(m_AuraInterface.BuildAuraUpdateAllPacket(data))
-        SendPacket(data);
-    else delete data;
-
-    // force area update (needed for world states)
-    _EventExploration();
-
-    // send world states
-    if( m_mapMgr != NULL )
-        m_mapMgr->GetStateManager().SendWorldStates(TO_PLAYER(this));
-
-    ResetHeartbeatCoords();
-    m_heartbeatDisable = 0;
-    m_speedChangeInProgress = false;
-    m_lastMoveType = 0;
-
-    /* send weather */
-    sWeatherMgr.SendWeather(this);
-
-    if( !GetSession()->HasGMPermissions() )
-        GetItemInterface()->CheckAreaItems(); 
-
-    z_axisposition = 0.0f;
 }
 
 void Player::SendObjectUpdate(uint64 guid)
@@ -6681,7 +6650,7 @@ void Player::SendLoot(uint64 guid, uint32 mapid, uint8 loot_type)
 
     Object* lootObj;
     // handle items
-    if(GET_TYPE_FROM_GUID(guid) == HIGHGUID_TYPE_ITEM)
+    if(GUID_HIPART(guid) == HIGHGUID_TYPE_ITEM)
         lootObj = m_ItemInterface->GetItemByGUID(guid);
     else
         lootObj = m_mapMgr->_GetObject(guid);
@@ -9189,7 +9158,7 @@ void Player::DuelBoundaryTest()
     if(!IsInWorld())
         return;
 
-    GameObject* pGameObject = GetMapMgr()->GetGameObject(GET_LOWGUID_PART(GetUInt64Value(PLAYER_DUEL_ARBITER)));
+    GameObject* pGameObject = GetMapMgr()->GetGameObject(GUID_LOPART(GetUInt64Value(PLAYER_DUEL_ARBITER)));
     if(!pGameObject)
     {
         EndDuel(DUEL_WINNER_RETREAT);
@@ -9280,7 +9249,7 @@ void Player::EndDuel(uint8 WinCondition)
 
     //Clear Duel Related Stuff
 
-    GameObject* arbiter = m_mapMgr ? GetMapMgr()->GetGameObject(GET_LOWGUID_PART(GetUInt64Value(PLAYER_DUEL_ARBITER))) : NULLGOB;
+    GameObject* arbiter = m_mapMgr ? GetMapMgr()->GetGameObject(GUID_LOPART(GetUInt64Value(PLAYER_DUEL_ARBITER))) : NULLGOB;
 
     if( arbiter != NULL )
     {
@@ -12429,28 +12398,26 @@ void Player::InitGlyphsForLevel()
     // Enable number of glyphs depending on level
     uint32 level = getLevel();
     uint32 glyph_mask = 0;
-    if(level >= 80)
-        glyph_mask = 6;
-    else if(level >= 70)
-        glyph_mask = 5;
-    else if(level >= 50)
-        glyph_mask = 4;
-    else if(level >= 30)
-        glyph_mask = 3;
-    else if(level >= 15)
-        glyph_mask = 2;
-    SetUInt32Value(PLAYER_GLYPHS_ENABLED, (1 << glyph_mask) -1 );
+    if (level >= 25)
+        glyph_mask |= 0x01 | 0x02 | 0x40;
+    if (level >= 50)
+        glyph_mask |= 0x04 | 0x08 | 0x80;
+    if (level >= 75)
+        glyph_mask |= 0x10 | 0x20 | 0x100;
+    SetUInt32Value(PLAYER_GLYPHS_ENABLED, glyph_mask);
 }
+
+static const uint32 GlyphSlotDataDump[GLYPHS_COUNT] = {21, 22, 23, 24, 25, 26, 41, 42, 43};
 
 void Player::InitGlyphSlots()
 {
-    for(uint32 i = 0; i < 6; i++)
-        SetUInt32Value(PLAYER_FIELD_GLYPH_SLOTS_1 + i, 21 + i);
+    for(uint32 i = 0; i < GLYPHS_COUNT; i++)
+        SetUInt32Value(PLAYER_FIELD_GLYPH_SLOTS_1 + i, GlyphSlotDataDump[i]);
 }
 
 void Player::UnapplyGlyph(uint32 slot)
 {
-    if(slot > 5)
+    if(slot >= GLYPHS_COUNT)
         return; // Glyph doesn't exist
     // Get info
     uint32 glyphId = GetUInt32Value(PLAYER_FIELD_GLYPHS_1 + slot);
@@ -12463,15 +12430,16 @@ void Player::UnapplyGlyph(uint32 slot)
     m_AuraInterface.RemoveAllAuras(glyph->SpellId);
 }
 
-static const uint32 glyphType[6] = {0, 1, 1, 0, 1, 0};
+static const uint32 glyphType[9] = {0, 1, 1, 0, 1, 0, 2, 2, 2};
 
 uint8 Player::SetGlyph(uint32 slot, uint32 glyphId)
 {
-    if(slot < 0 || slot > 6)
+    if(slot >= GLYPHS_COUNT)
         return SPELL_FAILED_INVALID_GLYPH;
+
     // Get info
     GlyphProperties *glyph = dbcGlyphProperties.LookupEntry(glyphId);
-    if(!glyph)
+    if(glyph == NULL)
         return SPELL_FAILED_INVALID_GLYPH;
 
     for(uint32 x = 0; x < GLYPHS_COUNT; ++x)
