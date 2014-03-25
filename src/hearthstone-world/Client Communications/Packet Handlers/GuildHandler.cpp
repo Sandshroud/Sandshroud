@@ -448,7 +448,7 @@ void WorldSession::HandleCharterShowSignatures(WorldPacket & recv_data)
     Charter * pCharter;
     uint64 item_guid;
     recv_data >> item_guid;
-    pCharter = guildmgr.GetCharterByItemGuid(GET_LOWGUID_PART(item_guid));
+    pCharter = guildmgr.GetCharterByItemGuid(GUID_LOPART(item_guid));
 
     if(pCharter)
         SendShowSignatures(pCharter, item_guid, _player);
@@ -462,7 +462,7 @@ void WorldSession::HandleCharterQuery(WorldPacket & recv_data)
     recv_data >> charter_id;
     recv_data >> item_guid;
 
-    Charter * c = guildmgr.GetCharterByItemGuid(GET_LOWGUID_PART(item_guid));
+    Charter * c = guildmgr.GetCharterByItemGuid(GUID_LOPART(item_guid));
     if(c == NULL)
         return;
 
@@ -514,7 +514,7 @@ void WorldSession::HandleCharterOffer( WorldPacket & recv_data )
 
     CHECK_INWORLD_RETURN();
     Player* pTarget = _player->GetMapMgr()->GetPlayer((uint32)target_guid);
-    pCharter = guildmgr.GetCharterByItemGuid(GET_LOWGUID_PART(item_guid));
+    pCharter = guildmgr.GetCharterByItemGuid(GUID_LOPART(item_guid));
 
     if( pCharter == NULL )
     {
@@ -544,7 +544,7 @@ void WorldSession::HandleCharterSign( WorldPacket & recv_data )
     uint64 item_guid;
     recv_data >> item_guid;
 
-    Charter * c = guildmgr.GetCharterByItemGuid(GET_LOWGUID_PART(item_guid));
+    Charter * c = guildmgr.GetCharterByItemGuid(GUID_LOPART(item_guid));
     if( c == NULL )
         return;
 
@@ -588,7 +588,7 @@ void WorldSession::HandleCharterTurnInCharter(WorldPacket & recv_data)
     CHECK_INWORLD_RETURN();
     uint64 charterGuid;
     recv_data >> charterGuid;
-    Charter * pCharter = guildmgr.GetCharterByItemGuid(GET_LOWGUID_PART(charterGuid));
+    Charter * pCharter = guildmgr.GetCharterByItemGuid(GUID_LOPART(charterGuid));
     if(!pCharter)
         return;
 
@@ -703,7 +703,7 @@ void WorldSession::HandleCharterRename(WorldPacket & recv_data)
     string name;
     recv_data >> guid >> name;
 
-    Charter * pCharter = guildmgr.GetCharterByItemGuid(GET_LOWGUID_PART(guid));
+    Charter * pCharter = guildmgr.GetCharterByItemGuid(GUID_LOPART(guid));
     if(pCharter == 0)
         return;
 

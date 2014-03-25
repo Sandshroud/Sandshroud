@@ -115,7 +115,7 @@ public:
     void SetAuraSlot(uint8 slot) { m_auraSlot = slot; }
     HEARTHSTONE_INLINE uint8 GetAuraFlags() const { return m_auraFlags; }
     void SetAuraFlags(uint8 flags) { m_auraFlags = flags; }
-    void SetAuraFlag(uint8 flag) { if( ! (m_auraFlags & flag ) ) m_auraFlags |= flag; };
+    void SetAuraFlag(uint8 flag) { m_auraFlags |= flag; };
     HEARTHSTONE_INLINE uint8 GetAuraLevel() const { return m_auraLevel; }
     void SetAuraLevel(uint8 level) { m_auraLevel = level; }
 
@@ -140,6 +140,7 @@ public:
     void UpdateModifiers();
     void AddAuraVisual();
     void BuildAuraUpdate();
+    void BuildAuraUpdatePacket(ByteBuffer buffer);
     void EventUpdateCreatureAA(float r);
     void EventUpdatePlayerAA(float r);
     void EventRelocateRandomTarget();

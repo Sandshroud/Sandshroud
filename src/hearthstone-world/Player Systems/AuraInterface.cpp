@@ -210,38 +210,13 @@ bool AuraInterface::BuildAuraUpdateAllPacket(WorldPacket* data)
 
     bool res = false;
     Aura* aur = NULL;
-    for (uint32 i=0; i<MAX_AURAS; i++)
+    for (uint32 i = 0; i < MAX_AURAS; i++)
     {
         if(m_auras.find(i) != m_auras.end())
         {
             res = true;
             aur = m_auras.at(i);
-            aur->BuildAuraUpdate();
-            uint8 flags = aur->GetAuraFlags();
-
-            *data << uint8(aur->m_auraSlot);
-            int32 stack = aur->stackSize;
-            if(aur->procCharges > stack && stack != 0)
-                stack = aur->procCharges;
-            if(stack < 0)
-            {
-                *data << uint32(0);
-                continue;
-            }
-
-            *data << uint32(aur->GetSpellId());
-            *data << uint8(flags);
-            *data << uint8(aur->GetUnitCaster() ? aur->GetUnitCaster()->getLevel() : 0);
-            *data << uint8(stack);
-
-            if(!(flags & AFLAG_NOT_GUID))
-                FastGUIDPack(*data, aur->GetCasterGUID());
-
-            if(flags & AFLAG_HAS_DURATION)
-            {
-                *data << aur->GetDuration();
-                *data << aur->GetTimeLeft();
-            }
+            aur->BuildAuraUpdatePacket(*data);
         }
     }
     return res;
@@ -1128,8 +1103,11 @@ void AuraInterface::AddAura(Aura* aur)
     if(target == NULL)
         return; // Should never happen.
 
-    aur->SetAuraFlags(AFLAG_VISIBLE | AFLAG_EFF_INDEX_1 | AFLAG_EFF_INDEX_2 | AFLAG_NOT_GUID | (aur->GetDuration() ? AFLAG_HAS_DURATION : AFLAG_NONE)
-        | (aur->IsPositive() ? (AFLAG_POSITIVE) : (AFLAG_NEGATIVE)));
+    aur->SetAuraFlags(AFLAG_EFF_INDEX_0 | AFLAG_EFF_INDEX_1 | AFLAG_EFF_INDEX_2 | AFLAG_NOT_GUID | (aur->IsPositive() ? (AFLAG_POSITIVE) : (AFLAG_NEGATIVE)));
+    if(aur->GetDuration())
+        aur->SetAuraFlag(AFLAG_HAS_DURATION);
+    if(!aur->IsPassive())
+        aur->SetAuraFlag(AFLAG_EFF_AMOUNT_SEND);
 
     aur->SetAuraLevel(aur->GetUnitCaster() != NULL ? aur->GetUnitCaster()->getLevel() : MAXIMUM_ATTAINABLE_LEVEL);
 

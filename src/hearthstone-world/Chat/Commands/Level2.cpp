@@ -1047,7 +1047,7 @@ bool ChatHandler::HandleVendorClearCommand(const char* args, WorldSession *m_ses
         return true;
     }
 
-    Creature* pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    Creature* pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART(guid));
     if(!pCreature)
     {
         SystemMessage(m_session, "You should select a creature.");
@@ -1097,7 +1097,7 @@ bool ChatHandler::HandleItemSetCommand(const char* args, WorldSession *m_session
         return true;
     }
 
-    Creature* pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    Creature* pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART(guid));
     if(!pCreature)
     {
         SystemMessage(m_session, "You should select a creature.");
@@ -1164,7 +1164,7 @@ bool ChatHandler::HandleItemSetRemoveCommand(const char* args, WorldSession *m_s
         return true;
     }
 
-    Creature* pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    Creature* pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART(guid));
     if(!pCreature)
     {
         SystemMessage(m_session, "You should select a creature.");
@@ -1218,7 +1218,7 @@ bool ChatHandler::HandleTrainerAddLearnSpell(const char* args, WorldSession *m_s
         return true;
     }
 
-    Creature* pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    Creature* pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART(guid));
     if(!pCreature)
     {
         SystemMessage(m_session, "You should select a creature.");
@@ -1266,7 +1266,7 @@ bool ChatHandler::HandleTrainerAddCastSpell(const char* args, WorldSession *m_se
         return true;
     }
 
-    Creature* pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    Creature* pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART(guid));
     if(!pCreature)
     {
         SystemMessage(m_session, "You should select a creature.");

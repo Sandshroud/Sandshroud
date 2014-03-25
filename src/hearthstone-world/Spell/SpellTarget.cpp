@@ -68,9 +68,9 @@ void Spell::FillTargetMap(uint32 i)
     if(TargetType & SPELL_TARGET_OBJECT_PETOWNER)
     {
         uint64 guid = m_targets.m_unitTarget;
-        if(GET_TYPE_FROM_GUID(guid) == HIGHGUID_TYPE_PET)
+        if(GUID_HIPART(guid) == HIGHGUID_TYPE_PET)
         {
-            Pet* p = m_caster->GetMapMgr()->GetPet(GET_LOWGUID_PART(guid));
+            Pet* p = m_caster->GetMapMgr()->GetPet(GUID_LOPART(guid));
 
             if(p != NULL)
                 AddTarget(i, TargetType, p->GetPetOwner());

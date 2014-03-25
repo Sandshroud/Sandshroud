@@ -38,7 +38,7 @@ bool ChatHandler::HandleWPAddCommand(const char* args, WorldSession *m_session)
     }
     else
     {
-        pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+        pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART(guid));
         if(!pCreature)
         {
             SystemMessage(m_session, "You should select a creature.");
@@ -148,7 +148,7 @@ bool ChatHandler::HandleWPMoveTypeCommand(const char* args, WorldSession *m_sess
         return true;
     }
 
-    Creature* pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    Creature* pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART(guid));
     if(!pCreature)
     {
         SystemMessage(m_session, "You should select a creature.");
@@ -181,7 +181,7 @@ bool ChatHandler::HandleWPShowCommand(const char* args, WorldSession *m_session)
         return true;
     }
 
-    Creature* pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    Creature* pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART(guid));
     if(!pCreature)
     {
         SystemMessage(m_session, "You should select a Creature.");
@@ -241,7 +241,7 @@ bool ChatHandler::HandleWPDeleteCommand(const char* args, WorldSession *m_sessio
         return true;
     }
 
-    if(GET_TYPE_FROM_GUID(guid) != HIGHGUID_TYPE_WAYPOINT)
+    if(GUID_HIPART(guid) != HIGHGUID_TYPE_WAYPOINT)
     {
         SystemMessage(m_session, "You should select a Waypoint.");
         return true;
@@ -290,7 +290,7 @@ bool ChatHandler::HandleWPChangeNoCommand(const char* args, WorldSession *m_sess
         return true;
     }
 
-    if(GET_TYPE_FROM_GUID(guid) != HIGHGUID_TYPE_WAYPOINT)
+    if(GUID_HIPART(guid) != HIGHGUID_TYPE_WAYPOINT)
     {
         SystemMessage(m_session, "You should select a Waypoint.");
         return true;
@@ -347,7 +347,7 @@ bool ChatHandler::HandleWPFlagsCommand(const char* args, WorldSession *m_session
         return true;
     }
 
-    if(GET_TYPE_FROM_GUID(guid) != HIGHGUID_TYPE_WAYPOINT)
+    if(GUID_HIPART(guid) != HIGHGUID_TYPE_WAYPOINT)
     {
         SystemMessage(m_session, "You should select a Waypoint.");
         return true;
@@ -396,7 +396,7 @@ bool ChatHandler::HandleWPMoveHereCommand(const char* args, WorldSession *m_sess
         return true;
     }
 
-    if(GET_TYPE_FROM_GUID(guid) != HIGHGUID_TYPE_WAYPOINT)
+    if(GUID_HIPART(guid) != HIGHGUID_TYPE_WAYPOINT)
     {
         SystemMessage(m_session, "You should select a Waypoint.");
         return true;
@@ -452,7 +452,7 @@ bool ChatHandler::HandleWPWaitCommand(const char* args, WorldSession *m_session)
         return true;
     }
 
-    if(GET_TYPE_FROM_GUID(guid) != HIGHGUID_TYPE_WAYPOINT)
+    if(GUID_HIPART(guid) != HIGHGUID_TYPE_WAYPOINT)
     {
         SystemMessage(m_session, "You should select a Waypoint.");
         return true;
@@ -508,7 +508,7 @@ bool ChatHandler::HandleWaypointGettextCommand(const char* args, WorldSession *m
         return true;
     }
 
-    if(GET_TYPE_FROM_GUID(guid) != HIGHGUID_TYPE_WAYPOINT)
+    if(GUID_HIPART(guid) != HIGHGUID_TYPE_WAYPOINT)
     {
         SystemMessage(m_session, "You should select a Waypoint.");
         return true;
@@ -560,7 +560,7 @@ bool ChatHandler::HandleWaypointForwardTextCommand(const char* args, WorldSessio
         return true;
     }
 
-    if(GET_TYPE_FROM_GUID(guid) != HIGHGUID_TYPE_WAYPOINT)
+    if(GUID_HIPART(guid) != HIGHGUID_TYPE_WAYPOINT)
     {
         SystemMessage(m_session, "You should select a Waypoint.");
         return true;
@@ -611,7 +611,7 @@ bool ChatHandler::HandleWaypointSetOrientationCommand(const char* args, WorldSes
         return true;
     }
 
-    if(GET_TYPE_FROM_GUID(guid) != HIGHGUID_TYPE_WAYPOINT)
+    if(GUID_HIPART(guid) != HIGHGUID_TYPE_WAYPOINT)
     {
         SystemMessage(m_session, "You should select a Waypoint.");
         return true;
@@ -657,7 +657,7 @@ bool ChatHandler::HandleWaypointBackwardTextCommand(const char* args, WorldSessi
         return true;
     }
 
-    if(GET_TYPE_FROM_GUID(guid) != HIGHGUID_TYPE_WAYPOINT)
+    if(GUID_HIPART(guid) != HIGHGUID_TYPE_WAYPOINT)
     {
         SystemMessage(m_session, "You should select a Waypoint.");
         return true;
@@ -706,7 +706,7 @@ bool ChatHandler::HandleWPSpellToCastCommand(const char* args, WorldSession *m_s
         return true;
     }
 
-    if(GET_TYPE_FROM_GUID(guid) != HIGHGUID_TYPE_WAYPOINT)
+    if(GUID_HIPART(guid) != HIGHGUID_TYPE_WAYPOINT)
     {
         SystemMessage(m_session, "You should select a Waypoint.");
         return true;
@@ -769,7 +769,7 @@ bool ChatHandler::HandleWPStandStateCommand(const char* args, WorldSession *m_se
         return true;
     }
 
-    if(GET_TYPE_FROM_GUID(guid) != HIGHGUID_TYPE_WAYPOINT)
+    if(GUID_HIPART(guid) != HIGHGUID_TYPE_WAYPOINT)
     {
         SystemMessage(m_session, "You should select a Waypoint.");
         return true;
@@ -830,7 +830,7 @@ bool ChatHandler::HandleWPEmoteCommand(const char* args, WorldSession *m_session
         return true;
     }
 
-    if(GET_TYPE_FROM_GUID(guid) != HIGHGUID_TYPE_WAYPOINT)
+    if(GUID_HIPART(guid) != HIGHGUID_TYPE_WAYPOINT)
     {
         SystemMessage(m_session, "You should select a Waypoint.");
         return true;
@@ -898,7 +898,7 @@ bool ChatHandler::HandleWPSkinCommand(const char* args, WorldSession *m_session)
         return true;
     }
 
-    if(GET_TYPE_FROM_GUID(guid) != HIGHGUID_TYPE_WAYPOINT)
+    if(GUID_HIPART(guid) != HIGHGUID_TYPE_WAYPOINT)
     {
         SystemMessage(m_session,  "You should select a Waypoint.");
         return true;
@@ -961,7 +961,7 @@ bool ChatHandler::HandleWPInfoCommand(const char* args, WorldSession *m_session)
         return true;
     }
 
-    if(GET_TYPE_FROM_GUID(guid) != HIGHGUID_TYPE_WAYPOINT)
+    if(GUID_HIPART(guid) != HIGHGUID_TYPE_WAYPOINT)
     {
         SystemMessage(m_session, "You should select a Waypoint.");
         return true;
@@ -1031,7 +1031,7 @@ bool ChatHandler::HandleWPHideCommand(const char* args, WorldSession *m_session)
         return true;
     }
 
-    Creature* pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    Creature* pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART(guid));
     if(!pCreature)
     {
         SystemMessage(m_session, "You should select a Creature.");
@@ -1070,7 +1070,7 @@ bool ChatHandler::HandleWPHideCommand(const char* args, WorldSession *m_session)
 
 bool ChatHandler::HandleGenerateWaypoints(const char* args, WorldSession * m_session)
 {
-    Creature* cr = m_session->GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(m_session->GetPlayer()->GetSelection()));
+    Creature* cr = m_session->GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART(m_session->GetPlayer()->GetSelection()));
     if(!cr)
     {
         SystemMessage(m_session, "You should select a creature.");
@@ -1149,7 +1149,7 @@ bool ChatHandler::HandleGenerateWaypoints(const char* args, WorldSession * m_ses
 
 bool ChatHandler::HandleSaveWaypoints(const char* args, WorldSession * m_session)
 {
-    Creature* cr = m_session->GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(m_session->GetPlayer()->GetSelection()));
+    Creature* cr = m_session->GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART(m_session->GetPlayer()->GetSelection()));
     if(cr == NULL)
         return false;
     if(!cr->GetSQL_id())
@@ -1167,7 +1167,7 @@ bool ChatHandler::HandleSaveWaypoints(const char* args, WorldSession * m_session
 bool ChatHandler::HandleDeleteWaypoints(const char* args, WorldSession * m_session)
 {
     Creature* cr =
-        m_session->GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(m_session->GetPlayer()->GetSelection()));
+        m_session->GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART(m_session->GetPlayer()->GetSelection()));
     if(!cr)return false;
     if(!cr->GetSQL_id())
         return false;
@@ -1215,7 +1215,7 @@ bool ChatHandler::HandleWaypointAddFlyCommand(const char * args, WorldSession * 
     }
     else
     {
-        pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+        pCreature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART(guid));
         if(!pCreature)
         {
             SystemMessage(m_session, "You should select a creature.");

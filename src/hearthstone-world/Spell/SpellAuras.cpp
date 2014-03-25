@@ -326,7 +326,7 @@ pSpellAura SpellAuraHandler[SPELL_AURA_TOTAL] = {
 
 Unit* Aura::GetUnitCaster()
 {
-    if( m_target == NULL && m_casterGuid && GET_TYPE_FROM_GUID(m_casterGuid) == HIGHGUID_TYPE_PLAYER)
+    if( m_target == NULL && m_casterGuid && GUID_HIPART(m_casterGuid) == HIGHGUID_TYPE_PLAYER)
     {
         Unit* punit = NULL;
         punit = objmgr.GetPlayer( uint32(m_casterGuid));
@@ -660,37 +660,50 @@ void Aura::BuildAuraUpdate()
 
     WorldPacket data(SMSG_AURA_UPDATE, 50);
     FastGUIDPack(data, m_target->GetGUID());
-    data << uint8(m_auraSlot);
+    BuildAuraUpdatePacket(data);
+    m_target->SendMessageToSet(&data, true);
+}
 
+void Aura::BuildAuraUpdatePacket(ByteBuffer buffer)
+{
+    buffer << uint8(m_auraSlot);
     uint8 stack = stackSize;
     if(procCharges > stack && stack != 0)
         stack = procCharges;
-
     if(stack == 0)
     {
-        data << uint32(0);
-        m_target->SendMessageToSet(&data, true);
+        buffer << uint32(0);
         return;
     }
-    uint8 flags = GetAuraFlags();
 
-    data << uint32(spellid);
-    data << uint8(flags);
-    data << uint8(GetUnitCaster() ? GetUnitCaster()->getLevel() : 0);
-    data << uint8(stack);
+    uint8 flags = GetAuraFlags();
+    buffer << uint32(GetSpellProto()->Id);
+    buffer << uint8(flags);
+    buffer << uint8(GetUnitCaster() ? GetUnitCaster()->getLevel() : 0);
+    buffer << uint8(stack);
 
     if(!(flags & AFLAG_NOT_GUID))
     {
-        FastGUIDPack(data, GetCasterGUID());
+        FastGUIDPack(buffer, GetCasterGUID());
     }
 
     if( flags & AFLAG_HAS_DURATION )
     {
-        data << GetDuration();
-        data << GetTimeLeft();
+        buffer << GetDuration();
+        buffer << GetTimeLeft();
     }
 
-    m_target->SendMessageToSet(&data, true);
+    if (flags & AFLAG_EFF_AMOUNT_SEND)
+    {
+        for (uint8 i = 0; i < 3; ++i)
+        {
+            if (flags & 1<<i)
+            {
+                Modifier *mod = GetMod(i);
+                buffer << uint32(mod ? mod->m_amount : 0);
+            }
+        }
+    }
 }
 
 // Modifies current aura duration based on mechanic specified
@@ -748,7 +761,7 @@ void Aura::EventUpdateCreatureAA(float r)
     for(itr = targets.begin(); itr != targets.end(); )
     {
         it2 = itr++;
-        if((*it2) == GET_LOWGUID_PART(m_casterGuid))
+        if((*it2) == GUID_LOPART(m_casterGuid))
             continue;
 
         Unit* c = m_caster->GetMapMgr()->GetCreature(*it2);
@@ -2255,7 +2268,7 @@ void Aura::SpellAuraDummy(bool apply)
                 return;
 
             uint64 crtguid = TO_PLAYER(m_target)->m_areaSpiritHealer_guid;
-            Creature* pCreature = TO_PLAYER(m_target)->IsInWorld() ? TO_PLAYER(m_target)->GetMapMgr()->GetCreature(GET_LOWGUID_PART(crtguid)) : NULLCREATURE;
+            Creature* pCreature = TO_PLAYER(m_target)->IsInWorld() ? TO_PLAYER(m_target)->GetMapMgr()->GetCreature(GUID_LOPART(crtguid)) : NULLCREATURE;
             if(pCreature==NULL || TO_PLAYER(m_target)->m_bg==NULL)
                 return;
 

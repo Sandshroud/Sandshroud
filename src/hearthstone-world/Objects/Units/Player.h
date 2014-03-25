@@ -1203,7 +1203,14 @@ public:
     HEARTHSTONE_INLINE uint32 GetGuildId() { return GetUInt32Value(PLAYER_GUILDID); }
     HEARTHSTONE_INLINE uint32 GetGuildRank() { return GetUInt32Value(PLAYER_GUILDRANK); }
 
-    void SetGuildId(uint32 guildId) { SetUInt32Value(PLAYER_GUILDID, guildId); }
+    void SetGuildId(uint32 guildId)
+    {
+        uint32 objectType = GetUInt32Value(OBJECT_FIELD_TYPE);
+        if(guildId) objectType |= TYPEMASK_IN_GUILD;
+        else objectType &= ~TYPEMASK_IN_GUILD;
+        SetUInt64Value(PLAYER_GUILDID, guildId ? MAKE_NEW_GUID(guildId, 0, HIGHGUID_TYPE_GUILD) : 0);
+        SetUInt32Value(OBJECT_FIELD_TYPE, objectType);
+    }
     void SetGuildRank(uint32 guildRank) { SetUInt32Value(PLAYER_GUILDRANK, guildRank); }
 
     uint32 GetGuildInvitersGuid() { return m_invitersGuid; }

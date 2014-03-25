@@ -44,7 +44,7 @@ void WorldSession::HandleTabardVendorActivateOpcode( WorldPacket & recv_data )
     CHECK_INWORLD_RETURN();
     uint64 guid;
     recv_data >> guid;
-    Creature* pCreature = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    Creature* pCreature = _player->GetMapMgr()->GetCreature(GUID_LOPART(guid));
     if(!pCreature) return;
 
     SendTabardHelp(pCreature);
@@ -69,7 +69,7 @@ void WorldSession::HandleBankerActivateOpcode( WorldPacket & recv_data )
     uint64 guid;
     recv_data >> guid;
 
-    Creature* pCreature = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    Creature* pCreature = _player->GetMapMgr()->GetCreature(GUID_LOPART(guid));
     if(!pCreature) return;
 
     SendBankerList(pCreature);
@@ -95,7 +95,7 @@ void WorldSession::HandleTrainerListOpcode( WorldPacket & recv_data )
     // Inits, grab creature, check.
     uint64 guid;
     recv_data >> guid;
-    Creature* train = GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    Creature* train = GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART(guid));
     if(train == NULL)
         return;
 
@@ -167,7 +167,7 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket& recvPacket)
     uint32 TeachingSpellID;
 
     recvPacket >> Guid >> TeachingSpellID;
-    Creature* pCreature = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(Guid));
+    Creature* pCreature = _player->GetMapMgr()->GetCreature(GUID_LOPART(Guid));
     if(pCreature == NULL)
         return;
 
@@ -345,7 +345,7 @@ void WorldSession::HandleCharterShowListOpcode( WorldPacket & recv_data )
     uint64 guid;
     recv_data >> guid;
 
-    Creature* pCreature = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    Creature* pCreature = _player->GetMapMgr()->GetCreature(GUID_LOPART(guid));
     if(!pCreature) return;
 
     SendCharterRequest(pCreature);
@@ -398,7 +398,7 @@ void WorldSession::HandleAuctionHelloOpcode( WorldPacket & recv_data )
     CHECK_INWORLD_RETURN();
     uint64 guid;
     recv_data >> guid;
-    Creature* auctioneer = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    Creature* auctioneer = _player->GetMapMgr()->GetCreature(GUID_LOPART(guid));
     if(!auctioneer)
         return;
 
@@ -432,13 +432,13 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recv_data )
     recv_data >> guid;
 
     Object* obj = NULL;
-    switch(GET_TYPE_FROM_GUID(guid)) // Crow: Could possibly do GetObject because I don't think we need items...
+    switch(GUID_HIPART(guid)) // Crow: Could possibly do GetObject because I don't think we need items...
     {
     case HIGHGUID_TYPE_CREATURE:
-        obj = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+        obj = _player->GetMapMgr()->GetCreature(GUID_LOPART(guid));
         break;
     case HIGHGUID_TYPE_GAMEOBJECT:
-        obj = _player->GetMapMgr()->GetGameObject(GET_LOWGUID_PART(guid));
+        obj = _player->GetMapMgr()->GetGameObject(GUID_LOPART(guid));
         break;
     case HIGHGUID_TYPE_ITEM:
         obj = _player->GetItemInterface()->GetItemByGUID(guid);
@@ -467,11 +467,11 @@ void WorldSession::HandleGossipSelectOptionOpcode( WorldPacket & recv_data )
     sLog.Debug("WORLD","CMSG_GOSSIP_SELECT_OPTION Option %i Guid %.8X", option, guid );
     GossipScript* Script = NULL;
     Object* qst_giver = NULLOBJ;
-    uint32 guidtype = GET_TYPE_FROM_GUID(guid);
+    uint32 guidtype = GUID_HIPART(guid);
 
     if(guidtype == HIGHGUID_TYPE_CREATURE)
     {
-        Creature* crt = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+        Creature* crt = _player->GetMapMgr()->GetCreature(GUID_LOPART(guid));
         if(!crt)
             return;
 
@@ -489,7 +489,7 @@ void WorldSession::HandleGossipSelectOptionOpcode( WorldPacket & recv_data )
     }
     else if(guidtype == HIGHGUID_TYPE_GAMEOBJECT)
     {
-        GameObject* gobj = _player->GetMapMgr()->GetGameObject(GET_LOWGUID_PART(guid));
+        GameObject* gobj = _player->GetMapMgr()->GetGameObject(GUID_LOPART(guid));
         if(!gobj)
             return;
 
@@ -641,7 +641,7 @@ void WorldSession::HandleBinderActivateOpcode( WorldPacket & recv_data )
     uint64 guid;
     recv_data >> guid;
 
-    Creature* pC = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    Creature* pC = _player->GetMapMgr()->GetCreature(GUID_LOPART(guid));
     if(!pC)
         return;
 

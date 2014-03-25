@@ -26,13 +26,10 @@ void WorldSession::HandleNameQueryOpcode( WorldPacket & recv_data )
 
     sLog.Debug("WorldSession","Received CMSG_NAME_QUERY for: %s", pn->name );
     WorldPacket data(SMSG_NAME_QUERY_RESPONSE, 10000);
-    data << WoWGuid(guid);
+    FastGUIDPack(data, guid);
     data << uint8(0);
     data << pn->name;
-//  if(blablabla)
-//      data << std::string("");
-//  else
-        data << uint8(0);
+    data << uint8(0);
     data << uint8(pn->race);
     data << uint8(pn->gender);
     data << uint8(pn->_class);
@@ -46,8 +43,7 @@ void WorldSession::HandleNameQueryOpcode( WorldPacket & recv_data )
 void WorldSession::HandleQueryTimeOpcode( WorldPacket & recv_data )
 {
     WorldPacket data(SMSG_QUERY_TIME_RESPONSE, 8);
-    data << uint32(UNIXTIME);
-    data << uint32(0);
+    data << uint64(UNIXTIME);
     SendPacket(&data);
 }
 
@@ -87,27 +83,27 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recv_data )
 
     sLog.Debug("WORLD","HandleCreatureQueryOpcode CMSG_CREATURE_QUERY '%s'", ci->Name);
     data << entry;
-    data << ci->Name;
-    data << uint8(0) << uint8(0) << uint8(0);
+    data << ci->Name << uint8(0) << uint8(0) << uint8(0);
     data << ci->SubName;
     data << ci->info_str; //!!! this is a string in 2.3.0 Example: stormwind guard has : "Direction"
     data << ci->Flags1;
     data << ci->Type;
     data << ci->Family;
     data << ci->Rank;
-    data << ci->Unknown1;
-    data << ci->SpellDataID;
+    data << ci->Unk[0];
+    data << ci->Unk[1];
     data << ci->Male_DisplayID;
     data << ci->Female_DisplayID;
     data << ci->Male_DisplayID2;
     data << ci->Female_DisplayID2;
-    data << ci->unkfloat1;
-    data << ci->unkfloat2;
+    data << ci->modHealth;
+    data << ci->modMana;
     data << ci->Leader;
-    CreatureQuestLoot* CtrQuestLoot = lootmgr.GetCreatureQuestLoot(entry);
+    ObjectQuestLoot* objQuestLoot = lootmgr.GetCreatureQuestLoot(entry);
     for(uint32 i = 0; i < 6; i++)
-        data << uint32(CtrQuestLoot ? CtrQuestLoot->QuestLoot[i] : 0); // QuestItems
+        data << uint32(objQuestLoot ? objQuestLoot->QuestLoot[i] : 0); // QuestItems
     data << uint32(0);  // CreatureMovementInfo.dbc
+    data << uint32(0);
     SendPacket( &data );
 }
 
@@ -133,23 +129,17 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recv_data )
     data << entryID;
     data << goinfo->Type;
     data << goinfo->DisplayID;
-    data << goinfo->Name;
-    data << uint8(0);
-    data << uint8(0);
-    data << uint8(0);
+    data << goinfo->Name << uint8(0) << uint8(0) << uint8(0);
     data << goinfo->Icon;
     data << goinfo->CastBarText;
     data << uint8(0);
     for(uint32 d = 0; d < 24; d++)
         data << goinfo->RawData.ListedData[d];
-    data << float(1);
-    uint32 i = 0;
-    if(lootmgr.quest_loot_go.find(entryID) != lootmgr.quest_loot_go.end())
-        for(std::set<uint32>::iterator itr = lootmgr.quest_loot_go[entryID].begin(); itr != lootmgr.quest_loot_go[entryID].end(), i < 6; itr++, i++)
-            data << uint32(*itr);
-    for(; i < 6; i++)
-        data << uint32(0);          // itemId[6], quest drop
-
+    data << float(1.f);
+    ObjectQuestLoot* objQuestLoot = lootmgr.GetGameObjectQuestLoot(entryID);
+    for(uint32 i = 0; i < 6; i++)
+        data << uint32(objQuestLoot ? objQuestLoot->QuestLoot[i] : 0); // QuestItems
+    data << uint32(0);
     SendPacket( &data );
 }
 

@@ -135,41 +135,26 @@ void SpellCastTargets::read( WorldPacket & data, uint64 caster, uint8 castFlags 
     m_strTarget = "";
 
     data >> m_targetMask;
-
-    if( m_targetMask == TARGET_FLAG_SELF  || m_targetMask & TARGET_FLAG_GLYPH )
-    {
+    if( m_targetMask == TARGET_FLAG_SELF || m_targetMask & TARGET_FLAG_GLYPH )
         m_unitTarget = caster;
-    }
 
     if( m_targetMask & (TARGET_FLAG_OBJECT | TARGET_FLAG_UNIT | TARGET_FLAG_CORPSE | TARGET_FLAG_CORPSE2 ) )
     {
         data >> guid;
         m_unitTarget = guid.GetOldGuid();
     }
-
-    if( m_targetMask & ( TARGET_FLAG_ITEM | TARGET_FLAG_TRADE_ITEM ) )
+    else if( m_targetMask & ( TARGET_FLAG_ITEM | TARGET_FLAG_TRADE_ITEM ) )
     {
-        data >> guid;
-        m_itemTarget = guid.GetOldGuid();
-    }
-
-    if( m_targetMask & ( TARGET_FLAG_ITEM2 ) )
-    {
-        uint32 unk2;
-        uint8 unk;
-        data >> unk >> unk >> unk;
-        data >> unk2;
         data >> guid;
         m_itemTarget = guid.GetOldGuid();
     }
 
     if( m_targetMask & TARGET_FLAG_SOURCE_LOCATION )
     {
-        data >> guid >> m_srcX >> m_srcY >> m_srcZ;
-        unkUint64_1 = guid.GetOldGuid();
-
+        data >> m_src_transGuid >> m_srcX >> m_srcY >> m_srcZ;
         if( !( m_targetMask & TARGET_FLAG_DEST_LOCATION ) )
         {
+            m_dest_transGuid = m_src_transGuid;
             m_destX = m_srcX;
             m_destY = m_srcY;
             m_destZ = m_srcZ;
@@ -178,11 +163,10 @@ void SpellCastTargets::read( WorldPacket & data, uint64 caster, uint8 castFlags 
 
     if( m_targetMask & TARGET_FLAG_DEST_LOCATION )
     {
-        data >> guid >> m_destX >> m_destY >> m_destZ;
-        unkUint64_2 = guid.GetOldGuid();
-
+        data >> m_dest_transGuid >> m_destX >> m_destY >> m_destZ;
         if( !( m_targetMask & TARGET_FLAG_SOURCE_LOCATION ) )
         {
+            m_src_transGuid = m_dest_transGuid;
             m_srcX = m_destX;
             m_srcY = m_destY;
             m_srcZ = m_destZ;
@@ -221,10 +205,10 @@ void SpellCastTargets::write( WorldPacket& data )
         FastGUIDPack( data, m_itemTarget );
 
     if( m_targetMask & TARGET_FLAG_SOURCE_LOCATION )
-        data << unkUint64_1 << m_srcX << m_srcY << m_srcZ;
+        data << m_src_transGuid << m_srcX << m_srcY << m_srcZ;
 
     if( m_targetMask & TARGET_FLAG_DEST_LOCATION )
-        data << unkUint64_2 << m_destX << m_destY << m_destZ;
+        data << m_dest_transGuid << m_destX << m_destY << m_destZ;
 
     if (m_targetMask & TARGET_FLAG_STRING)
         data << m_strTarget;
@@ -1298,7 +1282,7 @@ void Spell::cast(bool check)
 
     if(cancastresult == SPELL_CANCAST_OK)
     {
-        if (p_caster && !m_triggeredSpell && p_caster->IsInWorld() && GET_TYPE_FROM_GUID(m_targets.m_unitTarget) == HIGHGUID_TYPE_CREATURE)
+        if (p_caster && !m_triggeredSpell && p_caster->IsInWorld() && GUID_HIPART(m_targets.m_unitTarget) == HIGHGUID_TYPE_CREATURE)
             sQuestMgr.OnPlayerCast(p_caster, GetSpellProto()->Id, m_targets.m_unitTarget);
 
         // trigger on next attack
@@ -1501,7 +1485,7 @@ void Spell::cast(bool check)
                 /// hack fix for shoot spells, should be some other resource for it
                 //p_caster->SendSpellCoolDown(GetSpellProto()->Id, GetSpellProto()->RecoveryTime ? GetSpellProto()->RecoveryTime : 2300);
                 WorldPacket data(SMSG_SPELL_COOLDOWN, 14);
-                data << p_caster->GetNewGUID();
+                data << p_caster->GetGUID();
                 data << uint8(0);
                 data << GetSpellProto()->Id;
                 data << uint32(GetSpellProto()->RecoveryTime ? GetSpellProto()->RecoveryTime : 2300);
@@ -2372,7 +2356,6 @@ void Spell::SendSpellStart()
         }
     }
 
-    data << uint32(152);
     m_caster->SendMessageToSet( &data, true );
 }
 
@@ -2566,6 +2549,8 @@ void Spell::SendResurrectRequest(Player* target)
     data << name;
     data << uint8(0);
     data << uint8(m_caster->IsCreature() ? 1 : 0);
+    if (m_spellInfo->Flags3 & 0x10)
+        data << uint32(0);
     target->GetSession()->SendPacket(&data);
 }
 
@@ -2764,7 +2749,7 @@ Object* Spell::_LookupObject(const uint64& guid)
     if( guid == m_caster->GetGUID() )
         return m_caster;
 
-    switch(GET_TYPE_FROM_GUID(guid))
+    switch(GUID_HIPART(guid))
     {
     case HIGHGUID_TYPE_ITEM:
         {
@@ -2814,16 +2799,16 @@ void Spell::_SetTargets(uint64 guid)
         if(m_targets.m_targetMask & TARGET_FLAG_UNIT && m_targets.m_unitTarget)
         {
             MapMgr* mgr = m_caster->GetMapMgr();
-            switch(GET_TYPE_FROM_GUID(m_targets.m_unitTarget))
+            switch(GUID_HIPART(m_targets.m_unitTarget))
             {
             case HIGHGUID_TYPE_VEHICLE:
-                unitTarget = mgr->GetVehicle(GET_LOWGUID_PART(m_targets.m_unitTarget));
+                unitTarget = mgr->GetVehicle(GUID_LOPART(m_targets.m_unitTarget));
                 break;
             case HIGHGUID_TYPE_CREATURE:
-                unitTarget = mgr->GetCreature(GET_LOWGUID_PART(m_targets.m_unitTarget));
+                unitTarget = mgr->GetCreature(GUID_LOPART(m_targets.m_unitTarget));
                 break;
             case HIGHGUID_TYPE_PET:
-                unitTarget = mgr->GetPet(GET_LOWGUID_PART(m_targets.m_unitTarget));
+                unitTarget = mgr->GetPet(GUID_LOPART(m_targets.m_unitTarget));
                 break;
             case HIGHGUID_TYPE_PLAYER:
                 {
@@ -2831,7 +2816,7 @@ void Spell::_SetTargets(uint64 guid)
                     playerTarget = TO_PLAYER(unitTarget);
                 }break;
             case HIGHGUID_TYPE_GAMEOBJECT:
-                gameObjTarget = mgr->GetGameObject(GET_LOWGUID_PART(m_targets.m_unitTarget));
+                gameObjTarget = mgr->GetGameObject(GUID_LOPART(m_targets.m_unitTarget));
                 break;
             case HIGHGUID_TYPE_CORPSE:
                 corpseTarget = objmgr.GetCorpse((uint32)m_targets.m_unitTarget);
@@ -2875,16 +2860,16 @@ void Spell::_SetTargets(uint64 guid)
         else
         {
             MapMgr* mgr = m_caster->GetMapMgr();
-            switch(GET_TYPE_FROM_GUID(guid))
+            switch(GUID_HIPART(guid))
             {
             case HIGHGUID_TYPE_VEHICLE:
-                unitTarget = mgr->GetVehicle(GET_LOWGUID_PART(guid));
+                unitTarget = mgr->GetVehicle(GUID_LOPART(guid));
                 break;
             case HIGHGUID_TYPE_CREATURE:
-                unitTarget = mgr->GetCreature(GET_LOWGUID_PART(guid));
+                unitTarget = mgr->GetCreature(GUID_LOPART(guid));
                 break;
             case HIGHGUID_TYPE_PET:
-                unitTarget = mgr->GetPet(GET_LOWGUID_PART(guid));
+                unitTarget = mgr->GetPet(GUID_LOPART(guid));
                 break;
             case HIGHGUID_TYPE_PLAYER:
                 {
@@ -2892,7 +2877,7 @@ void Spell::_SetTargets(uint64 guid)
                     playerTarget = TO_PLAYER(unitTarget);
                 }break;
             case HIGHGUID_TYPE_GAMEOBJECT:
-                gameObjTarget = mgr->GetGameObject(GET_LOWGUID_PART(guid));
+                gameObjTarget = mgr->GetGameObject(GUID_LOPART(guid));
                 break;
             case HIGHGUID_TYPE_CORPSE:
                 corpseTarget = objmgr.GetCorpse((uint32)guid);
@@ -5241,7 +5226,7 @@ void Spell::_AddTargetForced(const uint64& guid, const uint32 effectid)
     if(m_spellInfo->speed > 0.0f)
     {
         Object* obj = NULL;
-        if(GET_TYPE_FROM_GUID(guid) == HIGHGUID_TYPE_GAMEOBJECT)
+        if(GUID_HIPART(guid) == HIGHGUID_TYPE_GAMEOBJECT)
             obj = m_caster->GetMapMgr()->GetGameObject(guid);
         else
             obj = m_caster->GetMapMgr()->GetUnit(guid);

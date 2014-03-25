@@ -539,7 +539,7 @@ void LuaCreature::OnLoad()
 
     g_luaMgr.OnLoadInfo.push_back(_unit->GetMapId());
     g_luaMgr.OnLoadInfo.push_back(iid);
-    g_luaMgr.OnLoadInfo.push_back(GET_LOWGUID_PART(_unit->GetGUID()));
+    g_luaMgr.OnLoadInfo.push_back(GUID_LOPART(_unit->GetGUID()));
     RELEASE_LOCK
 }
 

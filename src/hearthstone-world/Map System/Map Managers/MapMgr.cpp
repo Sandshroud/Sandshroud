@@ -1550,10 +1550,10 @@ void MapMgr::AddObject(Object* obj)
 
 Unit* MapMgr::GetUnit(const uint64 & guid)
 {
-    switch(GET_TYPE_FROM_GUID(guid))
+    switch(GUID_HIPART(guid))
     {
     case HIGHGUID_TYPE_CREATURE:
-        return GetCreature( GET_LOWGUID_PART(guid) );
+        return GetCreature( GUID_LOPART(guid) );
         break;
 
     case HIGHGUID_TYPE_PLAYER:
@@ -1561,11 +1561,11 @@ Unit* MapMgr::GetUnit(const uint64 & guid)
         break;
 
     case HIGHGUID_TYPE_PET:
-        return GetPet( GET_LOWGUID_PART(guid) );
+        return GetPet( GUID_LOPART(guid) );
         break;
 
     case HIGHGUID_TYPE_VEHICLE:
-        return GetVehicle( GET_LOWGUID_PART(guid) );
+        return GetVehicle( GUID_LOPART(guid) );
         break;
     }
 
@@ -1574,16 +1574,16 @@ Unit* MapMgr::GetUnit(const uint64 & guid)
 
 Object* MapMgr::_GetObject(const uint64 & guid)
 {
-    switch(GET_TYPE_FROM_GUID(guid))
+    switch(GUID_HIPART(guid))
     {
     case    HIGHGUID_TYPE_VEHICLE:
-        return GetVehicle(GET_LOWGUID_PART(guid));
+        return GetVehicle(GUID_LOPART(guid));
         break;
     case    HIGHGUID_TYPE_GAMEOBJECT:
-        return GetGameObject(GET_LOWGUID_PART(guid));
+        return GetGameObject(GUID_LOPART(guid));
         break;
     case    HIGHGUID_TYPE_CREATURE:
-        return GetCreature(GET_LOWGUID_PART(guid));
+        return GetCreature(GUID_LOPART(guid));
         break;
     case    HIGHGUID_TYPE_DYNAMICOBJECT:
         return GetDynamicObject((uint32)guid);
@@ -2002,22 +2002,14 @@ void MapMgr::HookOnAreaTrigger(Player* plr, uint32 id)
 
 Vehicle* MapMgr::CreateVehicle(uint32 entry)
 {
-    /* Below is an alternative way to create the vehicle.
-    It works, and it creates the vehicle as a creature before initializing it as a vehicle.
-    If for some reason vehicles stop working, or cause crashes, revert to this for testing.*/
-    uint64 newguid = ( (uint64)HIGHGUID_TYPE_VEHICLE << 32 ) | ( (uint64)entry << 24 );
-    Vehicle* v = NULLVEHICLE;
+    uint32 low_guid = 0;
     if(_reusable_guids_vehicle.size())
     {
-        uint32 guid = _reusable_guids_vehicle.front();
+        low_guid = _reusable_guids_vehicle.front();
         _reusable_guids_vehicle.pop_front();
+    } else low_guid = ++m_VehicleHighGuid;
 
-        newguid |= guid;
-    }
-    else
-        newguid |= ++m_VehicleHighGuid;
-
-    v = new Vehicle(newguid);
+    Vehicle *v = new Vehicle(MAKE_NEW_GUID(low_guid, entry, HIGHGUID_TYPE_VEHICLE));
     v->Init();
 
     ASSERT( v->GetTypeFromGUID() == HIGHGUID_TYPE_VEHICLE );
@@ -2027,42 +2019,30 @@ Vehicle* MapMgr::CreateVehicle(uint32 entry)
 
 Creature* MapMgr::CreateCreature(uint32 entry)
 {
-    uint64 newguid = ( (uint64)HIGHGUID_TYPE_CREATURE << 32 ) | ( (uint64)entry << 24 );
-    Creature* cr = NULLCREATURE;
+    uint32 low_guid = 0;
     if(_reusable_guids_creature.size())
     {
-        uint32 guid = _reusable_guids_creature.front();
+        low_guid = _reusable_guids_creature.front();
         _reusable_guids_creature.pop_front();
+    } else low_guid = ++m_CreatureHighGuid;
 
-        newguid |= guid;
-    }
-    else
-        newguid |= ++m_CreatureHighGuid;
-
-    cr = new Creature(newguid);
+    Creature *cr = new Creature(MAKE_NEW_GUID(low_guid, entry, HIGHGUID_TYPE_CREATURE));
     cr->Init();
-
     ASSERT( cr->GetTypeFromGUID() == HIGHGUID_TYPE_CREATURE );
     return cr;
 }
 
 Summon* MapMgr::CreateSummon(uint32 entry)
 {
-    uint64 newguid = ( (uint64)HIGHGUID_TYPE_CREATURE << 32 ) | ( (uint64)entry << 24 );
-    Summon* sum = NULLSUMMON;
+    uint32 low_guid = 0;
     if(_reusable_guids_creature.size())
     {
-        uint32 guid = _reusable_guids_creature.front();
+        low_guid = _reusable_guids_creature.front();
         _reusable_guids_creature.pop_front();
+    } else low_guid = ++m_CreatureHighGuid;
 
-        newguid |= guid;
-    }
-    else
-        newguid |= ++m_CreatureHighGuid;
-
-    sum = new Summon(newguid);
+    Summon *sum = new Summon(MAKE_NEW_GUID(low_guid, entry, HIGHGUID_TYPE_CREATURE));
     sum->Init();
-
     ASSERT( sum->GetTypeFromGUID() == HIGHGUID_TYPE_CREATURE );
     return sum;
 }
@@ -2079,24 +2059,16 @@ GameObject* MapMgr::CreateGameObject(uint32 entry)
         return NULLGOB;
     }
 
-    uint64 new_guid = ( (uint64)HIGHGUID_TYPE_GAMEOBJECT << 32 ) | ( (uint64)entry << 24 );
-    m_GOHighGuid &= 0x00FFFFFF;
-    new_guid |= (uint64)(++m_GOHighGuid);
-
-    GameObject* go = NULLGOB;
-    go = new GameObject(new_guid);
+    GameObject *go = new GameObject(MAKE_NEW_GUID(++m_GOHighGuid, entry, HIGHGUID_TYPE_GAMEOBJECT));
     go->Init();
-
     ASSERT( go->GetTypeFromGUID() == HIGHGUID_TYPE_GAMEOBJECT );
     return go;
 }
 
 DynamicObject* MapMgr::CreateDynamicObject()
 {
-    DynamicObject* dyn = NULL;
-    dyn = new DynamicObject(HIGHGUID_TYPE_DYNAMICOBJECT,(++m_DynamicObjectHighGuid));
+    DynamicObject* dyn = new DynamicObject(HIGHGUID_TYPE_DYNAMICOBJECT, (++m_DynamicObjectHighGuid));
     dyn->Init();
-
     ASSERT( dyn->GetTypeFromGUID() == HIGHGUID_TYPE_DYNAMICOBJECT );
     return dyn;
 }

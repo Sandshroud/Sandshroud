@@ -1032,7 +1032,7 @@ Player* ChatHandler::getSelectedChar(WorldSession *m_session, bool showerror)
         chr = m_session->GetPlayer(); // autoselect
     }
     else
-        chr = m_session->GetPlayer()->GetMapMgr()->GetPlayer(GET_LOWGUID_PART(guid));
+        chr = m_session->GetPlayer()->GetMapMgr()->GetPlayer(GUID_LOPART(guid));
 
     if(chr == NULL && showerror)
         RedSystemMessage(m_session, "This command requires that you select a player.");
@@ -1046,12 +1046,12 @@ Creature* ChatHandler::getSelectedCreature(WorldSession *m_session, bool showerr
 
     Creature* creature = NULLCREATURE;
     uint64 guid = m_session->GetPlayer()->GetSelection();
-    if(GET_TYPE_FROM_GUID(guid) == HIGHGUID_TYPE_PET)
-        creature = m_session->GetPlayer()->GetMapMgr()->GetPet( GET_LOWGUID_PART(guid) );
-    else if(GET_TYPE_FROM_GUID(guid) == HIGHGUID_TYPE_CREATURE)
-        creature = m_session->GetPlayer()->GetMapMgr()->GetCreature( GET_LOWGUID_PART(guid) );
-    else if(GET_TYPE_FROM_GUID(guid) == HIGHGUID_TYPE_VEHICLE)
-        creature = m_session->GetPlayer()->GetMapMgr()->GetVehicle( GET_LOWGUID_PART(guid) );
+    if(GUID_HIPART(guid) == HIGHGUID_TYPE_PET)
+        creature = m_session->GetPlayer()->GetMapMgr()->GetPet( GUID_LOPART(guid) );
+    else if(GUID_HIPART(guid) == HIGHGUID_TYPE_CREATURE)
+        creature = m_session->GetPlayer()->GetMapMgr()->GetCreature( GUID_LOPART(guid) );
+    else if(GUID_HIPART(guid) == HIGHGUID_TYPE_VEHICLE)
+        creature = m_session->GetPlayer()->GetMapMgr()->GetVehicle( GUID_LOPART(guid) );
 
     if(creature == NULLCREATURE && showerror)
         RedSystemMessage(m_session, "This command requires that you select a creature.");

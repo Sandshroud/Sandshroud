@@ -3150,7 +3150,7 @@ int LuaUnit_SendLootWindow(lua_State * L, Unit * ptr)
     uint8 loot_type2 = 1;
     Player * plr = TO_PLAYER(ptr);
     plr->SetLootGUID(guid);
-    uint32 guidtype = GET_TYPE_FROM_GUID(guid);
+    uint32 guidtype = GUID_HIPART(guid);
     if (guidtype == HIGHGUID_TYPE_UNIT)
     {
         Unit* pUnit = plr->GetMapMgr()->GetUnit(guid);
@@ -3174,7 +3174,7 @@ int LuaUnit_SendLootWindow(lua_State * L, Unit * ptr)
     }
     else if (guidtype == HIGHGUID_TYPE_GAMEOBJECT)
     {
-        GameObject* pGO = plr->GetMapMgr()->GetGameObject(GET_LOWGUID_PART(guid));
+        GameObject* pGO = plr->GetMapMgr()->GetGameObject(GUID_LOPART(guid));
         switch (loot_type) 
         {
         case 5:
