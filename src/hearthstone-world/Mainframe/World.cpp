@@ -201,8 +201,6 @@ void World::RemoveSession(uint32 id)
 
 void World::AddSession(WorldSession* s)
 {
-    if(!s)
-        return;
     ASSERT(s);
 
     //add this session to the big session map
@@ -782,36 +780,32 @@ extern bool bServerShutdown;
 
 void World::UpdateSessions(uint32 diff)
 {
-    SessionSet::iterator itr, it2;
-    WorldSession *GlobalSession;
     int result;
+    WorldSession *GlobalSession;
     SessionsMutex.Acquire();
-    for(itr = GlobalSessions.begin(); itr != GlobalSessions.end();)
+    for(SessionSet::iterator itr = GlobalSessions.begin(); itr != GlobalSessions.end();)
     {
-        if(bServerShutdown)
-            break;
         GlobalSession = (*itr);
-        it2 = itr++;
+        ++itr;
+
         //We have been moved to mapmgr, remove us here.
         if( GlobalSession->GetInstance() != 0 )
         {
-            GlobalSessions.erase(it2);
-            if(bServerShutdown)
-                break;
+            RemoveGlobalSession(GlobalSession);
             continue;
         }
 
-        if(bServerShutdown)
-            break;
         result = GlobalSession->Update(0);
         if(result)
         {
             if(result == 1)//socket don't exist anymore, delete from worldsessions.
                 DeleteGlobalSession(GlobalSession);
-
-            //We have been (re-)moved to mapmgr, remove us here.
-            GlobalSessions.erase(it2);
+            else //We have been (re-)moved to mapmgr, remove us here.
+                RemoveGlobalSession(GlobalSession);
         }
+
+        if(bServerShutdown)
+            break;
     }
     SessionsMutex.Release();
 }
@@ -827,6 +821,7 @@ std::string World::GenerateName(uint32 type)
 
 void World::DeleteGlobalSession(WorldSession *GlobalSession)
 {
+    SessionsMutex.Acquire();
     //If it's a GM, remove him from GM session map
     if(GlobalSession->HasGMPermissions())
     {
@@ -840,8 +835,12 @@ void World::DeleteGlobalSession(WorldSession *GlobalSession)
     m_sessions.erase(GlobalSession->GetAccountId());
     m_sessionlock.ReleaseWriteLock();
 
+    // Remove us from the map
+    RemoveGlobalSession(GlobalSession);
+
     // delete us
     GlobalSession->Delete();
+    SessionsMutex.Release();
 }
 
 uint32 World::AddQueuedSocket(WorldSocket* Socket)

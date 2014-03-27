@@ -28,7 +28,7 @@ void AuraInterface::DeInit()
 void AuraInterface::RelocateEvents()
 {
     //Relocate our aura's (must be done after object is removed from world
-    for(uint32 x = 0; x < TOTAL_AURAS; ++x)
+    for(uint8 x = 0; x < TOTAL_AURAS; ++x)
     {
         if(m_auras.find(x) != m_auras.end())
             m_auras.at(x)->RelocateEvents();
@@ -37,7 +37,7 @@ void AuraInterface::RelocateEvents()
 
 void AuraInterface::SaveAuras(stringstream& ss)
 {
-    for(uint32 x = 0; x < MAX_AURAS; x++) // Crow: Changed to max auras in r1432, since we skip passive auras.
+    for(uint8 x = 0; x < MAX_AURAS; x++) // Crow: Changed to max auras in r1432, since we skip passive auras.
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -158,7 +158,7 @@ void AuraInterface::OnAuraRemove(Aura* aura, uint8 aura_slot)
 
 bool AuraInterface::IsDazed()
 {
-    for(uint32 x = 0; x < MAX_AURAS; ++x)
+    for(uint8 x = 0; x < MAX_AURAS; ++x)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -178,7 +178,7 @@ bool AuraInterface::IsDazed()
 
 bool AuraInterface::IsPoisoned()
 {
-    for(uint32 x = 0; x < TOTAL_AURAS; ++x)
+    for(uint8 x = 0; x < TOTAL_AURAS; ++x)
     {
         if(m_auras.find(x) != m_auras.end())
             if( m_auras.at(x)->GetSpellProto()->poison_type )
@@ -190,7 +190,7 @@ bool AuraInterface::IsPoisoned()
 
 void AuraInterface::UpdateDuelAuras()
 {
-    for( uint32 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; ++x )
+    for( uint8 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; ++x )
         if( m_auras.find(x) != m_auras.end())
             if(m_auras.at(x)->WasCastInDuel())
                 RemoveAuraBySlot(x);
@@ -198,7 +198,7 @@ void AuraInterface::UpdateDuelAuras()
 
 void AuraInterface::BuildAllAuraUpdates()
 {
-    for( uint32 x = 0; x < MAX_AURAS; ++x )
+    for( uint8 x = 0; x < MAX_AURAS; ++x )
         if( m_auras.find(x) != m_auras.end() )
             m_auras.at(x)->BuildAuraUpdate();
 }
@@ -210,13 +210,13 @@ bool AuraInterface::BuildAuraUpdateAllPacket(WorldPacket* data)
 
     bool res = false;
     Aura* aur = NULL;
-    for (uint32 i = 0; i < MAX_AURAS; i++)
+    for (uint8 i = 0; i < MAX_AURAS; i++)
     {
         if(m_auras.find(i) != m_auras.end())
         {
             res = true;
             aur = m_auras.at(i);
-            aur->BuildAuraUpdatePacket(*data);
+            aur->BuildAuraUpdatePacket(data);
         }
     }
     return res;
@@ -226,7 +226,7 @@ void AuraInterface::SpellStealAuras(Unit* caster, int32 MaxSteals)
 {
     Aura* aur = NULL;
     int32 spells_to_steal = MaxSteals > 1 ? MaxSteals : 1;
-    for(uint32 x = 0; x < MAX_POSITIVE_AURAS; x++)
+    for(uint8 x = 0; x < MAX_POSITIVE_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -265,7 +265,7 @@ void AuraInterface::SpellStealAuras(Unit* caster, int32 MaxSteals)
 void AuraInterface::UpdateDeadlyPoisons(uint32 eatcount)
 {
     uint32 doses = GetPoisonDosesCount( POISON_TYPE_DEADLY );
-    for(uint32 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; ++x)
+    for(uint8 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; ++x)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -285,7 +285,7 @@ void AuraInterface::UpdateAuraStateAuras(uint32 oldflag)
 {
     if( oldflag == AURASTATE_FLAG_STUNNED && m_Unit->IsPlayer() && m_Unit->HasDummyAura(SPELL_HASH_PRIMAL_TENACITY) && TO_PLAYER(m_Unit)->GetShapeShift() == FORM_CAT )
     {
-        for(uint32 i = 0; i < TOTAL_AURAS; i++)
+        for(uint8 i = 0; i < TOTAL_AURAS; i++)
         {
             if(m_auras.find(i) != m_auras.end())
             {
@@ -310,7 +310,7 @@ void AuraInterface::UpdateAuraStateAuras(uint32 oldflag)
     }
     else
     {
-        for(uint32 i = 0; i < TOTAL_AURAS; i++)
+        for(uint8 i = 0; i < TOTAL_AURAS; i++)
         {
             if(m_auras.find(i) != m_auras.end())
             {
@@ -327,7 +327,7 @@ void AuraInterface::UpdateAuraStateAuras(uint32 oldflag)
 uint32 AuraInterface::GetPoisonDosesCount( uint32 poison_type )
 {
     uint32 doses = 0;
-    for(uint32 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; ++x)
+    for(uint8 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; ++x)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -343,7 +343,7 @@ uint32 AuraInterface::GetPoisonDosesCount( uint32 poison_type )
 void AuraInterface::UpdateShapeShiftAuras(uint32 oldSS, uint32 newSS)
 {
     // TODO: Passive auras should not be removed, but deactivated.
-    for( uint32 x = 0; x < TOTAL_AURAS; x++ )
+    for( uint8 x = 0; x < TOTAL_AURAS; x++ )
     {
         if( m_auras.find(x) != m_auras.end() )
         {
@@ -390,7 +390,7 @@ void AuraInterface::AttemptDispel(Unit* caster, int32 Mechanic, bool hostile)
     SpellEntry *p = NULL;
     if( hostile )
     {
-        for( uint32 x = 0; x < MAX_POSITIVE_AURAS; x++ )
+        for( uint8 x = 0; x < MAX_POSITIVE_AURAS; x++ )
         {
             if( m_auras.find(x) != m_auras.end() )
             {
@@ -407,7 +407,7 @@ void AuraInterface::AttemptDispel(Unit* caster, int32 Mechanic, bool hostile)
     }
     else
     {
-        for( uint32 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; x++ )
+        for( uint8 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; x++ )
         {
             if( m_auras.find(x) != m_auras.end() )
             {
@@ -426,10 +426,11 @@ void AuraInterface::AttemptDispel(Unit* caster, int32 Mechanic, bool hostile)
 
 void AuraInterface::MassDispel(Unit* caster, uint32 index, SpellEntry* Dispelling, uint32 MaxDispel, uint8 start, uint8 end)
 {
+    ASSERT(start < TOTAL_AURAS && end < TOTAL_AURAS);
     WorldPacket data(SMSG_SPELLDISPELLOG, 16);
 
     Aura* aur = NULL;
-    for(uint32 x = start; x < end; x++)
+    for(uint8 x = start; x < end; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -486,7 +487,7 @@ void AuraInterface::MassDispel(Unit* caster, uint32 index, SpellEntry* Dispellin
 
 void AuraInterface::RemoveAllAurasWithDispelType(uint32 DispelType)
 {
-    for( uint32 x = 0; x < MAX_AURAS; x++ )
+    for( uint8 x = 0; x < MAX_AURAS; x++ )
     {
         if(m_auras.find(x) != m_auras.end())
             if(m_auras.at(x)->m_spellProto->DispelType == DispelType)
@@ -496,7 +497,7 @@ void AuraInterface::RemoveAllAurasWithDispelType(uint32 DispelType)
 
 void AuraInterface::RemoveAllAurasWithAttributes(uint32 attributeFlag)
 {
-    for(uint32 x=0;x<MAX_AURAS;x++)
+    for(uint8 x=0;x<MAX_AURAS;x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -510,7 +511,7 @@ void AuraInterface::RemoveAllAurasWithAttributes(uint32 attributeFlag)
 
 void AuraInterface::RemoveAllAurasOfSchool(uint32 School, bool Positive, bool Immune)
 {
-    for(uint32 x = 0; x < MAX_AURAS; ++x)
+    for(uint8 x = 0; x < MAX_AURAS; ++x)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -525,7 +526,7 @@ void AuraInterface::RemoveAllAurasOfSchool(uint32 School, bool Positive, bool Im
 void AuraInterface::RemoveAllAurasByInterruptFlagButSkip(uint32 flag, uint32 skip)
 {
     Aura* a = NULL;
-    for(uint32 x = 0; x < MAX_AURAS; x++)
+    for(uint8 x = 0; x < MAX_AURAS; x++)
     {
         a = NULL;
         if(m_auras.find(x) == m_auras.end())
@@ -683,7 +684,7 @@ AuraCheckResponse AuraInterface::AuraCheck(SpellEntry *info)
 
     // look for spells with same namehash
     bool stronger = false;
-    for(uint32 x = 0; x < MAX_AURAS; x++)
+    for(uint8 x = 0; x < MAX_AURAS; x++)
     {
         if( m_auras.find(x) == m_auras.end() )
             continue;
@@ -724,7 +725,7 @@ AuraCheckResponse AuraInterface::AuraCheck(SpellEntry *info)
 
 uint32 AuraInterface::GetAuraSpellIDWithNameHash(uint32 name_hash)
 {
-    for(uint32 x = 0; x < MAX_AURAS; ++x)
+    for(uint8 x = 0; x < MAX_AURAS; ++x)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -740,7 +741,7 @@ uint32 AuraInterface::GetAuraSpellIDWithNameHash(uint32 name_hash)
 
 bool AuraInterface::HasAura(uint32 spellid)
 {
-    for(uint32 x = 0; x < TOTAL_AURAS; x++)
+    for(uint8 x = 0; x < TOTAL_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -756,7 +757,7 @@ bool AuraInterface::HasAura(uint32 spellid)
 
 bool AuraInterface::HasAuraVisual(uint32 visualid)
 {
-    for(uint32 x = 0; x < TOTAL_AURAS; ++x)
+    for(uint8 x = 0; x < TOTAL_AURAS; ++x)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -772,7 +773,7 @@ bool AuraInterface::HasAuraVisual(uint32 visualid)
 
 bool AuraInterface::HasActiveAura(uint32 spellid)
 {
-    for(uint32 x = 0; x < MAX_AURAS; x++)
+    for(uint8 x = 0; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -787,7 +788,7 @@ bool AuraInterface::HasActiveAura(uint32 spellid)
 
 bool AuraInterface::HasNegativeAura(uint32 spell_id)
 {
-    for(uint32 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; ++x)
+    for(uint8 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; ++x)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -803,7 +804,7 @@ bool AuraInterface::HasNegativeAura(uint32 spell_id)
 
 bool AuraInterface::HasAuraWithMechanic(uint32 mechanic)
 {
-    for(uint32 x = 0; x < MAX_AURAS; x++)
+    for(uint8 x = 0; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -818,7 +819,7 @@ bool AuraInterface::HasAuraWithMechanic(uint32 mechanic)
 
 bool AuraInterface::HasActiveAura(uint32 spellid, uint64 guid)
 {
-    for(uint32 x = 0; x < MAX_AURAS; x++)
+    for(uint8 x = 0; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -834,7 +835,7 @@ bool AuraInterface::HasActiveAura(uint32 spellid, uint64 guid)
 
 bool AuraInterface::HasPosAuraWithMechanic(uint32 mechanic)
 {
-    for(uint32 x = 0; x < MAX_POSITIVE_AURAS; x++)
+    for(uint8 x = 0; x < MAX_POSITIVE_AURAS; x++)
     {
         if( m_auras.find(x) != m_auras.end() )
         {
@@ -849,7 +850,7 @@ bool AuraInterface::HasPosAuraWithMechanic(uint32 mechanic)
 
 bool AuraInterface::HasNegAuraWithMechanic(uint32 mechanic)
 {
-    for(uint32 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; x++)
+    for(uint8 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; x++)
     {
         if( m_auras.find(x) != m_auras.end() )
         {
@@ -864,7 +865,7 @@ bool AuraInterface::HasNegAuraWithMechanic(uint32 mechanic)
 
 bool AuraInterface::HasNegativeAuraWithNameHash(uint32 name_hash)
 {
-    for(uint32 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; ++x)
+    for(uint8 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; ++x)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -880,7 +881,7 @@ bool AuraInterface::HasNegativeAuraWithNameHash(uint32 name_hash)
 
 bool AuraInterface::HasCombatStatusAffectingAuras(uint64 checkGuid)
 {
-    for(uint32 i = MAX_POSITIVE_AURAS; i < MAX_AURAS; i++)
+    for(uint8 i = MAX_POSITIVE_AURAS; i < MAX_AURAS; i++)
     {
         if(m_auras.find(i) != m_auras.end())
         {
@@ -893,7 +894,7 @@ bool AuraInterface::HasCombatStatusAffectingAuras(uint64 checkGuid)
 
 bool AuraInterface::HasAurasOfNameHashWithCaster(uint32 namehash, uint64 casterguid)
 {
-    for(uint32 i = 0; i < MAX_AURAS; i++)
+    for(uint8 i = 0; i < MAX_AURAS; i++)
     {
         if(m_auras.find(i) != m_auras.end())
         {
@@ -915,7 +916,7 @@ bool AuraInterface::HasAurasOfNameHashWithCaster(uint32 namehash, uint64 casterg
 bool AuraInterface::HasAurasOfBuffType(uint32 buff_type, const uint64 &guid, uint32 skip)
 {
     uint64 sguid = (buff_type == SPELL_TYPE_BLESSING || buff_type == SPELL_TYPE_WARRIOR_SHOUT) ? guid : 0;
-    for(uint32 x = 0; x < MAX_AURAS; x++)
+    for(uint8 x = 0; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -934,7 +935,7 @@ bool AuraInterface::HasAurasOfBuffType(uint32 buff_type, const uint64 &guid, uin
 
 void AuraInterface::AddAura(Aura* aur)
 {
-    uint32 x,delslot = 0;
+    uint8 x, delslot = 0;
     Unit* pCaster = NULLUNIT;
     if(aur->GetUnitTarget() != NULL)
         pCaster = aur->GetUnitCaster();
@@ -1241,7 +1242,7 @@ void AuraInterface::RemoveAura(Aura* aur)
     if(aur == NULL)
         return;
 
-    for(uint32 x = 0; x < TOTAL_AURAS; x++)
+    for(uint8 x = 0; x < TOTAL_AURAS; x++)
         if(m_auras.find(x) != m_auras.end())
             if(m_auras.at(x) == aur)
                 m_auras.erase(x); // Null it every time we find it.
@@ -1263,7 +1264,7 @@ bool AuraInterface::RemoveAuras(uint32 * SpellIds)
         return false;
 
     bool res = false;
-    for(uint32 x = 0; x < TOTAL_AURAS; x++)
+    for(uint8 x = 0; x < TOTAL_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1282,7 +1283,7 @@ bool AuraInterface::RemoveAuras(uint32 * SpellIds)
 
 void AuraInterface::RemoveAuraNoReturn(uint32 spellId)
 {   //this can be speed up, if we know passive \pos neg
-    for(uint32 x = 0; x < TOTAL_AURAS; x++)
+    for(uint8 x = 0; x < TOTAL_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1298,7 +1299,7 @@ void AuraInterface::RemoveAuraNoReturn(uint32 spellId)
 
 bool AuraInterface::RemovePositiveAura(uint32 spellId)
 {
-    for(uint32 x = 0; x < MAX_POSITIVE_AURAS; x++)
+    for(uint8 x = 0; x < MAX_POSITIVE_AURAS; x++)
     {
         if( m_auras.find(x) != m_auras.end())
         {
@@ -1314,7 +1315,7 @@ bool AuraInterface::RemovePositiveAura(uint32 spellId)
 
 bool AuraInterface::RemoveNegativeAura(uint32 spellId)
 {
-    for(uint32 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; x++)
+    for(uint8 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; x++)
     {
         if( m_auras.find(x) != m_auras.end())
         {
@@ -1335,7 +1336,7 @@ bool AuraInterface::RemoveAuraByNameHash(uint32 namehash)
 
 bool AuraInterface::RemoveAuraPosByNameHash(uint32 namehash)
 {
-    for(uint32 x = 0; x < MAX_POSITIVE_AURAS; x++)
+    for(uint8 x = 0; x < MAX_POSITIVE_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1351,7 +1352,7 @@ bool AuraInterface::RemoveAuraPosByNameHash(uint32 namehash)
 
 bool AuraInterface::RemoveAuraNegByNameHash(uint32 namehash)
 {
-    for(uint32 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; x++)
+    for(uint8 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1381,7 +1382,7 @@ void AuraInterface::RemoveAuraBySlotOrRemoveStack(uint8 Slot)
 
 bool AuraInterface::RemoveAura(uint32 spellId, uint64 guid )
 {
-    for(uint32 x = 0; x < TOTAL_AURAS; x++)
+    for(uint8 x = 0; x < TOTAL_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1397,7 +1398,7 @@ bool AuraInterface::RemoveAura(uint32 spellId, uint64 guid )
 
 void AuraInterface::RemoveAllAuras()
 {
-    for(uint32 x = 0; x < TOTAL_AURAS; x++)
+    for(uint8 x = 0; x < TOTAL_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
             RemoveAuraBySlot(x);
@@ -1406,7 +1407,7 @@ void AuraInterface::RemoveAllAuras()
 
 void AuraInterface::RemoveAllExpiringAuras()
 {
-    for(uint32 x = 0; x < TOTAL_AURAS; x++)
+    for(uint8 x = 0; x < TOTAL_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1420,7 +1421,7 @@ void AuraInterface::RemoveAllExpiringAuras()
 
 void AuraInterface::RemoveAllNegativeAuras()
 {
-    for(uint32 x=MAX_POSITIVE_AURAS;x<MAX_AURAS;x++)
+    for(uint8 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1434,7 +1435,7 @@ void AuraInterface::RemoveAllNegativeAuras()
 
 void AuraInterface::RemoveAllNonPassiveAuras()
 {
-    for(uint32 x = 0; x < MAX_AURAS; x++)
+    for(uint8 x = 0; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
             RemoveAuraBySlot(x);
@@ -1443,7 +1444,7 @@ void AuraInterface::RemoveAllNonPassiveAuras()
 
 void AuraInterface::RemoveAllAreaAuras(uint64 skipguid)
 {
-    for (uint32 i=0;i<MAX_POSITIVE_AURAS;++i)
+    for (uint8 i = 0; i < MAX_POSITIVE_AURAS; ++i)
     {
         if(m_auras.find(i) != m_auras.end())
         {
@@ -1457,7 +1458,7 @@ void AuraInterface::RemoveAllAreaAuras(uint64 skipguid)
 bool AuraInterface::RemoveAllAurasFromGUID(uint64 guid)
 {
     bool res = false;
-    for(uint32 x = 0; x < MAX_AURAS; x++)
+    for(uint8 x = 0; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1474,7 +1475,7 @@ bool AuraInterface::RemoveAllAurasFromGUID(uint64 guid)
 //ex:to remove morph spells
 void AuraInterface::RemoveAllAurasOfType(uint32 auratype)
 {
-    for(uint32 x = 0; x < MAX_AURAS; x++)
+    for(uint8 x = 0; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1489,7 +1490,7 @@ void AuraInterface::RemoveAllAurasOfType(uint32 auratype)
 bool AuraInterface::RemoveAllPosAurasFromGUID(uint64 guid)
 {
     bool res = false;
-    for(uint32 x = 0; x < MAX_POSITIVE_AURAS; x++)
+    for(uint8 x = 0; x < MAX_POSITIVE_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1506,7 +1507,7 @@ bool AuraInterface::RemoveAllPosAurasFromGUID(uint64 guid)
 bool AuraInterface::RemoveAllNegAurasFromGUID(uint64 guid)
 {
     bool res = false;
-    for(uint32 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; x++)
+    for(uint8 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1523,8 +1524,8 @@ bool AuraInterface::RemoveAllNegAurasFromGUID(uint64 guid)
 bool AuraInterface::RemoveAllAurasByNameHash(uint32 namehash, bool passive)
 {
     bool res = false;
-    uint32 max = (passive ? TOTAL_AURAS : MAX_AURAS);
-    for(uint32 x = 0; x < max; x++)
+    uint8 max = (passive ? TOTAL_AURAS : MAX_AURAS);
+    for(uint8 x = 0; x < max; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1540,7 +1541,7 @@ bool AuraInterface::RemoveAllAurasByNameHash(uint32 namehash, bool passive)
 
 void AuraInterface::RemoveAllAurasByCIsFlag(uint32 c_is_flag)
 {
-    for(uint32 x = 0; x < TOTAL_AURAS; x++)
+    for(uint8 x = 0; x < TOTAL_AURAS; x++)
         if(m_auras.find(x) != m_auras.end())
             if(m_auras.at(x)->GetSpellProto()->c_is_flags & c_is_flag)
                 RemoveAuraBySlot(x);
@@ -1548,7 +1549,7 @@ void AuraInterface::RemoveAllAurasByCIsFlag(uint32 c_is_flag)
 
 void AuraInterface::RemoveAllAurasByInterruptFlag(uint32 flag)
 {
-    for(uint32 x = 0; x < MAX_AURAS; x++)
+    for(uint8 x = 0; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) == m_auras.end())
             continue;
@@ -1600,7 +1601,7 @@ void AuraInterface::RemoveAllAurasWithSpEffect(uint32 EffectId)
 bool AuraInterface::RemoveAllPosAurasByNameHash(uint32 namehash)
 {
     bool res = false;
-    for(uint32 x = 0; x < MAX_POSITIVE_AURAS;x++)
+    for(uint8 x = 0; x < MAX_POSITIVE_AURAS;x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1617,7 +1618,7 @@ bool AuraInterface::RemoveAllPosAurasByNameHash(uint32 namehash)
 bool AuraInterface::RemoveAllNegAurasByNameHash(uint32 namehash)
 {
     bool res = false;
-    for(uint32 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; x++)
+    for(uint8 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1634,7 +1635,7 @@ bool AuraInterface::RemoveAllNegAurasByNameHash(uint32 namehash)
 bool AuraInterface::RemoveAllAuras(uint32 spellId, uint64 guid)
 {
     bool res = false;
-    for(uint32 x = 0; x < TOTAL_AURAS; x++)
+    for(uint8 x = 0; x < TOTAL_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1650,7 +1651,7 @@ bool AuraInterface::RemoveAllAuras(uint32 spellId, uint64 guid)
 
 void AuraInterface::RemoveAllAurasByBuffIndexType(uint32 buff_index_type, const uint64 &guid)
 {
-    for(uint32 x = 0; x < MAX_AURAS; x++)
+    for(uint8 x = 0; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1667,7 +1668,7 @@ void AuraInterface::RemoveAllAurasByBuffType(uint32 buff_type, const uint64 &gui
 {
     uint64 sguid = buff_type >= SPELL_TYPE_BLESSING ? guid : 0;
 
-    for(uint32 x = 0; x < MAX_AURAS; x++)
+    for(uint8 x = 0; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1683,7 +1684,7 @@ void AuraInterface::RemoveAllAurasByBuffType(uint32 buff_type, const uint64 &gui
 uint32 AuraInterface::GetAuraCountWithFamilyNameAndSkillLine(uint32 spellFamily, uint32 SkillLine)
 {
     uint32 count = 0;
-    for(uint32 x = 0; x < MAX_AURAS; x++)
+    for(uint8 x = 0; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1715,7 +1716,7 @@ bool AuraInterface::RemoveAllAurasByMechanic( uint32 MechanicType, int32 MaxDisp
 {
     //sLog.outString( "Unit::MechanicImmunityMassDispel called, mechanic: %u" , MechanicType );
     uint32 DispelCount = 0;
-    for(uint32 x = ( HostileOnly ? MAX_POSITIVE_AURAS : 0 ) ; x < MAX_AURAS ; x++ ) // If HostileOnly = 1, then we use aura slots 40-86 (hostile). Otherwise, we use 0-86 (all)
+    for(uint8 x = ( HostileOnly ? MAX_POSITIVE_AURAS : 0 ) ; x < MAX_AURAS ; x++ ) // If HostileOnly = 1, then we use aura slots 40-86 (hostile). Otherwise, we use 0-86 (all)
     {
         if(MaxDispel > 0)
             if(DispelCount >= (uint32)MaxDispel)
@@ -1755,7 +1756,7 @@ Aura* AuraInterface::FindAuraBySlot(uint8 auraSlot)
 
 Aura* AuraInterface::FindAura(uint32 spellId, uint64 guid)
 {
-    for(uint32 x = 0; x < TOTAL_AURAS; x++)
+    for(uint8 x = 0; x < TOTAL_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1770,7 +1771,7 @@ Aura* AuraInterface::FindAura(uint32 spellId, uint64 guid)
 
 Aura* AuraInterface::FindPositiveAuraByNameHash(uint32 namehash)
 {
-    for(uint32 x = 0; x < MAX_POSITIVE_AURAS; x++)
+    for(uint8 x = 0; x < MAX_POSITIVE_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1785,7 +1786,7 @@ Aura* AuraInterface::FindPositiveAuraByNameHash(uint32 namehash)
 
 Aura* AuraInterface::FindNegativeAuraByNameHash(uint32 namehash)
 {
-    for(uint32 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; x++)
+    for(uint8 x = MAX_POSITIVE_AURAS; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1800,7 +1801,7 @@ Aura* AuraInterface::FindNegativeAuraByNameHash(uint32 namehash)
 
 Aura* AuraInterface::FindActiveAura(uint32 spellId, uint64 guid)
 {
-    for(uint32 x = 0; x < MAX_AURAS; x++)
+    for(uint8 x = 0; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1815,7 +1816,7 @@ Aura* AuraInterface::FindActiveAura(uint32 spellId, uint64 guid)
 
 Aura* AuraInterface::FindActiveAuraWithNameHash(uint32 namehash, uint64 guid)
 {
-    for(uint32 x = 0; x < MAX_AURAS; x++)
+    for(uint8 x = 0; x < MAX_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {
@@ -1830,7 +1831,7 @@ Aura* AuraInterface::FindActiveAuraWithNameHash(uint32 namehash, uint64 guid)
 
 void AuraInterface::EventDeathAuraRemoval()
 {
-    for(uint32 x = 0; x < TOTAL_AURAS; x++)
+    for(uint8 x = 0; x < TOTAL_AURAS; x++)
     {
         if(m_auras.find(x) != m_auras.end())
         {

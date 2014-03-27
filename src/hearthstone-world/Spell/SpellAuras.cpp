@@ -660,34 +660,34 @@ void Aura::BuildAuraUpdate()
 
     WorldPacket data(SMSG_AURA_UPDATE, 50);
     FastGUIDPack(data, m_target->GetGUID());
-    BuildAuraUpdatePacket(data);
+    BuildAuraUpdatePacket(&data);
     m_target->SendMessageToSet(&data, true);
 }
 
-void Aura::BuildAuraUpdatePacket(ByteBuffer buffer)
+void Aura::BuildAuraUpdatePacket(WorldPacket *data)
 {
-    buffer << uint8(m_auraSlot);
+    *data << uint8(m_auraSlot);
     uint8 stack = stackSize;
     if(procCharges > stack && stack != 0)
         stack = procCharges;
     if(stack == 0)
     {
-        buffer << uint32(0);
+        *data << uint32(0);
         return;
     }
 
     uint8 flags = GetAuraFlags();
-    buffer << uint32(GetSpellProto()->Id);
-    buffer << uint8(flags);
-    buffer << uint8(GetUnitCaster() ? GetUnitCaster()->getLevel() : 0);
-    buffer << uint8(stack);
+    *data << uint32(GetSpellProto()->Id);
+    *data << uint8(flags);
+    *data << uint8(GetUnitCaster() ? GetUnitCaster()->getLevel() : 0);
+    *data << uint8(stack);
 
     if(!(flags & AFLAG_NOT_GUID))
-        FastGUIDPack(buffer, GetCasterGUID());
+        FastGUIDPack(*data, GetCasterGUID());
     if( flags & AFLAG_HAS_DURATION )
     {
-        buffer << GetDuration();
-        buffer << GetTimeLeft();
+        *data << GetDuration();
+        *data << GetTimeLeft();
     }
 
     if (flags & AFLAG_EFF_AMOUNT_SEND)
@@ -697,7 +697,7 @@ void Aura::BuildAuraUpdatePacket(ByteBuffer buffer)
             if (flags & 1<<i)
             {
                 Modifier *mod = GetMod(i);
-                buffer << uint32(mod ? mod->m_amount : 0);
+                *data << uint32(mod ? mod->m_amount : 0);
             }
         }
     }
@@ -8842,7 +8842,7 @@ void Aura::SpellAuraIncreaseRating( bool apply )
         return;
 
     Player* plr = TO_PLAYER( m_target );
-    for( uint32 x = 1; x < 25; x++ )//skip x=0
+    for( uint32 x = 1; x < 26; x++ )//skip x=0
         if( ( ( ( uint32 )1 ) << x ) & mod->m_miscValue )
             plr->ModUnsigned32Value(PLAYER_FIELD_COMBAT_RATING_1 + x, v);
             //plr->ModifyBonuses( 11 + x, v );  // not always the same as above. i.e. 11+24 = resilience, but need armor ignore rating

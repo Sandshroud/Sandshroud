@@ -464,6 +464,63 @@ public:
         }
     }
 
+    void hexlike(FILE *output)
+    {
+        uint32 j = 1, k = 1;
+        fprintf(output, "STORAGE_SIZE: %u\r\n", (unsigned int)size() );
+        for(uint32 i = 0; i < size(); i++)
+        {
+            if ((i == (j*8)) && ((i != (k*16))))
+            {
+                if (read<uint8>(i) < 0x0F)
+                {
+                    fprintf(output, "| 0%X ", read<uint8>(i) );
+                }
+                else
+                {
+                    fprintf(output, "| %X ", read<uint8>(i) );
+                }
+
+                j++;
+            }
+            else if (i == (k*16))
+            {
+                rpos(rpos()-16);    // move read pointer 16 places back
+                fprintf(output, " | ");    // write split char
+
+                for (int x = 0; x < 16; x++)
+                {
+                    uint8 val = read<uint8>(i-16 + x);
+                    fprintf(output, "%c", isprint(val) ? val : '.');
+                }
+
+                if (read<uint8>(i) < 0x0F)
+                {
+                    fprintf(output, "\r\n0%X ", read<uint8>(i) );
+                }
+                else
+                {
+                    fprintf(output, "\r\n%X ", read<uint8>(i) );
+                }
+
+                k++;
+                j++;
+            }
+            else
+            {
+                if (read<uint8>(i) < 0x0F)
+                {
+                    fprintf(output, "0%X ", read<uint8>(i) );
+                }
+                else
+                {
+                    fprintf(output, "%X ", read<uint8>(i) );
+                }
+            }
+        }
+        fprintf(output, "\r\n\r\n");
+    }
+
     HEARTHSTONE_INLINE void reverse()
     {
         std::reverse(_storage.begin(), _storage.end());

@@ -813,7 +813,6 @@ bool Player::Create(WorldPacket& data )
     SetUInt32Value(PLAYER_BYTES_3, ((gender) | (0x00 << 8) | (0x00 << 16) | (GetPVPRank() << 24)));
     SetUInt32Value(PLAYER_NEXT_LEVEL_XP, 400);
     SetUInt32Value(PLAYER_FIELD_BYTES, 0x08 );
-    SetUInt32Value(PLAYER_CHARACTER_POINTS+1,2);
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
     SetUInt32Value(PLAYER_FIELD_MAX_LEVEL, sWorld.GetMaxLevel(TO_PLAYER(this)));
 
@@ -2206,7 +2205,6 @@ void Player::addSpell(uint32 spell_id)
         {
         case SKILL_TYPE_PROFESSION:
             max=75*((spell->RankNumber)+1);
-            ModUnsigned32Value( PLAYER_CHARACTER_POINTS+1, -1 ); // we are learning a proffesion, so substract a point.
             break;
         case SKILL_TYPE_SECONDARY:
             max=75*((spell->RankNumber)+1);
@@ -2405,9 +2403,6 @@ void Player::SaveToDB(bool bNewCharacter /* =false */)
     if( m_bg != NULL && IS_ARENA( m_bg->GetType() ) )
         in_arena = true;
 
-    if( m_uint32Values[PLAYER_CHARACTER_POINTS+1] > 2)
-        m_uint32Values[PLAYER_CHARACTER_POINTS+1] = 2;
-
     //Calc played times
     uint32 playedt = (uint32)UNIXTIME - m_playedtime[2];
     m_playedtime[0] += playedt;
@@ -2476,7 +2471,7 @@ void Player::SaveToDB(bool bNewCharacter /* =false */)
     << GetUInt64Value(PLAYER__FIELD_KNOWN_TITLES2) << ","
     << m_uint32Values[PLAYER_FIELD_COINAGE] << ","
     << uint32(0) << ","
-    << m_uint32Values[PLAYER_CHARACTER_POINTS+1] << ","
+    << uint32(0) << ","
     << m_maxTalentPoints << ","
     << load_health << ","
     << load_mana << ","
@@ -3344,9 +3339,8 @@ void Player::LoadFromDBProc(QueryResultVector & results)
     SetUInt64Value( PLAYER__FIELD_KNOWN_TITLES, get_next_field.GetUInt64() );
     SetUInt64Value( PLAYER__FIELD_KNOWN_TITLES1, get_next_field.GetUInt64() );
     SetUInt64Value( PLAYER__FIELD_KNOWN_TITLES2, get_next_field.GetUInt64() );
-    m_uint32Values[PLAYER_FIELD_COINAGE]                = get_next_field.GetUInt32();
-    get_next_field;
-    m_uint32Values[PLAYER_CHARACTER_POINTS+1]           = get_next_field.GetUInt32();
+    SetUInt64Value(PLAYER_FIELD_COINAGE, get_next_field.GetUInt32());
+    get_next_field; get_next_field;
     m_maxTalentPoints                                   = get_next_field.GetUInt16();
     load_health                                         = get_next_field.GetUInt32();
     load_mana                                           = get_next_field.GetUInt32();
@@ -5515,55 +5509,13 @@ void Player::_LoadSkills(QueryResult * result)
                 _AddSkillLine(ss->skillid, ss->currentval, ss->maxval);
         }
     }
-    //Update , GM's can still learn more
-    SetUInt32Value( PLAYER_CHARACTER_POINTS+1, ( GetSession()->HasGMPermissions()? 2 : proff_counter ) );
+
     _UpdateMaxSkillCounts();
 }
 
-//Player stats calculation for saving at lvl up, etc
-/*void Player::CalcBaseStats()
-{//TO_PLAYER(TO_PLAYER(this))->getClass() == HUNTER ||
-    //TODO take into account base stats at create
-    uint32 AP, RAP;
-    //Save AttAck power
-    if(getClass() == ROGUE || getClass() == HUNTER)
-    {
-        AP = GetBaseUInt32Value(UNIT_FIELD_STAT0) + GetBaseUInt32Value(UNIT_FIELD_STAT1);
-        RAP = (GetBaseUInt32Value(UNIT_FIELD_STAT1) * 2);
-        SetBaseUInt32Value(UNIT_FIELD_ATTACK_POWER, AP);
-        SetBaseUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER, RAP);
-    }
-    else
-    {
-        AP = (GetBaseUInt32Value(UNIT_FIELD_STAT0) * 2);
-        RAP = (GetBaseUInt32Value(UNIT_FIELD_STAT1) * 2);
-        SetBaseUInt32Value(UNIT_FIELD_ATTACK_POWER, AP);
-        SetBaseUInt32Value(UNIT_FIELD_RANGED_ATTACK_POWER, RAP);
-    }
-
-}*/
-
 void Player::UpdateHit(int32 hit)
 {
-   /*std::list<Affect*>::iterator i;
-    Affect::ModList::const_iterator j;
-    Affect *aff;
-    uint32 in = hit;
-    for (i = GetAffectBegin(); i != GetAffectEnd(); i++)
-    {
-        aff = *i;
-        for (j = aff->GetModList().begin();j != aff->GetModList().end(); j++)
-        {
-            Modifier mod = (*j);
-            if ((mod.GetType() == SPELL_AURA_MOD_HIT_CHANCE))
-            {
-                SpellEntry *spellInfo = sSpellStore.LookupEntry(aff->GetSpellId());
-                if (canCast(spellInfo))
-                    in += mod.GetAmount();
-            }
-        }
-    }
-    SetHitFromSpell(in);*/
+
 }
 
 float Player::CalculateCritFromAgilForClassAndLevel(uint32 _class, uint32 _level)
@@ -7223,52 +7175,8 @@ void Player::SendInitialLogonPackets()
     */
 
     data.Initialize(SMSG_LOGIN_SETTIMESPEED);
-    time_t minutes = sWorld.GetGameTime( ) / 60;
-    time_t hours = minutes / 60; minutes %= 60;
-    time_t gameTime = 0;
-    time_t t;
-    struct tm *tm;
-
-    uint32 DayOfTheWeek = 0;        //  (0b111 = (any) day, 0 = Monday ect)
-    uint32 DayOfTheMonth = 0;       //  Day - 1 (0 is actual 1) its now the 20e here.
-    uint32 CurrentMonth = 0;        //  Month - 1 (0 is actual 1) same as above.
-    uint32 CurrentYear = 0;         //  2000 + this number results in a correct value for this crap.
-
-    t = UNIXTIME;
-    tm = localtime(&t);
-    if (tm)
-    {
-        DayOfTheWeek = tm->tm_wday == 0 ? 6 : tm->tm_wday - 1;
-        DayOfTheMonth = tm->tm_mday - 1;
-        CurrentMonth = tm->tm_mon;
-        CurrentYear = tm->tm_year - 100;
-    }
-
-#define MINUTE_BITMASK  0x0000003F
-#define HOUR_BITMASK    0x000007C0
-#define WEEKDAY_BITMASK 0x00003800
-#define DAY_BITMASK     0x000FC000
-#define MONTH_BITMASK   0x00F00000
-#define YEAR_BITMASK    0x1F000000
-#define UNK_BITMASK     0xE0000000
-
-#define MINUTE_SHIFTMASK    0
-#define HOUR_SHIFTMASK      6
-#define WEEKDAY_SHIFTMASK   11
-#define DAY_SHIFTMASK       14
-#define MONTH_SHIFTMASK     20
-#define YEAR_SHIFTMASK      24
-#define UNK_SHIFTMASK       29
-
-    gameTime = ((minutes << MINUTE_SHIFTMASK) & MINUTE_BITMASK);
-    gameTime|= ((hours << HOUR_SHIFTMASK) & HOUR_BITMASK);
-    gameTime|= ((DayOfTheWeek << WEEKDAY_SHIFTMASK) & WEEKDAY_BITMASK);
-    gameTime|= ((DayOfTheMonth << DAY_SHIFTMASK) & DAY_BITMASK);
-    gameTime|= ((CurrentMonth << MONTH_SHIFTMASK) & MONTH_BITMASK);
-    gameTime|= ((CurrentYear << YEAR_SHIFTMASK) & YEAR_BITMASK);
-
-    data << uint32(gameTime);
-    data << float(0.0166666669777748f);  // Normal Game Speed
+    data << uint32(secsToTimeBitFields(sWorld.GetGameTime()));
+    data << float(0.0166666669777748f);
     data << uint32(0);
     GetSession()->SendPacket( &data );
 
@@ -7760,7 +7668,6 @@ void Player::Reset_ToLevel1()
     SetUInt32Value(UNIT_FIELD_STAT4, info->spirit );
     SetUInt32Value(UNIT_FIELD_ATTACK_POWER, info->attackpower );
     SetUInt32Value(PLAYER_CHARACTER_POINTS,0);
-    SetUInt32Value(PLAYER_CHARACTER_POINTS+1,2);
     for(uint32 x=0;x<7;x++)
         SetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+x, 1.00);
 
@@ -8602,11 +8509,10 @@ void Player::ResetAllCooldowns()
 void Player::sendMOTD()
 {
     // Send first line of MOTD
-    WorldPacket* datat = new WorldPacket(SMSG_MOTD, 10);
-    *datat << uint32(strlen(sWorld.GetMotd()));
-    *datat << sWorld.GetMotd();
-    SendPacket(datat);
-    delete datat;
+    WorldPacket datat(SMSG_MOTD, 10);
+    datat << uint32(1);
+    datat << sWorld.GetMotd();
+    SendPacket(&datat);
 
     // Send revision
     BroadcastMessage("%sServer:|r%s Sandshroud Hearthstone %s|r %s r%u/%s-%s-%s", MSG_COLOR_GOLD,
@@ -9464,7 +9370,7 @@ bool Player::SafeTeleport(uint32 MapID, uint32 InstanceID, LocationVector vec, i
         if(mi->flags & WMI_INSTANCE_XPACK_01 && !m_session->HasFlag(ACCOUNT_FLAG_XPACK_01) && !m_session->HasFlag(ACCOUNT_FLAG_XPACK_02))
         {
             WorldPacket msg(SMSG_MOTD, 50);
-            msg << uint32(3) << "You must have The Burning Crusade Expansion to access this content." << uint8(0);
+            msg << uint32(1) << "You must have The Burning Crusade Expansion to access this content." << uint8(0);
             m_session->SendPacket(&msg);
             return false;
         }
@@ -9473,7 +9379,7 @@ bool Player::SafeTeleport(uint32 MapID, uint32 InstanceID, LocationVector vec, i
         if(mi->flags & WMI_INSTANCE_XPACK_02 && !m_session->HasFlag(ACCOUNT_FLAG_XPACK_02))
         {
             WorldPacket msg(SMSG_MOTD, 50);
-            msg << uint32(3) << "You must have Wrath of the Lich King Expansion to access this content." << uint8(0);
+            msg << uint32(1) << "You must have Wrath of the Lich King Expansion to access this content." << uint8(0);
             m_session->SendPacket(&msg);
             return false;
         }
@@ -10818,7 +10724,7 @@ void Player::_UpdateSkillFields()
             continue;
         }
 
-        ASSERT(f <= PLAYER_CHARACTER_POINTS+1);
+        ASSERT(f < PLAYER_MAX_SKILL_INFO_FIELD);
         if(itr->second.Skill->type == SKILL_TYPE_PROFESSION)
             SetUInt32Value(f++, itr->first | 0x10000);
         else
@@ -10929,7 +10835,7 @@ void Player::_UpdateSkillFields()
     }
 
     /* Null out the rest of the fields */
-    for(; f < PLAYER_CHARACTER_POINTS; ++f)
+    for(; f < PLAYER_MAX_SKILL_INFO_FIELD; ++f)
     {
         if(m_uint32Values[f] != 0)
             SetUInt32Value(f, 0);

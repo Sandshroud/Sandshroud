@@ -97,8 +97,10 @@ void Item::Create( uint32 itemid, Player* owner )
     for(uint8 i = 0; i < 5; i++)
         SetUInt32Value( ITEM_FIELD_SPELL_CHARGES+i, m_itemProto->Spells[i].Charges );
 
-    SetUInt32Value( ITEM_FIELD_MAXDURABILITY, m_itemProto->MaxDurability );
-    SetUInt32Value( ITEM_FIELD_DURABILITY, m_itemProto->MaxDurability );
+    SetUInt32Value(ITEM_FIELD_DURATION, abs((int)m_itemProto->Duration));
+    SetUInt32Value(ITEM_FIELD_MAXDURABILITY, m_itemProto->MaxDurability );
+    SetUInt32Value(ITEM_FIELD_DURABILITY, m_itemProto->MaxDurability );
+    SetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME, 0);
 
     m_owner = owner;
     if( m_itemProto->LockId > 1 )
