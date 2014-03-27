@@ -4,6 +4,8 @@
 
 #pragma once
 
+#define QUEST_LOG_COUNT 50
+
 enum RepeatableTypes
 {
     REPEATABLE_QUEST    = 1,
@@ -71,6 +73,7 @@ public:
     void OnPlayerItemPickup(Player* plr, Item* item, uint32 pickedupstacksize);
     void OnPlayerDropItem(Player* plr, uint32 entry);
     void OnPlayerExploreArea(Player* plr, uint32 AreaID);
+    void OnPlayerAreaTrigger(Player* plr, uint32 areaTrigger);
     void OnPlayerSlain(Player* plr, Player* victim);
     void OnQuestAccepted(Player* plr, Quest* qst, Object* qst_giver);
     void OnQuestFinished(Player* plr, Quest* qst, Object* qst_giver, uint32 reward_slot);

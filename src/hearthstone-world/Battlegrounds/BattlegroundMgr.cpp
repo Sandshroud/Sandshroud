@@ -1457,100 +1457,11 @@ void CBattleground::PlaySoundToTeam(uint32 Team, uint32 Sound)
 
 void CBattlegroundManager::SendBattlegroundQueueStatus(Player* plr, uint32 queueSlot)
 {
-    if( queueSlot > 1 )
+    if( queueSlot > 3 )
         return;
 
-    WorldPacket data(SMSG_BATTLEFIELD_STATUS1, 40);
+    WorldPacket data(SMSG_BATTLEFIELD_STATUS1+queueSlot, 40);
     data << uint32(queueSlot);
-    if( plr->m_bg && plr->m_bgSlot == queueSlot)
-    {
-        // Perform a manual update: this BG
-        data << uint8(0) << uint8(2);
-        data << plr->m_bg->GetType();
-        data << uint16(0x1F90);
-        data << uint8(0);
-        data << uint8(0);
-        data << plr->m_bg->GetMapMgr()->GetInstanceID();
-        data << uint8(plr->m_bg->IsArena() ? 1 : 0);
-        data << uint32(3);
-        data << plr->m_bg->GetMapMgr()->GetMapId();
-        data << uint64(0);
-        data << uint32(0);
-        data << uint32(60);
-        data << uint8(1); // Normal BG queue, 0 = arena?
-        plr->GetSession()->SendPacket(&data);
-        return;
-    }
-
-    // We're no longer queued!
-    if( !plr->m_bgIsQueued[queueSlot] && !plr->m_pendingBattleground[queueSlot])
-    {
-        //sLog.Notice("BattlegroundManager", "No queue slot active for %u.", queueSlot);
-        data << uint64(0);
-        plr->GetSession()->SendPacket(&data);
-        return;
-    }
-
-    uint32 Type = plr->m_bgQueueType[ queueSlot ];
-
-    // Arena queuesss
-    if( IS_ARENA(Type) )
-    {
-        data << plr->m_bgTeam;
-        switch(Type)
-        {
-        case BATTLEGROUND_ARENA_2V2:
-            data << uint8(2);
-            break;
-
-        case BATTLEGROUND_ARENA_3V3:
-            data << uint8(3);
-            break;
-
-        case BATTLEGROUND_ARENA_5V5:
-            data << uint8(5);
-            break;
-        }
-        data << uint8(0xA);
-        data << uint32(6);
-        data << uint16(0x1F90);
-        data << uint8(0);
-        data << uint8(0);
-        data << uint32(11);
-        data << uint8(plr->m_bgRatedQueue ? 1 : 0); // Rated?
-    }
-    else
-    {
-        data << uint8(0) << uint8(2);
-        data << Type;
-        data << uint16(0x1F90);
-        data << uint8(0);
-        data << uint8(0);
-        data << plr->m_bgQueueInstanceId[queueSlot];
-        data << uint8(0);
-    }
-
-    // Im in a BG
-    if( plr->m_bg )
-    {
-        // Should've been handled already :P
-        return;
-    }
-
-    // We're clear to join!
-    if( plr->m_pendingBattleground[queueSlot] )
-    {
-        data << uint32(2);
-        data << plr->m_pendingBattleground[queueSlot]->GetMapMgr()->GetMapId();
-        data << uint64(0);
-        data << uint32(0); // Time
-        plr->GetSession()->SendPacket(&data);
-        return;
-    }
-
-    data << uint32(1); // And we're waiting...
-    data << uint32(GetAverageQueueTime(Type)*1000);     // average time in msec
-    data << uint32(0);
     plr->GetSession()->SendPacket(&data);
 }
 

@@ -398,7 +398,7 @@ class WorldSocket;
 typedef std::list<WorldSocket*> QueueSet;
 typedef set<WorldSession*> SessionSet;
 
-#define MAXIMUM_CEXPANSION_LEVEL 80 // Current expansion's max level
+#define MAXIMUM_CEXPANSION_LEVEL 85 // Current expansion's max level
 #define MAXIMUM_ATTAINABLE_LEVEL 100 // Crow: Lets use 100, since its the highest the DBCs will support
 
 class SERVER_DECL World : public Singleton<World>, public EventableObject

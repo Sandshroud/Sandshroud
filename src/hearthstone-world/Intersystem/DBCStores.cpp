@@ -160,7 +160,7 @@ DECLARE_CLASS_INTERNAL_DBC_MACRO(gtFloat, dbcCombatRatingScaling);
 const char* gtFloatFormat = "uf";
 
 DECLARE_CLASS_INTERNAL_DBC_MACRO(SpellEntry, dbcSpell);
-const char* spellentryFormat = "uuuuuuuuuuxuuuufuuuussssuuxxuxuuuuuuuxuuuuuxuux";
+const char* spellentryFormat = "uuuuuuuuuuxuuuufuuuussssuuxxuxuuuuuuuxuuuuuuuux";
 
 DECLARE_CLASS_INTERNAL_DBC_MACRO(SpellAuraOptionsEntry, dbcSpellAuraOptions);
 const char* spellauraoptionFormat = "uuuuu";
