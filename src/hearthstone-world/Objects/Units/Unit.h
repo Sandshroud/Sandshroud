@@ -8,7 +8,7 @@ class AIInterface;
 
 #define MAX_POSITIVE_AURAS 48 // ?
 #define MAX_AURAS 80 // 48 buff slots, 32 debuff slots.
-#define MAX_PASSIVE_AURAS 215
+#define MAX_PASSIVE_AURAS 165
 #define TOTAL_AURAS MAX_AURAS+MAX_PASSIVE_AURAS
 
 #define MAKE_ACTION_BUTTON(A,T) uint32(uint32(A) | (uint32(T) << 24))

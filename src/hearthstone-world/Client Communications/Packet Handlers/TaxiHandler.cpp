@@ -21,8 +21,7 @@ void WorldSession::HandleTaxiNodeStatusQueryOpcode( WorldPacket & recv_data )
     field = (uint8)((curloc - 1) / 32);
     submask = 1<<((curloc-1)%32);
 
-    WorldPacket data(9);
-    data.Initialize( SMSG_TAXINODE_STATUS );
+    WorldPacket data(SMSG_TAXINODE_STATUS, 9);
     data << guid;
 
     // Check for known nodes

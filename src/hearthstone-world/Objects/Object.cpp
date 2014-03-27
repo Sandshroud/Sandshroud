@@ -856,23 +856,12 @@ void Object::_BuildValuesUpdate(ByteBuffer * data, UpdateMask *updateMask, Playe
     }
 
     WPAssert( updateMask && updateMask->GetCount() == m_valuesCount );
-    uint32 bc, values_count;
-    if( m_valuesCount > ( 2 * 0x20 ) )//if number of blocks > 2->  unit and player+item container
-    {
-        bc = updateMask->GetUpdateBlockCount();
-        values_count = (uint32)min( bc * 32, m_valuesCount );
+    uint32 byteCount = updateMask->GetUpdateBlockCount();
+    uint32 valueCount = (uint32)std::min(byteCount*32, m_valuesCount);
 
-    }
-    else
-    {
-        bc = updateMask->GetBlockCount();
-        values_count = m_valuesCount;
-    }
-
-    *data << (uint8)bc;
-    data->append( updateMask->GetMask(), bc*4 );
-
-    for( uint32 index = 0; index < values_count; index++ )
+    *data << (uint8)byteCount;
+    data->append( updateMask->GetMask(), byteCount*4 );
+    for( uint32 index = 0; index < valueCount; index++ )
     {
         if( updateMask->GetBit( index ) )
         {
@@ -1191,8 +1180,6 @@ void Object::RemoveFromWorld(bool free_guid)
     mSemaphoreTeleport = true;
 
     m->RemoveObject(this, free_guid);
-
-    DestroyForInrange(true);
 
     // remove any spells / free memory
     sEventMgr.RemoveEvents(this, EVENT_UNIT_SPELL_HIT);

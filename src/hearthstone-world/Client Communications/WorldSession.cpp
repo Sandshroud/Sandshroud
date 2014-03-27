@@ -79,18 +79,17 @@ int WorldSession::Update(uint32 InstanceID)
 {
     m_currMsTime = getMSTime();
 
+    // If we have no player and no socket, delete us
+    if(_player == NULL && _socket == NULL)
+        return 1;
+
+    // We're being updated by the wrong thread, remove us
+    if(InstanceID != instanceId)
+        return 2;
+
+    // Update our queued packets
     if(!((++_updatecount) % 2) && _socket)
         _socket->UpdateQueuedPackets();
-
-    WorldPacket *packet;
-    OpcodeHandler * Handler;
-
-    if(InstanceID != instanceId)
-    {
-        // We're being updated by the wrong thread.
-        // "Remove us from this mapsession list!" - 2
-        return 2;
-    }
 
     // Socket disconnection.
     if(!_socket)
@@ -115,7 +114,9 @@ int WorldSession::Update(uint32 InstanceID)
 
     if(_recvQueue.HasItems())
     {
-        while ((packet = _recvQueue.Pop()))
+        WorldPacket *packet;
+        OpcodeHandler * Handler;
+        while (_socket && (packet = _recvQueue.Pop()))
         {
             ASSERT(packet);
 
@@ -197,14 +198,12 @@ int WorldSession::Update(uint32 InstanceID)
             return 0;
         }
 
+        LogoutPlayer(true);
         if( _socket == NULL )
         {
             bDeleted = true;
-            LogoutPlayer(true);
             return 1;
         }
-        else
-            LogoutPlayer(true);
     }
 
     if(m_lastPing + WORLDSOCKET_TIMEOUT < (uint32)UNIXTIME)
@@ -229,9 +228,25 @@ int WorldSession::Update(uint32 InstanceID)
     return 0;
 }
 
+bool WorldSession::IsHighPriority()
+{
+    if(m_loggingInPlayer)
+        return true;
+    if(_player)
+    {
+        if(_player->m_beingPushed)
+            return true;
+        if(_player->m_changingMaps)
+            return true;
+        if(!_player->IsInWorld())
+            return true;
+    }
+    return false;
+}
 
 void WorldSession::LogoutPlayer(bool Save)
 {
+    _updatecount = 0;
     if( _loggingOut )
         return;
 
@@ -706,6 +721,7 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_SWAP_INV_ITEM].handler                         = &WorldSession::HandleSwapInvItemOpcode;
     WorldPacketHandlers[CMSG_SWAP_ITEM].handler                             = &WorldSession::HandleSwapItemOpcode;
     WorldPacketHandlers[CMSG_DESTROYITEM].handler                           = &WorldSession::HandleDestroyItemOpcode;
+    WorldPacketHandlers[CMSG_DESTROY_ITEMS].handler                         = &WorldSession::HandleDestroyItemsOpcode;
     WorldPacketHandlers[CMSG_AUTOEQUIP_ITEM].handler                        = &WorldSession::HandleAutoEquipItemOpcode;
     WorldPacketHandlers[CMSG_SELL_ITEM].handler                             = &WorldSession::HandleSellItemOpcode;
     WorldPacketHandlers[CMSG_BUY_ITEM].handler                              = &WorldSession::HandleBuyItemOpcode;
@@ -1074,11 +1090,8 @@ void WorldSession::Delete()
 
 void WorldSession::HandleRealmSplit(WorldPacket & recv_data)
 {
-    uint32 v;
-    recv_data >> v;
-
     WorldPacket data(SMSG_REALM_SPLIT, 17);
-    data << v << uint32(0);
+    data << recv_data.read<uint32>() << uint32(0);
     data << "01/01/01";
     SendPacket(&data);
 }

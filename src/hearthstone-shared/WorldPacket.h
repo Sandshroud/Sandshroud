@@ -26,7 +26,7 @@ public:
     __inline void Initialize(uint16 opcode, size_t newres )
     {
         clear();
-        ByteBuffer(res);
+        _storage.reserve(newres);
         m_opcode = opcode;
     }
 

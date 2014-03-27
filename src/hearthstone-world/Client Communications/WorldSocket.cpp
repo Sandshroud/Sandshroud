@@ -184,16 +184,21 @@ OUTPACKET_RESULT WorldSocket::_OutPacket(uint16 opcode, size_t len, const void* 
     bool rv;
     if(!IsConnected())
         return OUTPACKET_RESULT_NOT_CONNECTED;
+
+    FILE *codeLog = NULL;
+    fopen_s(&codeLog, "OpcodeLog.txt", "a+b");
     uint16 newOpcode = sOpcodeMgr.ConvertOpcodeForOutput(opcode);
     if(newOpcode == MSG_NULL_ACTION)
     {
-        printf("Unset packet %u rejected\n", opcode);
+        if(codeLog)
+        {
+            fprintf(codeLog, "\r\nRejecting unset packet %u with size %u\r\n\r\n", opcode, len);
+            fclose(codeLog);
+        }
         return OUTPACKET_RESULT_PACKET_ERROR;
     }
     if( GetWriteBuffer()->GetSpace() < (len+4) )
         return OUTPACKET_RESULT_NO_ROOM_IN_BUFFER;
-    FILE *codeLog = NULL;
-    fopen_s(&codeLog, "OpcodeLog.txt", "a+b");
     if(codeLog)
     {
         fprintf(codeLog, "Sending packet %s(%03u) with size %u\r\n", sOpcodeMgr.GetOpcodeName(opcode), opcode, len);
@@ -334,28 +339,31 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 
     //checking if player is already connected
     //disconnect current player and login this one(blizzlike)
-
     WorldSession *session = sWorld.FindSession( AccountID );
     if( session != NULL )
     {
-        if(session->_player != NULL && session->_player->GetMapMgr() == NULL)
+        if(session->IsHighPriority())
         {
-            sLog.Debug("WorldSocket","_player found without m_mapmgr during logon, trying to remove him [player %s, map %d, instance %d].", session->_player->GetName(), session->_player->GetMapId(), session->_player->GetInstanceID() );
-            if(objmgr.GetPlayer(session->_player->GetLowGUID()))
-                objmgr.RemovePlayer(session->_player);
+            // Fail authentification until the player is finally added to world
+            OutPacket(SMSG_AUTH_RESPONSE, 1, "\x15");
+            return;
+        }
+        else if(session->GetPlayer())
+        {
+            // Disconnect the target player from the session
+            session->Disconnect();
+
+            // clear the logout timer so he times out straight away
             session->LogoutPlayer(false);
         }
-        // AUTH_FAILED = 0x0D
-        session->Disconnect();
+        else 
+        {
+            // Disconnect the target player from the session
+            session->Disconnect();
 
-        // clear the logout timer so he times out straight away
-        session->SetLogoutTimer(1);
-
-        // we must send authentication failed here.
-        // the stupid newb can relog his client.
-        // otherwise accounts dupe up and disasters happen.
-        OutPacket(SMSG_AUTH_RESPONSE, 1, "\x15");
-        return;
+            if(session->GetInstance() == 0)
+                sWorld.DeleteGlobalSession(session);
+        }
     }
 
     Sha1Hash sha;
@@ -578,7 +586,14 @@ void WorldSocket::OnRecvData()
         case MSG_NULL_ACTION:
             { // We need to log opcodes that are non existent
                 //mUnaltered
-                printf("Received unhandled packet %u(%u)\n", mUnaltered, Packet->GetOpcode());
+                FILE *codeLog = NULL;
+                fopen_s(&codeLog, "RecvOpcodeLog.txt", "a+b");
+                if(codeLog)
+                {
+                    fprintf(codeLog, "Received unhandled packet %u(0x%.4X) with size %u\r\n", mUnaltered, mUnaltered, Packet->size());
+                    Packet->hexlike(codeLog);
+                    fclose(codeLog);
+                }
                 delete Packet;
                 Packet = NULL;
             }break;
