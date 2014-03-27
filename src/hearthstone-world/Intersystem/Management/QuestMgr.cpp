@@ -1007,7 +1007,7 @@ bool QuestMgr::OnGameObjectActivate(Player* plr, GameObject* go)
     QuestLogEntry *qle;
     uint32 entry = go->GetEntry();
 
-    for(i = 0; i < 25; i++)
+    for(i = 0; i < QUEST_LOG_COUNT; i++)
     {
         qle = plr->GetQuestLogInSlot( i );
         if( qle != NULL )
@@ -1060,7 +1060,7 @@ void QuestMgr::_OnPlayerKill(Player* plr, uint32 creature_entry)
 
     if (plr->HasQuestMob(creature_entry))
     {
-        for(i = 0; i < 25; i++)
+        for(i = 0; i < QUEST_LOG_COUNT; i++)
         {
             qle = plr->GetQuestLogInSlot( i );
             if( qle != NULL )
@@ -1115,7 +1115,7 @@ void QuestMgr::_OnPlayerKill(Player* plr, uint32 creature_entry)
                     gplr = (*gitr)->m_loggedInPlayer;
                     if(gplr && gplr != plr && plr->isInRange(gplr,300) && gplr->HasQuestMob(creature_entry)) // dont double kills also dont give kills to party members at another side of the world
                     {
-                        for( i = 0; i < 25; i++ )
+                        for( i = 0; i < QUEST_LOG_COUNT; i++ )
                         {
                             qle = gplr->GetQuestLogInSlot(i);
                             if( qle != NULL )
@@ -1168,7 +1168,7 @@ void QuestMgr::OnPlayerSlain(Player* plr, Player* victim)
 
     QuestLogEntry *qle;
     uint32 i;
-    for(i = 0; i < 25; i++)
+    for(i = 0; i < QUEST_LOG_COUNT; i++)
     {
         if((qle = plr->GetQuestLogInSlot(i)) && qle->m_quest->objectives)
         {
@@ -1199,7 +1199,7 @@ void QuestMgr::OnPlayerSlain(Player* plr, Player* victim)
                     gplr = (*gitr)->m_loggedInPlayer;
                     if(gplr && gplr != plr && plr->isInRange(gplr,300)) // dont double kills also dont give kills to party members at another side of the world
                     {
-                        for( i = 0; i < 25; i++ )
+                        for( i = 0; i < QUEST_LOG_COUNT; i++ )
                         {
                             qle = gplr->GetQuestLogInSlot(i);
                             if( qle != NULL )
@@ -1238,7 +1238,7 @@ void QuestMgr::OnPlayerCast(Player* plr, uint32 spellid, uint64& victimguid)
     uint32 i, j;
     uint32 entry = victim->GetEntry();
     QuestLogEntry *qle;
-    for(i = 0; i < 25; i++)
+    for(i = 0; i < QUEST_LOG_COUNT; i++)
     {
         if((qle = plr->GetQuestLogInSlot(i)))
         {
@@ -1285,7 +1285,7 @@ void QuestMgr::OnPlayerItemPickup(Player* plr, Item* item, uint32 pickedupstacks
     uint32 pcount;
     uint32 entry = item->GetEntry();
     QuestLogEntry *qle;
-    for( i = 0; i < 25; i++ )
+    for( i = 0; i < QUEST_LOG_COUNT; i++ )
     {
         if( ( qle = plr->GetQuestLogInSlot( i ) ) )
         {
@@ -1325,7 +1325,7 @@ void QuestMgr::OnPlayerDropItem(Player* plr, uint32 entry)
 {
     uint32 i, j;
     QuestLogEntry *qle;
-    for( i = 0; i < 25; i++ )
+    for( i = 0; i < QUEST_LOG_COUNT; i++ )
     {
         if( ( qle = plr->GetQuestLogInSlot( i ) ) )
         {
@@ -1342,11 +1342,24 @@ void QuestMgr::OnPlayerDropItem(Player* plr, uint32 entry)
     }
 }
 
-void QuestMgr::OnPlayerExploreArea(Player* plr, uint32 AreaID)
+void QuestMgr::OnPlayerExploreArea(Player* plr, uint32 areaId)
 {
     uint32 i, j;
     QuestLogEntry *qle;
-    for( i = 0; i < 25; i++ )
+    for( i = 0; i < QUEST_LOG_COUNT; i++ )
+    {
+        if((qle = plr->GetQuestLogInSlot(i)) && qle->GetQuest()->objectives)
+        {
+
+        }
+    }
+}
+
+void QuestMgr::OnPlayerAreaTrigger(Player* plr, uint32 areaTrigger)
+{
+    uint32 i, j;
+    QuestLogEntry *qle;
+    for( i = 0; i < QUEST_LOG_COUNT; i++ )
     {
         if((qle = plr->GetQuestLogInSlot(i)) && qle->GetQuest()->objectives)
         {
@@ -1356,11 +1369,11 @@ void QuestMgr::OnPlayerExploreArea(Player* plr, uint32 AreaID)
 
             for( j = 0; j < 4; ++j )
             {
-                if(qle->GetQuest()->objectives->required_areatriggers[j] == AreaID &&
-                    !qle->m_explored_areas[j])
+                if(qle->GetQuest()->objectives->required_areatriggers[j] == areaTrigger
+                    && !qle->GetCrossedAreaTrigger(j))
                 {
-                    qle->SetTrigger(j);
-                    CALL_QUESTSCRIPT_EVENT(qle->GetQuest()->id, OnExploreArea)(qle->m_explored_areas[j], plr, qle);
+                    qle->SetAreaTrigger(j);
+                    CALL_QUESTSCRIPT_EVENT(qle->GetQuest()->id, OnCrossAreaTrigger)(areaTrigger, plr, qle);
                     if(qle->CanBeFinished())
                     {
                         plr->UpdateNearbyGameObjects();

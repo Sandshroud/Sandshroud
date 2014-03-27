@@ -8,12 +8,12 @@ using namespace std;
 
 enum QUEST_STATUS
 {
-    QMGR_QUEST_NOT_AVAILABLE        = 0x00, // There aren't quests avaiable.                | "No Mark"
-    QMGR_QUEST_AVAILABLELOW_LEVEL   = 0x01, // Quest available, and your level isnt enough. | "Gray Exclamation Mark !"
-    QMGR_QUEST_CHAT                 = 0x02, // Quest available it shows a talk baloon.      | "Yellow ! Mark"
-    QMGR_QUEST_NOT_FINISHED         = 0x04, // Quest isnt finished yet.                     | "Gray Question ? Mark"
-    QMGR_QUEST_AVAILABLE            = 0x08, // Quest available, show the ! Mark.            | "Yellow ! Mark"
-    QMGR_QUEST_FINISHED             = 0x0A  // Quest has been finished.                     | "Yellow Question ? Mark"
+    QMGR_QUEST_NOT_AVAILABLE        = 0x00,  // There aren't quests avaiable.                | "No Mark"
+    QMGR_QUEST_AVAILABLELOW_LEVEL   = 0x02,  // Quest available, and your level isnt enough. | "Gray Exclamation Mark !"
+    QMGR_QUEST_CHAT                 = 0x04,  // Quest available it shows a talk baloon.      | "Yellow ! Mark"
+    QMGR_QUEST_NOT_FINISHED         = 0x20,  // Quest isnt finished yet.                     | "Gray Question ? Mark"
+    QMGR_QUEST_AVAILABLE            = 0x100, // Quest available, show the ! Mark.            | "Yellow ! Mark"
+    QMGR_QUEST_FINISHED             = 0x400, // Quest has been finished.                     | "Yellow Question ? Mark"
 };
 
 enum QUESTGIVER_QUEST_TYPE
@@ -231,7 +231,7 @@ public:
     bool LoadFromDB(Field *fields);
     void UpdatePlayerFields();
 
-    void SetTrigger(uint32 i);
+    void SetAreaTrigger(uint32 i);
     void SetMobCount(uint32 i, uint32 count);
     void SetPlayerSlainCount(uint32 count);
 
@@ -248,7 +248,7 @@ public:
     void SendUpdateAddKill(uint32 i);
     HEARTHSTONE_INLINE uint32 GetPlayerSlainCount() { return m_player_slain; }
     HEARTHSTONE_INLINE uint32 GetMobCount(uint32 i) { return m_mobcount[i]; }
-    HEARTHSTONE_INLINE uint32 GetExploredAreas(uint32 i) { return m_explored_areas[i]; }
+    HEARTHSTONE_INLINE uint32 GetCrossedAreaTrigger(uint32 i) { return m_areatriggers[i]; }
     HEARTHSTONE_INLINE uint32 GetTimeLeft() { return m_time_left; }
     uint32 GetRequiredSpell(uint32 i);
 
@@ -267,7 +267,7 @@ private:
     Player* m_plr;
 
     uint32 m_mobcount[4];
-    uint32 m_explored_areas[4];
+    uint32 m_areatriggers[4];
 
     uint32 m_player_slain;
 

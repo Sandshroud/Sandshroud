@@ -971,7 +971,7 @@ public:
     /************************************************************************/
     bool HasQuests()
     {
-        for(int i = 0; i < 25; i++)
+        for(int i = 0; i < QUEST_LOG_COUNT; i++)
         {
             if(m_questlog[i] != 0)
                 return true;
@@ -1013,7 +1013,7 @@ public:
     uint32 GetQuestSlotQuestId(uint16 slot) const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot * 5 + (uint32)NULL); }
 
     //Quest related variables
-    QuestLogEntry*      m_questlog[25];
+    QuestLogEntry*      m_questlog[QUEST_LOG_COUNT];
     std::set<uint32>    m_QuestGOInProgress;
     std::set<uint32>    m_removequests;
     std::set<uint32>    m_finishedQuests;

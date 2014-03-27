@@ -219,9 +219,11 @@ public:
     bool HasFlag(uint32 flag) { return (_accountFlags & flag) != 0; }
     uint32 GetHighestExpansion() 
     {
-        if(HasFlag(ACCOUNT_FLAG_XPACK_02))
+        if(HasFlag(ACCOUNT_FLAG_XPACK_03))
+            return 3;
+        else if(HasFlag(ACCOUNT_FLAG_XPACK_02))
             return 2;
-        if(HasFlag(ACCOUNT_FLAG_XPACK_01))
+        else if(HasFlag(ACCOUNT_FLAG_XPACK_01))
             return 1;
         return 0;
     };

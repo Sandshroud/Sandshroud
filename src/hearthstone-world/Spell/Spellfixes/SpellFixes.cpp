@@ -4,42 +4,50 @@
 
 #include "StdAfx.h"
 
+void PoolSpellData();
 void SetSingleSpellDefaults(SpellEntry *sp);
-void GenerateNewSpellFixes();
 
 void ApplyNormalFixes()
 {
     //Updating spell.dbc
     SpellEntry *sp;
     set<uint32> DummySpells;
-    TalentEntry *tal = NULL;
-    uint32 cnt = uint32(dbcSpell.GetNumRows());
     map<uint32, uint32>::iterator talentSpellIterator;
     map<uint32, uint32> talentSpells, dummySpellLevels;
-
-    sLog.Notice("World", "Processing %u spells...", cnt);
+    sLog.Notice("World", "Processing %u spells...", dbcSpell.GetNumRows());
     sLog.Notice("World", "Highest spell found %u...", dbcSpell.GetMaxRow());
     for(uint i = 0; i < dbcTalent.GetNumRows(); i++)
     {
-        tal = dbcTalent.LookupRow(i);
+        TalentEntry *tal = dbcTalent.LookupRow(i);
         for(uint j = 0; j < 5; ++j)
             if(tal->RankID[j] != 0)
                 talentSpells.insert(make_pair(tal->RankID[j], tal->TalentTree));
     }
 
-//  GenerateNewSpellFixes();
-
-    for(uint32 x = 0; x < cnt; x++)
+    sLog.Notice("World", "Filling spell default values...");
+    // We must set spell defaults before we load static pool data
+    for(uint32 x = 0; x < dbcSpell.GetNumRows(); x++)
     {
         sp = dbcSpell.LookupRow(x);
+        if(sp == NULL)
+            continue;
 
+        SetSingleSpellDefaults(sp);
+    }
+
+    sLog.Notice("World", "Filling spell pool data...");
+    PoolSpellData();
+
+    sLog.Notice("World", "Filling spell pool data...");
+    for(uint32 x = 0; x < dbcSpell.GetNumRows(); x++)
+    {
+        sp = dbcSpell.LookupRow(x);
         if(sp == NULL)
             continue;
 
         if(DummySpells.find(sp->Id) != DummySpells.end())
             continue; // Dummy spells will be handled later.
 
-        SetSingleSpellDefaults(sp);
         uint32 type = 0;
         for(uint i = 0; i < 8; i++)
         {
@@ -49,74 +57,6 @@ void ApplyNormalFixes()
                 break;
             }
         }
-
-        //there are some spells that change the "damage" value of 1 effect to another : devastate = bonus first then damage
-        //this is a total bullshit so remove it when spell system supports effect overwriting
-        switch(sp->Id)
-        {
-        case 53385:
-            {
-                sp->Effect[0] = 0;
-                sp->Effect[1] = SPELL_EFFECT_DUMMY;
-                sp->AllowBackAttack = true;
-
-                uint32 col1_swap = 0, col2_swap = 2;
-                uint32 temp = 0; float ftemp = 0.0f;
-                temp = sp->Effect[col1_swap];                       sp->Effect[col1_swap] = sp->Effect[col2_swap];                                          sp->Effect[col2_swap] = temp;
-                temp = sp->EffectDieSides[col1_swap];               sp->EffectDieSides[col1_swap] = sp->EffectDieSides[col2_swap];                          sp->EffectDieSides[col2_swap] = temp;
-                ftemp = sp->EffectRealPointsPerLevel[col1_swap];    sp->EffectRealPointsPerLevel[col1_swap] = sp->EffectRealPointsPerLevel[col2_swap];      sp->EffectRealPointsPerLevel[col2_swap] = ftemp;
-                temp = sp->EffectBasePoints[col1_swap];             sp->EffectBasePoints[col1_swap] = sp->EffectBasePoints[col2_swap];                      sp->EffectBasePoints[col2_swap] = temp;
-                temp = sp->EffectMechanic[col1_swap];               sp->EffectMechanic[col1_swap] = sp->EffectMechanic[col2_swap];                          sp->EffectMechanic[col2_swap] = temp;
-                temp = sp->EffectImplicitTargetA[col1_swap];        sp->EffectImplicitTargetA[col1_swap] = sp->EffectImplicitTargetA[col2_swap];            sp->EffectImplicitTargetA[col2_swap] = temp;
-                temp = sp->EffectImplicitTargetB[col1_swap];        sp->EffectImplicitTargetB[col1_swap] = sp->EffectImplicitTargetB[col2_swap];            sp->EffectImplicitTargetB[col2_swap] = temp;
-                temp = sp->EffectRadiusIndex[col1_swap];            sp->EffectRadiusIndex[col1_swap] = sp->EffectRadiusIndex[col2_swap];                    sp->EffectRadiusIndex[col2_swap] = temp;
-                temp = sp->EffectApplyAuraName[col1_swap];          sp->EffectApplyAuraName[col1_swap] = sp->EffectApplyAuraName[col2_swap];                sp->EffectApplyAuraName[col2_swap] = temp;
-                temp = sp->EffectAmplitude[col1_swap];              sp->EffectAmplitude[col1_swap] = sp->EffectAmplitude[col2_swap];                        sp->EffectAmplitude[col2_swap] = temp;
-                ftemp = sp->EffectValueMultiplier[col1_swap];       sp->EffectValueMultiplier[col1_swap] = sp->EffectValueMultiplier[col2_swap];            sp->EffectValueMultiplier[col2_swap] = ftemp;
-                temp = sp->EffectChainTarget[col1_swap];            sp->EffectChainTarget[col1_swap] = sp->EffectChainTarget[col2_swap];                    sp->EffectChainTarget[col2_swap] = temp;
-                temp = sp->EffectSpellClassMask[col1_swap][0];      sp->EffectSpellClassMask[col1_swap][0] = sp->EffectSpellClassMask[col2_swap][0];        sp->EffectSpellClassMask[col2_swap][0] = temp;
-                temp = sp->EffectSpellClassMask[col1_swap][1];      sp->EffectSpellClassMask[col1_swap][1] = sp->EffectSpellClassMask[col2_swap][1];        sp->EffectSpellClassMask[col2_swap][1] = temp;
-                temp = sp->EffectSpellClassMask[col1_swap][2];      sp->EffectSpellClassMask[col1_swap][2] = sp->EffectSpellClassMask[col2_swap][2];        sp->EffectSpellClassMask[col2_swap][2] = temp;
-                temp = sp->EffectMiscValue[col1_swap];              sp->EffectMiscValue[col1_swap] = sp->EffectMiscValue[col2_swap];                        sp->EffectMiscValue[col2_swap] = temp;
-                temp = sp->EffectTriggerSpell[col1_swap];           sp->EffectTriggerSpell[col1_swap] = sp->EffectTriggerSpell[col2_swap];                  sp->EffectTriggerSpell[col2_swap] = temp;
-                ftemp = sp->EffectPointsPerComboPoint[col1_swap];   sp->EffectPointsPerComboPoint[col1_swap] = sp->EffectPointsPerComboPoint[col2_swap];    sp->EffectPointsPerComboPoint[col2_swap] = ftemp;
-            }break;
-        default:
-            {
-                for( uint32 col1_swap = 0; col1_swap < 2 ; col1_swap++ )
-                {
-                    if( sp->Effect[col1_swap] == SPELL_EFFECT_WEAPON_PERCENT_DAMAGE )
-                    {
-                        for( uint32 col2_swap = col1_swap; col2_swap < 3 ; col2_swap++ )
-                        {
-                            if(sp->Effect[col2_swap] != SPELL_EFFECT_DUMMYMELEE)
-                                continue;
-
-                            uint32 temp; float ftemp;
-                            temp = sp->Effect[col1_swap];                       sp->Effect[col1_swap] = sp->Effect[col2_swap];                                          sp->Effect[col2_swap] = temp;
-                            temp = sp->EffectDieSides[col1_swap];               sp->EffectDieSides[col1_swap] = sp->EffectDieSides[col2_swap];                          sp->EffectDieSides[col2_swap] = temp;
-                            ftemp = sp->EffectRealPointsPerLevel[col1_swap];    sp->EffectRealPointsPerLevel[col1_swap] = sp->EffectRealPointsPerLevel[col2_swap];      sp->EffectRealPointsPerLevel[col2_swap] = ftemp;
-                            temp = sp->EffectBasePoints[col1_swap];             sp->EffectBasePoints[col1_swap] = sp->EffectBasePoints[col2_swap];                      sp->EffectBasePoints[col2_swap] = temp;
-                            temp = sp->EffectMechanic[col1_swap];               sp->EffectMechanic[col1_swap] = sp->EffectMechanic[col2_swap];                          sp->EffectMechanic[col2_swap] = temp;
-                            temp = sp->EffectImplicitTargetA[col1_swap];        sp->EffectImplicitTargetA[col1_swap] = sp->EffectImplicitTargetA[col2_swap];            sp->EffectImplicitTargetA[col2_swap] = temp;
-                            temp = sp->EffectImplicitTargetB[col1_swap];        sp->EffectImplicitTargetB[col1_swap] = sp->EffectImplicitTargetB[col2_swap];            sp->EffectImplicitTargetB[col2_swap] = temp;
-                            temp = sp->EffectRadiusIndex[col1_swap];            sp->EffectRadiusIndex[col1_swap] = sp->EffectRadiusIndex[col2_swap];                    sp->EffectRadiusIndex[col2_swap] = temp;
-                            temp = sp->EffectApplyAuraName[col1_swap];          sp->EffectApplyAuraName[col1_swap] = sp->EffectApplyAuraName[col2_swap];                sp->EffectApplyAuraName[col2_swap] = temp;
-                            temp = sp->EffectAmplitude[col1_swap];              sp->EffectAmplitude[col1_swap] = sp->EffectAmplitude[col2_swap];                        sp->EffectAmplitude[col2_swap] = temp;
-                            ftemp = sp->EffectValueMultiplier[col1_swap];       sp->EffectValueMultiplier[col1_swap] = sp->EffectValueMultiplier[col2_swap];            sp->EffectValueMultiplier[col2_swap] = ftemp;
-                            temp = sp->EffectChainTarget[col1_swap];            sp->EffectChainTarget[col1_swap] = sp->EffectChainTarget[col2_swap];                    sp->EffectChainTarget[col2_swap] = temp;
-                            temp = sp->EffectSpellClassMask[col1_swap][0];      sp->EffectSpellClassMask[col1_swap][0] = sp->EffectSpellClassMask[col2_swap][0];        sp->EffectSpellClassMask[col2_swap][0] = temp;
-                            temp = sp->EffectSpellClassMask[col1_swap][1];      sp->EffectSpellClassMask[col1_swap][1] = sp->EffectSpellClassMask[col2_swap][1];        sp->EffectSpellClassMask[col2_swap][1] = temp;
-                            temp = sp->EffectSpellClassMask[col1_swap][2];      sp->EffectSpellClassMask[col1_swap][2] = sp->EffectSpellClassMask[col2_swap][2];        sp->EffectSpellClassMask[col2_swap][2] = temp;
-                            temp = sp->EffectMiscValue[col1_swap];              sp->EffectMiscValue[col1_swap] = sp->EffectMiscValue[col2_swap];                        sp->EffectMiscValue[col2_swap] = temp;
-                            temp = sp->EffectTriggerSpell[col1_swap];           sp->EffectTriggerSpell[col1_swap] = sp->EffectTriggerSpell[col2_swap];                  sp->EffectTriggerSpell[col2_swap] = temp;
-                            ftemp = sp->EffectPointsPerComboPoint[col1_swap];   sp->EffectPointsPerComboPoint[col1_swap] = sp->EffectPointsPerComboPoint[col2_swap];    sp->EffectPointsPerComboPoint[col2_swap] = ftemp;
-                        }
-                    }
-                }
-            }break;
-        }
-
 
         for(uint32 b = 0; b < 3; ++b)
         {
@@ -143,10 +83,9 @@ void ApplyNormalFixes()
             sp->self_cast_only = true;
 
         talentSpellIterator = talentSpells.find(sp->Id);
-        if(talentSpellIterator == talentSpells.end())
-            sp->talent_tree = 0;
-        else
+        if(talentSpellIterator != talentSpells.end())
             sp->talent_tree = talentSpellIterator->second;
+        else sp->talent_tree = 0;
 
         SkillLineSpell *sk = objmgr.GetSpellSkill(sp->Id);
         sp->skilline = sk ? sk->skilline : 0;
@@ -639,14 +578,6 @@ void ApplyNormalFixes()
         if( sp->proc_interval != 0 )
             sp->procflags2 |= PROC_REMOVEONUSE;
 
-        //Seal of Justice - Proc Chance
-        if( sp->NameHash == SPELL_HASH_SEAL_OF_JUSTICE )
-            sp->procChance = 25;
-
-        /* Decapitate */
-        if( sp->NameHash == SPELL_HASH_DECAPITATE )
-            sp->procChance = 30;
-
         if( sp->NameHash == SPELL_HASH_DIVINE_SHIELD || sp->NameHash == SPELL_HASH_DIVINE_PROTECTION || sp->NameHash == SPELL_HASH_BLESSING_OF_PROTECTION || sp->NameHash == SPELL_HASH_HAND_OF_PROTECTION )
             sp->MechanicsType = 25;
 
@@ -810,7 +741,6 @@ void ApplyNormalFixes()
     }
 
 //  GenerateNameHashesFile();
-//  GenerateSpellCoeffFile();
 
     sp = dbcSpell.LookupEntry( 26659 );
     SpellEntry* sp2 = sp;
@@ -1009,33 +939,6 @@ void SetProcFlags(SpellEntry *sp)
     sp->procflags2 = pr2;
 }
 
-// Kroze: Some commented stuff.
-
-// NEW SCHOOLS AS OF 2.4.0:
-/* (bitwise)
-SCHOOL_NORMAL = 1,
-SCHOOL_HOLY   = 2,
-SCHOOL_FIRE   = 4,
-SCHOOL_NATURE = 8,
-SCHOOL_FROST  = 16,
-SCHOOL_SHADOW = 32,
-SCHOOL_ARCANE = 64
-
-//where do i use this ?
-
-AURASTATE_FLAG_DODGE_BLOCK          = 1,        //1
-AURASTATE_FLAG_HEALTH20             = 2,        //2
-AURASTATE_FLAG_BERSERK              = 4,        //3
-AURASTATE_FLAG_JUDGEMENT            = 16,       //5
-AURASTATE_FLAG_PARRY                = 64,       //7
-AURASTATE_FLAG_LASTKILLWITHHONOR    = 512,      //10
-AURASTATE_FLAG_CRITICAL             = 1024,     //11
-AURASTATE_FLAG_HEALTH35             = 4096,     //13
-AURASTATE_FLAG_IMMOLATE             = 8192,     //14
-AURASTATE_FLAG_REJUVENATE           = 16384,    //15
-AURASTATE_FLAG_POISON               = 32768,    //16
-*/
-
 uint32 GetTriggerSpellFromDescription(std::string delimiter, std::string desc)
 {
     std::string token;
@@ -1141,31 +1044,19 @@ uint32 GetSpellClass(SpellEntry *sp)
     return 0;
 }
 
-uint32 fill( uint32* arr, ... ) // fills array 'arr' with integers in arguments and returns its new size. Last argument must be 0!
-{
-    va_list vl;
-    uint32 i;
-    va_start( vl, arr );
-    for( i = 0; i < 100; i++ ){
-        arr[i] = va_arg( vl, uint32 );
-        if(arr[i] == 0)
-            break;
-    }
-    va_end( vl );
-    return i;
-}
-
 // Generates SpellNameHashes.h
 void GenerateNameHashesFile()
 {
     const uint32 fieldSize = 81;
     const char* prefix = "SPELL_HASH_";
     uint32 prefixLen = uint32(strlen(prefix));
-    DBCFile dbc;
+    std::string dbcLoc = string(sWorld.DBCPath.c_str());
+    dbcLoc += "/Spell.dbc";
 
-    if( !dbc.open( "DBC/Spell.dbc" ) )
+    DBCFile dbc;
+    if( !dbc.open( dbcLoc.c_str() ) )
     {
-        sLog.Error("World", "Cannot find file ./DBC/Spell.dbc" );
+        sLog.Error("World", "Cannot find file %s", dbcLoc.c_str() );
         return;
     }
 
@@ -1232,6 +1123,99 @@ void CopyEffect(SpellEntry *fromSpell, uint8 fromEffect, SpellEntry *toSpell, ui
 
 void SetSingleSpellDefaults(SpellEntry *sp)
 {
+    /// 4.0.6 field copies
+    //SpellAuraOptionsEntry
+    sp->maxstack = 1;
+    sp->procChance = 0;
+    sp->procCharges = 0;
+    sp->procFlags = 0;
+    //SpellAuraRestrictionsEntry
+    sp->CasterAuraState = 0;
+    sp->TargetAuraState = 0;
+    sp->CasterAuraStateNot = 0;
+    sp->TargetAuraStateNot = 0;
+    // SpellCastingRequirementsEntry
+    sp->FacingCasterFlags = 0;
+    sp->AreaGroupId = 0;
+    sp->RequiresSpellFocus = 0;
+    // SpellCategoriesEntry
+    sp->Category = 0;
+    sp->Spell_Dmg_Type = 0;
+    sp->DispelType = 0;
+    sp->MechanicsType = 0;
+    sp->PreventionType = 0;
+    sp->StartRecoveryCategory = 0;
+    // SpellClassOptionsEntry
+    sp->SpellGroupType[0] = 0;
+    sp->SpellGroupType[1] = 0;
+    sp->SpellGroupType[2] = 0;
+    sp->SpellFamilyName = 0;
+    // SpellCooldownsEntry
+    sp->CategoryRecoveryTime = 0;
+    sp->RecoveryTime = 0;
+    sp->StartRecoveryTime = 0;
+    // SpellEffectEntry
+    for(uint8 i = 0; i < 3; i++)
+    {
+        sp->Effect[i] = 0;
+        sp->EffectValueMultiplier[i] = 0;
+        sp->EffectApplyAuraName[i] = 0;
+        sp->EffectAmplitude[i] = 0;
+        sp->EffectBasePoints[i] = 0;
+        sp->EffectBonusCoefficient[i] = 0;
+        sp->EffectDamageMultiplier[i] = 0;
+        sp->EffectChainTarget[i] = 0;
+        sp->EffectDieSides[i] = 0;
+        sp->EffectItemType[i] = 0;
+        sp->EffectMechanic[i] = 0;
+        sp->EffectMiscValue[i] = 0;
+        sp->EffectMiscValueB[i] = 0;
+        sp->EffectPointsPerComboPoint[i] = 0;
+        sp->EffectRadiusIndex[i] = 0;
+        sp->EffectRealPointsPerLevel[i] = 0;
+        sp->EffectSpellClassMask[i][0] = 0;
+        sp->EffectSpellClassMask[i][1] = 0;
+        sp->EffectSpellClassMask[i][2] = 0;
+        sp->EffectTriggerSpell[i] = 0;
+        sp->EffectImplicitTargetA[i] = 0;
+        sp->EffectImplicitTargetB[i] = 0;
+    }
+    // SpellEquippedItemsEntry
+    sp->EquippedItemClass = 0;
+    sp->RequiredItemFlags = 0;
+    sp->EquippedItemSubClass = 0;
+    // SpellInterruptsEntry
+    sp->AuraInterruptFlags = 0;
+    sp->ChannelInterruptFlags = 0;
+    sp->InterruptFlags = 0;
+    // SpellLevelsEntry
+    sp->baseLevel = 0;
+    sp->maxLevel = 0;
+    sp->spellLevel = 0;
+    // SpellPowerEntry
+    sp->ManaCost = 0;
+    sp->ManaCostPerlevel = 0;
+    sp->ManaCostPercentage = 0;
+    sp->ManaPerSecond = 0;
+    // SpellReagentsEntry
+    for(uint8 i = 0; i < 8; i++)
+    {
+        sp->Reagent[i] = 0;
+        sp->ReagentCount[i] = 0;
+    }
+    // SpellShapeshiftEntry
+    sp->RequiredShapeShift = 0;
+    sp->ShapeshiftExclude = 0;
+    // SpellTargetRestrictionsEntry
+    sp->MaxTargets = 0;
+    sp->MaxTargetLevel = 0;
+    sp->TargetCreatureType = 0;
+    sp->Targets = 0;
+    // SpellTotemsEntry
+    sp->Totem[0] = 0;
+    sp->Totem[1] = 0;
+    sp->RequiredShapeShift = 0;
+
     /// Custom defaults
     sp->forced_creature_target = 0;
     sp->AdditionalAura = 0;
@@ -1354,75 +1338,183 @@ void SetupSpellTargets()
     implicitTargetFlags[149] = SPELL_TARGET_NOT_IMPLEMENTED;
 }
 
-void GenerateSpellCoeffFile()
+void PoolSpellData()
 {
-    SpellEntry *sp;
-    FILE *file = fopen("SpellPowerCoeff.cpp", "w");
-    fprintf(file,  "    {\n");
-
-    QueryResult* resultx = WorldDatabase.Query("SELECT * FROM spell_coef_override");
-    if(resultx != NULL)
+    for (uint32 i = 0; i < dbcSpellEffect.GetNumRows(); ++i)
     {
-        do
+        SpellEffectEntry* effectEntry = dbcSpellEffect.LookupRow(i);
+        if(effectEntry == NULL)
+            continue; // No effect
+
+        SpellEntry* spellInfo = dbcSpell.LookupEntry(effectEntry->EffectSpellId);
+        if(spellInfo == NULL)
+            continue; // Missing Spell?
+
+        spellInfo->Effect[effectEntry->EffectIndex] = effectEntry->Effect;
+        spellInfo->EffectValueMultiplier[effectEntry->EffectIndex] = effectEntry->EffectValueMultiplier;
+        spellInfo->EffectApplyAuraName[effectEntry->EffectIndex] = effectEntry->EffectApplyAuraName;
+        spellInfo->EffectAmplitude[effectEntry->EffectIndex] = effectEntry->EffectAmplitude;
+        spellInfo->EffectBasePoints[effectEntry->EffectIndex] = effectEntry->EffectBasePoints;
+        spellInfo->EffectDamageMultiplier[effectEntry->EffectIndex] = effectEntry->EffectDamageMultiplier;
+        spellInfo->EffectChainTarget[effectEntry->EffectIndex] = effectEntry->EffectChainTarget;
+        spellInfo->EffectDieSides[effectEntry->EffectIndex] = effectEntry->EffectDieSides;
+        spellInfo->EffectItemType[effectEntry->EffectIndex] = effectEntry->EffectItemType;
+        spellInfo->EffectMechanic[effectEntry->EffectIndex] = effectEntry->EffectMechanic;
+        spellInfo->EffectMiscValue[effectEntry->EffectIndex] = effectEntry->EffectMiscValue;
+        spellInfo->EffectMiscValueB[effectEntry->EffectIndex] = effectEntry->EffectMiscValueB;
+        spellInfo->EffectPointsPerComboPoint[effectEntry->EffectIndex] = effectEntry->EffectPointsPerComboPoint;
+        spellInfo->EffectRadiusIndex[effectEntry->EffectIndex] = effectEntry->EffectRadiusIndex;
+        spellInfo->EffectRealPointsPerLevel[effectEntry->EffectIndex] = effectEntry->EffectRealPointsPerLevel;
+        spellInfo->EffectSpellClassMask[0][effectEntry->EffectIndex] = effectEntry->EffectSpellClassMask[0];
+        spellInfo->EffectSpellClassMask[1][effectEntry->EffectIndex] = effectEntry->EffectSpellClassMask[1];
+        spellInfo->EffectSpellClassMask[2][effectEntry->EffectIndex] = effectEntry->EffectSpellClassMask[2];
+        spellInfo->EffectTriggerSpell[effectEntry->EffectIndex] = effectEntry->EffectTriggerSpell;
+        spellInfo->EffectImplicitTargetA[effectEntry->EffectIndex] = effectEntry->EffectImplicitTargetA;
+        spellInfo->EffectImplicitTargetB[effectEntry->EffectIndex] = effectEntry->EffectImplicitTargetB;
+    }
+
+    for (uint32 i = 1; i < dbcSpell.GetNumRows(); ++i)
+    {
+        SpellEntry* spellInfo = dbcSpell.LookupRow(i);
+        if(spellInfo == NULL)
+            continue;
+
+        // Set up our NameHashes here since we're putting in the other data
+        spellInfo->NameHash = crc32((const unsigned char*)spellInfo->Name, (unsigned int)strlen(spellInfo->Name));
+
+        //SpellAuraOptionsEntry
+        SpellAuraOptionsEntry* AuraOptions = dbcSpellAuraOptions.LookupEntry(spellInfo->SpellAuraOptionsId);
+        if(AuraOptions != NULL)
         {
-            Field* f = resultx->Fetch();
-            uint32 spellid = f[0].GetUInt32();
-            sp = dbcSpell.LookupEntry(spellid);
-            if(!spellid || !sp)
-                continue;
-
-            float spcoef = f[1].GetFloat();
-            float apcoef = f[2].GetFloat();
-            float rapcoef = f[3].GetFloat();
-            if(!spcoef && !apcoef && !rapcoef)
-                continue;
-
-            fprintf(file,  "    case %u: // %s", spellid, sp->Name);
-            if(sp->RankNumber)
-                fprintf(file,  " - %s\n", sp->Rank);
-            else
-                fprintf(file,  "\n");
-
-            fprintf(file,  "        {\n");
-            if(spcoef)
-                fprintf(file,  "            sp->SP_coef_override = float(%04ff);\n", spcoef);
-            if(apcoef)
-                fprintf(file,  "            sp->AP_coef_override = float(%04ff);\n", apcoef);
-            if(rapcoef)
-                fprintf(file,  "            sp->RAP_coef_override = float(%04ff);\n", rapcoef);
-            fprintf(file,  "        }break;\n");
-
+            spellInfo->maxstack = AuraOptions->StackAmount;
+            spellInfo->procChance = AuraOptions->procChance;
+            spellInfo->procCharges = AuraOptions->procCharges;
+            spellInfo->procFlags = AuraOptions->procFlags;
         }
-        while(resultx->NextRow());
-        delete resultx;
-    }
-    fprintf(file,  "    }\n");
-    fclose(file);
-}
 
-struct SpellBonusEntry
-{
-    float direct_damage;
-    float dot_damage;
-    float ap_bonus;
-    float ap_dot_bonus;
-};
-
-void GenerateNewSpellFixes()
-{
-    map<uint32, SpellBonusEntry*> SpellBonuses;
-    QueryResult* result = WorldDatabase.Query("SELECT entry, direct_bonus, dot_bonus, ap_bonus, ap_dot_bonus FROM spell_bonus_data");
-    if (result != NULL)
-    {
-        do
+        //SpellAuraRestrictionsEntry
+        SpellAuraRestrictionsEntry* AuraRestrict = dbcSpellAuraRestrictions.LookupEntry(spellInfo->SpellAuraRestrictionsId);
+        if(AuraRestrict != NULL)
         {
-            Field* fields = result->Fetch();
-            SpellBonusEntry* sbe = new SpellBonusEntry;
-            sbe->direct_damage  = fields[1].GetFloat();
-            sbe->dot_damage     = fields[2].GetFloat();
-            sbe->ap_bonus       = fields[3].GetFloat();
-            sbe->ap_dot_bonus   = fields[4].GetFloat();
-            SpellBonuses.insert(make_pair(fields[0].GetUInt32(), sbe));
-        } while (result->NextRow());
+            spellInfo->CasterAuraState = AuraRestrict->CasterAuraState;
+            spellInfo->TargetAuraState = AuraRestrict->TargetAuraState;
+        }
+
+        //SpellCategoriesEntry
+        SpellCategoriesEntry* sCategory = dbcSpellCategories.LookupEntry(spellInfo->SpellCategoriesId);
+        if(sCategory != NULL)
+        {
+            spellInfo->Category = sCategory->Category;
+            spellInfo->Spell_Dmg_Type = sCategory->DmgClass;
+            spellInfo->DispelType = sCategory->Dispel;
+            spellInfo->MechanicsType = sCategory->Mechanic;
+            spellInfo->PreventionType = sCategory->PreventionType;
+            spellInfo->StartRecoveryCategory = sCategory->StartRecoveryCategory;
+        }
+
+        //SpellCastingRequirementsEntry
+        SpellCastingRequirementsEntry* CastRequirements = dbcSpellCastingRequirements.LookupEntry(spellInfo->SpellCastingRequirementsId);
+        if(CastRequirements != NULL)
+        {
+            spellInfo->FacingCasterFlags = CastRequirements->FacingCasterFlags;
+            spellInfo->AreaGroupId = CastRequirements->AreaGroupId;
+            spellInfo->RequiresSpellFocus = CastRequirements->RequiresSpellFocus;
+        }
+
+        //SpellClassOptionsEntry
+        SpellClassOptionsEntry* ClassOptions = dbcSpellClassOptions.LookupEntry(spellInfo->SpellClassOptionsId);
+        if(ClassOptions != NULL)
+        {
+            for(int i = 0; i < 3; ++i)
+                spellInfo->SpellGroupType[i] = ClassOptions->SpellFamilyFlags[i];
+
+            spellInfo->SpellFamilyName = ClassOptions->SpellFamilyName;
+        }
+
+        //SpellCooldownsEntry
+        SpellCooldownsEntry* sCooldowns = dbcSpellCooldowns.LookupEntry(spellInfo->SpellCooldownsId);
+        if(sCooldowns != NULL)
+        {
+            spellInfo->CategoryRecoveryTime = sCooldowns->CategoryRecoveryTime;
+            spellInfo->RecoveryTime = sCooldowns->RecoveryTime;
+            spellInfo->StartRecoveryTime = sCooldowns->StartRecoveryTime;
+        }
+
+        //SpellEffectEntry
+
+        //SpellEquippedItemsEntry
+        SpellEquippedItemsEntry* EquippedItems = dbcSpellEquippedItems.LookupEntry(spellInfo->SpellEquippedItemsId);
+        if(EquippedItems != NULL)
+        {
+            spellInfo->EquippedItemClass = EquippedItems->EquippedItemClass;
+            spellInfo->RequiredItemFlags = EquippedItems->EquippedItemInventoryTypeMask;
+            spellInfo->EquippedItemSubClass = EquippedItems->EquippedItemSubClassMask;
+        }
+
+        //SpellInterruptsEntry
+        SpellInterruptsEntry* sInterrupts = dbcSpellInterrupts.LookupEntry(spellInfo->SpellInterruptsId);
+        if(sInterrupts != NULL)
+        {
+            spellInfo->AuraInterruptFlags = sInterrupts->AuraInterruptFlags;
+            spellInfo->ChannelInterruptFlags = sInterrupts->ChannelInterruptFlags;
+            spellInfo->InterruptFlags = sInterrupts->InterruptFlags;
+        }
+
+        //SpellLevelsEntry
+        SpellLevelsEntry* sLevel = dbcSpellLevels.LookupEntry(spellInfo->SpellLevelsId);
+        if(sLevel != NULL)
+        {
+            spellInfo->baseLevel = sLevel->baseLevel;
+            spellInfo->maxLevel = sLevel->maxLevel;
+            spellInfo->spellLevel = sLevel->spellLevel;
+        }
+
+        //SpellPowerEntry
+        SpellPowerEntry* sPower = dbcSpellPower.LookupEntry(spellInfo->SpellPowerId);
+        if(sPower != NULL)
+        {
+            spellInfo->ManaCost = sPower->manaCost;
+            spellInfo->ManaCostPerlevel = sPower->manaCostPerlevel;
+            spellInfo->ManaCostPercentage = sPower->manaCostPercentage;
+            spellInfo->ManaPerSecond = sPower->manaPerSecond;
+        }
+
+        //SpellReagentsEntry
+        SpellReagentsEntry* sReagent = dbcSpellReagents.LookupEntry(spellInfo->SpellReagentsId);
+        if(sReagent != NULL)
+        {
+            for(int i = 0; i < 8; ++i)
+            {
+                spellInfo->Reagent[i] = sReagent->Reagent[i];
+                spellInfo->ReagentCount[i] = sReagent->ReagentCount[i];
+            }
+        }
+
+        //SpellShapeshiftEntry
+        SpellShapeshiftEntry* shapeShift = dbcSpellShapeshift.LookupEntry(spellInfo->SpellShapeshiftId);
+        if(shapeShift != NULL)
+        {
+            spellInfo->RequiredShapeShift = shapeShift->Stances;
+            spellInfo->ShapeshiftExclude = shapeShift->StancesNot;
+        }
+
+        //SpellTargetRestrictionsEntry
+        SpellTargetRestrictionsEntry* TargetRestrict = dbcSpellTargetRestrictions.LookupEntry(spellInfo->SpellTargetRestrictionsId);
+        if(TargetRestrict != NULL)
+        {
+            spellInfo->MaxTargets = TargetRestrict->MaxAffectedTargets;
+            spellInfo->MaxTargetLevel = TargetRestrict->MaxTargetLevel;
+            spellInfo->TargetCreatureType = TargetRestrict->TargetCreatureType;
+            spellInfo->Targets = TargetRestrict->Targets;
+        }
+
+        //SpellTotemsEntry
+        SpellTotemsEntry* Totems = dbcSpellTotems.LookupEntry(spellInfo->SpellTotemsId);
+        if(Totems != NULL)
+        {
+            for(int i = 0; i < 2; ++i)
+                spellInfo->Totem[i] = Totems->Totem[i];
+        }
     }
 }
+

@@ -241,7 +241,7 @@ void Player::Init()
     mOutOfRangeIdCount              = 0;
     bProcessPending                 = false;
 
-    for(int i = 0; i < 25; i++)
+    for(int i = 0; i < QUEST_LOG_COUNT; i++)
         m_questlog[i] = NULL;
 
     CurrentGossipMenu               = NULL;
@@ -465,7 +465,7 @@ void Player::Destruct()
 
     CleanupChannels();
 
-    for(int i = 0; i < 25; i++)
+    for(int i = 0; i < QUEST_LOG_COUNT; i++)
     {
         if(m_questlog[i] != NULL)
         {
@@ -1555,11 +1555,33 @@ void Player::_EventExploration()
     sHookInterface.OnPlayerChangeArea(this, m_zoneId, m_areaId, m_oldArea);
     CALL_INSTANCE_SCRIPT_EVENT( m_mapMgr, OnChangeArea )( this, m_zoneId, m_areaId, m_oldArea );
 
-    uint32 offset = at->explorationFlag / 32;
-    offset += PLAYER_EXPLORED_ZONES_1;
+    // bur: we dont want to explore new areas when on taxi
+    if(!GetTaxiState() && !GetTransportGuid())
+    {
+        uint32 offset = at->explorationFlag / 32;
+        if(offset < 144)
+        {
+            offset += PLAYER_EXPLORED_ZONES_1;
 
-    uint32 val = (uint32)(1 << (at->explorationFlag % 32));
-    uint32 currFields = GetUInt32Value(offset);
+            uint32 val = (uint32)(1 << (at->explorationFlag % 32));
+            uint32 currFields = GetUInt32Value(offset);
+            if(!(currFields & val))//Unexplored Area
+            {
+                SetUInt32Value(offset, (uint32)(currFields | val));
+
+                uint32 explore_xp = at->level * 10 * sWorld.getRate(RATE_XP);
+                WorldPacket data(SMSG_EXPLORATION_EXPERIENCE, 8);
+                data << at->AreaId << explore_xp;
+                m_session->SendPacket(&data);
+
+                if(getLevel() < GetUInt32Value(PLAYER_FIELD_MAX_LEVEL) && explore_xp)
+                    GiveXP(explore_xp, 0, false);
+            }
+        }
+
+        sQuestMgr.OnPlayerExploreArea(this, at->AreaId);
+        GetAchievementInterface()->HandleAchievementCriteriaExploreArea( at->AreaId, GetUInt32Value(offset) );
+    }
 
     // Check for a restable area
     bool rest_on = restmap;
@@ -1585,22 +1607,6 @@ void Player::_EventExploration()
     }
 
     HandleRestedCalculations(rest_on);
-
-    if( !(currFields & val) && !GetTaxiState() && !GetTransportGuid())//Unexplored Area      // bur: we dont want to explore new areas when on taxi
-    {
-        SetUInt32Value(offset, (uint32)(currFields | val));
-
-        uint32 explore_xp = at->level * 10 * sWorld.getRate(RATE_XP);
-        WorldPacket data(SMSG_EXPLORATION_EXPERIENCE, 8);
-        data << at->AreaId << explore_xp;
-        m_session->SendPacket(&data);
-
-        if(getLevel() < GetUInt32Value(PLAYER_FIELD_MAX_LEVEL) && explore_xp)
-            GiveXP(explore_xp, 0, false);
-    }
-
-    if( !GetTaxiState() && !GetTransportGuid() )
-        GetAchievementInterface()->HandleAchievementCriteriaExploreArea( at->AreaId, GetUInt32Value(offset) );
 }
 
 void Player::EventDeath()
@@ -2433,7 +2439,7 @@ void Player::SaveToDB(bool bNewCharacter /* =false */)
     // dump exploration data
     << "'";
 
-    for(uint32 i = 0; i < 128; i++)
+    for(uint32 i = 0; i < 144; i++)
         ss << m_uint32Values[PLAYER_EXPLORED_ZONES_1 + i] << ",";
 
     ss << "','0', "; //skip saving oldstyle skills, just fill with 0
@@ -2971,7 +2977,7 @@ void Player::_SaveQuestLogEntry(QueryBuffer * buf)
     }
     m_removequests.clear();
 
-    for(int i = 0; i < 25; i++)
+    for(int i = 0; i < QUEST_LOG_COUNT; i++)
     {
         if(m_questlog[i] != NULL)
             m_questlog[i]->SaveToDB(buf);
@@ -3212,7 +3218,7 @@ void Player::LoadFromDBProc(QueryResultVector & results)
     uint32 Counter = 0;
     char * end;
     char * start = (char*)get_next_field.GetString();//buff;
-    while(Counter < 128)
+    while(Counter < 144)
     {
         end = strchr(start,',');
         if(!end)break;
@@ -3940,7 +3946,7 @@ void Player::_LoadQuestLogEntry(QueryResult * result)
     uint32 baseindex;
 
     // clear all fields
-    for(int i = 0; i < 25; i++)
+    for(int i = 0; i < 50; i++)
     {
         baseindex = PLAYER_QUEST_LOG_1_1 + (i * 5);
         SetUInt32Value(baseindex + 0, 0);
@@ -3970,7 +3976,7 @@ void Player::_LoadQuestLogEntry(QueryResult * result)
             if(m_questlog[slot] != 0)
                 continue;
 
-            if(slot >= 25)
+            if(slot >= QUEST_LOG_COUNT)
                 break;
 
             entry = NULL;
@@ -3984,7 +3990,7 @@ void Player::_LoadQuestLogEntry(QueryResult * result)
 
 QuestLogEntry* Player::GetQuestLogForEntry(uint32 quest)
 {
-    for(int i = 0; i < 25; i++)
+    for(int i = 0; i < QUEST_LOG_COUNT; i++)
     {
         if(m_questlog[i] == ((QuestLogEntry*)0x00000001))
             m_questlog[i] = NULL;
@@ -4008,7 +4014,7 @@ QuestLogEntry* Player::GetQuestLogForEntry(uint32 quest)
 
 void Player::SetQuestLogSlot(QuestLogEntry *entry, uint32 slot)
 {
-    ASSERT(slot < 25);
+    ASSERT(slot < QUEST_LOG_COUNT);
     m_questlog[slot] = entry;
 }
 
@@ -4124,7 +4130,7 @@ void Player::OnPushToWorld()
     data = new WorldPacket(SMSG_AURA_UPDATE_ALL, 28 * MAX_AURAS);
     *data << GetNewGUID();
     if(m_AuraInterface.BuildAuraUpdateAllPacket(data))
-        SendDelayedPacket(data);
+        SendPacket(data);
     else delete data;
 
     if(m_FirstLogin)
@@ -5410,7 +5416,7 @@ bool Player::IsGroupMember(Player* plyr)
 
 int32 Player::GetOpenQuestSlot()
 {
-    for(uint32 i = 0; i < 25; i++)
+    for(uint32 i = 0; i < QUEST_LOG_COUNT; i++)
         if (m_questlog[i] == NULL)
             return i;
 
@@ -6587,7 +6593,7 @@ void Player::LoadTaxiMask(const char* data)
 bool Player::HasQuestForItem(uint32 itemid)
 {
     Quest *qst;
-    for(uint32 i = 0; i < 25; i++)
+    for(uint32 i = 0; i < QUEST_LOG_COUNT; i++)
     {
         if( m_questlog[i] != NULL )
         {
@@ -7126,7 +7132,7 @@ void Player::EventTimedQuestExpire(Quest *qst, QuestLogEntry *qle, uint32 log_sl
 
 void Player::RemoveQuestsFromLine(uint32 skill_line)
 {
-    for(int i = 0; i < 25; i++)
+    for(int i = 0; i < QUEST_LOG_COUNT; i++)
     {
         if (m_questlog[i])
         {
@@ -8700,83 +8706,86 @@ void Player::ProcessPendingUpdates(ByteBuffer *pBuildBuffer, ByteBuffer *pCompre
         return;
     }
 
-    size_t bBuffer_size =  (bCreationBuffer.size() > bUpdateBuffer.size() ? bCreationBuffer.size() : bUpdateBuffer.size()) + 14 + (mOutOfRangeIds.size() * 9);
-    uint8 * update_buffer = NULL;
-    if(pBuildBuffer != NULL)
+    if(bUpdateBuffer.size() || mOutOfRangeIds.size() || bCreationBuffer.size())
     {
-        pBuildBuffer->resize(bBuffer_size);
-        update_buffer = (uint8*)pBuildBuffer->contents();
-    }
-    else
-        update_buffer = new uint8[bBuffer_size];
-    size_t c = 0;
-
-    //build out of range updates if creation updates are queued
-    if(bCreationBuffer.size() || mOutOfRangeIdCount)
-    {
-        *(uint16*)&update_buffer[c] = (uint16)GetMapId();
-        c += 2;
-        *(uint32*)&update_buffer[c] = ((mOutOfRangeIds.size() > 0) ? (mCreationCount + 1) : mCreationCount);
-        c += 4;
-
-        // append any out of range updates
-        if(mOutOfRangeIdCount)
+        size_t bBuffer_size =  (bCreationBuffer.size() > bUpdateBuffer.size() ? bCreationBuffer.size() : bUpdateBuffer.size()) + 14 + (mOutOfRangeIds.size() * 9);
+        uint8 * update_buffer = NULL;
+        if(pBuildBuffer != NULL)
         {
-            update_buffer[c] = UPDATETYPE_OUT_OF_RANGE_OBJECTS;
-            ++c;
-            *(uint32*)&update_buffer[c]  = mOutOfRangeIdCount;
+            pBuildBuffer->resize(bBuffer_size);
+            update_buffer = (uint8*)pBuildBuffer->contents();
+        }
+        else
+            update_buffer = new uint8[bBuffer_size];
+        size_t c = 0;
+
+        //build out of range updates if creation updates are queued
+        if(bCreationBuffer.size() || mOutOfRangeIdCount)
+        {
+            *(uint16*)&update_buffer[c] = (uint16)GetMapId();
+            c += 2;
+            *(uint32*)&update_buffer[c] = ((mOutOfRangeIds.size() > 0) ? (mCreationCount + 1) : mCreationCount);
             c += 4;
-            memcpy(&update_buffer[c], mOutOfRangeIds.contents(), mOutOfRangeIds.size());
-            c += mOutOfRangeIds.size();
-            mOutOfRangeIds.clear();
-            mOutOfRangeIdCount = 0;
+
+            // append any out of range updates
+            if(mOutOfRangeIdCount)
+            {
+                update_buffer[c] = UPDATETYPE_OUT_OF_RANGE_OBJECTS;
+                ++c;
+                *(uint32*)&update_buffer[c]  = mOutOfRangeIdCount;
+                c += 4;
+                memcpy(&update_buffer[c], mOutOfRangeIds.contents(), mOutOfRangeIds.size());
+                c += mOutOfRangeIds.size();
+                mOutOfRangeIds.clear();
+                mOutOfRangeIdCount = 0;
+            }
+
+            if(bCreationBuffer.size())
+                memcpy(&update_buffer[c], bCreationBuffer.contents(), bCreationBuffer.size());
+            c += bCreationBuffer.size();
+
+            // clear our update buffer
+            bCreationBuffer.clear();
+            mCreationCount = 0;
+
+            // compress update packet
+            if(c < size_t(500) || !CompressAndSendUpdateBuffer((uint32)c, update_buffer, pCompressionBuffer))
+            {
+                // send uncompressed packet -> because we failed
+                m_session->OutPacket(SMSG_UPDATE_OBJECT, (uint16)c, update_buffer);
+            }
         }
 
-        if(bCreationBuffer.size())
-            memcpy(&update_buffer[c], bCreationBuffer.contents(), bCreationBuffer.size());
-        c += bCreationBuffer.size();
-
-        // clear our update buffer
-        bCreationBuffer.clear();
-        mCreationCount = 0;
-
-        // compress update packet
-        if(c < size_t(500) || !CompressAndSendUpdateBuffer((uint32)c, update_buffer, pCompressionBuffer))
+        if(bUpdateBuffer.size())
         {
-            // send uncompressed packet -> because we failed
-            m_session->OutPacket(SMSG_UPDATE_OBJECT, (uint16)c, update_buffer);
+            c = 0;
+            *(uint16*)&update_buffer[c] = (uint16)GetMapId();
+            c += 2;
+            *(uint32*)&update_buffer[c] = mUpdateCount;
+            c += 4;
+            memcpy(&update_buffer[c], bUpdateBuffer.contents(), bUpdateBuffer.size());
+            c += bUpdateBuffer.size();
+
+            // clear our update buffer
+            bUpdateBuffer.clear();
+            mUpdateCount = 0;
+
+            // compress update packet
+            // while we said 350 before, I'm gonna make it 500 :D
+            if(c < size_t(500) || !CompressAndSendUpdateBuffer((uint32)c, update_buffer, pCompressionBuffer))
+            {
+                // send uncompressed packet -> because we failed
+                m_session->OutPacket(SMSG_UPDATE_OBJECT, (uint16)c, update_buffer);
+            }
         }
+
+        bProcessPending = false;
+        _bufferS.Release();
+        if(pBuildBuffer != NULL)
+            pBuildBuffer->clear();
+        else
+            delete [] update_buffer;
     }
-
-    if(bUpdateBuffer.size())
-    {
-        c = 0;
-        *(uint16*)&update_buffer[c] = (uint16)GetMapId();
-        c += 2;
-        *(uint32*)&update_buffer[c] = mUpdateCount;
-        c += 4;
-        memcpy(&update_buffer[c], bUpdateBuffer.contents(), bUpdateBuffer.size());
-        c += bUpdateBuffer.size();
-
-        // clear our update buffer
-        bUpdateBuffer.clear();
-        mUpdateCount = 0;
-
-        // compress update packet
-        // while we said 350 before, I'm gonna make it 500 :D
-        if(c < size_t(500) || !CompressAndSendUpdateBuffer((uint32)c, update_buffer, pCompressionBuffer))
-        {
-            // send uncompressed packet -> because we failed
-            m_session->OutPacket(SMSG_UPDATE_OBJECT, (uint16)c, update_buffer);
-        }
-    }
-
-    bProcessPending = false;
-    _bufferS.Release();
-    if(pBuildBuffer != NULL)
-        pBuildBuffer->clear();
-    else
-        delete [] update_buffer;
 
     // send any delayed packets
     WorldPacket * pck;
@@ -12673,11 +12682,11 @@ void Player::SetTaximaskNode(uint32 nodeidx, bool Unset)
 
 uint16 Player::FindQuestSlot( uint32 questid )
 {
-    for(uint16 i = 0; i < 25; i++)
+    for(uint16 i = 0; i < 50; i++)
         if( (GetUInt32Value(PLAYER_QUEST_LOG_1_1 + i * 5)) == questid )
             return i;
 
-    return 25;
+    return 50;
 }
 
 void Player::UpdateKnownCurrencies(uint32 itemId, bool apply)

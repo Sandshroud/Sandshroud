@@ -1262,33 +1262,12 @@ void Object::SetUInt32Value( const uint32 index, const uint32 value )
             if( pGroup != NULL )
                 pGroup->HandleUpdateFieldChange( index, TO_PLAYER(this) );
         }
-
-        switch (index)
-        {
-            case UNIT_FIELD_POWER1:
-            case UNIT_FIELD_POWER2:
-            case UNIT_FIELD_POWER4:
-            case UNIT_FIELD_POWER7:
-                static_cast< Unit* >( this )->SendPowerUpdate();
-                break;
-            default:
-                break;
-        }
     }
-    else if(m_objectTypeId == TYPEID_UNIT)
+
+    if(IsUnit())
     {
-        switch(index)
-        {
-            case UNIT_FIELD_POWER1:
-            case UNIT_FIELD_POWER2:
-            case UNIT_FIELD_POWER3:
-            case UNIT_FIELD_POWER4:
-            case UNIT_FIELD_POWER7:
-                static_cast< Unit* >( this )->SendPowerUpdate();
-                break;
-            default:
-                break;
-        }
+        if(index > UNIT_FIELD_POWER1 && index < UNIT_FIELD_POWER11)
+            static_cast< Unit* >( this )->SendPowerUpdate();
     }
 }
 
@@ -1323,33 +1302,12 @@ void Object::SetUInt16Value(uint16 index, uint8 offset, uint16 value)
             if( pGroup != NULL )
                 pGroup->HandleUpdateFieldChange( index, TO_PLAYER(this) );
         }
-
-        switch (index)
-        {
-            case UNIT_FIELD_POWER1:
-            case UNIT_FIELD_POWER2:
-            case UNIT_FIELD_POWER4:
-            case UNIT_FIELD_POWER7:
-                static_cast< Unit* >( this )->SendPowerUpdate();
-                break;
-            default:
-                break;
-        }
     }
-    else if(m_objectTypeId == TYPEID_UNIT)
+
+    if(IsUnit())
     {
-        switch(index)
-        {
-            case UNIT_FIELD_POWER1:
-            case UNIT_FIELD_POWER2:
-            case UNIT_FIELD_POWER3:
-            case UNIT_FIELD_POWER4:
-            case UNIT_FIELD_POWER7:
-                static_cast< Unit* >( this )->SendPowerUpdate();
-                break;
-            default:
-                break;
-        }
+        if(index > UNIT_FIELD_POWER1 && index < UNIT_FIELD_POWER11)
+            static_cast< Unit* >( this )->SendPowerUpdate();
     }
 }
 

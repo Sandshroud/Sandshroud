@@ -593,7 +593,7 @@ struct SpellEntry
     uint32 SpellLevelsId;
     uint32 SpellPowerId;
     uint32 SpellReagentsId;
-    //uint32 Unk400
+    uint32 SpellShapeshiftId;
     uint32 SpellTargetRestrictionsId;
     uint32 SpellTotemsId;
     //uint32 Unk400
@@ -657,8 +657,6 @@ struct SpellEntry
         uint32    EffectTriggerSpell[3];
         uint32    EffectImplicitTargetA[3];
         uint32    EffectImplicitTargetB[3];
-        uint32    EffectSpellId[3];
-        uint32    EffectIndex[3];
 
     // SpellEquippedItemsEntry
         int32     EquippedItemClass;

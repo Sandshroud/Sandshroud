@@ -615,11 +615,28 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_GAMEOBJ_USE].handler                           = &WorldSession::HandleGameObjectUse;
     WorldPacketHandlers[CMSG_PLAYED_TIME].handler                           = &WorldSession::HandlePlayedTimeOpcode;
     WorldPacketHandlers[CMSG_SETSHEATHED].handler                           = &WorldSession::HandleSetSheathedOpcode;
-    //WorldPacketHandlers[CMSG_MESSAGECHAT].handler                           = &WorldSession::HandleMessagechatOpcode;
     WorldPacketHandlers[CMSG_TEXT_EMOTE].handler                            = &WorldSession::HandleTextEmoteOpcode;
     WorldPacketHandlers[CMSG_INSPECT].handler                               = &WorldSession::HandleInspectOpcode;
     WorldPacketHandlers[CMSG_TIME_SYNC_RESP].handler                        = &WorldSession::HandleTimeSyncResp;
     WorldPacketHandlers[CMSG_GAMEOBJ_REPORT_USE].handler                    = &WorldSession::HandleGameobjReportUseOpCode;
+
+    // Chat Interaction
+    WorldPacketHandlers[CMSG_MESSAGECHAT_SAY].handler                       = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_YELL].handler                      = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_CHANNEL].handler                   = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_WHISPER].handler                   = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_GUILD].handler                     = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_OFFICER].handler                   = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_AFK].handler                       = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_DND].handler                       = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_EMOTE].handler                     = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_PARTY].handler                     = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_PARTY_LEADER].handler              = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_RAID].handler                      = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_RAID_LEADER].handler               = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_BATTLEGROUND].handler              = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_BATTLEGROUND_LEADER].handler       = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_RAID_WARNING].handler              = &WorldSession::HandleMessagechatOpcode;
 
     // Channels
     WorldPacketHandlers[CMSG_JOIN_CHANNEL].handler                          = &WorldSession::HandleChannelJoin;

@@ -999,19 +999,7 @@ void WorldSession::SendInventoryList(Creature* unit)
     {
         WorldPacket data(SMSG_LIST_INVENTORY, 10);
         data << uint64(unit->GetGUID());
-        data << uint8(10);
-        for(int i = 0; i < 10; i++) // Send null items
-        {
-            data << (++counter);
-            data << uint32(0);
-            data << uint32(0);
-            data << int32(0);
-            data << uint32(0);
-            data << uint32(0);
-            data << uint32(0);
-            data << uint32(0);
-        }
-
+        data << uint8(0) << uint8(0);
         SendPacket(&data);
         return;
     }
@@ -1020,7 +1008,6 @@ void WorldSession::SendInventoryList(Creature* unit)
     WorldPacket data(SMSG_LIST_INVENTORY, ((unit->GetSellItemCount() * 28) + 9));      // allocate
     data << unit->GetGUID();
     data << uint8( 0 ); // placeholder for item count
-
     for(std::map<uint32, CreatureItem>::iterator itr = unit->GetSellItemBegin(); itr != unit->GetSellItemEnd(); itr++)
     {
         if(counter >= 150)
@@ -1055,39 +1042,24 @@ void WorldSession::SendInventoryList(Creature* unit)
                         continue;
                 }
 
+                uint32 extendedCostId = itr->second.extended_cost != NULL ? itr->second.extended_cost->Id : 0;
                 int32 av_am = (itr->second.max_amount > 0) ? itr->second.available_amount : -1;
                 data << (++counter);
+                data << uint32(1);
                 data << curItem->ItemId;
                 data << curItem->DisplayInfoID;
                 data << av_am;
                 data << Item::GetBuyPriceForItem(curItem, 1, _player, unit);
                 data << curItem->MaxDurability;
                 data << itr->second.amount;
-
-                if( itr->second.extended_cost != NULL )
-                    data << itr->second.extended_cost->Id;
-                else
-                    data << uint32(0);
+                data << extendedCostId;
+                data << uint8(0);
             }
         }
     }
 
-    if(!counter)
-    {
-        for(int i = 0; i < 10; i++) // Send null items
-        {
-            data << (++counter);
-            data << uint32(0);
-            data << uint32(0);
-            data << int32(0);
-            data << uint32(0);
-            data << uint32(0);
-            data << uint32(0);
-            data << uint32(0);
-        }
-    }
-
-    const_cast<uint8*>(data.contents())[8] = (uint8)counter;    // set count
+    if(counter == 0) data << uint8(0);
+    else data.put<uint8>(8, counter); // set count
 
     SendPacket( &data );
     sLog.Debug( "WORLD"," Sent SMSG_LIST_INVENTORY" );

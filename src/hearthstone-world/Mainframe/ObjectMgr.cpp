@@ -1481,7 +1481,7 @@ void GossipMenu::AddItem(GossipMenuItem* GossipItem)
 void GossipMenu::BuildPacket(WorldPacket& Packet)
 {
     Packet << uint64(CreatureGuid);
-    Packet << uint32(0);            // some new menu type in 2.4?
+    Packet << uint32(0);
     Packet << uint32(TextId);
     Packet << uint32(Menu.size());
 

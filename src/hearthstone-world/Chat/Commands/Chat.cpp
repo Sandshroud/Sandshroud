@@ -978,7 +978,7 @@ int ChatHandler::ParseCommands(const char* text, WorldSession *m_session)
     return 1;
 }
 
-WorldPacket * ChatHandler::FillMessageData( uint32 type, int32 language, const char *message,uint64 guid , uint8 flag) const
+WorldPacket * ChatHandler::FillMessageData( uint32 type, int32 language, const char *message, uint64 guid, uint8 flag) const
 {
     ASSERT(type != CHAT_MSG_CHANNEL);
     //channels are handled in channel handler and so on
