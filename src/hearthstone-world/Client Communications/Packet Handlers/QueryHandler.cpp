@@ -43,7 +43,8 @@ void WorldSession::HandleNameQueryOpcode( WorldPacket & recv_data )
 void WorldSession::HandleQueryTimeOpcode( WorldPacket & recv_data )
 {
     WorldPacket data(SMSG_QUERY_TIME_RESPONSE, 8);
-    data << uint64(UNIXTIME);
+    data << uint32(UNIXTIME);
+    data << uint32(14440);
     SendPacket(&data);
 }
 

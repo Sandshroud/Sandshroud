@@ -51,8 +51,10 @@ uint32 World::GetMaxLevel(Player* plr)
         return LevelCap_Custom_All;
 
     uint32 level = MAXIMUM_ATTAINABLE_LEVEL;
-    if( plr->GetSession()->HasFlag(ACCOUNT_FLAG_XPACK_02) )
+    if( plr->GetSession()->HasFlag(ACCOUNT_FLAG_XPACK_03) )
         level = MAXIMUM_CEXPANSION_LEVEL;
+    else if( plr->GetSession()->HasFlag(ACCOUNT_FLAG_XPACK_02) )
+        level = 80;
     else if( plr->GetSession()->HasFlag(ACCOUNT_FLAG_XPACK_01) )
         level = 70;
     else // Classic World of Warcraft

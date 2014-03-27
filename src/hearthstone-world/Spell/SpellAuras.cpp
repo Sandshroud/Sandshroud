@@ -683,10 +683,7 @@ void Aura::BuildAuraUpdatePacket(ByteBuffer buffer)
     buffer << uint8(stack);
 
     if(!(flags & AFLAG_NOT_GUID))
-    {
         FastGUIDPack(buffer, GetCasterGUID());
-    }
-
     if( flags & AFLAG_HAS_DURATION )
     {
         buffer << GetDuration();

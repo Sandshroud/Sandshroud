@@ -627,7 +627,6 @@ void AI_Movement::SendMoveToPacket(float toX, float toY, float toZ, float toO, u
         else
         {
             playerTarget->CopyAndSendDelayedPacket(&data);
-            delete &data;
         }
     }
 }

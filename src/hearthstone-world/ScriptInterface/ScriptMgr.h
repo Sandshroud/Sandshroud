@@ -337,6 +337,7 @@ public:
     virtual void OnGameObjectActivate(uint32 entry, Player* mTarget, QuestLogEntry *qLogEntry) {}
     virtual void OnCreatureKill(uint32 entry, Player* mTarget, QuestLogEntry *qLogEntry) {}
     virtual void OnExploreArea(uint32 areaId, Player* mTarget, QuestLogEntry *qLogEntry) {}
+    virtual void OnCrossAreaTrigger(uint32 areaTrigger, Player* mTarget, QuestLogEntry *qLogEntry) {}
     virtual void OnPlayerItemPickup(uint32 itemId, uint32 totalCount, Player* mTarget, QuestLogEntry *qLogEntry) {}
 
     bool LuaScript;

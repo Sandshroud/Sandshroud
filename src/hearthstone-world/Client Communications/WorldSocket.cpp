@@ -192,13 +192,13 @@ OUTPACKET_RESULT WorldSocket::_OutPacket(uint16 opcode, size_t len, const void* 
     }
     if( GetWriteBuffer()->GetSpace() < (len+4) )
         return OUTPACKET_RESULT_NO_ROOM_IN_BUFFER;
-/*  FILE *codeLog = NULL;
+    FILE *codeLog = NULL;
     fopen_s(&codeLog, "OpcodeLog.txt", "a+b");
     if(codeLog)
     {
         fprintf(codeLog, "Sending packet %s(%03u) with size %u\r\n", sOpcodeMgr.GetOpcodeName(opcode), opcode, len);
         fclose(codeLog);
-    }*/
+    }
 
     LockWriteBuffer();
     // Encrypt the packet
@@ -469,20 +469,10 @@ void WorldSocket::Authenticate()
 
 void WorldSocket::SendAuthResponse(uint8 code, bool holdsPosition, uint32 position)
 {
+    uint8 expansion = mSession ? mSession->GetHighestExpansion() : 0;
     WorldPacket data(SMSG_AUTH_RESPONSE, 15);
     data << uint8(code) << uint32(0) << uint8(0) << uint32(0);
-    if(mSession)
-    {
-        if(mSession->HasFlag(ACCOUNT_FLAG_XPACK_03))
-            data << uint8(3)<< uint8(3);
-        else if(mSession->HasFlag(ACCOUNT_FLAG_XPACK_02))
-            data << uint8(2)<< uint8(2);
-        else if(mSession->HasFlag(ACCOUNT_FLAG_XPACK_01))
-            data << uint8(1)<< uint8(1);
-        else
-            data << uint8(0)<< uint8(0);
-    }
-    else data << uint8(0)<< uint8(0);
+    data << uint8(expansion) << uint8(expansion);
     if(holdsPosition)
         data << position << uint8(0);
     SendPacket(&data);

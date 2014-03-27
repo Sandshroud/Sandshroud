@@ -188,8 +188,8 @@ void QuestLogEntry::Init(Quest* quest, Player* plr, uint32 slot)
 
     mDirty = true;
 
-    memset(m_mobcount, 0, 4*4);
-    memset(m_explored_areas, 0, 4*4);
+    memset(m_mobcount, 0, sizeof(uint32)*4);
+    memset(m_areatriggers, 0, sizeof(uint32)*4);
 }
 
 void QuestLogEntry::ClearAffectedUnits()
@@ -225,7 +225,7 @@ void QuestLogEntry::SaveToDB(QueryBuffer * buf)
     ss << "REPLACE INTO questlog VALUES(";
     ss << m_plr->GetLowGUID() << "," << m_quest->id << "," << m_slot << "," << m_time_left;
     for(int i = 0; i < 4; i++)
-        ss << "," << m_explored_areas[i];
+        ss << "," << m_areatriggers[i];
 
     for(int i = 0; i < 4; i++)
         ss << "," << m_mobcount[i];
@@ -249,8 +249,9 @@ bool QuestLogEntry::LoadFromDB(Field *fields)
     f++;
     for(int i = 0; i < 4; i++)
     {
-        m_explored_areas[i] = fields[f++].GetUInt32();
-        CALL_QUESTSCRIPT_EVENT(m_quest->id, OnExploreArea)(m_explored_areas[i], m_plr, this);
+        m_areatriggers[i] = fields[f++].GetUInt32();
+        if(m_quest->objectives && m_quest->objectives->required_areatriggers[i])
+            CALL_QUESTSCRIPT_EVENT(m_quest->id, OnCrossAreaTrigger)(m_quest->objectives->required_areatriggers[i], m_plr, this);
     }
 
     if(GetQuest()->objectives == NULL)
@@ -312,7 +313,7 @@ bool QuestLogEntry::CanBeFinished()
 
             if(m_quest->objectives->required_areatriggers[i])
             {
-                if(m_explored_areas[i] == 0)
+                if(m_areatriggers[i] == 0)
                     return false;
             }
         }
@@ -348,10 +349,10 @@ void QuestLogEntry::SetMobCount(uint32 i, uint32 count)
     mDirty = true;
 }
 
-void QuestLogEntry::SetTrigger(uint32 i)
+void QuestLogEntry::SetAreaTrigger(uint32 i)
 {
     ASSERT(i<4);
-    m_explored_areas[i] = 1;
+    m_areatriggers[i] = 1;
     mDirty = true;
 }
 
@@ -396,7 +397,7 @@ void QuestLogEntry::UpdatePlayerFields()
             {
                 if(m_quest->objectives->required_areatriggers[i])
                 {
-                    if(m_explored_areas[i] == 1)
+                    if(m_areatriggers[i] == 1)
                     {
                         count++;
                     }
