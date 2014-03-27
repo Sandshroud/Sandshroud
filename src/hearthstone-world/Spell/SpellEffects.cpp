@@ -2084,9 +2084,6 @@ void Spell::SpellEffectSkillStep(uint32 i) // Skill Step
         target->_ModifySkillMaximum( skill, max );
     else
     {
-        if( sk->type == SKILL_TYPE_PROFESSION )
-            target->ModUnsigned32Value( PLAYER_CHARACTER_POINTS+1, -1 );
-
         if( skill == SKILL_RIDING )
             target->_AddSkillLine( skill, max, max );
         else

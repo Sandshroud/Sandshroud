@@ -140,7 +140,7 @@ public:
     void UpdateModifiers();
     void AddAuraVisual();
     void BuildAuraUpdate();
-    void BuildAuraUpdatePacket(ByteBuffer buffer);
+    void BuildAuraUpdatePacket(WorldPacket *data);
     void EventUpdateCreatureAA(float r);
     void EventUpdatePlayerAA(float r);
     void EventRelocateRandomTarget();

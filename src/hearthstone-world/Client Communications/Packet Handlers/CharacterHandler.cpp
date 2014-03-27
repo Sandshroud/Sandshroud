@@ -520,14 +520,12 @@ void WorldSession::HandleCharRenameOpcode(WorldPacket & recv_data)
     SendPacket(&data);
 }
 
-
 void WorldSession::HandlePlayerLoginOpcode( WorldPacket & recv_data )
 {
     CHECK_PACKET_SIZE(recv_data, 8);
-    uint64 playerGuid = 0;
-
     sLog.Debug( "WorldSession"," Recvd Player Logon Message" );
 
+    uint64 playerGuid;
     recv_data >> playerGuid; // this is the GUID selected by the player
 
     //Better validate this Guid before we create an invalid _player.

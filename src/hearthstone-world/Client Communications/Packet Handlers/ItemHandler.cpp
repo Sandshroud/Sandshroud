@@ -468,6 +468,11 @@ void WorldSession::HandleDestroyItemOpcode( WorldPacket & recv_data )
     }
 }
 
+void WorldSession::HandleDestroyItemsOpcode( WorldPacket & recv_data )
+{
+    HandleDestroyItemOpcode(recv_data);
+}
+
 void WorldSession::HandleAutoEquipItemOpcode( WorldPacket & recv_data )
 {
     CHECK_INWORLD_RETURN();

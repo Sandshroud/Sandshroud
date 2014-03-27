@@ -25,7 +25,7 @@ void WorldSession::HandleNameQueryOpcode( WorldPacket & recv_data )
     }
 
     sLog.Debug("WorldSession","Received CMSG_NAME_QUERY for: %s", pn->name );
-    WorldPacket data(SMSG_NAME_QUERY_RESPONSE, 10000);
+    WorldPacket data(SMSG_NAME_QUERY_RESPONSE, 15+strlen(pn->name));
     FastGUIDPack(data, guid);
     data << uint8(0);
     data << pn->name;

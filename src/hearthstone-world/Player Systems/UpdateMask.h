@@ -6,81 +6,71 @@
 
 class UpdateMask
 {
-    uint32 *mUpdateMask;
+    uint32 *m_mask;
     uint32 mCount; // in values
     uint32 mBlocks; // in uint32 blocks
 
 public:
-    UpdateMask( ) : mUpdateMask( 0 ), mCount( 0 ), mBlocks( 0 ) { }
-    UpdateMask( const UpdateMask& mask ) : mUpdateMask( 0 ) { *this = mask; }
+    UpdateMask( ) : m_mask( 0 ), mCount( 0 ), mBlocks( 0 ) { }
+    UpdateMask( const UpdateMask& mask ) : m_mask( 0 ) { *this = mask; }
+
+    uint32 AByte(const uint32 index) { return (uint32)floor(float(index)/32.0f); }
+    uint8 ABit(const uint32 index) { return index%32; }
 
     ~UpdateMask( )
     {
-        if(mUpdateMask)
-            delete [] mUpdateMask;
+        if(m_mask)
+            delete [] m_mask;
     }
 
     void SetBit( const uint32 index )
     {
         ASSERT(index < mCount);
-        ( (uint8 *)mUpdateMask )[ index >> 3 ] |= 1 << ( index & 0x7 );
-        // ( (uint8 *)mUpdateMask )[ index / 8 ] |= 1 * pow( 2, index % 8 );
+        m_mask[AByte(index)] |= uint32(uint32(1) << ABit(index));
     }
 
     void UnsetBit( const uint32 index )
     {
         ASSERT(index < mCount);
-        ( (uint8 *)mUpdateMask )[ index >> 3 ] &= (0xff ^ (1 <<  ( index & 0x7 ) ) );
-        // ( (uint8 *)mUpdateMask )[ index / 8 ] &= 255 - ( 1 * pow( 2, index % 8 ) ) );
+        m_mask[AByte(index)] &= ~uint32(uint32(1) << ABit(index));
+        ( (uint8 *)m_mask )[ index >> 3 ] &= (0xff ^ (1 <<  ( index & 0x7 ) ) );
     }
 
-    bool GetBit( const uint32 index ) const
+    bool GetBit( const uint32 index )
     {
         ASSERT(index < mCount);
-        return ( ( (uint8 *)mUpdateMask)[ index >> 3 ] & ( 1 << ( index & 0x7 ) )) != 0;
-        //actually int->bool conversion is not needed here
+        return (m_mask[AByte(index)] & uint32(uint32(1) << ABit(index)));
     }
+
+    HEARTHSTONE_INLINE uint32 GetLength() const { return (mBlocks*sizeof(uint32)); }
+    HEARTHSTONE_INLINE uint32 GetBlockCount() const {return mBlocks;}
+    HEARTHSTONE_INLINE uint32 GetCount() const { return mCount; }
+    HEARTHSTONE_INLINE const uint8* GetMask() const { return (uint8*)m_mask; }
 
     uint32 GetUpdateBlockCount() const
     {
-        uint32 x;
-        for( x=mBlocks-1;x;x--)
-            if(mUpdateMask[x])break;
-        return (x+1);
+        for(uint32 x = mBlocks-1; x >= 0; x--)
+        { if(m_mask[x]) return x+1; }
+        return 1;
     }
-    HEARTHSTONE_INLINE uint32 GetBlockCount() const {return mBlocks;}
-
-    HEARTHSTONE_INLINE uint32 GetLength() const { return (mBlocks *sizeof(uint32)); }
-    HEARTHSTONE_INLINE uint32 GetCount() const { return mCount; }
-    HEARTHSTONE_INLINE const uint8* GetMask() const { return (uint8*)mUpdateMask; }
 
     void SetCount(uint32 valuesCount)
     {
-        if(mUpdateMask)
-            delete [] mUpdateMask;
+        if(m_mask)
+            delete [] m_mask;
 
         mCount = valuesCount;
-        //mBlocks = valuesCount/32 + 1;
-        //mBlocks = (valuesCount + 31) / 32;
-        mBlocks = mCount >> 5;
-        if(mCount & 31)
-            ++mBlocks;
+        mBlocks = (valuesCount + 31) / 32;
 
-        mUpdateMask = new uint32[mBlocks];
-        memset(mUpdateMask, 0, mBlocks *sizeof(uint32));
+        m_mask = new uint32[mBlocks];
+        memset(m_mask, 0, mBlocks*sizeof(uint32));
     }
 
-    void Clear()
-    {
-        if (mUpdateMask)
-            memset(mUpdateMask, 0, mBlocks << 2);
-    }
-
+    void Clear() { if (m_mask) memset(m_mask, 0, mBlocks*sizeof(uint32)); }
     UpdateMask& operator = ( const UpdateMask& mask )
     {
         SetCount(mask.mCount);
-        memcpy(mUpdateMask, mask.mUpdateMask, mBlocks << 2);
-
+        memcpy(m_mask, mask.m_mask, mBlocks*sizeof(uint32));
         return *this;
     }
 
@@ -88,14 +78,14 @@ public:
     {
         ASSERT(mask.mCount <= mCount);
         for(uint32 i = 0; i < mBlocks; i++)
-            mUpdateMask[i] &= mask.mUpdateMask[i];
+            m_mask[i] &= mask.m_mask[i];
     }
 
     void operator |= ( const UpdateMask& mask )
     {
         ASSERT(mask.mCount <= mCount);
         for(uint32 i = 0; i < mBlocks; i++)
-            mUpdateMask[i] |= mask.mUpdateMask[i];
+            m_mask[i] |= mask.m_mask[i];
     }
 
     UpdateMask operator & ( const UpdateMask& mask ) const
@@ -105,7 +95,6 @@ public:
         UpdateMask newmask;
         newmask = *this;
         newmask &= mask;
-
         return newmask;
     }
 
@@ -116,7 +105,6 @@ public:
         UpdateMask newmask;
         newmask = *this;
         newmask |= mask;
-
         return newmask;
     }
 };

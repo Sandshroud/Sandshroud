@@ -661,17 +661,19 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recv_data )
 void WorldSession::HandleLogoutRequestOpcode( WorldPacket & recv_data )
 {
     Player* pPlayer = GetPlayer();
-    WorldPacket data(SMSG_LOGOUT_RESPONSE, 9);
-
     sLog.Debug( "WORLD"," Recvd CMSG_LOGOUT_REQUEST Message" );
 
     if(pPlayer)
     {
+        WorldPacket data(SMSG_LOGOUT_RESPONSE, 5);
         sHookInterface.OnLogoutRequest(pPlayer);
         if(pPlayer->m_isResting ||    // We are resting so log out instantly
             pPlayer->GetTaxiState() ||  // or we are on a taxi
             HasGMPermissions())        // or we are a gm
         {
+            data << uint8(0);
+            data << uint32(0x1000000);
+            SendPacket( &data );
             SetLogoutTimer(1);
             return;
         }
@@ -679,14 +681,14 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & recv_data )
         if(pPlayer->DuelingWith != NULL || pPlayer->CombatStatus.IsInCombat())
         {
             //can't quit still dueling or attacking
-            data << uint32(0x1); //Filler
-            data << uint8(0); //Logout accepted
+            data << uint8(0x1); //Logout accepted
+            data << uint32(0);
             SendPacket( &data );
             return;
         }
 
-        data << uint32(0); //Filler
         data << uint8(0); //Logout accepted
+        data << uint32(0);
         SendPacket( &data );
 
         //stop player from moving

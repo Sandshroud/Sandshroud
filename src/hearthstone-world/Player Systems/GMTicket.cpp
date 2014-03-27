@@ -139,21 +139,20 @@ void WorldSession::HandleGMTicketDeleteOpcode(WorldPacket & recv_data)
 void WorldSession::HandleGMTicketGetTicketOpcode(WorldPacket & recv_data)
 {
     WorldPacket data(SMSG_GMTICKET_GETTICKET, 400);
-    // no data
 
     // get Current Ticket
     GM_Ticket *ticket = objmgr.GetGMTicketByPlayer(GetPlayer()->GetGUID());
-
     if(!ticket) // no Current Ticket
     {
         data << uint32(10);
+        data << uint32(0);
         SendPacket(&data);
         return;
     }
 
     // Send current Ticket
-    data << uint32(6); // unk
-    data << uint32(1); // Deletable
+    data << uint32(6); // hasTicket
+    data << uint32(1); // Id
     data << ticket->message.c_str();
     data << (uint8)ticket->map;
 

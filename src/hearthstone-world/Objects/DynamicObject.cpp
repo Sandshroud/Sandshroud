@@ -201,7 +201,7 @@ void DynamicObject::Remove()
         }
 
         WorldPacket data(SMSG_DESTROY_OBJECT, 8);
-        data << GetGUID();
+        data << GetGUID() << uint8(1);
         SendMessageToSet(&data, true);
 
         if(m_spellProto->IsChannelSpell() && GUID_HIPART(casterGuid) != HIGHGUID_TYPE_GAMEOBJECT)

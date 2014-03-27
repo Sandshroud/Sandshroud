@@ -1457,10 +1457,10 @@ void CBattleground::PlaySoundToTeam(uint32 Team, uint32 Sound)
 
 void CBattlegroundManager::SendBattlegroundQueueStatus(Player* plr, uint32 queueSlot)
 {
-    if( queueSlot > 3 )
+    //if( queueSlot > 3 )
         return;
 
-    WorldPacket data(SMSG_BATTLEFIELD_STATUS1+queueSlot, 40);
+    WorldPacket data(SMSG_BATTLEFIELD_STATUS1, 40);
     data << uint32(queueSlot);
     plr->GetSession()->SendPacket(&data);
 }

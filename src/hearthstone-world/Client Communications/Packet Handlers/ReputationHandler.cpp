@@ -98,7 +98,7 @@ HEARTHSTONE_INLINE bool RankChangedFlat(int32 Standing, int32 NewStanding)
 
 void Player::smsg_InitialFactions()
 {
-    WorldPacket data( SMSG_INITIALIZE_FACTIONS, 764 );
+    WorldPacket data( SMSG_INITIALIZE_FACTIONS, 644 );
     data << uint32( 128 );
     FactionReputation * rep;
     for ( uint32 i = 0; i < 128; ++i )

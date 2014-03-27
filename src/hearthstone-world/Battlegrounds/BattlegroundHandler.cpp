@@ -48,9 +48,8 @@ void WorldSession::HandleBattlefieldStatusOpcode(WorldPacket &recv_data)
 void WorldSession::HandleBattlefieldListOpcode(WorldPacket &recv_data)
 {
     CHECK_INWORLD_RETURN();
-    uint32 battlegroundType;
-    uint16 unkinfo;
-    recv_data >> battlegroundType >> unkinfo;
+    uint8 battlegroundType;
+    recv_data >> battlegroundType;
     BattlegroundManager.HandleBattlegroundListPacket(this, battlegroundType);
 }
 
