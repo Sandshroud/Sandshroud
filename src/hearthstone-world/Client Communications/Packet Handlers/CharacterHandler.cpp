@@ -91,10 +91,7 @@ void WorldSession::CharacterEnumProc(QueryResult * result)
             data << _race;                  // race
             data << _class;                 // class
             data << fields[4].GetUInt8();   // gender
-            data << uint8(_bytes1);         // skin
-            data << uint8(_bytes1 >> 8);    // face
-            data << uint8(_bytes1 >> 16);   // hair style
-            data << uint8(_bytes1 >> 24);   // hair color
+            data << uint32(_bytes1);         // skin
             data << uint8(_bytes2 & 0xFF);  // facial hair
             data << _level;                 // Level
             data << fields[12].GetUInt32(); // zoneid
@@ -349,7 +346,7 @@ uint8 WorldSession::DeleteCharacter(uint32 guid)
     PlayerInfo * inf = objmgr.GetPlayerInfo(guid);
     if( inf != NULL && inf->m_loggedInPlayer == NULL )
     {
-        QueryResult * result = CharacterDatabase.Query("SELECT name FROM characters WHERE guid = %u AND acct = %u", (uint32)guid, _accountId);
+        QueryResult * result = CharacterDatabase.Query("SELECT name FROM characters WHERE guid = %u AND acct = %u", guid, _accountId);
         if(!result)
             return CHAR_DELETE_FAILED;
 
@@ -391,49 +388,48 @@ uint8 WorldSession::DeleteCharacter(uint32 guid)
         /*if( _socket != NULL )
             sPlrsLog.write("Account: %s | IP: %s >> Deleted player %s", GetAccountName().c_str(), GetSocket()->GetRemoteIP().c_str(), name.c_str());*/
 
-        sWorld.LogPlayer(this, "deleted character %s (GUID: %u)", name.c_str(), (uint32)guid);
+        sWorld.LogPlayer(this, "deleted character %s (GUID: %u)", name.c_str(), guid);
 
 /*      if ( sWorld.char_restore_enabled )
         {
             //insert data into "deleted" tables
-            CharacterDatabase.WaitExecute("INSERT INTO characters_deleted SELECT UNIX_TIMESTAMP(NOW()),characters.* FROM characters WHERE guid = %u", (uint32)guid);
-            CharacterDatabase.WaitExecute("INSERT INTO playerglyphs_deleted SELECT playerglyphs.* FROM playerglyphs WHERE guid = %u", (uint32)guid);
-            CharacterDatabase.WaitExecute("INSERT INTO playeritems_deleted SELECT playeritems.* FROM playeritems WHERE ownerguid = %u", (uint32)guid);
-            CharacterDatabase.WaitExecute("INSERT INTO playerskills_deleted SELECT playerskills.* FROM playerskills WHERE player_guid = %u", (uint32)guid);
-            CharacterDatabase.WaitExecute("INSERT INTO playerspells_deleted SELECT playerspells.* FROM playerspells WHERE guid = %u", (uint32)guid);
-            CharacterDatabase.WaitExecute("INSERT INTO playertalents_deleted SELECT playertalents.* FROM playertalents WHERE guid = %u", (uint32)guid);
-            CharacterDatabase.WaitExecute("INSERT INTO questlog_deleted SELECT questlog.* FROM questlog WHERE player_guid = %u", (uint32)guid);
+            CharacterDatabase.WaitExecute("INSERT INTO characters_deleted SELECT UNIX_TIMESTAMP(NOW()),characters.* FROM characters WHERE guid = %u", guid);
+            CharacterDatabase.WaitExecute("INSERT INTO playerglyphs_deleted SELECT playerglyphs.* FROM playerglyphs WHERE guid = %u", guid);
+            CharacterDatabase.WaitExecute("INSERT INTO playeritems_deleted SELECT playeritems.* FROM playeritems WHERE ownerguid = %u", guid);
+            CharacterDatabase.WaitExecute("INSERT INTO playerskills_deleted SELECT playerskills.* FROM playerskills WHERE player_guid = %u", guid);
+            CharacterDatabase.WaitExecute("INSERT INTO playerspells_deleted SELECT playerspells.* FROM playerspells WHERE guid = %u", guid);
+            CharacterDatabase.WaitExecute("INSERT INTO playertalents_deleted SELECT playertalents.* FROM playertalents WHERE guid = %u", guid);
+            CharacterDatabase.WaitExecute("INSERT INTO questlog_deleted SELECT questlog.* FROM questlog WHERE player_guid = %u", guid);
         }*/
 
-        CharacterDatabase.WaitExecute("DELETE FROM characters WHERE guid = %u", (uint32)guid);
+        CharacterDatabase.WaitExecute("DELETE FROM characters WHERE guid = %u", guid);
 
-        Corpse* c=objmgr.GetCorpseByOwner((uint32)guid);
+        Corpse* c=objmgr.GetCorpseByOwner(guid);
         if(c)
             CharacterDatabase.Execute("DELETE FROM corpses WHERE guid = %u", c->GetLowGUID());
 
-        CharacterDatabase.Execute("DELETE FROM achievements WHERE player = %u", (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM auctions WHERE owner = %u", (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM charters WHERE leaderGuid = %u", (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM gm_tickets WHERE guid = %u", (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM guild_data WHERE playerid = %u", (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM instances WHERE creator_guid = %u", (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM mailbox WHERE player_guid = %u", (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM playercooldowns WHERE player_guid = %u", (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM playerglyphs WHERE guid = %u", (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM playeritems WHERE ownerguid=%u",(uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM playerpets WHERE ownerguid = %u", (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM playerpetspells WHERE ownerguid = %u", (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM playerskills WHERE player_guid = %u", (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM playerspells WHERE guid = %u", (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM playersummonspells WHERE ownerguid = %u", (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM playertalents WHERE guid = %u", (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM questlog WHERE player_guid = %u", (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM social_friends WHERE character_guid = %u OR friend_guid = %u", (uint32)guid, (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM social_ignores WHERE character_guid = %u OR ignore_guid = %u", (uint32)guid, (uint32)guid);
-        CharacterDatabase.Execute("DELETE FROM tutorials WHERE playerId = %u", (uint32)guid);
+        CharacterDatabase.Execute("DELETE FROM achievements WHERE player = %u", guid);
+        CharacterDatabase.Execute("DELETE FROM auctions WHERE owner = %u", guid);
+        CharacterDatabase.Execute("DELETE FROM charters WHERE leaderGuid = %u", guid);
+        CharacterDatabase.Execute("DELETE FROM gm_tickets WHERE guid = %u", guid);
+        CharacterDatabase.Execute("DELETE FROM guild_data WHERE playerid = %u", guid);
+        CharacterDatabase.Execute("DELETE FROM instances WHERE creator_guid = %u", guid);
+        CharacterDatabase.Execute("DELETE FROM mailbox WHERE player_guid = %u", guid);
+        CharacterDatabase.Execute("DELETE FROM playercooldowns WHERE player_guid = %u", guid);
+        CharacterDatabase.Execute("DELETE FROM playerglyphs WHERE guid = %u", guid);
+        CharacterDatabase.Execute("DELETE FROM playeritems WHERE ownerguid=%u",guid);
+        CharacterDatabase.Execute("DELETE FROM playerpets WHERE ownerguid = %u", guid);
+        CharacterDatabase.Execute("DELETE FROM playerpetspells WHERE ownerguid = %u", guid);
+        CharacterDatabase.Execute("DELETE FROM playerskills WHERE player_guid = %u", guid);
+        CharacterDatabase.Execute("DELETE FROM playerspells WHERE guid = %u", guid);
+        CharacterDatabase.Execute("DELETE FROM playersummonspells WHERE ownerguid = %u", guid);
+        CharacterDatabase.Execute("DELETE FROM playertalents WHERE guid = %u", guid);
+        CharacterDatabase.Execute("DELETE FROM questlog WHERE player_guid = %u", guid);
+        CharacterDatabase.Execute("DELETE FROM social_friends WHERE character_guid = %u OR friend_guid = %u", guid, guid);
+        CharacterDatabase.Execute("DELETE FROM social_ignores WHERE character_guid = %u OR ignore_guid = %u", guid, guid);
 
         /* remove player info */
-        objmgr.DeletePlayerInfo((uint32)guid);
+        objmgr.DeletePlayerInfo(guid);
         return CHAR_DELETE_SUCCESS;
     }
 
@@ -565,32 +561,19 @@ void WorldSession::FullLogin(Player* plr)
     m_MoverWoWGuid.Init(plr->GetGUID());
 
     /* world preload */
-    packetSMSG_LOGIN_VERIFY_WORLD vwpck;
-    vwpck.MapId = plr->GetMapId();
-    vwpck.O = plr->GetOrientation();
-    vwpck.X = plr->GetPositionX();
-    vwpck.Y = plr->GetPositionY();
-    vwpck.Z = plr->GetPositionZ();
-    OutPacket( SMSG_LOGIN_VERIFY_WORLD, sizeof(packetSMSG_LOGIN_VERIFY_WORLD), &vwpck );
+    WorldPacket data(SMSG_LOGIN_VERIFY_WORLD, 20);
+    data << plr->GetMapId();
+    data << plr->GetPositionX();
+    data << plr->GetPositionY();
+    data << plr->GetPositionZ();
+    data << plr->GetOrientation();
+    SendPacket(&data);
 
-    // send voicechat state - active/inactive
-    /*
-    {SERVER} Packet: (0x03C7) UNKNOWN PacketSize = 2
-    |------------------------------------------------|----------------|
-    |00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F |0123456789ABCDEF|
-    |------------------------------------------------|----------------|
-    |02 01                                           |..              |
-    -------------------------------------------------------------------
-    */
+    SendAccountDataTimes(0xEA);
 
-    WorldPacket datab(SMSG_FEATURE_SYSTEM_STATUS, 2);
-    datab << uint8(2) << uint8(0);
-    SendPacket(&datab);
-
-    datab.Initialize(SMSG_LEARNED_DANCE_MOVES, 8);
-    datab << uint32(0);
-    datab << uint32(0);
-    SendPacket(&datab);
+    data.Initialize(SMSG_FEATURE_SYSTEM_STATUS, 2);
+    data << uint8(2) << uint8(0);
+    SendPacket(&data);
 
     plr->UpdateStats();
 
@@ -653,42 +636,9 @@ void WorldSession::FullLogin(Player* plr)
 
     info->m_loggedInPlayer = plr;
 
-    // account data == UI config
-    if(sWorld.m_useAccountData)
-    {
-        WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4+1+4+8*4);
-        MD5Hash md5hash;
-        data << uint32(UNIXTIME) << uint8(1) << uint32(0xEA);
-        for (int i = 0; i < 8; i++)
-        {
-            AccountDataEntry* acct_data = GetAccountData(i);
-            if(0xEA & (1 << i))
-                data << uint32(acct_data->Time);
-            md5hash.Initialize();
-            md5hash.UpdateData((const uint8*)acct_data->data, acct_data->sz);
-            md5hash.Finalize();
-        }
-        SendPacket(&data);
-    }
-    else
-    {
-        WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4+1+4+8*4);
-        MD5Hash md5hash;
-        data << uint32(UNIXTIME) << uint8(1) << uint32(0xEA);
-        for (int i = 0; i < 8; i++)
-        {
-            if(0xEA & (1 << i))
-                data << uint32(0);
-            AccountDataEntry* acct_data = GetAccountData(i);
-            if(acct_data)
-            {
-                md5hash.Initialize();
-                md5hash.UpdateData((const uint8*)acct_data->data, acct_data->sz);
-                md5hash.Finalize();
-            }
-        }
-        SendPacket(&data);
-    }
+    data.Initialize(SMSG_LEARNED_DANCE_MOVES, 8);
+    data << uint32(0) << uint32(0);
+    SendPacket(&data);
 
     // Set TIME OF LOGIN
     CharacterDatabase.Execute("UPDATE characters SET online = 1 WHERE guid = %u" , plr->GetLowGUID());

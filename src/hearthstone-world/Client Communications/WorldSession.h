@@ -141,7 +141,8 @@ enum SessionStatus
     STATUS_AUTHED = 0,
     STATUS_LOGGEDIN,
     STATUS_IN_OR_LOGGINGOUT,
-    STATUS_IGNORED
+    STATUS_IGNORED,
+    STATUS_WHENEVER
 };
 
 struct AccountDataEntry
@@ -417,7 +418,9 @@ protected:
     void HandleQueryTimeOpcode(WorldPacket& recvPacket);
     void HandleCreatureQueryOpcode(WorldPacket& recvPacket);
     void HandleGameObjectQueryOpcode(WorldPacket& recvPacket);
-    void HandlePageTextQueryOpcode( WorldPacket & recv_data );
+    void HandlePageTextQueryOpcode(WorldPacket & recvPacket);
+    void HandleItemNameQueryOpcode(WorldPacket & recvPacket);
+    void HandleItemHotfixQueryOpcode(WorldPacket & recvPacket);
 
     /// Opcodes implemented in MovementHandler.cpp
     void HandleMoveWorldportAckOpcode( WorldPacket& recvPacket );
@@ -826,6 +829,7 @@ private:
     uint8 _updatecount;
 
     // Data
+    void SendAccountDataTimes(uint8 mask);
     void LoadAccountData();
     void SaveAccountData();
     AccountDataEntry *m_accountData[8];

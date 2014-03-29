@@ -201,7 +201,10 @@ OUTPACKET_RESULT WorldSocket::_OutPacket(uint16 opcode, size_t len, const void* 
         return OUTPACKET_RESULT_NO_ROOM_IN_BUFFER;
     if(codeLog)
     {
-        fprintf(codeLog, "Sending packet %s(%03u) with size %u\r\n", sOpcodeMgr.GetOpcodeName(opcode), opcode, len);
+/*      fprintf(codeLog, "Sending packet %s(0x%.4X) with size %u\r\n", sOpcodeMgr.GetOpcodeName(opcode), newOpcode, len);
+        WorldPacket data2(newOpcode, len);
+        data2.append((uint8*)data, len);
+        data2.hexlike(codeLog);*/
         fclose(codeLog);
     }
 
@@ -231,7 +234,7 @@ void WorldSocket::OnConnect()
     sWorld.mAcceptedConnections++;
     _latency = getMSTime();
 
-    WorldPacket data (SMSG_AUTH_CHALLENGE, 25);
+    WorldPacket data (SMSG_AUTH_CHALLENGE, 37);
     data.append(sWorld.authSeed1.AsByteArray(), 16);
     data << uint8(1);
     data << mSeed;
@@ -440,35 +443,38 @@ void WorldSocket::Authenticate()
 
     SendAuthResponse(AUTH_OK, false);
 
-    WorldPacket hotFix(true ? SMSG_HOTFIX_NOTIFY : SMSG_HOTFIX_NOTIFY_BLOP, 100); // Blop or not, client will accept the info
-    hotFix << uint32(0); // count
-    hotFix << uint32(true ? 0x919BE54E : 0x50238EC2); // This can be either, the client will ask for both if no current db2 info is found
-    uint32 count = 0;
-    for(std::map<uint32, uint8>::iterator itr = ItemPrototypeStorage.HotfixBegin(); itr != ItemPrototypeStorage.HotfixEnd(); itr++)
-    {
-        hotFix << uint32(((itr->second & 0x02) ? 0x50238EC2 : 0x919BE54E));
-        hotFix << uint32(UNIXTIME);
-        hotFix << itr->first;
-        count++;
-    }
-    hotFix.put<uint32>(0, count);
-    SendPacket(&hotFix);
-
-    WorldPacket data(SMSG_CLIENTCACHE_VERSION, 4);
-    data << uint32(13623);
-    SendPacket(&data);
-
-    data.Initialize(SMSG_TUTORIAL_FLAGS, 4 * 8);
-    for (uint32 i = 0; i < 8; ++i)
-        data << uint32(mSession->GetTutorialFlag(i));
-    SendPacket(&data);
-
     if(addonPacket)
     {
         sAddonMgr.SendAddonInfoPacket(addonPacket, pSession);
         delete addonPacket;
         addonPacket = NULL;
     }
+
+    WorldPacket data(SMSG_CLIENTCACHE_VERSION, 4);
+    data << uint32(0);
+    SendPacket(&data);
+
+    if(ItemPrototypeStorage.HotfixBegin() != ItemPrototypeStorage.HotfixEnd())
+    {
+        WorldPacket hotFix(true ? SMSG_HOTFIX_NOTIFY : SMSG_HOTFIX_NOTIFY_BLOP, 100); // Blop or not, client will accept the info
+        hotFix << uint32(0); // count
+        hotFix << uint32(true ? 0x919BE54E : 0x50238EC2); // This can be either, the client will ask for both if no current db2 info is found
+        uint32 count = 0;
+        for(std::map<uint32, uint8>::iterator itr = ItemPrototypeStorage.HotfixBegin(); itr != ItemPrototypeStorage.HotfixEnd(); itr++)
+        {
+            hotFix << uint32(((itr->second & 0x02) ? 0x50238EC2 : 0x919BE54E));
+            hotFix << uint32(UNIXTIME);
+            hotFix << itr->first;
+            count++;
+        }
+        hotFix.put<uint32>(0, count);
+        SendPacket(&hotFix);
+    }
+
+    data.Initialize(SMSG_TUTORIAL_FLAGS, 4 * 8);
+    for (uint32 i = 0; i < 8; ++i)
+        data << uint32(mSession->GetTutorialFlag(i));
+    SendPacket(&data);
 
     pSession->_latency = _latency;
     sWorld.AddSession(pSession);

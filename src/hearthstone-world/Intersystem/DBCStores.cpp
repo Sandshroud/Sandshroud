@@ -132,6 +132,9 @@ const char* ItemSetFormat = "dsuuuuuuuuuuxxxxxxxuuuuuuuuuuuuuuuuuu";
 DECLARE_CLASS_INTERNAL_DBC_MACRO(Lock, dbcLock);
 const char* LockFormat = "uuuuuuxxxuuuuuxxxuuuuuxxxxxxxxxxx";
 
+DECLARE_CLASS_INTERNAL_DBC_MACRO(LFGDungeonsEntry, dbcLFGDungeons);
+const char* lfgdungeonsFormat = "nsuuuuuiuuuxxuxux";
+
 DECLARE_CLASS_INTERNAL_DBC_MACRO(MapEntry, dbcMap);
 const char* mapentryFormat = "usuxxusussuxxxxxxxxx";
 
@@ -310,6 +313,7 @@ bool LoadDBCs(const char* datapath)
     LOAD_DB(format("%s/ItemRandomSuffix.dbc", datapath).c_str(), itemrandomsuffixFormat, dbcItemRandomSuffix);
     LOAD_DB(format("%s/ItemSet.dbc", datapath).c_str(), ItemSetFormat, dbcItemSet);
     LOAD_DB(format("%s/Lock.dbc", datapath).c_str(), LockFormat, dbcLock);
+    LOAD_DB(format("%s/LFGDungeons.dbc", datapath).c_str(), lfgdungeonsFormat, dbcLFGDungeons);
     LOAD_DB(format("%s/Map.dbc", datapath).c_str(), mapentryFormat, dbcMap);
     LOAD_DB(format("%s/GlyphProperties.dbc", datapath).c_str(), glypepropertiesFormat, dbcGlyphProperties);
     LOAD_DB(format("%s/NumTalentsAtLevel.dbc", datapath).c_str(), numtalentsFormat, dbcNumTalents);

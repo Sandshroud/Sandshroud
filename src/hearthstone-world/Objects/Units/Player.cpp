@@ -740,32 +740,37 @@ bool Player::Create(WorldPacket& data )
     AddTaximaskNode(100-m_team);
 
     // Set Starting stats for char
-    //SetFloatValue(OBJECT_FIELD_SCALE_X, ((race==RACE_TAUREN)?1.3f:1.0f));
+    SetUInt32Value(UNIT_FIELD_STAT0, info->strength );
+    SetUInt32Value(UNIT_FIELD_STAT1, info->ability );
+    SetUInt32Value(UNIT_FIELD_STAT2, info->stamina );
+    SetUInt32Value(UNIT_FIELD_STAT3, info->intellect );
+    SetUInt32Value(UNIT_FIELD_STAT4, info->spirit );
+
     SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
-    SetUInt32Value(UNIT_FIELD_HEALTH, info->health);
-    SetUInt32Value(UNIT_FIELD_POWER1, info->mana );
-    //SetUInt32Value(UNIT_FIELD_POWER2, 0 ); // this gets devided by 10
     SetUInt32Value(UNIT_FIELD_POWER3, info->focus );
     SetUInt32Value(UNIT_FIELD_POWER4, info->energy );
     SetUInt32Value(UNIT_FIELD_POWER6, 8);
-    SetUInt32Value(UNIT_FIELD_MAXPOWER7, 0 );
+    SetUInt32Value(UNIT_FIELD_POWER7, 0 );
 
-    SetUInt32Value(UNIT_FIELD_MAXHEALTH, info->health);
-    SetUInt32Value(UNIT_FIELD_MAXPOWER1, info->mana );
     SetUInt32Value(UNIT_FIELD_MAXPOWER2, info->rage );
     SetUInt32Value(UNIT_FIELD_MAXPOWER3, info->focus );
     SetUInt32Value(UNIT_FIELD_MAXPOWER4, info->energy );
-    SetUInt32Value(UNIT_FIELD_MAXPOWER7, 1000 );
     SetUInt32Value(UNIT_FIELD_MAXPOWER6, 8);
+    SetUInt32Value(UNIT_FIELD_MAXPOWER7, 1000 );
     SetUInt32Value(PLAYER_FIELD_COINAGE, sWorld.StartGold);
 
-    if( sWorld.StartLevel >= uint8(class_ != DEATHKNIGHT ? 10: 55) )
+    if(sWorld.StartLevel > 1)
     {
-        SetUInt32Value(PLAYER_CHARACTER_POINTS, sWorld.StartLevel - uint32(class_ != DEATHKNIGHT ? 9: 55));
-        SetUInt32Value(UNIT_FIELD_LEVEL,sWorld.StartLevel);
+        SetUInt32Value(PLAYER_CHARACTER_POINTS, sWorld.StartLevel-9);
+        SetUInt32Value(UNIT_FIELD_LEVEL, sWorld.StartLevel);
+        if(class_ == DEATHKNIGHT)
+        {
+            if(sWorld.StartLevel < 55)
+                SetUInt32Value(UNIT_FIELD_LEVEL, 55);
+            else SetUInt32Value(UNIT_FIELD_LEVEL, sWorld.StartLevel-55);
+        }
     }
-    else
-        SetUInt32Value(UNIT_FIELD_LEVEL,uint32(class_ != DEATHKNIGHT ? 1: 55));
+    else SetUInt32Value(UNIT_FIELD_LEVEL, uint32(class_ != DEATHKNIGHT ? 1 : 55));
 
     InitGlyphSlots();
     InitGlyphsForLevel();
@@ -775,8 +780,12 @@ bool Player::Create(WorldPacket& data )
     ApplyLevelInfo(lvl);
 
     //THIS IS NEEDED
-    SetUInt32Value(UNIT_FIELD_BASE_HEALTH, info->health);
-    SetUInt32Value(UNIT_FIELD_BASE_MANA, info->mana );
+    SetUInt32Value(UNIT_FIELD_BASE_HEALTH, lvlinfo ? lvlinfo->BaseHP : info->health);
+    SetUInt32Value(UNIT_FIELD_BASE_MANA, lvlinfo ? lvlinfo->BaseMana : info->mana );
+    SetUInt32Value(UNIT_FIELD_HEALTH, lvlinfo ? lvlinfo->HP : info->health);
+    SetUInt32Value(UNIT_FIELD_MAXHEALTH, lvlinfo ? lvlinfo->HP : info->health);
+    SetUInt32Value(UNIT_FIELD_POWER1, lvlinfo ? lvlinfo->Mana : info->mana );
+    SetUInt32Value(UNIT_FIELD_MAXPOWER1, lvlinfo ? lvlinfo->Mana : info->mana );
     SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, info->factiontemplate );
 
     SetUInt32Value(UNIT_FIELD_BYTES_0, ( ( race ) | ( class_ << 8 ) | ( gender << 16 ) | ( powertype << 24 ) ) );
@@ -784,11 +793,7 @@ bool Player::Create(WorldPacket& data )
         SetShapeShift(FORM_BATTLESTANCE);
 
     SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
-    SetUInt32Value(UNIT_FIELD_STAT0, info->strength );
-    SetUInt32Value(UNIT_FIELD_STAT1, info->ability );
-    SetUInt32Value(UNIT_FIELD_STAT2, info->stamina );
-    SetUInt32Value(UNIT_FIELD_STAT3, info->intellect );
-    SetUInt32Value(UNIT_FIELD_STAT4, info->spirit );
+    SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 0.388999998569489f );
     SetFloatValue(UNIT_FIELD_COMBATREACH, 1.5f );
     if( race != RACE_BLOODELF )
@@ -802,24 +807,23 @@ bool Player::Create(WorldPacket& data )
         SetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID, info->displayId - gender );
     }
     EventModelChange();
-    //SetFloatValue(UNIT_FIELD_MINDAMAGE, info->mindmg );
-    //SetFloatValue(UNIT_FIELD_MAXDAMAGE, info->maxdmg );
-    SetUInt32Value(UNIT_FIELD_ATTACK_POWER, info->attackpower );
-    SetUInt32Value(PLAYER_BYTES, ((skin) | (face << 8) | (hairStyle << 16) | (hairColor << 24)));
-    //PLAYER_BYTES_2                               GM ON/OFF     BANKBAGSLOTS   RESTEDSTATE
-    SetUInt32Value(PLAYER_BYTES_2, (facialHair /*| (0xEE << 8)*/  | (0x02 << 24)));//no bank slot by default!
 
-    //PLAYER_BYTES_3                           DRUNKENSTATE              PVPRANK
-    SetUInt32Value(PLAYER_BYTES_3, ((gender) | (0x00 << 8) | (0x00 << 16) | (GetPVPRank() << 24)));
-    SetUInt32Value(PLAYER_NEXT_LEVEL_XP, 400);
-    SetUInt32Value(PLAYER_FIELD_BYTES, 0x08 );
-    SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
+    SetUInt32Value(UNIT_FIELD_ATTACK_POWER, info->attackpower );
+    SetByte(PLAYER_BYTES, 0, skin);
+    SetByte(PLAYER_BYTES, 1, face);
+    SetByte(PLAYER_BYTES, 2, hairStyle);
+    SetByte(PLAYER_BYTES, 3, hairColor);
+    SetByte(PLAYER_BYTES_2, 0, facialHair);
+    SetByte(PLAYER_BYTES_2, 3, 0x02); // No Recruit a friend flag
+    SetByte(PLAYER_BYTES_3, 0, gender);
+
+    SetUInt32Value(PLAYER_NEXT_LEVEL_XP, lvlinfo ? lvlinfo->XPToNextLevel : 400);
     SetUInt32Value(PLAYER_FIELD_MAX_LEVEL, sWorld.GetMaxLevel(TO_PLAYER(this)));
 
-    for(uint32 x=0;x<7;x++)
-        SetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+x, 1.00);
-
-    SetUInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, 0xEEEEEEEE);
+    for(uint32 x = 0; x < 7; x++)
+        SetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+x, 1.f);
+    SetFloatValue(PLAYER_FIELD_MOD_HEALING_PCT, 1.f);
+    SetUInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, uint32(-1));
 
     m_StableSlotCount = 0;
 
@@ -3195,7 +3199,7 @@ void Player::LoadFromDBProc(QueryResultVector & results)
 
     // set level
     uint8 plvl = get_next_field.GetUInt32();
-    m_uint32Values[UNIT_FIELD_LEVEL] = plvl;
+    SetUInt32Value(UNIT_FIELD_LEVEL, plvl);
 
     // level dependant taxi node
     SetTaximaskNode( 213, plvl >= 68 ? false : true );  //Add 213 (Shattered Sun Staging Area) if lvl >=68
@@ -3207,7 +3211,7 @@ void Player::LoadFromDBProc(QueryResultVector & results)
 
     m_XPoff = get_next_field.GetBool();
     // set xp
-    m_uint32Values[PLAYER_XP] = get_next_field.GetUInt32();
+    SetUInt32Value(PLAYER_XP, get_next_field.GetUInt32());
 
     // Process exploration data.
     uint32 Counter = 0;
@@ -3334,8 +3338,8 @@ void Player::LoadFromDBProc(QueryResultVector & results)
     }
 
     // set the rest of the shit
-    m_uint32Values[PLAYER_FIELD_WATCHED_FACTION_INDEX]  = get_next_field.GetUInt32();
-    m_uint32Values[ PLAYER_CHOSEN_TITLE ]               = get_next_field.GetUInt32();
+    SetUInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, get_next_field.GetUInt32());
+    SetUInt32Value(PLAYER_CHOSEN_TITLE, get_next_field.GetUInt32());
     SetUInt64Value( PLAYER__FIELD_KNOWN_TITLES, get_next_field.GetUInt64() );
     SetUInt64Value( PLAYER__FIELD_KNOWN_TITLES1, get_next_field.GetUInt64() );
     SetUInt64Value( PLAYER__FIELD_KNOWN_TITLES2, get_next_field.GetUInt64() );
@@ -3347,7 +3351,7 @@ void Player::LoadFromDBProc(QueryResultVector & results)
     uint8 pvprank = get_next_field.GetUInt8();
     SetUInt32Value( PLAYER_BYTES, get_next_field.GetUInt32() );
     SetUInt32Value( PLAYER_BYTES_2, get_next_field.GetUInt32() );
-    SetUInt32Value( PLAYER_BYTES_3, getGender() | ( pvprank << 24 ) );
+    SetUInt32Value( PLAYER_BYTES_3, getGender());
     SetUInt32Value( PLAYER_FLAGS, get_next_field.GetUInt32() );
     SetUInt32Value( PLAYER_FIELD_BYTES, get_next_field.GetUInt32() );
 
@@ -3364,9 +3368,8 @@ void Player::LoadFromDBProc(QueryResultVector & results)
     // Calculate the base stats now they're all loaded
     for(uint32 i = 0; i < 5; i++)
         CalcStat(i);
-
-    for(uint32 x = PLAYER_FIELD_MOD_DAMAGE_DONE_PCT; x < PLAYER_FIELD_MOD_HEALING_DONE_POS; ++x)
-        SetFloatValue(x, 1.0f);
+    for(uint32 x = 0; x < 7; x++)
+        SetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+x, 1.f);
 
     // Normal processing...
 //  UpdateMaxSkills();
@@ -3625,7 +3628,7 @@ void Player::LoadFromDBProc(QueryResultVector & results)
     while(true)
     {
         end = strchr(start,',');
-        if(!end)
+        if(!end || m_finishedDailyQuests.size() == 25)
             break;
         *end=0;
         SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1 + uint32(m_finishedDailyQuests.size()), atol(start));
@@ -3648,9 +3651,6 @@ void Player::LoadFromDBProc(QueryResultVector & results)
     iRaidType = get_next_field.GetUInt32();
 
     HonorHandler::RecalculateHonorFields(this);
-
-    for(uint8 x = 0; x < 5; x++ )
-        BaseStats[x]=GetUInt32Value(UNIT_FIELD_STAT0+x);
 
     _setFaction();
     InitGlyphSlots();
@@ -3757,7 +3757,7 @@ void Player::LoadFromDBProc(QueryResultVector & results)
     uint32 maxLevel = sWorld.GetMaxLevel(this);
     SetUInt32Value(PLAYER_FIELD_MAX_LEVEL, maxLevel);
 
-    SetFlag(UNIT_FIELD_FLAGS_2,UNIT_FLAG2_REGENERATE_POWER); // enables automatic power regen
+    SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_REGENERATE_POWER); // enables automatic power regen
     m_session->FullLogin(this);
     if(m_session)
         m_session->m_loggingInPlayer = NULLPLR;
@@ -4107,9 +4107,9 @@ void Player::OnPushToWorld()
     GetMovementInfo()->SetTransportLock(false);
 
     // delay the unlock movement packet
-    WorldPacket * data = new WorldPacket(SMSG_TIME_SYNC_REQ, 4);
-    *data << uint32(0);
-    SendDelayedPacket(data);
+    WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
+    data << uint32(0);
+    SendPacket(&data);
     sWorld.mInWorldPlayerCount++;
 
     // Login spell
@@ -4121,11 +4121,10 @@ void Player::OnPushToWorld()
     LoginPvPSetup();
 
     // Send our auras
-    data = new WorldPacket(SMSG_AURA_UPDATE_ALL, 28 * MAX_AURAS);
-    *data << GetNewGUID();
-    if(m_AuraInterface.BuildAuraUpdateAllPacket(data))
-        SendPacket(data);
-    else delete data;
+    data.Initialize(SMSG_AURA_UPDATE_ALL);
+    data << GetNewGUID();
+    m_AuraInterface.BuildAuraUpdateAllPacket(&data);
+    SendPacket(&data);
 
     if(m_FirstLogin)
     {
@@ -7147,6 +7146,11 @@ void Player::SendInitialLogonPackets()
     pr.Profinciency = weapon_proficiency;
     m_session->OutPacket( SMSG_SET_PROFICIENCY, sizeof(packetSMSG_SET_PROFICICENCY), &pr );
 
+    // SMSG_INSTANCE_DIFFICULTY
+    data.Initialize(SMSG_INSTANCE_DIFFICULTY, 4+4);
+    data << uint32(0);
+    GetSession()->SendPacket(&data);
+
     //Initial Spells
     smsg_InitialSpells();
 
@@ -7160,23 +7164,22 @@ void Player::SendInitialLogonPackets()
     //Factions
     smsg_InitialFactions();
 
+    data.Initialize(SMSG_ALL_ACHIEVEMENT_DATA, 2000);
+    m_achievementInterface->BuildAllAchievementDataPacket(&data);
+    GetSession()->SendPacket(&data);
+
     // Sets
     SendEquipmentSets();
 
-    /* Some minor documentation about the time field
-    MOVE THIS DOCUMENTATION TO THE WIKI
-    minute's    = 0x0000003F                00000000000000000000000000111111
-    hour's      = 0x000007C0                00000000000000000000011111000000
-    weekdays    = 0x00003800                00000000000000000011100000000000
-    days        = 0x000FC000                00000000000011111100000000000000
-    months      = 0x00F00000                00000000111100000000000000000000
-    years       = 0x1F000000                00011111000000000000000000000000
-    unk         = 0xE0000000                11100000000000000000000000000000
-    */
-
+    // Login speed
     data.Initialize(SMSG_LOGIN_SETTIMESPEED);
-    data << uint32(secsToTimeBitFields(sWorld.GetGameTime()));
+    data << uint32(secsToTimeBitFields(UNIXTIME));
     data << float(0.0166666669777748f);
+    data << uint32(0);
+    GetSession()->SendPacket( &data );
+
+    // Currencies
+    data.Initialize(SMSG_INIT_CURRENCY);
     data << uint32(0);
     GetSession()->SendPacket( &data );
 
@@ -9697,7 +9700,6 @@ void Player::CompleteLoading()
     }
 
     ApplySpec(m_talentActiveSpec, true);
-
     if(!isDead())//only add aura's to the living (death aura set elsewhere)
     {
         std::list<LoginAura>::iterator i,i2;
@@ -9713,8 +9715,7 @@ void Player::CompleteLoading()
             if ( sp->c_is_flags & SPELL_FLAG_IS_EXPIREING_WITH_PET )
                 continue;
 
-            Aura* a = NULLAURA;
-            a = new Aura(sp, (*i2).dur, TO_OBJECT(this),TO_UNIT(this));
+            Aura* a = new Aura(sp, (*i2).dur, TO_OBJECT(this),TO_UNIT(this));
             for(uint32 x = 0; x < 3; x++)
             {
                 if(sp->Effect[x] == SPELL_EFFECT_APPLY_AURA)
@@ -10730,107 +10731,13 @@ void Player::_UpdateSkillFields()
         else
             SetUInt32Value(f++, itr->first);
 
-        SetUInt32Value(f++, (itr->second.MaximumValue << 16) | itr->second.CurrentValue);
+        SetUInt16Value(f, 0, itr->second.CurrentValue);
+        SetUInt16Value(f, 1, itr->second.MaximumValue);
+        f++;
+
         SetUInt32Value(f++, itr->second.BonusValue);
 
         GetAchievementInterface()->HandleAchievementCriteriaReachSkillLevel( itr->second.Skill->id, itr->second.CurrentValue );
-
-        switch(itr->second.Skill->id)
-        {
-            case SKILL_HERBALISM:
-            {
-                uint32 skill_base = getRace() == RACE_TAUREN ? 90 : 75;
-                if( itr->second.CurrentValue >= skill_base + 375 && !HasSpell( 55503 ) )
-                {
-                    removeSpell(55502);//can't use name_hash
-                    addSpell( 55503 );                                              // Lifeblood Rank 6
-                }
-                else if( itr->second.CurrentValue >= skill_base + 300 && !HasSpell( 55502 ) )
-                {
-                    removeSpell(55501);
-                    addSpell( 55502 );                                              // Lifeblood Rank 5
-                }
-                else if( itr->second.CurrentValue >= skill_base + 225 && !HasSpell( 55501 ) )
-                {
-                    removeSpell(55500);
-                    addSpell( 55501 );                                              // Lifeblood Rank 4
-                }
-                else if( itr->second.CurrentValue >= skill_base + 150 && !HasSpell( 55500 ) )
-                {
-                    removeSpell(55480);
-                    addSpell( 55500 );                                              // Lifeblood Rank 3
-                }
-                else if( itr->second.CurrentValue >= skill_base + 75 && !HasSpell( 55480 ) )
-                {
-                    removeSpell(55428);
-                    addSpell( 55480 );                                              // Lifeblood Rank 2
-                }
-            }break;
-            case SKILL_SKINNING:
-            {
-                if( itr->second.CurrentValue >= 450 && !HasSpell( 53666 ) )
-                {
-                    removeSpell(53665);//can't use namehash here either
-                    addSpell( 53666 );                                              // Master of Anatomy Rank 6
-                }
-                else if( itr->second.CurrentValue >= 375 && !HasSpell( 53665 ) )
-                {
-                    removeSpell(53664);
-                    addSpell( 53665 );                                              // Master of Anatomy Rank 5
-                }
-                else if( itr->second.CurrentValue >= 300 && !HasSpell( 53664 ) )
-                {
-                    removeSpell(53663);
-                    addSpell( 53664 );                                              // Master of Anatomy Rank 4
-                }
-                else if( itr->second.CurrentValue >= 225 && !HasSpell( 53663 ) )
-                {
-                    removeSpell(53662);
-                    addSpell( 53663 );                                              // Master of Anatomy Rank 3
-                }
-                else if( itr->second.CurrentValue >= 150 && !HasSpell( 53662 ) )
-                {
-                    removeSpell(53125);
-                    addSpell( 53662 );                                              // Master of Anatomy Rank 2
-                }
-                else if( itr->second.CurrentValue >= 75 && !HasSpell( 53125 ) )
-                {
-                    addSpell( 53125 );                                              // Master of Anatomy Rank 1
-                }
-            }break;
-            case SKILL_MINING:
-            {
-                if( itr->second.CurrentValue >= 450 && !HasSpell( 53040 ) )
-                {
-                    removeSpell(53124);//can't use namehash here either
-                    addSpell( 53040 );                                              // Toughness Rank 6
-                }
-                else if( itr->second.CurrentValue >= 375 && !HasSpell( 53124 ) )
-                {
-                    removeSpell(53123);
-                    addSpell( 53124 );                                              // Toughness Rank 5
-                }
-                else if( itr->second.CurrentValue >= 300 && !HasSpell( 53123 ) )
-                {
-                    removeSpell(53122);
-                    addSpell( 53123 );                                              // Toughness Rank 4
-                }
-                else if( itr->second.CurrentValue >= 225 && !HasSpell( 53122 ) )
-                {
-                    removeSpell(53121);
-                    addSpell( 53122 );                                              // Toughness Rank 3
-                }
-                else if( itr->second.CurrentValue >= 150 && !HasSpell( 53121 ) )
-                {
-                    removeSpell(53120);
-                    addSpell( 53121 );                                              // Toughness Rank 2
-                }
-                else if( itr->second.CurrentValue >= 75 && !HasSpell( 53120 ) )
-                {
-                    addSpell( 53120 );                                              // Toughness Rank 1
-                }
-            }break;
-        }
         ++itr;
     }
 

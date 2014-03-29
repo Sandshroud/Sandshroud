@@ -165,7 +165,7 @@ typedef std::map<uint32, AchievementCriteriaSet*>                   AchievementC
 class SERVER_DECL AchievementInterface
 {
     Player* m_player;
-    map<uint32,AchievementData*> m_achivementDataMap;
+    map<uint32, AchievementData*> m_achivementDataMap;
 private:
     void GiveRewardsForAchievement(AchievementEntry * ae);
     void EventAchievementEarned(AchievementData * pData);
@@ -187,6 +187,7 @@ public:
     void LoadFromDB( QueryResult * pResult );
     void SaveToDB(QueryBuffer * buffer);
 
+    void BuildAllAchievementDataPacket(WorldPacket *data);
     WorldPacket* BuildAchievementEarned(AchievementData * pData);
     WorldPacket* BuildAchievementData(bool forInspect = false);
 

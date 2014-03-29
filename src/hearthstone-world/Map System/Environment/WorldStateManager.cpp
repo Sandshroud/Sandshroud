@@ -130,13 +130,13 @@ void WorldStateManager::SendWorldStates(Player* pPlayer)
 void WorldStateManager::ClearWorldStates(Player* pPlayer)
 {
     // clears the clients view of world states for this map
-    WorldPacket data(SMSG_INIT_WORLD_STATES, 20);
+    WorldPacket data(SMSG_INIT_WORLD_STATES, 14);
 
     // map=0
     // data1=0
     // data2=0
     // valcount=0
-    data << uint32(m_mapMgr ? m_mapMgr->GetMapId() : 0) << uint16(0) << uint16(0) << uint16(0);
+    data << uint32(m_mapMgr ? m_mapMgr->GetMapId() : 0) << uint32(0) << uint32(0) << uint16(0);
 
     // send
     pPlayer->GetSession()->SendPacket(&data);

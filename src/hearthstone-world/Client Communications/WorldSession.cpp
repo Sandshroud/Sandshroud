@@ -530,6 +530,10 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_CREATURE_QUERY].handler                        = &WorldSession::HandleCreatureQueryOpcode;
     WorldPacketHandlers[CMSG_GAMEOBJECT_QUERY].handler                      = &WorldSession::HandleGameObjectQueryOpcode;
     WorldPacketHandlers[CMSG_PAGE_TEXT_QUERY].handler                       = &WorldSession::HandlePageTextQueryOpcode;
+    WorldPacketHandlers[CMSG_ITEM_NAME_QUERY].handler                       = &WorldSession::HandleItemNameQueryOpcode;
+
+    WorldPacketHandlers[CMSG_REQUEST_HOTFIX].handler                        = &WorldSession::HandleItemHotfixQueryOpcode;
+    WorldPacketHandlers[CMSG_REQUEST_HOTFIX].status                         = STATUS_WHENEVER;
 
     // Movement
     WorldPacketHandlers[CMSG_MOVE_FALL_RESET].handler                       = &WorldSession::HandleMoveFallResetOpcode;
@@ -1141,6 +1145,19 @@ void WorldSession::HandleTimeSyncResp( WorldPacket & recv_data )
     recv_data >> counter >> time_;
 
     // This is just a response, no need to do anything... Yet.
+}
+
+void WorldSession::SendAccountDataTimes(uint8 mask)
+{
+    WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4+1+4+8*4);
+    data << uint32(UNIXTIME) << uint8(1) << uint32(mask);
+    for (int i = 0; i < 8; i++)
+    {
+        AccountDataEntry* acct_data = GetAccountData(i);
+        if(mask & (1 << i))
+            data << uint32(acct_data ? acct_data->Time : 0);
+    }
+    SendPacket(&data);
 }
 
 void WorldSession::LoadAccountData()
