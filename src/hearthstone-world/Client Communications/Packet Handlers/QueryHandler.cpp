@@ -211,6 +211,186 @@ void WorldSession::HandlePageTextQueryOpcode( WorldPacket & recv_data )
     }
 }
 
+//////////////////////////////////////////////////////////////
+/// This function handles CMSG_ITEM_NAME_QUERY:
+//////////////////////////////////////////////////////////////
+void WorldSession::HandleItemNameQueryOpcode(WorldPacket & recvPacket)
+{
+    CHECK_PACKET_SIZE(recvPacket, 4);
+    uint32 itemid;
+    recvPacket >> itemid;
+
+    WorldPacket reply(SMSG_ITEM_NAME_QUERY_RESPONSE, 10);
+    reply << itemid;
+    ItemPrototype *proto=ItemPrototypeStorage.LookupEntry(itemid);
+    if(!proto)
+        reply << "Unknown Item";
+    else
+    {
+        reply << proto->Name1;
+        reply << uint32(proto->InventoryType);
+    }
+    SendPacket(&reply);
+}
+
+void WorldSession::HandleItemHotfixQueryOpcode(WorldPacket & recvPacket)
+{
+    uint32 count, type;
+    recvPacket >> count >> type;
+
+    sLog.Error("WorldSession", "Handling item hotfix query");
+    if (type != 0x50238EC2 && type != 0x919BE54E)
+    {
+        sLog.outString("Client tried to request update item data from non-handled update type");
+        return;
+    }
+
+    for (uint32 i = 0; i < count; ++i)
+    {
+        uint32 item;
+        recvPacket >> item;
+        recvPacket.read_skip(8);
+
+        WorldPacket data2(SMSG_DB_REPLY, 700);
+        data2 << uint32(type); // Needed?
+        data2 << uint32(item);
+        ItemPrototype* proto = ItemPrototypeStorage.LookupEntry(item);
+        if (!proto) // Item does not exist
+        {
+            data2 << uint32(4); // sizeof(uint32)
+            data2 << uint32(item | 0x80000000);
+            SendPacket(&data2);
+            continue;
+        }
+        else
+        {
+            ByteBuffer data;
+            data << uint32(item);
+            if (type == 0x50238EC2) // Update the base item shit
+            {
+                data << uint32(proto->Class);
+                data << uint32(proto->SubClass);
+                data << int32(proto->subClassSound);
+                data << uint32(proto->LockMaterial);
+                data << uint32(proto->DisplayInfoID);
+                data << uint32(proto->InventoryType);
+                data << uint32(proto->SheathID);
+            }
+            else if (type == 0x919BE54E) // Send more advanced shit
+            {
+                data << uint32(proto->Quality);
+                data << uint32(proto->Flags);
+                data << uint32(proto->FlagsExtra);
+                data << int32(proto->BuyPrice);
+                data << uint32(proto->SellPrice);
+                data << uint32(proto->InventoryType);
+                data << int32(proto->AllowableClass);
+                data << int32(proto->AllowableRace);
+                data << uint32(proto->ItemLevel);
+                data << uint32(proto->RequiredLevel);
+                data << uint32(proto->RequiredSkill);
+                data << uint32(proto->RequiredSkillRank);
+                data << uint32(proto->RequiredSpell);
+                data << uint32(proto->RequiredPlayerRank1);
+                data << uint32(proto->RequiredPlayerRank2);
+                data << uint32(proto->RequiredFaction);
+                data << uint32(proto->RequiredFactionStanding);
+                data << int32(proto->Unique);
+                data << int32(proto->MaxCount);
+                data << uint32(proto->ContainerSlots);
+
+                for (uint32 x = 0; x < 10; ++x)
+                    data << uint32(proto->Stats[x].Type);
+
+                for (uint32 x = 0; x < 10; ++x)
+                    data << int32(proto->Stats[x].Value);
+
+                // Till here we are going good, now we start with the unk shit
+                for (uint32 x = 0; x < 20; ++x) // 20 unk fields
+                    data << uint32(0);
+
+                data << uint32(0);
+                data << uint32(proto->DamageType);
+                data << uint32(proto->Delay);
+                data << float(proto->Range);
+
+                for (uint32 x = 0; x < 5; ++x)
+                    data << int32(proto->Spells[x].Id);
+
+                for (uint32 x = 0; x < 5; ++x)
+                    data << uint32(proto->Spells[x].Trigger);
+
+                for (uint32 x = 0; x < 5; ++x)
+                    data << int32(proto->Spells[x].Charges);
+
+                for (uint32 x = 0; x < 5; ++x)
+                    data << int32(proto->Spells[x].Cooldown);
+
+                for (uint32 x = 0; x < 5; ++x)
+                    data << uint32(proto->Spells[x].Category);
+
+                for (uint32 x = 0; x < 5; ++x)
+                    data << int32(proto->Spells[x].CategoryCooldown);
+
+                data << uint32(proto->Bonding);
+
+                std::string name = proto->Name1; // Item name
+                data << uint16(name.length());
+                if (name.length())
+                    data << name;
+
+                for (uint32 i = 0; i < 3; ++i) // Other 3 names
+                    data << uint16(0);
+
+                std::string desc = proto->Description;
+                data << uint16(desc.length());
+                if (desc.length())
+                    data << desc;
+
+                data << uint32(proto->PageId);
+                data << uint32(proto->PageLanguage);
+                data << uint32(proto->PageMaterial);
+                data << uint32(proto->QuestId);
+                data << uint32(proto->LockId);
+                data << int32(proto->LockMaterial);
+                data << uint32(proto->SheathID);
+                data << int32(proto->RandomPropId);
+                data << int32(proto->RandomSuffixId);
+                data << uint32(proto->ItemSet);
+                data << uint32(proto->MaxDurability);
+
+                data << uint32(proto->ZoneNameID);
+                data << uint32(proto->MapID);
+                data << uint32(proto->BagFamily);
+                data << uint32(0);
+
+                for (uint32 x = 0; x < 3; ++x)
+                    data << uint32(proto->ItemSocket[x]);
+
+                for (uint32 x = 0; x < 3; ++x)
+                    data << uint32(proto->ItemContent[x]);
+
+                data << uint32(proto->SocketBonus);
+                data << uint32(proto->GemProperties);
+                data << float(proto->ArmorDamageModifier);
+                data << int32(proto->Duration);
+                data << uint32(proto->ItemLimitCategory);
+                data << uint32(proto->HolidayId);
+
+                data << float(proto->StatScalingFactor); // StatScalingFactor
+                data << uint32(0);
+                data << uint32(0);
+            }
+
+            data2 << uint32(data.size());
+            data2.append(data);
+        }
+
+        data2 << uint32(type);
+        SendPacket(&data2);
+    }
+}
+
 void WorldSession::HandleInrangeQuestgiverQuery(WorldPacket & recv_data)
 {
     CHECK_INWORLD_RETURN();

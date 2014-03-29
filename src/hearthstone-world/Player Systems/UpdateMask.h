@@ -33,7 +33,6 @@ public:
     {
         ASSERT(index < mCount);
         m_mask[AByte(index)] &= ~uint32(uint32(1) << ABit(index));
-        ( (uint8 *)m_mask )[ index >> 3 ] &= (0xff ^ (1 <<  ( index & 0x7 ) ) );
     }
 
     bool GetBit( const uint32 index )

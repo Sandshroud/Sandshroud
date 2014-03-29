@@ -467,6 +467,30 @@ struct Lock
     uint32 minlockskill[5]; // min skill in lockpiking to unlock.
 };
 
+struct LFGDungeonsEntry
+{
+    uint32 Id;
+    char *dungeonName;
+    uint32 minLevel;
+    uint32 maxLevel;
+    uint32 recomLevel;
+    uint32 recomMinLevel;
+    uint32 recomMaxLevel;
+    int32 mapId;
+    uint32 mapDifficulty;
+    uint32 LFGFlags;
+    uint32 LFGType;
+//  uint32 unk;
+//  char *iconName;
+    uint32 reqExpansion;
+//  uint32 unk2;
+    uint32 groupType;
+//  char *description;
+
+    // Get the dungeon entry
+    uint32 GetUniqueID() const { return Id + (LFGType << 24); }
+};
+
 struct MapEntry
 {
     uint32 id;
@@ -1380,6 +1404,7 @@ DBC_STORAGE_EXTERN_DBC_MACRO(gtFloat, dbcManaRegenBase);
 DBC_STORAGE_EXTERN_DBC_MACRO(gtFloat, dbcHPRegen);
 DBC_STORAGE_EXTERN_DBC_MACRO(gtFloat, dbcCombatRatingScaling);
 DBC_STORAGE_EXTERN_DBC_MACRO(Lock, dbcLock);
+DBC_STORAGE_EXTERN_DBC_MACRO(LFGDungeonsEntry, dbcLFGDungeons);
 DBC_STORAGE_EXTERN_DBC_MACRO(MapEntry, dbcMap);
 DBC_STORAGE_EXTERN_DBC_MACRO(GlyphProperties, dbcGlyphProperties);
 DBC_STORAGE_EXTERN_DBC_MACRO(NumTalentsAtLevelEntry, dbcNumTalents);

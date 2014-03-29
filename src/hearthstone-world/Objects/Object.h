@@ -70,11 +70,12 @@ enum OBJECT_UPDATE_TYPE {
     //  1 byte - Object Type (*)
     //  Goto Position Update
     //  Goto Update Block
-    UPDATETYPE_CREATE_YOURSELF = 2, // looks like 2 & 3 do the same thing
-    //  4 bytes - Count
-    //  Loop Count Times:
+    UPDATETYPE_CREATE_YOURSELF = 2,
     //  8 bytes - GUID
-    UPDATETYPE_OUT_OF_RANGE_OBJECTS = 3 // <- this is correct, not sure about 4
+    //  1 byte - Object Type (*)
+    //  Goto Position Update
+    //  Goto Update Block
+    UPDATETYPE_OUT_OF_RANGE_OBJECTS = 3
     //  4 bytes - Count
     //  Loop Count Times:
     //  8 bytes - GUID

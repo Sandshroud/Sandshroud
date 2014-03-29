@@ -1745,7 +1745,7 @@ void ObjectMgr::GenerateLevelUpInfo()
                 continue;   // Class not valid for this race.
 
             // Generate each level's information
-            lvl0 = new LevelInfo;
+            lvl0 = new LevelInfo();
             lvl0->HP = PCI->health;
             lvl0->Mana = PCI->mana;
             lvl0->Stat[0] = PCI->strength;
@@ -1894,13 +1894,8 @@ void ObjectMgr::GenerateLevelUpInfo()
                 lMap->insert( LevelMap::value_type( Level, lvl ) );
             }
 
-            // Now that our level map is full, let's create the class/race pair
-            pair<uint32, uint32> p;
-            p.first = Race;
-            p.second = Class;
-
             // Insert back into the main map.
-            mLevelInfo.insert( LevelInfoMap::value_type( p, lMap ) );
+            mLevelInfo.insert(make_pair(make_pair(Race, Class), lMap));
         }
     }
     sLog.Notice("ObjectMgr", "%u level up information generated.", mLevelInfo.size());

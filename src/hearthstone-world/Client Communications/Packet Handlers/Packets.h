@@ -140,15 +140,6 @@ struct packetSMSG_ENVIRONMENTAL_DAMAGE
     uint32  Damage;
 };
 
-struct packetSMSG_LOGIN_VERIFY_WORLD
-{
-    uint32 MapId;
-    float  X;
-    float  Y;
-    float  Z;
-    float  O;
-};
-
 struct packetSMSG_WORLD_STATE_UPDATE
 {
     uint32 State;

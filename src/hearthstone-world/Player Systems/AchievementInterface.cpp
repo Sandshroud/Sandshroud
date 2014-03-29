@@ -255,6 +255,22 @@ void AchievementInterface::EventAchievementEarned(AchievementData * pData)
     }
 }
 
+void AchievementInterface::BuildAllAchievementDataPacket(WorldPacket *data)
+{
+    // Achievement count
+    *data << uint32(0);
+    // Criteria count
+    *data << uint32(0);
+
+//  for (CompletedAchievementMap::const_iterator iter = m_achivementDataMap.begin(); iter != m_achivementDataMap.end(); ++iter)
+//      *data << uint32();
+//  for (CompletedAchievementMap::const_iterator iter = m_achivementDataMap.begin(); iter != m_achivementDataMap.end(); ++iter)
+//      *data << uint32(secsToTimeBitFields(iter->second.date));
+
+    // Criteria mask
+    *data << uint8(0);
+}
+
 WorldPacket* AchievementInterface::BuildAchievementEarned(AchievementData * pData)
 {
     pData->m_isDirty = true;
