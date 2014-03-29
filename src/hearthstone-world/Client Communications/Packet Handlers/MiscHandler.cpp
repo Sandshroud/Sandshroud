@@ -891,61 +891,41 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleUpdateAccountData(WorldPacket& recv_data)
 {
-    //sLog.outDebug("WORLD: Received CMSG_UPDATE_ACCOUNT_DATA");
-    if(!sWorld.m_useAccountData)
-    {
-        SKIP_READ_PACKET(recv_data); // Spam cleanup.
-        return;
-    }
-
     uint32 uiID;
     recv_data >> uiID;
-
     if(uiID > 8)
     {
-        // Shit..
+        SKIP_READ_PACKET(recv_data);
         sLog.outString("WARNING: Accountdata > 8 (%d) was requested to be updated by %s of account %d!", uiID, GetPlayer()->GetName(), GetAccountId());
         return;
     }
 
-    uint32 _time;
-    recv_data >> _time;
-
-    uint32 uiDecompressedSize;
-    recv_data >> uiDecompressedSize;
-    uLongf uid = uiDecompressedSize;
+    uint32 _time, uiDecompressedSize;
+    recv_data >> _time >> uiDecompressedSize;
 
     // client wants to 'erase' current entries
-    if(uiDecompressedSize == 0)
+    if(uiDecompressedSize == 0 || uiDecompressedSize >= 0xFFFF)
     {
         SKIP_READ_PACKET(recv_data);
         SetAccountData(uiID, NULL, false,0);
+
+        WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA_COMPLETE, 4+4);
+        data << uint32(uiID) << uint32(0);
+        SendPacket(&data);
         return;
     }
 
-    if(uiDecompressedSize >= 65535)
-    {
-        SKIP_READ_PACKET(recv_data); // Spam cleanup.
-        // BLOB fields can't handle any more than this.
-        if(uiDecompressedSize > 100000)
-            Disconnect();
-        return;
-    }
-
+    uLongf uid = uiDecompressedSize;
     size_t ReceivedPackedSize = recv_data.size() - 12;
-    char* data = new char[uiDecompressedSize+1];
-    memset(data, 0, uiDecompressedSize+1);  /* fix umr here */
-
+    char* acctdata = new char[uiDecompressedSize+1];
+    memset(acctdata, 0, uiDecompressedSize+1);
     if(uiDecompressedSize > ReceivedPackedSize) // if packed is compressed
     {
-        int32 ZlibResult;
-
-        ZlibResult = uncompress((uint8*)data, &uid, recv_data.contents() + 12, (uLong)ReceivedPackedSize);
-
+        int32 ZlibResult = uncompress((uint8*)acctdata, &uid, recv_data.contents() + 12, (uLong)ReceivedPackedSize);
         switch (ZlibResult)
         {
         case Z_OK:                //0 no error decompression is OK
-            SetAccountData(uiID, data, false, uiDecompressedSize);
+            SetAccountData(uiID, acctdata, false, uiDecompressedSize);
             sLog.outDebug("WORLD: Successfully decompressed account data %d for %s, and updated storage array.", uiID, GetPlayer() ? GetPlayer()->GetName() : GetAccountNameS());
             break;
 
@@ -956,36 +936,32 @@ void WorldSession::HandleUpdateAccountData(WorldPacket& recv_data)
         case Z_BUF_ERROR:           //-5
         case Z_VERSION_ERROR:       //-6
         {
-            delete [] data;
+            delete [] acctdata;
             sLog.outString("WORLD WARNING: Decompression of account data %d for %s FAILED.", uiID, GetPlayer() ? GetPlayer()->GetName() : GetAccountNameS());
             break;
         }
 
         default:
-            delete [] data;
+            delete [] acctdata;
             sLog.outString("WORLD WARNING: Decompression gave a unknown error: %x, of account data %d for %s FAILED.", ZlibResult, uiID, GetPlayer() ? GetPlayer()->GetName() : GetAccountNameS());
             break;
         }
     }
     else
     {
-        memcpy(data, recv_data.contents() + 12, uiDecompressedSize);
-        SetAccountData(uiID, data, false, uiDecompressedSize);
+        memcpy(acctdata, recv_data.contents() + 12, uiDecompressedSize);
+        SetAccountData(uiID, acctdata, false, uiDecompressedSize);
     }SKIP_READ_PACKET(recv_data); // Spam cleanup for packet size checker... Because who cares about this dataz
+
+    WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA_COMPLETE, 4+4);
+    data << uint32(uiID) << uint32(0);
+    SendPacket(&data);
 }
 
 void WorldSession::HandleRequestAccountData(WorldPacket& recv_data)
 {
-    //sLog.outDebug("WORLD: Received CMSG_REQUEST_ACCOUNT_DATA");
-    if(!sWorld.m_useAccountData)
-    {
-        SKIP_READ_PACKET(recv_data); // Spam cleanup for packet size checker.
-        return;
-    }
-
     uint32 id;
     recv_data >> id;
-
     if(id > 8)
     {
         sLog.outString("WARNING: Accountdata > 8 (%d) was requested by %s of account %d!", id, GetPlayer() ? GetPlayer()->GetName() : "UNKNOWN", GetAccountId());
@@ -993,32 +969,27 @@ void WorldSession::HandleRequestAccountData(WorldPacket& recv_data)
     }
 
     AccountDataEntry* res = GetAccountData(id);
+    if(res == NULL || res->data == NULL)
+        return;
+
     uLongf destSize = compressBound(res->sz);
     ByteBuffer bbuff;
     bbuff.resize(destSize);
-
-    if(res->sz && compress(const_cast<uint8*>(bbuff.contents()), &destSize, (uint8*)res->data, res->sz) != Z_OK)
+    if(res->sz < 500)
+        bbuff.append(res->data);
+    else if(res->sz && compress((uint8*)bbuff.contents(), &destSize, (uint8*)res->data, res->sz) != Z_OK)
     {
         sLog.outDebug("Error while compressing ACCOUNT_DATA");
         SKIP_READ_PACKET(recv_data);
         return;
     }
 
-    WorldPacket data;
-    data.SetOpcode(SMSG_UPDATE_ACCOUNT_DATA);
+    printf("Sending account data: %u\n", res->sz);
+    WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA, 18+bbuff.size());
     data << uint64(_player ? _player->GetGUID() : 0);
-    data << id;
-    // if red does not exists if ID == 7 and if there is no data send 0
-    if(!res || !res->data) // if error, send a NOTHING packet
-    {
-        data << (uint32)0;
-        data << (uint32)0;
-    }
-    else
-    {
-        data << uint32(res->Time);
-        data << res->sz;
-    }
+    data << uint32(id);
+    data << uint32(res->Time);
+    data << uint32(res->sz);
     data.append(bbuff);
     SendPacket(&data);
 }
@@ -1791,18 +1762,7 @@ void WorldSession::HandleWorldStateUITimerUpdate(WorldPacket& recv_data)
 void WorldSession::HandleReadyForAccountDataTimes(WorldPacket& recv_data)
 {
     sLog.Debug( "WORLD","Received CMSG_READY_FOR_ACCOUNT_DATA_TIMES" );
-
-    // account data == UI config
-    WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4+1+4+8*4);
-    data << uint32(UNIXTIME) << uint8(1) << uint32(0x15);
-    for (int i = 0; i < 8; i++)
-    {
-        if(0x15 & (1 << i))
-        {
-            data << uint32(0);
-        }
-    }
-    SendPacket(&data);
+    SendAccountDataTimes(0x15);
 }
 
 void WorldSession::HandleFarsightOpcode(WorldPacket& recv_data)

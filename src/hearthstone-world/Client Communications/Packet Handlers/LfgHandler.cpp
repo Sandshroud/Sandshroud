@@ -6,31 +6,31 @@
 
 void WorldSession::HandleLFDPlrLockOpcode( WorldPacket& recv_data )
 {
-/*    CHECK_INWORLD_RETURN();
+    CHECK_INWORLD_RETURN();
 
     DungeonSet::iterator itr;
     DungeonSet randomDungeonSet;
-    LookingForGroup* dungeon = NULL;
+    LFGDungeonsEntry* dungeonEntry = NULL;
     uint32 level = _player->getLevel();
     DungeonSet LevelDungeonSet = sLfgMgr.GetLevelSet(level);
     for (itr = LevelDungeonSet.begin(); itr != LevelDungeonSet.end(); itr++)
     {
-        dungeon = dbcLookingForGroup.LookupEntry(*itr);
-        if (dungeon != NULL && dungeon->type == LFG_RANDOM
-            && dungeon->expansion <= GetHighestExpansion()
-            && dungeon->minlevel <= level && level <= dungeon->maxlevel)
-            randomDungeonSet.insert(dungeon->ID);
-        dungeon = NULL;
+        dungeonEntry = dbcLFGDungeons.LookupEntry(*itr);
+        if (dungeonEntry != NULL && dungeonEntry->LFGType == LFG_RANDOM
+            && dungeonEntry->reqExpansion <= GetHighestExpansion()
+            && dungeonEntry->minLevel <= level && level <= dungeonEntry->maxLevel)
+            randomDungeonSet.insert(dungeonEntry->Id);
+        dungeonEntry = NULL;
     }
 
     // Crow: Confirmed structure below
-    WorldPacket data(SMSG_LFD_PLAYER_LOCK_INFO_RESPONSE, 400);
+    WorldPacket data(SMSG_LFG_PLAYER_INFO, 400);
     uint8 randomsize = (uint8)randomDungeonSet.size();
     data << randomsize;
     for(itr = randomDungeonSet.begin(); itr != randomDungeonSet.end(); itr++)
     {
-        dungeon = dbcLookingForGroup.LookupEntry(*itr);
-        data << uint32(dungeon->GetEntry());
+        dungeonEntry = dbcLFGDungeons.LookupEntry(*itr);
+        data << uint32(dungeonEntry->GetUniqueID());
 
         uint8 done = 0;
         Quest* QuestReward = NULL;
@@ -88,12 +88,12 @@ void WorldSession::HandleLFDPlrLockOpcode( WorldPacket& recv_data )
             data << uint8(0);
         }
     }
-    SendPacket(&data);*/
+    SendPacket(&data);
 }
 
 void WorldSession::HandleLFDPartyLockOpcode( WorldPacket& recv_data )
 {
-/*    WorldPacket data(SMSG_LFD_PARTY_LOCK_INFO_UPDATE, 400);
+    WorldPacket data(SMSG_LFG_PARTY_INFO, 400);
     uint8 cnt = 0;
     data << uint8(cnt);
     for(uint8 i = 0; i < cnt; i++)
@@ -107,5 +107,5 @@ void WorldSession::HandleLFDPartyLockOpcode( WorldPacket& recv_data )
             data << uint32(0);
         }
     }
-    SendPacket(&data);*/
+    SendPacket(&data);
 }

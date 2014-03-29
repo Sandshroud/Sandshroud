@@ -489,7 +489,7 @@ void Object::SendPhaseShift(uint8 phaseMode)
     /*WorldPacket data(SMSG_SET_PHASE_SHIFT, 9);
     data << GetGUID();
     data << uint32(0) << uint32(0);
-    data << uint32(4) << uint16(m_phaseMask);
+    data << uint32(2) << uint16(m_phaseMask);
     data << uint32(0) << uint32(0x08);
     SendMessageToSet(&data, (IsPlayer() ? true : false));*/
 }

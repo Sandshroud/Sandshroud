@@ -180,7 +180,7 @@ void AddonMgr::SendAddonInfoPacket(WorldPacket *source, WorldSession *m_session)
 
     uint32 timeStamp;
     unpacked >> timeStamp;
-    returnpacket << uint32(0); // Crow: NOT A TIMESTAMP
+    returnpacket << uint32(0) << uint32(0); // Crow: NOT A TIMESTAMP
     m_session->SendPacket(&returnpacket);
 }
 
