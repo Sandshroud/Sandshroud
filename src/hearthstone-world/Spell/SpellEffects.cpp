@@ -4761,13 +4761,10 @@ void Spell::SpellEffectActivateRune(uint32 i)
 
     if( p_caster->getClass() != DEATHKNIGHT )
         return;
-    uint32 count = damage;
-    if (count == 0) 
-        count = 1;
 
-    for( uint8 j = 0; j < 6 && count; ++j )
+    for( uint8 j = 0; j < 6; ++j )
     {
-        if( p_caster->GetRune(j) == RUNE_TYPE_RECHARGING && p_caster->GetRune(j) == GetSpellProto()->EffectMiscValue[i] )
+        if( p_caster->GetRune(j) == RUNE_TYPE_RECHARGING && p_caster->GetBaseRune(j) == GetSpellProto()->EffectMiscValue[i] )
         {
             p_caster->SetRune(j, p_caster->GetBaseRune(j));
             p_caster->ClearRuneCooldown(j);

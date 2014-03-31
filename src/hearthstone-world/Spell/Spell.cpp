@@ -2297,31 +2297,10 @@ void Spell::SendSpellStart()
         return;
 
     uint32 cast_flags = SPELL_CAST_FLAGS_CAST_DEFAULT;
-    if( GetType() == SPELL_DMG_TYPE_RANGED )
-        cast_flags |= SPELL_CAST_FLAGS_RANGED;
-
-    if(GetSpellProto()->powerType > 0)
-        if(GetSpellProto()->powerType != POWER_HEALTH)
-            cast_flags |= SPELL_CAST_FLAGS_POWER_UPDATE;
-
-    if(p_caster && p_caster->getClass() == DEATHKNIGHT && GetSpellProto()->RuneCostID)
-    {
-        cast_flags |= SPELL_CAST_FLAGS_ITEM_CASTER;
-        cast_flags |= SPELL_CAST_FLAGS_RUNE_UPDATE;
-        cast_flags |= 0x00040000;
-    }
-    else if(p_caster && p_caster->getClass() == DEATHKNIGHT)
-    {
-        for(uint8 i = 0; i < 3; i++)
-        {
-            if( GetSpellProto()->Effect[i] == SPELL_EFFECT_ACTIVATE_RUNE)
-            {
-                cast_flags |= SPELL_CAST_FLAGS_ITEM_CASTER;
-                cast_flags |= SPELL_CAST_FLAGS_RUNE_UPDATE;
-                cast_flags |= 0x00040000;
-            }
-        }
-    }
+    if(GetSpellProto()->powerType > 0 && GetSpellProto()->powerType != POWER_TYPE_HEALTH)
+        cast_flags |= SPELL_CAST_FLAGS_POWER_UPDATE;
+    if (m_spellInfo->RuneCostID && m_spellInfo->powerType == POWER_TYPE_RUNE)
+        cast_flags |= SPELL_CAST_FLAGS_RUNIC_UPDATE;
 
     WorldPacket data(SMSG_SPELL_START, 150);
     if( i_caster != NULL )
@@ -2333,29 +2312,12 @@ void Spell::SendSpellStart()
     data << uint8(extra_cast_number);
     data << uint32(GetSpellProto()->Id);
     data << uint32(cast_flags);
-    data << uint32(m_timer);
+    data << int32(m_timer);
 
     m_targets.write( data );
 
     if (cast_flags & SPELL_CAST_FLAGS_POWER_UPDATE)
         data << uint32(u_caster->GetPower(GetSpellProto()->powerType));
-
-    if( cast_flags & SPELL_CAST_FLAGS_RUNE_UPDATE ) //send new runes
-    {
-        SpellRuneCostEntry * runecost = dbcSpellRuneCost.LookupEntry(GetSpellProto()->RuneCostID);
-        uint8 theoretical = p_caster->TheoreticalUseRunes(runecost->bloodRuneCost, runecost->frostRuneCost, runecost->unholyRuneCost);
-        data << p_caster->m_runemask << theoretical;
-
-        for (uint8 i=0; i<6; i++)
-        {
-            uint8 mask = (1 << i);
-            if (mask & p_caster->m_runemask && !(mask & theoretical))
-            {
-                data << uint8(0);
-            }
-        }
-    }
-
     m_caster->SendMessageToSet( &data, true );
 }
 
@@ -2365,22 +2327,32 @@ void Spell::SendSpellGo()
         return;
 
     ItemPrototype* ip = NULL;
-    uint32 cast_flags = i_caster ? SPELL_CAST_FLAGS_ITEM_CASTER : SPELL_CAST_FLAGS_NONE;
-    if(m_triggeredSpell && m_triggeredByAura && !(m_spellInfo->Flags3 & FLAGS3_ACTIVATE_AUTO_SHOT))
-        cast_flags |= SPELL_CAST_FLAGS_LOCK_PLAYER_CAST_ANIM;
-
-    if (GetType() == SPELL_DMG_TYPE_RANGED)
-        cast_flags |= SPELL_CAST_FLAGS_RANGED; // 0x20 RANGED
-
-    if(GetSpellProto()->powerType > 0)
-        if(GetSpellProto()->powerType != POWER_TYPE_HEALTH) // 0x
-            cast_flags |= SPELL_CAST_FLAGS_POWER_UPDATE;
-
-    if (m_missileTravelTime)
-        cast_flags |= SPELL_CAST_FLAGS_PROJECTILE;
-
+    uint32 cast_flags = SPELL_CAST_FLAGS_CAST_DEFAULT;
+    if((m_triggeredSpell || m_triggeredByAura) && !(m_spellInfo->Flags3 & FLAGS3_ACTIVATE_AUTO_SHOT))
+        cast_flags |= SPELL_CAST_FLAGS_NO_VISUAL;
+    if(GetSpellProto()->powerType > 0 && GetSpellProto()->powerType != POWER_TYPE_HEALTH)
+        cast_flags |= SPELL_CAST_FLAGS_POWER_UPDATE;
     if(m_missTargetCount)
         cast_flags |= SPELL_CAST_FLAGS_EXTRA_MESSAGE;
+    if(p_caster && p_caster->getClass() == DEATHKNIGHT)
+    {
+        if(GetSpellProto()->RuneCostID)
+        {
+            cast_flags |= SPELL_CAST_FLAGS_RUNE_UPDATE;
+            cast_flags |= 0x00040000;
+        }
+        else
+        {
+            for(uint8 i = 0; i < 3; i++)
+            {
+                if( GetSpellProto()->Effect[i] == SPELL_EFFECT_ACTIVATE_RUNE)
+                {
+                    cast_flags |= SPELL_CAST_FLAGS_RUNE_UPDATE;
+                    cast_flags |= 0x00040000;
+                }
+            }
+        }
+    }
 
     WorldPacket data(SMSG_SPELL_GO, 200);
     if( i_caster != NULL ) // this is needed for correct cooldown on items
@@ -2400,6 +2372,21 @@ void Spell::SendSpellGo()
 
     if (cast_flags & SPELL_CAST_FLAGS_POWER_UPDATE) //send new power
         data << uint32( u_caster->GetPower(GetSpellProto()->powerType));
+    if( cast_flags & SPELL_CAST_FLAGS_RUNE_UPDATE ) //send new runes
+    {
+        SpellRuneCostEntry * runecost = dbcSpellRuneCost.LookupEntry(GetSpellProto()->RuneCostID);
+        uint8 theoretical = p_caster->TheoreticalUseRunes(runecost->bloodRuneCost, runecost->frostRuneCost, runecost->unholyRuneCost);
+        data << p_caster->m_runemask << theoretical;
+
+        for (uint8 i = 0; i<6; i++)
+        {
+            uint8 mask = (1 << i);
+            if (mask & p_caster->m_runemask && !(mask & theoretical))
+            {
+                data << uint8(0);
+            }
+        }
+    }
 
     if (cast_flags & SPELL_CAST_FLAGS_PROJECTILE)
         data << m_missilePitch << m_missileTravelTime;
@@ -2572,11 +2559,15 @@ bool Spell::HasPower()
     int32 powerField;
     switch(GetSpellProto()->powerType)
     {
-    case POWER_TYPE_HEALTH: { powerField = UNIT_FIELD_HEALTH; }break;
-    case POWER_TYPE_MANA:   { powerField = UNIT_FIELD_POWER1; m_usesMana=true; }break;
-    case POWER_TYPE_RAGE:   { powerField = UNIT_FIELD_POWER2; }break;
-    case POWER_TYPE_FOCUS:  { powerField = UNIT_FIELD_POWER3; }break;
-    case POWER_TYPE_ENERGY: { powerField = UNIT_FIELD_POWER4; }break;
+    case POWER_TYPE_HEALTH:     { powerField = UNIT_FIELD_HEALTH; }break;
+    case POWER_TYPE_MANA:       { powerField = UNIT_FIELD_POWER1; m_usesMana=true; }break;
+    case POWER_TYPE_RAGE:       { powerField = UNIT_FIELD_POWER2; }break;
+    case POWER_TYPE_FOCUS:      { powerField = UNIT_FIELD_POWER3; }break;
+    case POWER_TYPE_ENERGY:     { powerField = UNIT_FIELD_POWER4; }break;
+    case POWER_TYPE_RUNIC:      { powerField = UNIT_FIELD_POWER7; }break;
+    case POWER_TYPE_SOUL_SHARDS:{ powerField = UNIT_FIELD_POWER8; }break;
+    case POWER_TYPE_ECLIPSE:    { powerField = UNIT_FIELD_POWER9; }break;
+    case POWER_TYPE_HOLY_POWER: { powerField = UNIT_FIELD_POWER10; }break;
     case POWER_TYPE_RUNE:
         {
             if(GetSpellProto()->RuneCostID && p_caster)
@@ -2587,7 +2578,6 @@ bool Spell::HasPower()
             }
             return true;
         }
-    case POWER_TYPE_RUNIC:  { powerField = UNIT_FIELD_POWER7; }break;
     default:
         {
             sLog.Debug("Spell","unknown power type %d", GetSpellProto()->powerType);
@@ -2654,12 +2644,15 @@ bool Spell::TakePower()
     int32 powerField = 0;
     switch(GetSpellProto()->powerType)
     {
-    case POWER_TYPE_HEALTH: { powerField = UNIT_FIELD_HEALTH; }break;
-    case POWER_TYPE_MANA:   { powerField = UNIT_FIELD_POWER1; m_usesMana=true; }break;
-    case POWER_TYPE_RAGE:   { powerField = UNIT_FIELD_POWER2; }break;
-    case POWER_TYPE_FOCUS:  { powerField = UNIT_FIELD_POWER3; }break;
-    case POWER_TYPE_ENERGY: { powerField = UNIT_FIELD_POWER4; }break;
-    case POWER_TYPE_RUNIC:  { powerField = UNIT_FIELD_POWER7; }break;
+    case POWER_TYPE_HEALTH:     { powerField = UNIT_FIELD_HEALTH; }break;
+    case POWER_TYPE_MANA:       { powerField = UNIT_FIELD_POWER1; m_usesMana=true; }break;
+    case POWER_TYPE_RAGE:       { powerField = UNIT_FIELD_POWER2; }break;
+    case POWER_TYPE_FOCUS:      { powerField = UNIT_FIELD_POWER3; }break;
+    case POWER_TYPE_ENERGY:     { powerField = UNIT_FIELD_POWER4; }break;
+    case POWER_TYPE_RUNIC:      { powerField = UNIT_FIELD_POWER7; }break;
+    case POWER_TYPE_SOUL_SHARDS:{ powerField = UNIT_FIELD_POWER8; }break;
+    case POWER_TYPE_ECLIPSE:    { powerField = UNIT_FIELD_POWER9; }break;
+    case POWER_TYPE_HOLY_POWER: { powerField = UNIT_FIELD_POWER10; }break;
     case POWER_TYPE_RUNE:
         {
             if(GetSpellProto()->RuneCostID && p_caster)
