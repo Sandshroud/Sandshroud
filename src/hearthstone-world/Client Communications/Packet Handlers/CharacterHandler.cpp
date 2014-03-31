@@ -91,8 +91,8 @@ void WorldSession::CharacterEnumProc(QueryResult * result)
             data << _race;                  // race
             data << _class;                 // class
             data << fields[4].GetUInt8();   // gender
-            data << uint32(_bytes1);         // skin
-            data << uint8(_bytes2 & 0xFF);  // facial hair
+            data << uint32(_bytes1);        // skin
+            data << uint8(_bytes2);         // facial hair
             data << _level;                 // Level
             data << fields[12].GetUInt32(); // zoneid
             data << fields[11].GetUInt32(); // Mapid
@@ -118,7 +118,7 @@ void WorldSession::CharacterEnumProc(QueryResult * result)
             if(banned && (banned < 10 || banned > UNIXTIME))
                 player_flags |= 0x1000000;
             data << player_flags << uint32(fields[19].GetUInt8());
-            data << fields[14].GetUInt8();          // Rest State
+            data << uint8(!fields[14].GetUInt8()); // Rest State
 
             QueryResult *res = NULL;
             CreatureInfo *petInfo = NULL;
@@ -751,6 +751,9 @@ void WorldSession::FullLogin(Player* plr)
 
     if(plr->GetItemInterface())
         plr->GetItemInterface()->CheckAreaItems();
+
+    plr->SendPhaseShift();
+
     objmgr.AddPlayer(plr);
 }
 

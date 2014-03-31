@@ -452,12 +452,13 @@ void Object::SetPhaseMask(int32 phase)
     if(phase == -1)
     {
         AllPhases = true;
-        SendPhaseShift(uint8(0xFF));
+        m_phaseMask = 0xFFFF;
+        SendPhaseShift();
         return;
     }
 
     m_phaseMask = phase;
-    SendPhaseShift(uint8(m_phaseMask));
+    SendPhaseShift();
 }
 
 void Object::EnablePhase(int32 phaseMode)
@@ -465,13 +466,14 @@ void Object::EnablePhase(int32 phaseMode)
     if(phaseMode == -1)
     {
         AllPhases = true;
-        SendPhaseShift(uint8(0xFF));
+        m_phaseMask = 0xFFFF;
+        SendPhaseShift();
         return;
     }
 
     AllPhases = false;
     m_phaseMask |= phaseMode;
-    SendPhaseShift(uint8(m_phaseMask));
+    SendPhaseShift();
 }
 
 void Object::DisablePhase(int32 phaseMode)
@@ -481,17 +483,17 @@ void Object::DisablePhase(int32 phaseMode)
         return;
 
     m_phaseMask &= ~phaseMode;
-    SendPhaseShift(uint8(m_phaseMask));
+    SendPhaseShift();
 }
 
-void Object::SendPhaseShift(uint8 phaseMode)
+void Object::SendPhaseShift()
 {
-    /*WorldPacket data(SMSG_SET_PHASE_SHIFT, 9);
+    WorldPacket data(SMSG_SET_PHASE_SHIFT, 9);
     data << GetGUID();
     data << uint32(0) << uint32(0);
     data << uint32(2) << uint16(m_phaseMask);
     data << uint32(0) << uint32(0x08);
-    SendMessageToSet(&data, (IsPlayer() ? true : false));*/
+    SendMessageToSet(&data, (IsPlayer() ? true : false));
 }
 
 void Object::_Create( uint32 mapid, float x, float y, float z, float ang )
@@ -510,19 +512,14 @@ uint32 Object::BuildCreateUpdateBlockForPlayer(ByteBuffer *data, Player* target)
     // any other case
     switch(m_objectTypeId)
     {
-    case TYPEID_ITEM:
-    case TYPEID_CONTAINER:
-        {
-            updateFlags = UPDATEFLAG_DYN_MODEL;
-        }break;
     case TYPEID_UNIT:
     case TYPEID_PLAYER:
         {
-            updateFlags = UPDATEFLAG_DYN_MODEL|UPDATEFLAG_LIVING|UPDATEFLAG_HAS_POSITION;
+            updateFlags = UPDATEFLAG_LIVING|UPDATEFLAG_HAS_POSITION;
         }break;
     case TYPEID_GAMEOBJECT:
         {
-            updateFlags = UPDATEFLAG_DYN_MODEL|UPDATEFLAG_HAS_POSITION|UPDATEFLAG_POSITION|UPDATEFLAG_ROTATION;
+            updateFlags = UPDATEFLAG_HAS_POSITION|UPDATEFLAG_POSITION|UPDATEFLAG_ROTATION;
             switch(GetByte(GAMEOBJECT_BYTES_1, GAMEOBJECT_BYTES_TYPE_ID))
             {
             case GAMEOBJECT_TYPE_TRANSPORT:
@@ -543,7 +540,7 @@ uint32 Object::BuildCreateUpdateBlockForPlayer(ByteBuffer *data, Player* target)
         }break;
     case TYPEID_CORPSE:
     case TYPEID_DYNAMICOBJECT:
-        updateFlags = UPDATEFLAG_STA_MODEL|UPDATEFLAG_HAS_POSITION|UPDATEFLAG_POSITION;
+        updateFlags = UPDATEFLAG_HAS_POSITION|UPDATEFLAG_POSITION;
         break;
     }
 
@@ -1328,9 +1325,8 @@ void Object::ModUnsigned32Value(uint32 index, int32 mod)
 
     if(m_objectTypeId == TYPEID_PLAYER)
     {
-        // mana and energy regen
-        if( index == UNIT_FIELD_POWER1 || index == UNIT_FIELD_POWER4 )
-            TO_PLAYER( this )->SendPowerUpdate();
+        if(index > UNIT_FIELD_POWER1 && index < UNIT_FIELD_POWER11)
+            static_cast< Unit* >( this )->SendPowerUpdate();
     }
 }
 

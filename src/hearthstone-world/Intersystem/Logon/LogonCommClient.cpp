@@ -114,11 +114,10 @@ void LogonCommClientSocket::HandleSessionInfo(WorldPacket & recvData)
 
     // find the socket with this request
     WorldSocket * sock = sLogonCommHandler.GetSocketByRequest(request_id);
-    if(sock == 0 || sock->Authed || !sock->IsConnected())       // Expired/Client disconnected
+    if(sock == 0 || sock->isAuthed() || !sock->IsConnected())       // Expired/Client disconnected
         return;
 
     // extract sessionkey / account information (done by WS)
-    sock->Authed = true;
     sLogonCommHandler.RemoveUnauthedSocket(request_id);
     sock->InformationRetreiveCallback(recvData, request_id);
 }

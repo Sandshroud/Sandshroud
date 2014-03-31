@@ -3560,7 +3560,7 @@ void Unit::UpdateVisibility()
                 {
                     buf.clear();
                     count = pObj->BuildCreateUpdateBlockForPlayer( &buf, plr );
-                    plr->PushCreationData(&buf, count);
+                    plr->PushUpdateData(&buf, count);
                     plr->AddVisibleObject(pObj);
                 }
             }
@@ -3584,7 +3584,7 @@ void Unit::UpdateVisibility()
                     {
                         buf.clear();
                         count = plr->BuildCreateUpdateBlockForPlayer( &buf, pl );
-                        pl->PushCreationData(&buf, count);
+                        pl->PushUpdateData(&buf, count);
                         pl->AddVisibleObject(plr);
                     }
                 }
@@ -3619,7 +3619,7 @@ void Unit::UpdateVisibility()
                 {
                     buf.clear();
                     count = BuildCreateUpdateBlockForPlayer(&buf, *it2);
-                    (*it2)->PushCreationData(&buf, count);
+                    (*it2)->PushUpdateData(&buf, count);
                     (*it2)->AddVisibleObject(TO_OBJECT(this));
                 }
             }
@@ -4503,13 +4503,18 @@ void Unit::SetTriggerStunOrImmobilize(uint32 newtrigger,uint32 new_chance)
 
 void Unit::SendPowerUpdate(int8 power)
 {
-    uint8 PowerType = power != -1 ? power : GetPowerType();
-    WorldPacket data(SMSG_POWER_UPDATE, 14);
-    FastGUIDPack(data, GetGUID());
-    data << int32(1);
-    data << uint8(power);
-    data << GetUInt32Value(UNIT_FIELD_POWER1 + power);
-    SendMessageToSet(&data, IsPlayer() ? true : false);
+    uint32 updateCount = 1;
+    uint8 PowerType = (power == -1 ? GetPowerType() : power);
+
+    WorldPacket data(SMSG_POWER_UPDATE);
+    data << GetNewGUID();
+    data << uint32(updateCount); // iteration count
+    for (int32 i = 0; i < updateCount; ++i)
+    {
+        data << uint8(PowerType);
+        data << GetUInt32Value(UNIT_FIELD_POWER1+PowerType);
+    }
+    SendMessageToSet(&data, true);
 }
 
 uint32 Unit::DoDamageSplitTarget(uint32 res, uint32 school_type, bool melee_dmg)

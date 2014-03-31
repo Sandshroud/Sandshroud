@@ -230,18 +230,19 @@ int WorldSession::Update(uint32 InstanceID)
 
 bool WorldSession::IsHighPriority()
 {
+    bool res = false;
     if(m_loggingInPlayer)
-        return true;
-    if(_player)
+        res = true;
+    else if(_player)
     {
         if(_player->m_beingPushed)
-            return true;
-        if(_player->m_changingMaps)
-            return true;
-        if(!_player->IsInWorld())
-            return true;
+            res = true;
+        else if(_player->m_changingMaps)
+            res = true;
+        else if(!_player->IsInWorld())
+            res = true;
     }
-    return false;
+    return res;
 }
 
 void WorldSession::LogoutPlayer(bool Save)

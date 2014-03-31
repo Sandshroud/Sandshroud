@@ -160,7 +160,7 @@ bool AI_Movement::showWayPoints(Player* pPlayer, bool Backwards)
             //Create on client
             ByteBuffer buf(2500);
             uint32 count = pWayPoint->BuildCreateUpdateBlockForPlayer(&buf, pPlayer);
-            pPlayer->PushCreationData(&buf, count);
+            pPlayer->PushUpdateData(&buf, count);
 
             //root the object
             WorldPacket data1;

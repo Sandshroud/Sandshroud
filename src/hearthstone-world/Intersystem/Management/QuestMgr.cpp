@@ -1521,7 +1521,6 @@ void QuestMgr::OnQuestFinished(Player* plr, Quest* qst, Object* qst_giver, uint3
 
         if(qst->rewards)
         {
-            plr->ModUnsigned32Value(PLAYER_CHARACTER_POINTS, qst->rewards->reward_talents);
             HonorHandler::AddHonorPointsToPlayer(plr, qst->rewards->reward_honor);
             // Static Item reward
             for(uint32 i = 0; i < 4; i++)
@@ -1627,7 +1626,6 @@ void QuestMgr::OnQuestFinished(Player* plr, Quest* qst, Object* qst_giver, uint3
         if(qst->rewards)
         {
             plr->ModUnsigned32Value(PLAYER_FIELD_COINAGE, GenerateRewardMoney(plr, qst));
-            plr->ModUnsigned32Value(PLAYER_CHARACTER_POINTS, qst->rewards->reward_talents);
             HonorHandler::AddHonorPointsToPlayer(plr, qst->rewards->reward_honor);
 
             // Static Item reward

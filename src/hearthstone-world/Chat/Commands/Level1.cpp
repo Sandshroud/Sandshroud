@@ -812,7 +812,6 @@ bool ChatHandler::HandleModifyTPsCommand(const char* args, WorldSession *m_sessi
         return true;
     }
 
-    Pl->ModUnsigned32Value(PLAYER_CHARACTER_POINTS, TP1);
     Pl->smsg_TalentsInfo(false);
     sWorld.LogGM(m_session, "Modified %s talents to %u", Pl->GetName(), TP1);
     return true;
