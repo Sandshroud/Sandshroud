@@ -550,7 +550,7 @@ public:
     bool IsInPhase(int32 phaseMode) { if(AllPhases) return true; return ((m_phaseMask & phaseMode) != 0); };
     void EnablePhase(int32 phaseMode);
     void DisablePhase(int32 phaseMode);
-    void SendPhaseShift(uint8 phaseMode);
+    void SendPhaseShift();
 
     // Don't fucking use this.
     void SetPhaseMask(int32 phase);

@@ -826,7 +826,7 @@ typedef std::map<uint32, FactionReputation*>        ReputationMap;
 typedef std::map<uint32, uint64>                    SoloSpells;
 typedef std::map<SpellEntry*, pair<uint32, uint32> >StrikeSpellMap;
 typedef std::map<uint32, OnHitSpell >               StrikeSpellDmgMap;
-typedef std::map<uint32, PlayerSkill>               SkillMap;
+typedef std::unordered_map<uint32, PlayerSkill>     SkillMap;
 typedef std::set<Player* *>                         ReferenceSet;
 typedef std::map<uint32, PlayerCooldown>            PlayerCooldownMap;
 
@@ -1698,7 +1698,6 @@ public:
     bool bProcessPending;
     Mutex _bufferS;
     void PushUpdateData(ByteBuffer *data, uint32 updatecount);
-    void PushCreationData(ByteBuffer *data, uint32 updatecount);
     void PushOutOfRange(const WoWGuid & guid);
     void ProcessPendingUpdates(ByteBuffer *pBuildBuffer, ByteBuffer *pCompressionBuffer);
     bool __fastcall CompressAndSendUpdateBuffer(uint32 size, const uint8* update_buffer, ByteBuffer *pCompressionBuffer);
@@ -2020,10 +2019,8 @@ protected:
     void _SetUpdateBits(UpdateMask *updateMask, Player* target) const;
 
     /* Update system components */
-    ByteBuffer bUpdateBuffer;
-    ByteBuffer bCreationBuffer;
-    uint32 mUpdateCount;
-    uint32 mCreationCount;
+    uint32 mUpdateDataCount;
+    ByteBuffer bUpdateDataBuffer;
     uint32 mOutOfRangeIdCount;
     ByteBuffer mOutOfRangeIds;
     /* End update system */
@@ -2277,10 +2274,12 @@ public:
     {
         return m_runes[index];
     }
+
     uint8 GetBaseRune(uint8 index)
     {
         return baseRunes[index];
     }
+
     void SetRune(uint8 index, uint8 value)
     {
         m_runes[index] = value;

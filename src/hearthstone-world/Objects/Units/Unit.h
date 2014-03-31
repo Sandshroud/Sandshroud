@@ -96,15 +96,18 @@ enum DeathState
 
 enum PowerType
 {
-    POWER_TYPE_HEALTH   = -2,
-    POWER_TYPE_MANA     = 0,
-    POWER_TYPE_RAGE     = 1,
-    POWER_TYPE_FOCUS    = 2,
-    POWER_TYPE_ENERGY   = 3,
-    POWER_TYPE_HAPPINESS= 4, // Not used in creature powertypes.
-    POWER_TYPE_RUNE     = 5,
-    POWER_TYPE_RUNIC    = 6,
-    MAX_POWER_TYPE      = 7
+    POWER_TYPE_HEALTH       = -2,
+    POWER_TYPE_MANA         = 0,
+    POWER_TYPE_RAGE         = 1,
+    POWER_TYPE_FOCUS        = 2,
+    POWER_TYPE_ENERGY       = 3,
+    POWER_TYPE_HAPPINESS    = 4,
+    POWER_TYPE_RUNE         = 5,
+    POWER_TYPE_RUNIC        = 6,
+    POWER_TYPE_SOUL_SHARDS  = 7,
+    POWER_TYPE_ECLIPSE      = 8,
+    POWER_TYPE_HOLY_POWER   = 9,
+    MAX_POWER_TYPE          = 10,
 };
 
 enum SpeedTypes
@@ -586,18 +589,6 @@ enum CUSTOM_TIMERS
     CUSTOM_TIMER_CHEATDEATH,
     CUSTOM_TIMER_RAPTURE,
     NUM_CUSTOM_TIMERS
-};
-
-enum Powers
-{
-    POWER_MANA          = 0,
-    POWER_RAGE          = 1,
-    POWER_FOCUS         = 2,
-    POWER_ENERGY        = 3,
-    POWER_HAPPINESS     = 4,
-    POWER_RUNE          = 5,
-    POWER_RUNIC_POWER   = 6,
-    POWER_HEALTH        = 0xFFFFFFFE
 };
 
 typedef std::list<struct ProcTriggerSpellOnSpell> ProcTriggerSpellOnSpellList;

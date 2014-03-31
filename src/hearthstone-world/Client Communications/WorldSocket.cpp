@@ -21,30 +21,27 @@ struct ClientPktHeader
 
 struct ServerPktHeader
 {
-    ServerPktHeader(uint32 size, uint16 cmd) : size(size)
+    ServerPktHeader(uint32 _size, uint16 _cmd) : size(_size), headerLength(0)
     {
-        uint8 headerIndex = 0;
-        if (isLargePacket())
-            header[headerIndex++] = 0x80 | (0xFF & (size >> 16));
-        header[headerIndex++] = 0xFF &(size >> 8);
-        header[headerIndex++] = 0xFF & size;
-
-        header[headerIndex++] = 0xFF & cmd;
-        header[headerIndex++] = 0xFF & (cmd >> 8);
+        if (size > 0x7FFF)
+            header[headerLength++] = 0x80 | (0xFF & (_size >> 16));
+        header[headerLength++] = 0xFF & (_size >> 8);
+        header[headerLength++] = 0xFF & _size;
+        header[headerLength++] = 0xFF & _cmd;
+        header[headerLength++] = 0xFF & (_cmd >> 8);
     }
 
-    uint8 getHeaderLength() { return 2 + (isLargePacket() ? 3 : 2); }
-    bool isLargePacket() { return size > 0x7FFF; }
-
-    uint32 size;
+    uint8 getHeaderLength() { return headerLength; }
+    const uint32 size;
     uint8 header[5];
+    uint8 headerLength;
 };
 
 #pragma pack(PRAGMA_POP)
 
 WorldSocket::WorldSocket(SOCKET fd, const sockaddr_in * peer) : TcpSocket(fd, WORLDSOCKET_RECVBUF_SIZE, WORLDSOCKET_SENDBUF_SIZE, false, peer)
 {
-    Authed = false;
+    m_authed = false;
     mOpcode = mRemaining = mUnaltered = 0;
     _latency = 0;
     mSession = NULL;
@@ -109,35 +106,6 @@ void WorldSocket::OnDisconnect()
     queueLock.Release();
 }
 
-void WorldSocket::OutPacket(uint16 opcode, size_t len, const void* data, bool InWorld)
-{
-    OUTPACKET_RESULT res;
-    if( (len + 10) > WORLDSOCKET_SENDBUF_SIZE )
-    {
-        printf("WARNING: Tried to send a packet of %u bytes (which is too large) to a socket. Opcode was: %u (0x%03X)\n", uint(len), uint(opcode), uint(opcode));
-        return;
-    }
-
-    res = _OutPacket(opcode, len, data, InWorld);
-    if(res == OUTPACKET_RESULT_SUCCESS)
-        return;
-    if(res == OUTPACKET_RESULT_PACKET_ERROR)
-    { // Track packets that cause packet errors
-
-    }
-    else if(res == OUTPACKET_RESULT_NO_ROOM_IN_BUFFER)
-    {
-        /* queue the packet */
-        queueLock.Acquire();
-        WorldPacket *pck = new WorldPacket(opcode, len);
-        pck->SetOpcode(opcode);
-        if(len)
-            pck->append((const uint8*)data, len);
-        _queue.Push(pck);
-        queueLock.Release();
-    }
-}
-
 void WorldSocket::UpdateQueuedPackets()
 {
     queueLock.Acquire();
@@ -179,43 +147,67 @@ void WorldSocket::UpdateQueuedPackets()
     queueLock.Release();
 }
 
+void WorldSocket::OutPacket(uint16 opcode, size_t len, const void* data, bool InWorld)
+{
+    OUTPACKET_RESULT res;
+    if( (len + 10) > WORLDSOCKET_SENDBUF_SIZE )
+    {
+        printf("WARNING: Tried to send a packet of %u bytes (which is too large) to a socket. Opcode was: %u (0x%03X)\n", uint(len), uint(opcode), uint(opcode));
+        return;
+    }
+
+    res = _OutPacket(opcode, len, data, InWorld);
+    if(res == OUTPACKET_RESULT_SUCCESS)
+        return;
+    if(res == OUTPACKET_RESULT_PACKET_ERROR)
+    { // Track packets that cause packet errors
+        if(!sLog.isOutDevelopment())
+            return;
+
+        FILE *codeLog = NULL;
+        fopen_s(&codeLog, "rejectedOpcodes.txt", "a+b");
+        if(codeLog)
+        {
+            fprintf(codeLog, "Rejecting unset packet %u with size %u\r\n", opcode, len);
+            WorldPacket packet(opcode, len);
+            packet.append((uint8*)data, len);
+            packet.hexlike(codeLog);
+            fclose(codeLog);
+        }
+    }
+    else if(res == OUTPACKET_RESULT_NO_ROOM_IN_BUFFER)
+    {
+        /* queue the packet */
+        queueLock.Acquire();
+        WorldPacket *pck = new WorldPacket(opcode, len);
+        pck->SetOpcode(opcode);
+        if(len)
+            pck->append((const uint8*)data, len);
+        _queue.Push(pck);
+        queueLock.Release();
+    }
+}
+
 OUTPACKET_RESULT WorldSocket::_OutPacket(uint16 opcode, size_t len, const void* data, bool InWorld)
 {
     bool rv;
     if(!IsConnected())
         return OUTPACKET_RESULT_NOT_CONNECTED;
 
-    FILE *codeLog = NULL;
-    fopen_s(&codeLog, "OpcodeLog.txt", "a+b");
     uint16 newOpcode = sOpcodeMgr.ConvertOpcodeForOutput(opcode);
     if(newOpcode == MSG_NULL_ACTION)
-    {
-        if(codeLog)
-        {
-            fprintf(codeLog, "\r\nRejecting unset packet %u with size %u\r\n\r\n", opcode, len);
-            fclose(codeLog);
-        }
         return OUTPACKET_RESULT_PACKET_ERROR;
-    }
-    if( GetWriteBuffer()->GetSpace() < (len+4) )
+    else if( GetWriteBuffer()->GetSpace() < (len+4) )
         return OUTPACKET_RESULT_NO_ROOM_IN_BUFFER;
-    if(codeLog)
-    {
-/*      fprintf(codeLog, "Sending packet %s(0x%.4X) with size %u\r\n", sOpcodeMgr.GetOpcodeName(opcode), newOpcode, len);
-        WorldPacket data2(newOpcode, len);
-        data2.append((uint8*)data, len);
-        data2.hexlike(codeLog);*/
-        fclose(codeLog);
-    }
 
     LockWriteBuffer();
     // Encrypt the packet
     // First, create the header.
     ServerPktHeader Header(len + 2, newOpcode);
-    _crypt.EncryptSend((uint8*)&Header.header, Header.getHeaderLength());
+    _crypt.EncryptSend(((uint8*)Header.header), Header.getHeaderLength());
 
     // Pass the header to our send buffer
-    rv = WriteButHold((const uint8*)&Header.header, Header.getHeaderLength());
+    rv = WriteButHold(((const uint8*)Header.header), Header.getHeaderLength());
 
     // Pass the rest of the packet to our send buffer (if there is any)
     if(len > 0 && rv)
@@ -396,8 +388,10 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
         return;
     }
 
+    m_authed = true;
+
     // Allocate session
-    WorldSession * pSession = (mSession = new WorldSession(AccountID, AccountName, this));
+    WorldSession *pSession = (mSession = new WorldSession(AccountID, AccountName, this));
     ASSERT(mSession);
     pSession->deleteMutex.Acquire();
 
@@ -451,7 +445,7 @@ void WorldSocket::Authenticate()
     }
 
     WorldPacket data(SMSG_CLIENTCACHE_VERSION, 4);
-    data << uint32(0);
+    data << uint32(CL_BUILD_SUPPORT);
     SendPacket(&data);
 
     if(ItemPrototypeStorage.HotfixBegin() != ItemPrototypeStorage.HotfixEnd())
@@ -495,7 +489,6 @@ void WorldSocket::SendAuthResponse(uint8 code, bool holdsPosition, uint32 positi
 void WorldSocket::_HandlePing(WorldPacket* recvPacket)
 {
     uint32 ping;
-
     *recvPacket >> _latency;
     *recvPacket >> ping;
 
@@ -591,7 +584,9 @@ void WorldSocket::OnRecvData()
             }break;
         case MSG_NULL_ACTION:
             { // We need to log opcodes that are non existent
-                //mUnaltered
+                if(!sLog.isOutDevelopment())
+                    return;
+
                 FILE *codeLog = NULL;
                 fopen_s(&codeLog, "RecvOpcodeLog.txt", "a+b");
                 if(codeLog)

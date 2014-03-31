@@ -534,127 +534,40 @@ protected:
 
 HEARTHSTONE_INLINE void FastGUIDPack(ByteBuffer & buf, const uint64 & oldguid)
 {
-    if( &oldguid == NULL )
-        return;
-
-    // hehe speed freaks
-    uint8 guidmask = 0;
+    uint8 guidmask = 0,  fieldcount = 1;
     uint8 guidfields[9] = {0,0,0,0,0,0,0,0};
-
-    int j = 1;
-    uint8 * test = (uint8*)&oldguid;
-
-    if (*test) //7*8
+    for(uint8 x = 0; x < 8; ++x)
     {
-        guidfields[j] = *test;
-        guidmask |= 1;
-        j++;
-    }
-    if (*(test+1)) //6*8
-    {
-        guidfields[j] = *(test+1);
-        guidmask |= 2;
-        j++;
-    }
-    if (*(test+2)) //5*8
-    {
-        guidfields[j] = *(test+2);
-        guidmask |= 4;
-        j++;
-    }
-    if (*(test+3)) //4*8
-    {
-        guidfields[j] = *(test+3);
-        guidmask |= 8;
-        j++;
-    }
-    if (*(test+4)) //3*8
-    {
-        guidfields[j] = *(test+4);
-        guidmask |= 16;
-        j++;
-    }
-    if (*(test+5))//2*8
-    {
-        guidfields[j] = *(test+5);
-        guidmask |= 32;
-        j++;
-    }
-    if (*(test+6))//1*8
-    {
-        guidfields[j] = *(test+6);
-        guidmask |= 64;
-        j++;
-    }
-    if (*(test+7)) //0*8
-    {
-        guidfields[j] = *(test+7);
-        guidmask |= 128;
-        j++;
+        uint8 p = ((uint8*)&oldguid)[x];
+        if(p)
+        {
+            guidfields[fieldcount++] = p;
+            guidmask |= 1 << x;
+        }
     }
     guidfields[0] = guidmask;
-
-    buf.append(guidfields,j);
+    buf.append(guidfields, fieldcount);
 }
 
 HEARTHSTONE_INLINE unsigned int FastGUIDPack(const uint64 & oldguid, unsigned char * buffer, uint32 pos)
 {
-    // hehe speed freaks
     uint8 guidmask = 0;
-
-    int j = 1 + pos;
-    uint8 * test = (uint8*)&oldguid;
-
-    if (*test) //7*8
+    uint8 guidfields[9] = {0,0,0,0,0,0,0,0};
+    for(uint8 x = 0, i = 0; x < 8; ++x)
     {
-        buffer[j] = *test;
-        guidmask |= 1;
-        j++;
+        uint8 p = ((uint8*)&oldguid)[x];
+        if(p)
+        {
+            guidfields[i++] = p;
+            guidmask |= 1 << x;
+        }
     }
-    if (*(test+1)) //6*8
-    {
-        buffer[j] = *(test+1);
-        guidmask |= 2;
-        j++;
-    }
-    if (*(test+2)) //5*8
-    {
-        buffer[j] = *(test+2);
-        guidmask |= 4;
-        j++;
-    }
-    if (*(test+3)) //4*8
-    {
-        buffer[j] = *(test+3);
-        guidmask |= 8;
-        j++;
-    }
-    if (*(test+4)) //3*8
-    {
-        buffer[j] = *(test+4);
-        guidmask |= 16;
-        j++;
-    }
-    if (*(test+5))//2*8
-    {
-        buffer[j] = *(test+5);
-        guidmask |= 32;
-        j++;
-    }
-    if (*(test+6))//1*8
-    {
-        buffer[j] = *(test+6);
-        guidmask |= 64;
-        j++;
-    }
-    if (*(test+7)) //0*8
-    {
-        buffer[j] = *(test+7);
-        guidmask |= 128;
-        j++;
-    }
-    buffer[pos] = guidmask;
-    return (j - pos);
+    uint32 buffPos = pos;
+    buffer[buffPos++] = guidmask;
+    for(uint8 x = 0; x < 8; x++)
+        if(guidfields[x])
+            buffer[buffPos++] = guidfields[x];
+    return (buffPos - pos);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -36,6 +36,7 @@ public:
     OUTPACKET_RESULT __fastcall _OutPacket(uint16 opcode, size_t len, const void* data, bool InWorld = false);
 
     HEARTHSTONE_INLINE uint32 GetLatency() { return _latency; }
+    HEARTHSTONE_INLINE bool isAuthed() { return m_authed; }
 
     void Authenticate();
     void InformationRetreiveCallback(WorldPacket & recvData, uint32 requestid);
@@ -45,12 +46,10 @@ public:
     void OnRecvData();
     void OnConnect();
     void OnDisconnect();
+    void UpdateQueuedPackets();
 
     HEARTHSTONE_INLINE void SetSession(WorldSession * session) { mSession = session; }
     HEARTHSTONE_INLINE WorldSession * GetSession() { return mSession; }
-    bool Authed;
-
-    void UpdateQueuedPackets();
 
 protected:
     void _HandleAuthSession(WorldPacket* recvPacket);
@@ -72,6 +71,7 @@ private:
 
     WowCrypt _crypt;
     uint32 _latency;
+    bool m_authed;
     bool mQueued;
     bool m_nagleEanbled;
     string * m_fullAccountName;

@@ -237,8 +237,6 @@ void WorldSession::HandleItemHotfixQueryOpcode(WorldPacket & recvPacket)
 {
     uint32 count, type;
     recvPacket >> count >> type;
-
-    sLog.Error("WorldSession", "Handling item hotfix query");
     if (type != 0x50238EC2 && type != 0x919BE54E)
     {
         sLog.outString("Client tried to request update item data from non-handled update type");

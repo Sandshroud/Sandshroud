@@ -233,10 +233,8 @@ void Player::Init()
     m_currentLoot                   = (uint64)NULL;
     pctReputationMod                = 0;
     roll                            = 0;
-    mUpdateCount                    = 0;
-    mCreationCount                  = 0;
-    bCreationBuffer.reserve(40000);
-    bUpdateBuffer.reserve(30000);//ought to be > than enough ;)
+    mUpdateDataCount                = 0;
+    bUpdateDataBuffer.reserve(65000);
     mOutOfRangeIds.reserve(1000);
     mOutOfRangeIdCount              = 0;
     bProcessPending                 = false;
@@ -749,7 +747,7 @@ bool Player::Create(WorldPacket& data )
     SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
     SetUInt32Value(UNIT_FIELD_POWER3, info->focus );
     SetUInt32Value(UNIT_FIELD_POWER4, info->energy );
-    SetUInt32Value(UNIT_FIELD_POWER6, 8);
+    SetUInt32Value(UNIT_FIELD_POWER6, getClass() == DEATHKNIGHT ? 8 : 0);
     SetUInt32Value(UNIT_FIELD_POWER7, 0 );
 
     SetUInt32Value(UNIT_FIELD_MAXPOWER2, info->rage );
@@ -761,7 +759,6 @@ bool Player::Create(WorldPacket& data )
 
     if(sWorld.StartLevel > 1)
     {
-        SetUInt32Value(PLAYER_CHARACTER_POINTS, sWorld.StartLevel-9);
         SetUInt32Value(UNIT_FIELD_LEVEL, sWorld.StartLevel);
         if(class_ == DEATHKNIGHT)
         {
@@ -792,6 +789,7 @@ bool Player::Create(WorldPacket& data )
     if(class_ == WARRIOR)
         SetShapeShift(FORM_BATTLESTANCE);
 
+    SetUInt32Value(PLAYER_CHARACTER_POINTS, 2);
     SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 0.388999998569489f );
@@ -1791,7 +1789,7 @@ void Player::BuildPlayerTalentsInfo(WorldPacket *data)
     if(m_talentSpecsCount > 2)
         m_talentSpecsCount = 2; // Hack fix
 
-    *data << uint32(GetUInt32Value(PLAYER_CHARACTER_POINTS)); // Unspent talents
+    *data << uint32(0); // Unspent talents
     *data << uint8(m_talentSpecsCount);
     *data << uint8(m_talentActiveSpec);
     if(m_talentSpecsCount)
@@ -2475,7 +2473,7 @@ void Player::SaveToDB(bool bNewCharacter /* =false */)
     << GetUInt64Value(PLAYER__FIELD_KNOWN_TITLES2) << ","
     << m_uint32Values[PLAYER_FIELD_COINAGE] << ","
     << uint32(0) << ","
-    << uint32(0) << ","
+    << m_uint32Values[PLAYER_CHARACTER_POINTS] << ","
     << m_maxTalentPoints << ","
     << load_health << ","
     << load_mana << ","
@@ -3344,7 +3342,8 @@ void Player::LoadFromDBProc(QueryResultVector & results)
     SetUInt64Value( PLAYER__FIELD_KNOWN_TITLES1, get_next_field.GetUInt64() );
     SetUInt64Value( PLAYER__FIELD_KNOWN_TITLES2, get_next_field.GetUInt64() );
     SetUInt64Value(PLAYER_FIELD_COINAGE, get_next_field.GetUInt32());
-    get_next_field; get_next_field;
+    get_next_field;
+    SetUInt32Value(PLAYER_CHARACTER_POINTS, get_next_field.GetUInt32());
     m_maxTalentPoints                                   = get_next_field.GetUInt16();
     load_health                                         = get_next_field.GetUInt32();
     load_mana                                           = get_next_field.GetUInt32();
@@ -3380,7 +3379,7 @@ void Player::LoadFromDBProc(QueryResultVector & results)
     SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);
     SetUInt32Value(UNIT_FIELD_POWER3, info->focus);
     SetUInt32Value(UNIT_FIELD_POWER4, info->energy );
-    SetUInt32Value(UNIT_FIELD_POWER6, 8);
+    SetUInt32Value(UNIT_FIELD_POWER6, getClass() == DEATHKNIGHT ? 8 : 0);
     SetUInt32Value(UNIT_FIELD_POWER7, 0);
     SetUInt32Value(UNIT_FIELD_MAXPOWER2, info->rage );
     SetUInt32Value(UNIT_FIELD_MAXPOWER3, info->focus );
@@ -7288,8 +7287,6 @@ void Player::Reset_Talents(bool all)
     if( getClass() == SHAMAN && _HasSkillLine( SKILL_DUAL_WIELD ) )
         _RemoveSkillLine( SKILL_DUAL_WIELD );
 
-    SetUInt32Value(PLAYER_CHARACTER_POINTS, GetMaxTalentPoints());
-
     if( getClass() == WARRIOR )
     {
         titanGrip = false;
@@ -7460,7 +7457,6 @@ void Player::ApplySpec(uint8 spec, bool init)
         newTalentPoints = 0;    // just in case
     else
         newTalentPoints = maxTalentPoints - spentPoints;
-    SetUInt32Value(PLAYER_CHARACTER_POINTS, newTalentPoints);
 
     // Apply glyphs
     for(uint32 i = 0; i < GLYPHS_COUNT; i++)
@@ -7550,7 +7546,7 @@ void Player::LearnTalent(uint32 talent_id, uint32 requested_rank)
     TalentEntry * talentInfo = dbcTalent.LookupEntry(talent_id);
     if(!talentInfo)return;
 
-    uint32 CurTalentPoints = GetUInt32Value(PLAYER_CHARACTER_POINTS);
+    uint32 CurTalentPoints = 0;
     std::map<uint32, uint8> *talents = &m_specs[m_talentActiveSpec].talents;
     uint8 currentRank = 0;
     std::map<uint32, uint8>::iterator itr = talents->find(talent_id);
@@ -7621,7 +7617,7 @@ void Player::LearnTalent(uint32 talent_id, uint32 requested_rank)
     }
 
     (*talents)[talent_id] = requested_rank;
-    SetUInt32Value(PLAYER_CHARACTER_POINTS, CurTalentPoints - RequiredTalentPoints);
+
     // More cheat death hackage! :)
     if(spellid == 31330)
         m_cheatDeathRank = 3;
@@ -7670,7 +7666,6 @@ void Player::Reset_ToLevel1()
     SetUInt32Value(UNIT_FIELD_STAT3, info->intellect );
     SetUInt32Value(UNIT_FIELD_STAT4, info->spirit );
     SetUInt32Value(UNIT_FIELD_ATTACK_POWER, info->attackpower );
-    SetUInt32Value(PLAYER_CHARACTER_POINTS,0);
     for(uint32 x=0;x<7;x++)
         SetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+x, 1.00);
 
@@ -8021,13 +8016,16 @@ void Player::PlayerRegeneratePower(bool is_interrupted)
         float addvalue = 0.0f;
         switch (power)
         {
-        case POWER_MANA:
+        case POWER_TYPE_MANA:
             {
                 addvalue += GetFloatValue(is_interrupted ? UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER : UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER) * 0.001f * m_regenTimer;
             }break;
 
-        case POWER_RAGE:
+        case POWER_TYPE_RAGE:
             {
+                if(!curValue)
+                    continue;
+
                 if (!CombatStatus.IsInCombat() && !is_interrupted)
                 {
                     addvalue += -20/0.05f;  // 2 rage by tick (= 2 seconds => 1 rage/sec)
@@ -8036,13 +8034,16 @@ void Player::PlayerRegeneratePower(bool is_interrupted)
                 }
             }break;
 
-        case POWER_ENERGY:
+        case POWER_TYPE_ENERGY:
             {
                 addvalue += 0.01f * m_regenTimer;
             }break;
 
-        case POWER_RUNIC_POWER:
+        case POWER_TYPE_RUNIC:
             {
+                if(!curValue)
+                    continue;
+
                 if (!CombatStatus.IsInCombat() && !is_interrupted)
                 {
                     addvalue += -30/0.3f;
@@ -8051,10 +8052,9 @@ void Player::PlayerRegeneratePower(bool is_interrupted)
                 }
             }break;
 
-        case POWER_RUNE:
-        case POWER_FOCUS:
-        case POWER_HAPPINESS:
-        case POWER_HEALTH:
+        case POWER_TYPE_RUNE:
+        case POWER_TYPE_FOCUS:
+        case POWER_TYPE_HAPPINESS:
             continue;
             break;
 
@@ -8097,7 +8097,7 @@ void Player::PlayerRegeneratePower(bool is_interrupted)
             }
         }
 
-        if (m_regenTimerCount >= 2000 || m_powerFraction[power] == 0)
+        if (m_regenTimerCount >= 2000 || m_powerFraction[power] == 0 || curValue == maxValue)
         {
             m_regenTimerCount = 0;
             SetPower(power, curValue);
@@ -8540,7 +8540,7 @@ void Player::PushUpdateData(ByteBuffer *data, uint32 updatecount)
     // that will fit into 2^16 bytes ( stupid client limitation on server packets )
     // so if we get more than 63KB of update data, force an update and then append it
     // to the clean buffer.
-    if( (data->size() + bUpdateBuffer.size() ) >= 45000 )
+    if( (data->size() + bUpdateDataBuffer.size() ) >= 45000 )
     {
         if( IsInWorld() ) // With our allocated resources already existing, use those instead
             ProcessPendingUpdates(&m_mapMgr->m_updateBuildBuffer, &m_mapMgr->m_compressionBuffer);
@@ -8548,8 +8548,8 @@ void Player::PushUpdateData(ByteBuffer *data, uint32 updatecount)
             ProcessPendingUpdates(NULL, NULL);
     }
 
-    mUpdateCount += updatecount;
-    bUpdateBuffer.append(*data);
+    mUpdateDataCount += updatecount;
+    bUpdateDataBuffer.append(*data);
 
     // add to process queue
     if(m_mapMgr && !bProcessPending)
@@ -8576,116 +8576,59 @@ void Player::PushOutOfRange(const WoWGuid & guid)
     _bufferS.Release();
 }
 
-void Player::PushCreationData(ByteBuffer *data, uint32 updatecount)
-{
-    // imagine the bytebuffer getting appended from 2 threads at once! :D
-    _bufferS.Acquire();
-
-    // unfortunately there is no guarantee that all data will be compressed at a ratio
-    // that will fit into 2^16 bytes ( stupid client limitation on server packets )
-    // so if we get more than 40KB of update data, force an update and then append it
-    // to the clean buffer.
-    if( (data->size() + bCreationBuffer.size() + mOutOfRangeIds.size() ) >= 40000 )
-    {
-        if( IsInWorld() )
-            ProcessPendingUpdates(&m_mapMgr->m_updateBuildBuffer, &m_mapMgr->m_compressionBuffer);
-        else
-            ProcessPendingUpdates(NULL, NULL);
-    }
-
-    mCreationCount += updatecount;
-    bCreationBuffer.append(*data);
-
-    // add to process queue
-    if(m_mapMgr && !bProcessPending)
-    {
-        bProcessPending = true;
-        m_mapMgr->PushToProcessed(TO_PLAYER(this));
-    }
-
-    _bufferS.Release();
-}
-
 void Player::ProcessPendingUpdates(ByteBuffer *pBuildBuffer, ByteBuffer *pCompressionBuffer)
 {
     _bufferS.Acquire();
-    if(!bUpdateBuffer.size() && !mOutOfRangeIds.size() && !bCreationBuffer.size() && !delayedPackets.size())
+    if(!bUpdateDataBuffer.size() && !mOutOfRangeIds.size() && !delayedPackets.size())
     {
         _bufferS.Release();
         return;
     }
 
-    if(bUpdateBuffer.size() || mOutOfRangeIds.size() || bCreationBuffer.size())
+    if(bUpdateDataBuffer.size() || mOutOfRangeIds.size())
     {
-        size_t bBuffer_size =  (bCreationBuffer.size() > bUpdateBuffer.size() ? bCreationBuffer.size() : bUpdateBuffer.size()) + 14 + (mOutOfRangeIds.size() * 9);
-        uint8 * update_buffer = NULL;
+        size_t bBuffer_size = 6 + bUpdateDataBuffer.size() + (4 + 1 + mOutOfRangeIds.size() * 9);
+        uint8 *update_buffer = NULL;
         if(pBuildBuffer != NULL)
         {
             pBuildBuffer->resize(bBuffer_size);
             update_buffer = (uint8*)pBuildBuffer->contents();
         }
-        else
-            update_buffer = new uint8[bBuffer_size];
+        else update_buffer = new uint8[bBuffer_size];
         size_t c = 0;
 
-        //build out of range updates if creation updates are queued
-        if(bCreationBuffer.size() || mOutOfRangeIdCount)
+        *(uint16*)&update_buffer[c] = (uint16)GetMapId();
+        c += 2;
+        *(uint32*)&update_buffer[c] = mUpdateDataCount + (mOutOfRangeIds.size() ? 1 : 0);
+        c += 4;
+
+        // append any out of range updates
+        if(mOutOfRangeIdCount)
         {
-            *(uint16*)&update_buffer[c] = (uint16)GetMapId();
-            c += 2;
-            *(uint32*)&update_buffer[c] = ((mOutOfRangeIds.size() > 0) ? (mCreationCount + 1) : mCreationCount);
+            update_buffer[c] = UPDATETYPE_OUT_OF_RANGE_OBJECTS;
+            ++c;
+            *(uint32*)&update_buffer[c]  = mOutOfRangeIdCount;
             c += 4;
-
-            // append any out of range updates
-            if(mOutOfRangeIdCount)
-            {
-                update_buffer[c] = UPDATETYPE_OUT_OF_RANGE_OBJECTS;
-                ++c;
-                *(uint32*)&update_buffer[c]  = mOutOfRangeIdCount;
-                c += 4;
-                memcpy(&update_buffer[c], mOutOfRangeIds.contents(), mOutOfRangeIds.size());
-                c += mOutOfRangeIds.size();
-                mOutOfRangeIds.clear();
-                mOutOfRangeIdCount = 0;
-            }
-
-            if(bCreationBuffer.size())
-                memcpy(&update_buffer[c], bCreationBuffer.contents(), bCreationBuffer.size());
-            c += bCreationBuffer.size();
-
-            // clear our update buffer
-            bCreationBuffer.clear();
-            mCreationCount = 0;
-
-            // compress update packet
-            if(c < size_t(500) || !CompressAndSendUpdateBuffer((uint32)c, update_buffer, pCompressionBuffer))
-            {
-                // send uncompressed packet -> because we failed
-                m_session->OutPacket(SMSG_UPDATE_OBJECT, (uint16)c, update_buffer);
-            }
+            memcpy(&update_buffer[c], mOutOfRangeIds.contents(), mOutOfRangeIds.size());
+            c += mOutOfRangeIds.size();
+            mOutOfRangeIds.clear();
+            mOutOfRangeIdCount = 0;
         }
 
-        if(bUpdateBuffer.size())
+        if(mUpdateDataCount)
         {
-            c = 0;
-            *(uint16*)&update_buffer[c] = (uint16)GetMapId();
-            c += 2;
-            *(uint32*)&update_buffer[c] = mUpdateCount;
-            c += 4;
-            memcpy(&update_buffer[c], bUpdateBuffer.contents(), bUpdateBuffer.size());
-            c += bUpdateBuffer.size();
+            memcpy(&update_buffer[c], bUpdateDataBuffer.contents(), bUpdateDataBuffer.size());
+            c += bUpdateDataBuffer.size();
+            // clear our creation buffer
+            bUpdateDataBuffer.clear();
+            mUpdateDataCount = 0;
+        }
 
-            // clear our update buffer
-            bUpdateBuffer.clear();
-            mUpdateCount = 0;
-
-            // compress update packet
-            // while we said 350 before, I'm gonna make it 500 :D
-            if(c < size_t(500) || !CompressAndSendUpdateBuffer((uint32)c, update_buffer, pCompressionBuffer))
-            {
-                // send uncompressed packet -> because we failed
-                m_session->OutPacket(SMSG_UPDATE_OBJECT, (uint16)c, update_buffer);
-            }
+        // compress update packet
+        //if(c < size_t(500) || !CompressAndSendUpdateBuffer((uint32)c, update_buffer, pCompressionBuffer))
+        {
+            // send uncompressed packet -> because we failed
+            m_session->OutPacket(SMSG_UPDATE_OBJECT, (uint16)c, update_buffer);
         }
 
         bProcessPending = false;
@@ -8701,12 +8644,6 @@ void Player::ProcessPendingUpdates(ByteBuffer *pBuildBuffer, ByteBuffer *pCompre
     while(delayedPackets.size())
     {
         pck = delayedPackets.next();
-        if(pck->GetOpcode() > NUM_MSG_TYPES || pck->size() > 131078)
-        {   // FUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU
-            delete pck;
-            continue;
-        }
-
         m_session->SendPacket(pck);
         delete pck;
     }
@@ -8808,8 +8745,8 @@ void Player::ClearAllPendingUpdates()
 {
     _bufferS.Acquire();
     bProcessPending = false;
-    mUpdateCount = 0;
-    bUpdateBuffer.clear();
+    mUpdateDataCount = 0;
+    bUpdateDataBuffer.clear();
     _bufferS.Release();
 }
 
@@ -9254,7 +9191,9 @@ void Player::ApplyLevelInfo(uint32 Level)
         if(Talents < 0)
             Reset_Talents(true);
         else if(Level >= 10)
-            ModUnsigned32Value(PLAYER_CHARACTER_POINTS, Talents);
+        {
+            // Set talents
+        }
 
         SetUInt32Value(UNIT_FIELD_HEALTH, GetUInt32Value(UNIT_FIELD_MAXHEALTH));
         SetUInt32Value(UNIT_FIELD_POWER1, GetUInt32Value(UNIT_FIELD_MAXPOWER1));
@@ -10731,8 +10670,8 @@ void Player::_UpdateSkillFields()
         else
             SetUInt32Value(f++, itr->first);
 
-        SetUInt16Value(f, 0, itr->second.CurrentValue);
-        SetUInt16Value(f, 1, itr->second.MaximumValue);
+        uint32 combinedData = uint32(uint16(itr->second.MaximumValue)) << 16;
+        SetUInt32Value(f, combinedData|itr->second.CurrentValue);
         f++;
 
         SetUInt32Value(f++, itr->second.BonusValue);

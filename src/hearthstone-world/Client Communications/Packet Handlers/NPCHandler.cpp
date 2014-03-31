@@ -327,7 +327,7 @@ uint8 WorldSession::TrainerGetSpellStatus(TrainerSpell* pSpell)
     if( (pSpell->RequiredLevel && _player->getLevel() < pSpell->RequiredLevel)
         || (pSpell->RequiredSpell && !_player->HasSpell(pSpell->RequiredSpell))
         || (pSpell->Cost && _player->GetUInt32Value(PLAYER_FIELD_COINAGE) < pSpell->Cost) || (!hasskill)
-        || (pSpell->IsProfession && pSpell->RequiredSkillLine == 0 && _player->GetUInt32Value(PLAYER_CHARACTER_POINTS+1) == 0)//check level 1 professions if we can learn a new proffesion
+        || (pSpell->IsProfession && pSpell->RequiredSkillLine == 0 && _player->GetUInt32Value(PLAYER_CHARACTER_POINTS) == 0)//check level 1 professions if we can learn a new proffesion
         || (ssspell && !_player->HasSpell(ssspell)))
     {
         return TRAINER_STATUS_NOT_LEARNABLE;
