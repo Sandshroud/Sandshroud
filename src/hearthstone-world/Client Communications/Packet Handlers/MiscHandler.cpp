@@ -925,9 +925,10 @@ void WorldSession::HandleUpdateAccountData(WorldPacket& recv_data)
         switch (ZlibResult)
         {
         case Z_OK:                //0 no error decompression is OK
-            SetAccountData(uiID, acctdata, false, uiDecompressedSize);
-            sLog.outDebug("WORLD: Successfully decompressed account data %d for %s, and updated storage array.", uiID, GetPlayer() ? GetPlayer()->GetName() : GetAccountNameS());
-            break;
+            {
+                SetAccountData(uiID, acctdata, uiDecompressedSize, _time);
+                sLog.outDebug("WORLD: Successfully decompressed account data %d for %s, and updated storage array.", uiID, GetPlayer() ? GetPlayer()->GetName() : GetAccountNameS());
+            }break;
 
         case Z_ERRNO:               //-1
         case Z_STREAM_ERROR:        //-2
@@ -935,11 +936,10 @@ void WorldSession::HandleUpdateAccountData(WorldPacket& recv_data)
         case Z_MEM_ERROR:           //-4
         case Z_BUF_ERROR:           //-5
         case Z_VERSION_ERROR:       //-6
-        {
-            delete [] acctdata;
-            sLog.outString("WORLD WARNING: Decompression of account data %d for %s FAILED.", uiID, GetPlayer() ? GetPlayer()->GetName() : GetAccountNameS());
-            break;
-        }
+            {
+                delete [] acctdata;
+                sLog.outString("WORLD WARNING: Decompression of account data %d for %s FAILED.", uiID, GetPlayer() ? GetPlayer()->GetName() : GetAccountNameS());
+            }break;
 
         default:
             delete [] acctdata;
@@ -950,7 +950,7 @@ void WorldSession::HandleUpdateAccountData(WorldPacket& recv_data)
     else
     {
         memcpy(acctdata, recv_data.contents() + 12, uiDecompressedSize);
-        SetAccountData(uiID, acctdata, false, uiDecompressedSize);
+        SetAccountData(uiID, acctdata, uiDecompressedSize, _time);
     }SKIP_READ_PACKET(recv_data); // Spam cleanup for packet size checker... Because who cares about this dataz
 
     WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA_COMPLETE, 4+4);
@@ -987,7 +987,7 @@ void WorldSession::HandleRequestAccountData(WorldPacket& recv_data)
     WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA, 18+bbuff.size());
     data << uint64(_player ? _player->GetGUID() : 0);
     data << uint32(id);
-    data << uint32(res->Time);
+    data << uint32(res->timeStamp);
     data << uint32(res->sz);
     data.append(bbuff);
     SendPacket(&data);
