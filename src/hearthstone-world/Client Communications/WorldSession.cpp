@@ -1167,19 +1167,17 @@ void WorldSession::LoadAccountData()
     {
         QueryResult *pResult = CharacterDatabase.Query("SELECT * FROM account_data WHERE acct = %u", GetAccountId());
         if( pResult == NULL )
-            CharacterDatabase.Execute("INSERT INTO account_data VALUES(%u, '', '', '', '', '', '', '', '', '')", GetAccountId());
-        else
+            return;
+
+        for(uint8 i = 0; i < 8; i++)
         {
-            for(uint8 i = 0; i < 8; i++)
-            {
-                const char *data = pResult->Fetch()[1+i].GetString();
-                uint32 len = data ? strlen(data) : 0;
-                if(len == 0)
-                    continue;
-                SetAccountData(i, strdup(data), true, len);
-            }
-            delete pResult;
+            const char *data = pResult->Fetch()[1+i].GetString();
+            uint32 len = data ? strlen(data) : 0;
+            if(len == 0)
+                continue;
+            SetAccountData(i, strdup(data), true, len);
         }
+        delete pResult;
     }
 }
 
