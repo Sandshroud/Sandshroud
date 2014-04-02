@@ -1103,14 +1103,13 @@ void WorldSession::HandleRealmSplit(WorldPacket & recv_data)
 
 void WorldSession::HandleWorldLoginOpcode(WorldPacket & recv_data)
 {
-    if(_player == NULL)
-        return;
-
     uint8 unk;
     uint32 mapId;
     recv_data >> unk >> mapId;
 
-    printf("OnWorldLogin\n");
+    if(_player == NULL)
+        return;
+
     //_player->OnWorldLogin();
 }
 

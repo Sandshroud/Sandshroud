@@ -224,32 +224,6 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
     }
 
     /************************************************************************/
-    /* Dump movement flags - Wheee!                                         */
-    /************************************************************************/
-#if 0
-    printf("=========================================================\n");
-    printf("Full movement flags: 0x%.8X\n", _player->movement_info.movementFlags);
-    uint32 z, b;
-    for(z = 1, b = 1; b < 32;)
-    {
-        if(_player->movement_info.movementFlags & z)
-            printf("   Bit %u (0x%.8X or %u) is set!\n", b, z, z);
-
-        z <<= 1;
-        b+=1;
-    }
-    printf("=========================================================\n");
-#endif
-
-    /************************************************************************/
-    /* Orientation dumping                                                  */
-    /************************************************************************/
-#if 0
-    printf("Packet: 0x%03X (%s)\n", recv_data.GetOpcode(), LookupName( recv_data.GetOpcode(), g_worldOpcodeNames ) );
-    printf("Orientation: %.10f\n", _player->movement_info.orientation);
-#endif
-
-    /************************************************************************/
     /* Anti-Hack Checks                                                     */
     /************************************************************************/
     if((!HasGMPermissions() || !sWorld.no_antihack_on_gm) && !_player->m_uint32Values[UNIT_FIELD_CHARM] && !_player->m_heartbeatDisable)

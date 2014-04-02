@@ -984,7 +984,6 @@ void WorldSession::HandleRequestAccountData(WorldPacket& recv_data)
         return;
     }
 
-    printf("Sending account data: %u\n", res->sz);
     WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA, 18+bbuff.size());
     data << uint64(_player ? _player->GetGUID() : 0);
     data << uint32(id);
