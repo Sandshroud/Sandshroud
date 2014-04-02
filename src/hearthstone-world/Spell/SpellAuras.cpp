@@ -6611,16 +6611,7 @@ void Aura::SpellAuraDrinkNew(bool apply)
     }
 
     if( m_spellProto->NameHash == SPELL_HASH_DEATH_RUNE_MASTERY && m_target->IsPlayer())
-    {
-        if(apply)
-        {
-            uint32 chance = 33;
-            chance *= m_spellProto->RankNumber;
-            TO_PLAYER(m_target)->m_deathRuneMasteryChance = m_spellProto->RankNumber == 3 ? 100 : chance;
-        }
-        else
-            TO_PLAYER(m_target)->m_deathRuneMasteryChance = 0;
-    }
+        TO_PLAYER(m_target)->SetDeathRuneChance(apply ? ((m_spellProto->RankNumber == 3 ? 100 : (33*m_spellProto->RankNumber))) : 0);
 
     if( m_spellProto->NameHash == SPELL_HASH_STEAL_FLESH )
     {

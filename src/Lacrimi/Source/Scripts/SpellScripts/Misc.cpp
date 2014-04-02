@@ -1618,7 +1618,7 @@ bool Todo2(Unit *target, uint32 &uSpellId, int32 &damage, SpellCastTargets &targ
             SpellRuneCostEntry * sr = dbcSpellRuneCost.LookupEntry( casting->RuneCostID );
             if( !sr || sr->bloodRuneCost == 0 ) // not costing blood.
                 return false;
-            if( TO_PLAYER(target)->m_runes[0] == RUNE_TYPE_BLOOD || TO_PLAYER(target)->m_runes[1] == RUNE_TYPE_BLOOD )
+            if( TO_PLAYER(target)->GetRune(0) == RUNE_TYPE_BLOOD || TO_PLAYER(target)->GetRune(1) == RUNE_TYPE_BLOOD )
                 return false; // oh snap, still have blood runes, this doesn't count.
         }break;
     case 55666: // Desecration Rank 1

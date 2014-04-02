@@ -132,6 +132,8 @@ public:
     bool TakePower();
     // Has power?
     bool HasPower();
+    // Calculate power to take
+    int32 CalculateCost(int32 &powerField);
     // Checks the caster is ready for cast
     uint8 CanCast(bool tolerate);
     // Removes reagents, ammo, and items/charges
