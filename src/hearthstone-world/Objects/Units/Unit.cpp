@@ -4506,7 +4506,7 @@ void Unit::SendPowerUpdate(int8 power)
     uint32 updateCount = 1;
     uint8 PowerType = (power == -1 ? GetPowerType() : power);
 
-    WorldPacket data(SMSG_POWER_UPDATE);
+    WorldPacket data(SMSG_POWER_UPDATE, 20);
     data << GetNewGUID();
     data << uint32(updateCount); // iteration count
     for (int32 i = 0; i < updateCount; ++i)

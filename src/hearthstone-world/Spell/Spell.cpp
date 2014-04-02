@@ -2209,7 +2209,6 @@ void Spell::finish()
 
 void Spell::SendCastResult(uint8 result)
 {
-    uint32 Extra = 0;
     if(result == SPELL_CANCAST_OK)
         return;
 
@@ -2227,6 +2226,7 @@ void Spell::SendCastResult(uint8 result)
     if( m_spellState == SPELL_STATE_PREPARING )
         plr->Cooldown_OnCancel(m_spellInfo);
 
+    uint32 Extra = 0;
     // for some reason, the result extra is not working for anything, including SPELL_FAILED_REQUIRES_SPELL_FOCUS
     switch( result )
     {
@@ -2326,6 +2326,7 @@ void Spell::SendSpellGo()
     if(!IsNeedSendToClient())
         return;
 
+    printf("Sending spell go\n");
     ItemPrototype* ip = NULL;
     uint32 cast_flags = SPELL_CAST_FLAGS_CAST_DEFAULT;
     if((m_triggeredSpell || m_triggeredByAura) && !(m_spellInfo->Flags3 & FLAGS3_ACTIVATE_AUTO_SHOT))
@@ -2371,20 +2372,17 @@ void Spell::SendSpellGo()
     m_targets.write( data ); // this write is included the target flag
 
     if (cast_flags & SPELL_CAST_FLAGS_POWER_UPDATE) //send new power
-        data << uint32( u_caster->GetPower(GetSpellProto()->powerType));
+        data << uint32(u_caster->GetPower(GetSpellProto()->powerType));
     if( cast_flags & SPELL_CAST_FLAGS_RUNE_UPDATE ) //send new runes
     {
         SpellRuneCostEntry * runecost = dbcSpellRuneCost.LookupEntry(GetSpellProto()->RuneCostID);
-        uint8 theoretical = p_caster->TheoreticalUseRunes(runecost->bloodRuneCost, runecost->frostRuneCost, runecost->unholyRuneCost);
-        data << p_caster->m_runemask << theoretical;
-
-        for (uint8 i = 0; i<6; i++)
+        uint8 runeMask = p_caster->GetRuneMask(), theoretical = p_caster->TheoreticalUseRunes(runecost->bloodRuneCost, runecost->frostRuneCost, runecost->unholyRuneCost);
+        data << runeMask << theoretical;
+        for (uint8 i = 0; i < 6; i++)
         {
             uint8 mask = (1 << i);
-            if (mask & p_caster->m_runemask && !(mask & theoretical))
-            {
+            if (mask & runeMask && !(mask & theoretical))
                 data << uint8(0);
-            }
         }
     }
 
@@ -2543,109 +2541,89 @@ void Spell::SendResurrectRequest(Player* target)
 
 bool Spell::HasPower()
 {
-    if(m_caster == NULL)
-        return true;
-    //trainers can always cast
-    if( u_caster != NULL && u_caster->HasFlag(UNIT_NPC_FLAGS,UNIT_NPC_FLAG_TRAINER) )
-        return true;
-    //Powercheaters too
-    if(p_caster && p_caster->PowerCheat)
-        return true;
-    //Seems to be an issue since 3.0.9, as many elixers/potions got powertype 4
-    //Haven't found any items taking power, so guess it's safe to skip them.
-    if(i_caster || g_caster)
-        return true;
-
-    int32 powerField;
-    switch(GetSpellProto()->powerType)
+    int32 powerField = 0;
+    int32 cost = CalculateCost(powerField);
+    if(powerField == -1)
+        return false;
+    if (cost <= 0)
     {
-    case POWER_TYPE_HEALTH:     { powerField = UNIT_FIELD_HEALTH; }break;
-    case POWER_TYPE_MANA:       { powerField = UNIT_FIELD_POWER1; m_usesMana=true; }break;
-    case POWER_TYPE_RAGE:       { powerField = UNIT_FIELD_POWER2; }break;
-    case POWER_TYPE_FOCUS:      { powerField = UNIT_FIELD_POWER3; }break;
-    case POWER_TYPE_ENERGY:     { powerField = UNIT_FIELD_POWER4; }break;
-    case POWER_TYPE_RUNIC:      { powerField = UNIT_FIELD_POWER7; }break;
-    case POWER_TYPE_SOUL_SHARDS:{ powerField = UNIT_FIELD_POWER8; }break;
-    case POWER_TYPE_ECLIPSE:    { powerField = UNIT_FIELD_POWER9; }break;
-    case POWER_TYPE_HOLY_POWER: { powerField = UNIT_FIELD_POWER10; }break;
-    case POWER_TYPE_RUNE:
-        {
-            if(GetSpellProto()->RuneCostID && p_caster)
-            {
-                SpellRuneCostEntry * runecost = dbcSpellRuneCost.LookupEntry(GetSpellProto()->RuneCostID);
-                if( !p_caster->CanUseRunes( runecost->bloodRuneCost, runecost->frostRuneCost, runecost->unholyRuneCost) )
-                    return false;
-            }
-            return true;
-        }
-    default:
-        {
-            sLog.Debug("Spell","unknown power type %d", GetSpellProto()->powerType);
-            return false;
-        }break;
+        m_usesMana = false; // no mana regen interruption for free spells
+        return true;
     }
+    // Unit has enough power (needed for creatures)
+    return (cost <= m_caster->GetUInt32Value(powerField));
+}
 
-    int32 cost = m_caster->GetSpellBaseCost(m_spellInfo);
-    int32 currentPower = m_caster->GetUInt32Value(powerField);
-    if(u_caster != NULL && (int32)GetSpellProto()->powerType != POWER_TYPE_HEALTH )
-    {
-        if( GetSpellProto()->powerType == POWER_TYPE_MANA)
-            cost += u_caster->PowerCostMod[GetSpellProto()->School];//this is not percent!
-        else
-            cost += u_caster->PowerCostMod[0];
-
-        cost += float2int32(cost*u_caster->GetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER+GetSpellProto()->School));
-    }
-
-    //apply modifiers
-    if( GetSpellProto()->SpellGroupType && u_caster)
-    {
-        SM_FIValue(u_caster->SM[SMT_COST][0],&cost,GetSpellProto()->SpellGroupType);
-        SM_PIValue(u_caster->SM[SMT_COST][1],&cost,GetSpellProto()->SpellGroupType);
-    }
-
+bool Spell::TakePower()
+{
+    printf("Taking power\n");
+    int32 powerField = 0;
+    int32 cost = CalculateCost(powerField);
+    if(powerField == -1)
+        return false;
     if (cost <= 0)
     {
         m_usesMana = false; // no mana regen interruption for free spells
         return true;
     }
 
-    //Stupid shiv
-    if( GetSpellProto()->NameHash == SPELL_HASH_SHIV )
+    if(powerField == UNIT_FIELD_POWER6)
     {
-        Item* Offhand = p_caster->GetItemInterface()->GetInventoryItem( EQUIPMENT_SLOT_OFFHAND);
-
-        if( Offhand != NULL && Offhand->GetProto() != NULL )
-            cost += Offhand->GetProto()->Delay / 100;
+        if(cost)
+        {
+            SpellRuneCostEntry *runecost = dbcSpellRuneCost.LookupEntry(cost);
+            p_caster->UseRunes(runecost->bloodRuneCost, runecost->frostRuneCost, runecost->unholyRuneCost, m_spellInfo);
+            if(runecost->runePowerGain)
+                u_caster->SetPower(POWER_TYPE_RUNIC, runecost->runePowerGain + u_caster->GetPower(POWER_TYPE_RUNIC));
+        }
     }
+    else
+    {
+        int32 currentPower = m_caster->GetUInt32Value(powerField);
+        if(powerField == UNIT_FIELD_HEALTH)
+        {
+            if(cost <= currentPower) // Unit has enough power (needed for creatures)
+            {
+                m_caster->DealDamage(u_caster, cost, 0, 0, 0,true);
+                return true;
+            }
+        }
+        else
+        {
+            if(cost <= currentPower) // Unit has enough power (needed for creatures)
+            {
+                if( u_caster && GetSpellProto()->powerType == POWER_TYPE_MANA )
+                {
+                    u_caster->m_LastSpellManaCost = cost;
+                    if(m_spellInfo->IsChannelSpell()) // Client only accepts channels
+                        u_caster->DelayPowerRegeneration(GetDuration());
+                }
 
-    if(cost <= currentPower) // Unit has enough power (needed for creatures)
-        return true;
+                u_caster->SetPower(GetSpellProto()->powerType, currentPower - cost);
+                return true;
+            }
+        }
+    }
     return false;
 }
 
-bool Spell::TakePower()
+int32 Spell::CalculateCost(int32 &powerField)
 {
+    // Initialize powerfield
+    powerField = -1;
+    // Failed with no caster
     if(m_caster == NULL)
-        return true;
-    //trainers can always cast
-    if( u_caster != NULL && u_caster->HasFlag(UNIT_NPC_FLAGS,UNIT_NPC_FLAG_TRAINER) )
-        return true;
-    //Powercheaters too
-    if(p_caster && p_caster->PowerCheat)
-        return true;
-    //Seems to be an issue since 3.0.9, as many elixers/potions got powertype 4
-    //Haven't found any items taking power, so guess it's safe to skip them.
-    if(i_caster)
-        return true;
-    if(g_caster)
-        return true; //GO's Don't use power.
-
-    int32 powerField = 0;
+        return 0;
+    // Trainers can always cast, same with players with powercheat
+    if((u_caster != NULL && u_caster->HasFlag(UNIT_NPC_FLAGS,UNIT_NPC_FLAG_TRAINER)) || (p_caster && p_caster->PowerCheat))
+        return (powerField = 0);
+    // Items and GO's use charges, not power
+    if(i_caster || g_caster)
+        return (powerField = 0);
     switch(GetSpellProto()->powerType)
     {
     case POWER_TYPE_HEALTH:     { powerField = UNIT_FIELD_HEALTH; }break;
-    case POWER_TYPE_MANA:       { powerField = UNIT_FIELD_POWER1; m_usesMana=true; }break;
+    case POWER_TYPE_MANA:       { powerField = UNIT_FIELD_POWER1; m_usesMana = true; }break;
     case POWER_TYPE_RAGE:       { powerField = UNIT_FIELD_POWER2; }break;
     case POWER_TYPE_FOCUS:      { powerField = UNIT_FIELD_POWER3; }break;
     case POWER_TYPE_ENERGY:     { powerField = UNIT_FIELD_POWER4; }break;
@@ -2659,19 +2637,16 @@ bool Spell::TakePower()
             {
                 SpellRuneCostEntry * runecost = dbcSpellRuneCost.LookupEntry(GetSpellProto()->RuneCostID);
                 if( !p_caster->CanUseRunes( runecost->bloodRuneCost, runecost->frostRuneCost, runecost->unholyRuneCost) )
-                    return false;
-
-                p_caster->UseRunes( runecost->bloodRuneCost, runecost->frostRuneCost, runecost->unholyRuneCost, m_spellInfo);
-                if(runecost->runePowerGain)
-                    u_caster->SetPower(POWER_TYPE_RUNIC, runecost->runePowerGain + u_caster->GetUInt32Value(UNIT_FIELD_POWER7));
+                    return 0;
+                powerField = UNIT_FIELD_POWER6;
+                return GetSpellProto()->RuneCostID;
             }
-            return true;
+            return 0;
         }break;
     default:
         {
             sLog.Debug("Spell","Unknown power type %u for spell %u", GetSpellProto()->powerType, GetSpellProto()->Id);
-            // we shouldn't be here to return
-            return false;
+            return 0;
         }break;
     }
 
@@ -2680,10 +2655,8 @@ bool Spell::TakePower()
     if( u_caster != NULL )
     {
         if( GetSpellProto()->AttributesEx & ATTRIBUTESEX_DRAIN_WHOLE_MANA ) // Uses %100 mana
-        {
-            m_caster->SetUInt32Value(powerField, 0);
-            return true;
-        }
+            return m_caster->GetUInt32Value(powerField);
+
         cost += u_caster->PowerCostMod[ m_usesMana ? GetSpellProto()->School : 0 ];//this is not percent!
         cost += float2int32(float(cost)* u_caster->GetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER + GetSpellProto()->School));
     }
@@ -2692,7 +2665,6 @@ bool Spell::TakePower()
     if( GetSpellProto()->NameHash == SPELL_HASH_SHIV )
     {
         Item* Offhand = p_caster->GetItemInterface()->GetInventoryItem( EQUIPMENT_SLOT_OFFHAND);
-
         if( Offhand != NULL && Offhand->GetProto() != NULL )
             cost += Offhand->GetProto()->Delay / 100;
     }
@@ -2703,38 +2675,7 @@ bool Spell::TakePower()
         SM_FIValue(u_caster->SM[SMT_COST][0],&cost,GetSpellProto()->SpellGroupType);
         SM_PIValue(u_caster->SM[SMT_COST][1],&cost,GetSpellProto()->SpellGroupType);
     }
-
-    if (cost <= 0)
-    {
-        m_usesMana = false; // no mana regen interruption for free spells
-        return true;
-    }
-
-    //FIXME:DK:if field value < cost what happens
-    if(powerField == UNIT_FIELD_HEALTH)
-    {
-        if(cost <= currentPower) // Unit has enough power (needed for creatures)
-        {
-            m_caster->DealDamage(u_caster, cost, 0, 0, 0,true);
-            return true;
-        }
-    }
-    else
-    {
-        if(cost <= currentPower) // Unit has enough power (needed for creatures)
-        {
-            if( u_caster && GetSpellProto()->powerType == POWER_TYPE_MANA )
-            {
-                u_caster->m_LastSpellManaCost = cost;
-                if(m_spellInfo->IsChannelSpell()) // Client only accepts channels
-                    u_caster->DelayPowerRegeneration(GetDuration());
-            }
-
-            u_caster->SetPower(GetSpellProto()->powerType, currentPower - cost);
-            return true;
-        }
-    }
-    return false;
+    return cost;
 }
 
 Object* Spell::_LookupObject(const uint64& guid)
