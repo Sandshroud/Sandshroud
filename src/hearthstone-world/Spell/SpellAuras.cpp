@@ -1471,8 +1471,6 @@ void Aura::SpellAuraPeriodicDamage(bool apply)
         sEventMgr.AddEvent(this, &Aura::EventPeriodicDamage, (uint32)dmg,
             EVENT_AURA_PERIODIC_DAMAGE, time, 0, EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT);
 
-        /*TO_PLAYER( caster )->GetSession()->SystemMessage("dot will do %u damage every %u seconds (total of %u)", dmg,m_spellProto->EffectAmplitude[mod->i],(GetDuration()/m_spellProto->EffectAmplitude[mod->i])*dmg);
-        printf("dot will do %u damage every %u seconds (total of %u)\n", dmg,m_spellProto->EffectAmplitude[mod->i],(GetDuration()/m_spellProto->EffectAmplitude[mod->i])*dmg);*/
         SetNegative();
         if( m_spellProto->buffType & SPELL_TYPE_WARLOCK_IMMOLATE )
         {

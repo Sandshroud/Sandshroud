@@ -2326,7 +2326,6 @@ void Spell::SendSpellGo()
     if(!IsNeedSendToClient())
         return;
 
-    printf("Sending spell go\n");
     ItemPrototype* ip = NULL;
     uint32 cast_flags = SPELL_CAST_FLAGS_CAST_DEFAULT;
     if((m_triggeredSpell || m_triggeredByAura) && !(m_spellInfo->Flags3 & FLAGS3_ACTIVATE_AUTO_SHOT))
@@ -2556,7 +2555,6 @@ bool Spell::HasPower()
 
 bool Spell::TakePower()
 {
-    printf("Taking power\n");
     int32 powerField = 0;
     int32 cost = CalculateCost(powerField);
     if(powerField == -1)
@@ -5193,7 +5191,6 @@ void Spell::_AddTargetForced(const uint64& guid, const uint32 effectid)
 void Spell::DamageGosAround(uint32 i)
 {
     uint32 spell_id = GetSpellProto()->Id;
-    printf("gameObjTarget not found for spell Id %u report on mantis\n",spell_id);
     float r = GetRadius(i);
     r *= r;
     Object* o;
