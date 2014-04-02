@@ -147,12 +147,11 @@ enum SessionStatus
 
 struct AccountDataEntry
 {
-    AccountDataEntry() : Time(0), data(NULL), sz(0), bIsDirty(false) { }
+    AccountDataEntry() : timeStamp(0), data(NULL), sz(0) { }
 
-    time_t Time;
+    uint32 timeStamp;
     char * data;
     uint32 sz;
-    bool bIsDirty;
 };
 
 // ? New 3.2.2 Account DataType Enums
@@ -252,7 +251,7 @@ public:
     }
     HEARTHSTONE_INLINE void SetPlayer(Player* plr) { _player = plr; }
 
-    HEARTHSTONE_INLINE void SetAccountData(uint32 index, char* data, bool initial, uint32 sz)
+    HEARTHSTONE_INLINE void SetAccountData(uint32 index, char* data, uint32 sz, uint32 time = UNIXTIME)
     {
         ASSERT(index < 8);
         if(data == NULL || sz == 0)
@@ -271,11 +270,7 @@ public:
                 m_accountData[index] = new AccountDataEntry();
             m_accountData[index]->data = data;
             m_accountData[index]->sz = sz;
-            m_accountData[index]->Time = UNIXTIME;
-            if(!initial && !m_accountData[index]->bIsDirty)       // Mark as "changed" or "dirty"
-                m_accountData[index]->bIsDirty = true;
-            else if(initial)
-                m_accountData[index]->bIsDirty = false;
+            m_accountData[index]->timeStamp = time;
         }
     }
 

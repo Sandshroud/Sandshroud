@@ -977,22 +977,14 @@ void Player::Update( uint32 p_time )
     if( m_onAutoShot )
     {
         if( m_AutoShotAttackTimer > p_time )
-        {
-            //sLog.outDebug( "HUNTER AUTOSHOT 0) %i, %i", m_AutoShotAttackTimer, p_time );
             m_AutoShotAttackTimer -= p_time;
-        }
-        else
-        {
-            //sLog.outDebug( "HUNTER AUTOSHOT 1) %i", p_time );
-            EventRepeatSpell();
-        }
+        else EventRepeatSpell();
     }
     else if(m_AutoShotAttackTimer > 0)
     {
         if(m_AutoShotAttackTimer > p_time)
             m_AutoShotAttackTimer -= p_time;
-        else
-            m_AutoShotAttackTimer = 0;
+        else m_AutoShotAttackTimer = 0;
     }
 
     // Handle our water stuff
@@ -1040,19 +1032,14 @@ void Player::Update( uint32 p_time )
 
     if(m_pvpTimer)
     {
-        if(!IsPvPFlagged())
+        if(p_time >= m_pvpTimer)
+            m_pvpTimer -= p_time;
+        else m_pvpTimer = 0;
+        if(m_pvpTimer == 0 || !IsPvPFlagged())
         {
             StopPvPTimer();
             RemovePvPFlag();    // Reset Timer Status
         }
-
-        if(p_time >= m_pvpTimer)
-        {
-            RemovePvPFlag();
-            m_pvpTimer = 0;
-        }
-        else
-            m_pvpTimer -= p_time;
     }
 
     if (GetMapMgr())
@@ -5523,25 +5510,8 @@ float Player::CalculateCritFromAgilForClassAndLevel(uint32 _class, uint32 _level
     if(baseCrit == NULL || CritPerAgi == NULL)
         return 0.0f;
     uint32 agility = GetUInt32Value(UNIT_FIELD_STAT1);
-    float base = 100*baseCrit->val, ratio = 100*CritPerAgi->val, coeff = 0.0f;
-    if(_level > 80)
-    {
-        switch(_class)
-        {
-        case DRUID:
-            coeff = -0.0265f;
-            break;
-        case SHAMAN:
-            coeff = -0.0260f;
-            break;
-        case HUNTER:
-            coeff = -0.002f;
-            break;
-        }
-    }
-    ratio += coeff;
-    if(ratio < 0.0f)
-        ratio = 0.00001f;
+    float base = 100*baseCrit->val, ratio = 100*CritPerAgi->val;
+    if(ratio < 0.0f) ratio = 0.00001f;
     return (base + float(agility*ratio));
 }
 
@@ -5552,25 +5522,7 @@ float Player::CalculateDefenseFromAgilForClassAndLevel(uint32 _class, uint32 _le
         return 0.0f;
     float class_multiplier = (_class == WARRIOR ? 1.1f : _class == HUNTER ? 1.6f : _class == ROGUE ? 2.0f : _class == DRUID ? 1.7f : 1.0f);
     uint32 agility = GetUInt32Value(UNIT_FIELD_STAT1)*class_multiplier;
-    float base = baseDodge[_class], ratio = 100*CritPerAgi->val, coeff = 0.0f;
-    if(_level > 80)
-    {
-        switch(_class)
-        {
-        case DRUID:
-            coeff = -0.0265f;
-            break;
-        case SHAMAN:
-            coeff = -0.0260f;
-            break;
-        case HUNTER:
-            coeff = -0.002f;
-            break;
-        }
-    }
-    ratio += coeff;
-    if(ratio < 0.0f)
-        ratio = 0.00001f;
+    float base = baseDodge[_class], ratio = 100*CritPerAgi->val;
     return (base + (agility*ratio));
 }
 

@@ -522,7 +522,16 @@ void WorldSession::InitPacketHandlerTable()
 
     WorldPacketHandlers[CMSG_WORLD_LOGIN].handler                           = &WorldSession::HandleWorldLoginOpcode;
     WorldPacketHandlers[CMSG_WORLD_LOGIN].status                            = STATUS_AUTHED;
+
     WorldPacketHandlers[CMSG_UPDATE_OBJECT_REQUEST].handler                 = &WorldSession::HandleObjectUpdateRequest;
+
+    // Account Data
+    WorldPacketHandlers[CMSG_UPDATE_ACCOUNT_DATA].handler                   = &WorldSession::HandleUpdateAccountData;
+    WorldPacketHandlers[CMSG_UPDATE_ACCOUNT_DATA].status                    = STATUS_AUTHED;
+    WorldPacketHandlers[CMSG_REQUEST_ACCOUNT_DATA].handler                  = &WorldSession::HandleRequestAccountData;
+    WorldPacketHandlers[CMSG_REQUEST_ACCOUNT_DATA].status                   = STATUS_AUTHED;
+    WorldPacketHandlers[CMSG_READY_FOR_ACCOUNT_DATA_TIMES].handler          = &WorldSession::HandleReadyForAccountDataTimes;
+    WorldPacketHandlers[CMSG_READY_FOR_ACCOUNT_DATA_TIMES].status           = STATUS_AUTHED;
 
     // Queries
     WorldPacketHandlers[MSG_CORPSE_QUERY].handler                           = &WorldSession::HandleCorpseQueryOpcode;
@@ -617,16 +626,8 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_BUG].handler                                   = &WorldSession::HandleBugOpcode;
     WorldPacketHandlers[CMSG_SET_CONTACT_NOTES].handler                     = &WorldSession::HandleSetFriendNote;
 
-    // Areatrigger
+    // Misc
     WorldPacketHandlers[CMSG_AREATRIGGER].handler                           = &WorldSession::HandleAreaTriggerOpcode;
-
-    // Account Data
-    WorldPacketHandlers[CMSG_UPDATE_ACCOUNT_DATA].handler                   = &WorldSession::HandleUpdateAccountData;
-    WorldPacketHandlers[CMSG_UPDATE_ACCOUNT_DATA].status                    = STATUS_AUTHED;
-    WorldPacketHandlers[CMSG_REQUEST_ACCOUNT_DATA].handler                  = &WorldSession::HandleRequestAccountData;
-    WorldPacketHandlers[CMSG_REQUEST_ACCOUNT_DATA].status                   = STATUS_AUTHED;
-    WorldPacketHandlers[CMSG_READY_FOR_ACCOUNT_DATA_TIMES].handler          = &WorldSession::HandleReadyForAccountDataTimes;
-    WorldPacketHandlers[CMSG_READY_FOR_ACCOUNT_DATA_TIMES].status           = STATUS_AUTHED;
     WorldPacketHandlers[CMSG_SET_FACTION_ATWAR].handler                     = &WorldSession::HandleSetAtWarOpcode;
     WorldPacketHandlers[CMSG_SET_WATCHED_FACTION].handler                   = &WorldSession::HandleSetWatchedFactionIndexOpcode;
     WorldPacketHandlers[CMSG_TOGGLE_PVP].handler                            = &WorldSession::HandleTogglePVPOpcode;
@@ -1155,7 +1156,7 @@ void WorldSession::SendAccountDataTimes(uint8 mask)
     {
         AccountDataEntry* acct_data = GetAccountData(i);
         if(mask & (1 << i))
-            data << uint32(acct_data ? acct_data->Time : 0);
+            data << uint32(acct_data ? acct_data->timeStamp : 0);
     }
     SendPacket(&data);
 }
@@ -1186,38 +1187,21 @@ void WorldSession::SaveAccountData()
 {
     if( sWorld.m_useAccountData )
     {
-        bool dirty = false;
-        std::stringstream ss;
-        ss << "UPDATE account_data SET ";
+        std::stringstream fieldName, dataString;
+        fieldName << "acct";
+        dataString << "'" << _accountId << "'";
         for(uint32 ui = 0; ui < 8; ++ui)
         {
-            if(m_accountData[ui])
-            {
-                if(m_accountData[ui]->bIsDirty)
-                {
-                    if(dirty) ss << ", ";
-                    ss << "uiconfig"<< ui <<"=\"";
-                    if(m_accountData[ui]->data)
-                        CharacterDatabase.EscapeLongString(m_accountData[ui]->data, m_accountData[ui]->sz, ss);
-                    else ss << " ";
-                    ss << "\"";
-                    dirty = true;
-                    m_accountData[ui]->bIsDirty = false;
-                }
-            }
-            else
-            {
-                if(dirty) ss << ", ";
-                ss << "uiconfig"<< ui <<"=' '";
-                dirty = true;
-            }
+            if(m_accountData[ui] == NULL || m_accountData[ui]->data == NULL
+                || m_accountData[ui]->sz == 0)
+                continue;
+            fieldName << format(",uiconfig%u", ui);
+            dataString << ", \"";
+            CharacterDatabase.EscapeLongString(m_accountData[ui]->data, m_accountData[ui]->sz, dataString);
+            dataString << "\"";
         }
 
-        if(dirty)
-        {
-            ss  <<" WHERE acct = '"<< _accountId <<"';";
-            CharacterDatabase.ExecuteNA(ss.str().c_str());
-        }
+        CharacterDatabase.Execute("REPLACE INTO account_data(%s) VALUES(%s);", fieldName.str().c_str(), dataString.str().c_str());
     }
 }
 
