@@ -1110,17 +1110,14 @@ bool Loot::HasItems(Player* Looter)
                 continue;
 
             //check if its a questline.
-            if(pQuest->requirements)
+            for(uint32 i = 0; i < pQuest->count_requiredquests; i++)
             {
-                for(uint32 i = 0; i < pQuest->requirements->count_requiredquests; i++)
+                if(pQuest->required_quests[i])
                 {
-                    if(pQuest->requirements->required_quests[i])
+                    if(Looter->HasFinishedQuest(pQuest->required_quests[i]) || !Looter->GetQuestLogForEntry(pQuest->required_quests[i]))
                     {
-                        if(Looter->HasFinishedQuest(pQuest->requirements->required_quests[i]) || !Looter->GetQuestLogForEntry(pQuest->requirements->required_quests[i]))
-                        {
-                            HasRequiredQuests = false;
-                            break;
-                        }
+                        HasRequiredQuests = false;
+                        break;
                     }
                 }
             }

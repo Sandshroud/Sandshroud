@@ -13,7 +13,8 @@ enum QUEST_STATUS
     QMGR_QUEST_CHAT                 = 0x04,  // Quest available it shows a talk baloon.      | "Yellow ! Mark"
     QMGR_QUEST_NOT_FINISHED         = 0x20,  // Quest isnt finished yet.                     | "Gray Question ? Mark"
     QMGR_QUEST_AVAILABLE            = 0x100, // Quest available, show the ! Mark.            | "Yellow ! Mark"
-    QMGR_QUEST_FINISHED             = 0x400, // Quest has been finished.                     | "Yellow Question ? Mark"
+    QMGR_QUEST_FINISHED_LOWLEVEL    = 0x200, // Quest has been finished.                     | "No Minimap Mark"
+    QMGR_QUEST_FINISHED             = 0x400, // Quest has been finished.                     | "Yellow Question Minimap Mark"
 };
 
 enum QUESTGIVER_QUEST_TYPE
@@ -84,8 +85,62 @@ enum QUEST_SHARE
 };
 #pragma pack(PRAGMA_PACK)
 
-struct QuestObjectives
+struct Quest
 {
+    uint32 id;
+
+    char *qst_title;
+    char *qst_details;
+    char *qst_objectivetext;
+    char *qst_completiontext;
+    char *qst_incompletetext;
+    char *qst_endtext;
+    char *qst_objectivetexts[4];
+
+    uint32 qst_zone_id;
+    uint32 qst_sort;
+    uint32 qst_type;
+    uint32 qst_flags;
+    uint32 qst_min_level;
+    uint32 qst_max_level;
+    uint32 qst_suggested_players;
+
+    uint32 qst_previous_quest_id;
+    uint32 qst_next_quest_id;
+
+    int32 qst_start_phase;
+    int32 qst_complete_phase;
+
+    uint8 qst_is_repeatable;
+
+    // Quest rewards
+    uint32 srcitem;
+    uint16 srcitemcount;
+
+    uint32 reward_choiceitem[6];
+    uint16 reward_choiceitemcount[6];
+
+    uint32 reward_item[4];
+    uint16 reward_itemcount[4];
+
+    uint32 receive_items[4];
+    uint16 receive_itemcount[4];
+
+    uint32 reward_repfaction[5];
+    int16 reward_repvalue[5];
+    int16 reward_replimit[5];
+
+    uint8 reward_title;
+    uint32 reward_money;
+    uint32 reward_maxlvlmoney;
+    uint32 reward_xp;
+    uint32 reward_spell;
+    uint16 reward_talents;
+    uint32 reward_cast_on_player;
+    uint32 reward_xp_index;
+    // End quest rewards
+
+    // Quest Objectives
     uint32 required_item[6];
     uint16 required_itemcount[6];
 
@@ -105,49 +160,9 @@ struct QuestObjectives
     float required_point_y;
     uint32 required_point_mapid;
     uint32 required_point_radius;
+    // End quest objectives
 
-    //Calculated variables (not in db)
-    uint8 count_required_item;
-    uint8 count_required_mob;
-    uint8 count_requiredareatriggers;
-};
-
-struct QuestRewards
-{
-    uint32 srcitem;
-    uint16 srcitemcount;
-
-    uint32 reward_choiceitem[6];
-    uint16 reward_choiceitemcount[6];
-
-    uint32 reward_item[4];
-    uint16 reward_itemcount[4];
-
-    uint32 receive_items[4];
-    uint16 receive_itemcount[4];
-
-    uint32 reward_repfaction[5];
-    int16 reward_repvalue[5];
-    int16 reward_replimit[5];
-
-    uint8 reward_title;
-    uint32 reward_money;
-    uint16 reward_honor;
-    uint32 reward_arenapoints;
-    uint32 reward_xp;
-    uint32 reward_spell;
-    uint16 reward_talents;
-    uint32 reward_cast_on_player;
-    uint32 reward_xp_index;
-
-    //Calculated variables (not in db)
-    uint8 count_receiveitems;
-    uint8 count_reward_choiceitem;
-    uint8 count_reward_item;
-};
-
-struct QuestRequirements
-{
+    // Quest Requirements
     int8 required_team;
     uint16 required_races;
     uint16 required_class;
@@ -158,42 +173,16 @@ struct QuestRequirements
 
     uint32 required_quests[4];
     bool required_quest_one_or_all;
+    // End quest requirements
 
     //Calculated variables (not in db)
+    uint8 count_receiveitems;
+    uint8 count_reward_choiceitem;
+    uint8 count_reward_item;
+    uint8 count_required_item;
+    uint8 count_required_mob;
+    uint8 count_requiredareatriggers;
     uint8 count_requiredquests;
-};
-
-struct Quest
-{
-    uint32 id;
-
-    char* qst_title;
-    char* qst_details;
-    char* qst_objectivetext;
-    char* qst_completiontext;
-    char* qst_incompletetext;
-    char* qst_endtext;
-    char* qst_objectivetexts[4];
-
-    uint32 qst_zone_id;
-    uint32 qst_sort;
-    uint32 qst_type;
-    uint32 qst_flags;
-    uint32 qst_min_level;
-    uint32 qst_max_level;
-    uint32 qst_suggested_players;
-
-    uint32 qst_previous_quest_id;
-    uint32 qst_next_quest_id;
-
-    int32 qst_start_phase;
-    int32 qst_complete_phase;
-
-    uint8 qst_is_repeatable;
-
-    QuestRewards* rewards;
-    QuestObjectives* objectives;
-    QuestRequirements* requirements;
 };
 
 #pragma pack(PRAGMA_POP)

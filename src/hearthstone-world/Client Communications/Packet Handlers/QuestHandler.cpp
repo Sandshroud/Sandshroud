@@ -12,7 +12,6 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recv_data )
     CHECK_INWORLD_RETURN();
 
     uint64 guid;
-    WorldPacket data(SMSG_QUESTGIVER_STATUS, 9);
     Object* qst_giver = NULLOBJ;
 
     recv_data >> guid;
@@ -54,6 +53,7 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recv_data )
         return;
     }
 
+    WorldPacket data(SMSG_QUESTGIVER_STATUS, 12);
     data << guid << sQuestMgr.CalcStatus(qst_giver, GetPlayer());
     SendPacket( &data );
 }
@@ -284,18 +284,15 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recv_data )
         return;
     }
 
-    if(qst->rewards)
+    if(qst->count_receiveitems || qst->srcitem)
     {
-        if(qst->rewards->count_receiveitems || qst->rewards->srcitem)
-        {
-            uint32 slots_required = qst->rewards->count_receiveitems;
+        uint32 slots_required = qst->count_receiveitems;
 
-            if(_player->GetItemInterface()->CalculateFreeSlots(NULL) < slots_required)
-            {
-                _player->GetItemInterface()->BuildInventoryChangeError(NULLITEM, NULLITEM, INV_ERR_BAG_FULL);
-                sQuestMgr.SendQuestFailed(FAILED_REASON_INV_FULL, qst, _player);
-                return;
-            }
+        if(_player->GetItemInterface()->CalculateFreeSlots(NULL) < slots_required)
+        {
+            _player->GetItemInterface()->BuildInventoryChangeError(NULLITEM, NULLITEM, INV_ERR_BAG_FULL);
+            sQuestMgr.SendQuestFailed(FAILED_REASON_INV_FULL, qst, _player);
+            return;
         }
     }
 
@@ -303,46 +300,42 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recv_data )
     qle->Init(qst, _player, log_slot);
     qle->UpdatePlayerFields();
 
-    if(qst->rewards)
+    // If the quest should give any items on begin, give them the items.
+    for(uint32 i = 0; i < 4; i++)
     {
-        // If the quest should give any items on begin, give them the items.
-        for(uint32 i = 0; i < 4; i++)
+        if(qst->receive_items[i])
         {
-            if(qst->rewards->receive_items[i])
-            {
-                Item* item = objmgr.CreateItem( qst->rewards->receive_items[i], GetPlayer());
-                if(item)
-                {
-                    item->SetUInt32Value(ITEM_FIELD_STACK_COUNT, qst->rewards->receive_itemcount[i]);
-                    if(!_player->GetItemInterface()->AddItemToFreeSlot(item))
-                    {
-                        item->DeleteMe();
-                        item = NULLITEM;
-                    }
-                    else
-                        SendItemPushResult(item, false, true, false, true, _player->GetItemInterface()->LastSearchItemBagSlot(), _player->GetItemInterface()->LastSearchItemSlot(), 1);
-                }
-            }
-        }
-
-        if(qst->rewards->srcitem && qst->rewards->srcitem != qst->rewards->receive_items[0])
-        {
-            Item* item = objmgr.CreateItem( qst->rewards->srcitem, _player );
+            Item* item = objmgr.CreateItem( qst->receive_items[i], GetPlayer());
             if(item)
             {
-                item->SetUInt32Value(ITEM_FIELD_STACK_COUNT, qst->rewards->srcitemcount ? qst->rewards->srcitemcount : 1);
+                item->SetUInt32Value(ITEM_FIELD_STACK_COUNT, qst->receive_itemcount[i]);
                 if(!_player->GetItemInterface()->AddItemToFreeSlot(item))
                 {
                     item->DeleteMe();
                     item = NULLITEM;
                 }
+                else
+                    SendItemPushResult(item, false, true, false, true, _player->GetItemInterface()->LastSearchItemBagSlot(), _player->GetItemInterface()->LastSearchItemSlot(), 1);
             }
         }
     }
 
-    if(qst->objectives)
-        if(qst->objectives->count_required_item || qst_giver->GetTypeId() == TYPEID_GAMEOBJECT) // gameobject quests deactivate
-            _player->UpdateNearbyGameObjects();
+    if(qst->srcitem && qst->srcitem != qst->receive_items[0])
+    {
+        Item* item = objmgr.CreateItem( qst->srcitem, _player );
+        if(item)
+        {
+            item->SetUInt32Value(ITEM_FIELD_STACK_COUNT, qst->srcitemcount ? qst->srcitemcount : 1);
+            if(!_player->GetItemInterface()->AddItemToFreeSlot(item))
+            {
+                item->DeleteMe();
+                item = NULLITEM;
+            }
+        }
+    }
+
+    if(qst->count_required_item || qst_giver->GetTypeId() == TYPEID_GAMEOBJECT) // gameobject quests deactivate
+        _player->UpdateNearbyGameObjects();
 
     CALL_QUESTSCRIPT_EVENT(qst->id, OnQuestStart)(_player, qle);
 
@@ -392,34 +385,25 @@ void WorldSession::HandleQuestlogRemoveQuestOpcode(WorldPacket& recvPacket)
 
     qEntry->Finish();
 
-    uint32 srcItem = 0;
-
     // Remove all items given by the questgiver at the beginning
-    if(qPtr->rewards)
-    {
-        srcItem = qPtr->rewards->srcitem;
+    uint32 srcItem = qPtr->srcitem;
+    for(uint32 i = 0; i < 4; i++)
+        if(qPtr->receive_items[i] && qPtr->receive_items[i] != srcItem)
+            _player->GetItemInterface()->RemoveItemAmt( qPtr->receive_items[i], qPtr->receive_itemcount[i] );
 
-        for(uint32 i = 0; i < 4; i++)
-            if(qPtr->rewards->receive_items[i] && qPtr->rewards->receive_items[i] != srcItem)
-                _player->GetItemInterface()->RemoveItemAmt( qPtr->rewards->receive_items[i], qPtr->rewards->receive_itemcount[i] );
-
-        // Remove source item
-        if(qPtr->rewards->srcitem)
-            _player->GetItemInterface()->RemoveItemAmt( qPtr->rewards->srcitem, 1 );
-    }
+    // Remove source item
+    if(qPtr->srcitem)
+        _player->GetItemInterface()->RemoveItemAmt( qPtr->srcitem, 1 );
 
     // Reset timed quests, remove timed event
-    if(qPtr->objectives)
-    {
-        // always remove collected items (need to be recollectable again in case of repeatable).
-        for( uint32 y = 0; y < 6; y++)
-            if( qPtr->objectives->required_item[y] && qPtr->objectives->required_item[y] != srcItem )
-                _player->GetItemInterface()->RemoveItemAmt(qPtr->objectives->required_item[y], qPtr->objectives->required_itemcount[y]);
+    // always remove collected items (need to be recollectable again in case of repeatable).
+    for( uint32 y = 0; y < 6; y++)
+        if( qPtr->required_item[y] && qPtr->required_item[y] != srcItem )
+            _player->GetItemInterface()->RemoveItemAmt(qPtr->required_item[y], qPtr->required_itemcount[y]);
 
-        if(qPtr->objectives->required_timelimit > 0)
-            if(sEventMgr.HasEvent(_player,EVENT_TIMED_QUEST_EXPIRE))
-                sEventMgr.RemoveEvents(_player, EVENT_TIMED_QUEST_EXPIRE); 
-    }
+    if(qPtr->required_timelimit > 0)
+        if(sEventMgr.HasEvent(_player,EVENT_TIMED_QUEST_EXPIRE))
+            sEventMgr.RemoveEvents(_player, EVENT_TIMED_QUEST_EXPIRE);
 
     if(qPtr->qst_start_phase != 0)
         _player->DisablePhase(qPtr->qst_start_phase, true);

@@ -26,7 +26,7 @@ struct QuestAssociation
 
 class Item;
 
-typedef std::map<uint32, Quest*> QuestStorageMap; // Map searches you!
+typedef std::map<uint32, Quest*> QuestStorageMap;
 typedef std::list<QuestRelation *> QuestRelationList;
 typedef std::list<QuestAssociation *> QuestAssociationList;
 
@@ -47,7 +47,7 @@ public:
 
     uint32 PlayerMeetsReqs(Player* plr, Quest* qst, bool skiplevelcheck);
 
-    uint8 CalcStatus(Object* quest_giver, Player* plr);
+    uint32 CalcStatus(Object* quest_giver, Player* plr);
     uint32 CalcQuestStatus(Player* plr, QuestRelation* qst);
     uint32 CalcQuestStatus(Player* plr, Quest* qst, uint8 type, bool skiplevelcheck);
     uint32 ActiveQuestsCount(Object* quest_giver, Player* plr);
@@ -84,6 +84,7 @@ public:
 
     uint32 GenerateQuestXP(Player* pl, Quest *qst);
     uint32 GenerateRewardMoney(Player* pl, Quest *qst);
+    uint32 GenerateMaxLvlRewardMoney(Player* pl, Quest *qst);
 
     void SendQuestInvalid( INVALID_REASON reason, Player* plyr);
     void SendQuestFailed(FAILED_REASON failed, Quest *qst, Player* plyr);
@@ -105,28 +106,25 @@ public:
 
     HEARTHSTONE_INLINE int32 QuestHasMob(Quest* qst, uint32 mob)
     {
-        if(qst->objectives)
-            for(uint32 i = 0; i < 4; i++)
-                if(qst->objectives->required_mob[i] == mob)
-                    return qst->objectives->required_mobcount[i];
+        for(uint32 i = 0; i < 4; i++)
+            if(qst->required_mob[i] == mob)
+                return qst->required_mobcount[i];
         return -1;
     }
 
     HEARTHSTONE_INLINE int32 GetOffsetForMob(Quest *qst, uint32 mob)
     {
-        if(qst->objectives)
-            for(uint32 i = 0; i < 4; i++)
-                if(qst->objectives->required_mob[i] == mob)
-                    return i;
+        for(uint32 i = 0; i < 4; i++)
+            if(qst->required_mob[i] == mob)
+                return i;
         return -1;
     }
 
     HEARTHSTONE_INLINE int32 GetOffsetForItem(Quest *qst, uint32 itm)
     {
-        if(qst->objectives)
-            for(uint32 i = 0; i < 6; i++)
-                if(qst->objectives->required_item[i] == itm)
-                    return i;
+        for(uint32 i = 0; i < 6; i++)
+            if(qst->required_item[i] == itm)
+                return i;
         return -1;
     }
 

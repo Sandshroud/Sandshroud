@@ -32,12 +32,12 @@ bool WarIsHell(uint32 i, Spell *pSpell)
 
     QuestLogEntry *qle = plr->GetQuestLogForEntry(11270);
 
-    if( qle == NULL || qle->GetQuest()->objectives == NULL )
+    if( qle == NULL || qle->GetQuest() == NULL )
         return true;
 
     GameObject *obj = NULLGOB;
 
-    if( qle && qle->GetMobCount(0) < qle->GetQuest()->objectives->required_mobcount[0] )
+    if( qle && qle->GetMobCount(0) < qle->GetQuest()->required_mobcount[0] )
     {
         qle->SetMobCount( 0, qle->GetMobCount( 0 ) + 1 );
         qle->SendUpdateAddKill( 0 );
@@ -62,7 +62,7 @@ bool PlantForsakenBanner(uint32 i, Spell *pSpell)
         return true;
 
     QuestLogEntry *pQuest = pPlayer->GetQuestLogForEntry(11282);
-    if( pQuest == NULL || pQuest->GetQuest()->objectives == NULL )
+    if( pQuest == NULL || pQuest->GetQuest() == NULL )
         return true;
 
     Creature *target = TO_CREATURE(pSpell->GetUnitTarget());
@@ -74,7 +74,7 @@ bool PlantForsakenBanner(uint32 i, Spell *pSpell)
     {
     case 24161:
         {
-            if( pQuest->GetMobCount( 0 ) < pQuest->GetQuest()->objectives->required_mobcount[ 0 ] )
+            if( pQuest->GetMobCount( 0 ) < pQuest->GetQuest()->required_mobcount[ 0 ] )
             {
                 uint32 newcount = pQuest->GetMobCount( 0 ) + 1;
                 pQuest->SetMobCount( 0, newcount );
@@ -86,7 +86,7 @@ bool PlantForsakenBanner(uint32 i, Spell *pSpell)
         break;
     case 24016:
         {
-            if( pQuest->GetMobCount( 0 ) < pQuest->GetQuest()->objectives->required_mobcount[ 1 ] )
+            if( pQuest->GetMobCount( 0 ) < pQuest->GetQuest()->required_mobcount[ 1 ] )
             {
                 uint32 newcount = pQuest->GetMobCount( 0 ) + 1;
                 pQuest->SetMobCount( 0, newcount );
@@ -98,7 +98,7 @@ bool PlantForsakenBanner(uint32 i, Spell *pSpell)
         break;
     case 24162:
         {
-            if( pQuest->GetMobCount( 0 ) < pQuest->GetQuest()->objectives->required_mobcount[ 2 ] )
+            if( pQuest->GetMobCount( 0 ) < pQuest->GetQuest()->required_mobcount[ 2 ] )
             {
                 uint32 newcount = pQuest->GetMobCount( 0 ) + 1;
                 pQuest->SetMobCount( 0, newcount );
