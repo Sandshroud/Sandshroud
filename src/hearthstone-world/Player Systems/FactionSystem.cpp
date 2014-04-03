@@ -25,49 +25,47 @@ int FactionSystem::GetFactionsInteractStatus(Unit *unitA, Unit* unitB)
 {
     if(unitA == NULL || unitB == NULL)
         return 0;
-    FactionTemplateDBC *factionA = unitA->m_faction, *factionB = unitB->m_faction;
-    FactionDBC *factiondbcA = unitA->m_factionDBC, *factiondbcB = unitB->m_factionDBC;
-    if(factionA == NULL || factionB == NULL || factiondbcA == NULL || factiondbcB == NULL)
+    FactionTemplateEntry *factionTemplateA = unitA->m_factionTemplate, *factionTemplateB = unitB->m_factionTemplate;
+    FactionEntry *factionA = unitA->m_faction, *factionB = unitB->m_faction;
+    if(factionTemplateA == NULL || factionTemplateB == NULL || factionA == NULL || factionB == NULL)
         return 0;
-    if(factionA == factionB || factiondbcA == factiondbcB)
+    if(factionTemplateA == factionTemplateB || factionA == factionB)
         return 0; // Same faction, we can skip the rest of the checks
     if(factionA->ID == 35 || factionB->ID == 35)
         return 0; // 35 is forced friendly to all
 
     // Check hostile masks
-    if(factionA->HostileMask & factionB->FactionMask)
+    if(factionTemplateA->HostileMask & factionTemplateB->FactionMask)
         return 1;
-    if(factionB->HostileMask & factionA->FactionMask)
+    if(factionTemplateB->HostileMask & factionTemplateA->FactionMask)
         return 1;
 
     // check friend/enemy list
     for(uint32 i = 0; i < 4; i++)
     {
-        if(factionA->EnemyFactions[i] && factionA->EnemyFactions[i] == factionB->Faction)
+        if(factionTemplateA->EnemyFactions[i] && factionTemplateA->EnemyFactions[i] == factionTemplateB->Faction)
             return 1;
-        if(factionB->EnemyFactions[i] && factionB->EnemyFactions[i] == factionA->Faction)
+        if(factionTemplateB->EnemyFactions[i] && factionTemplateB->EnemyFactions[i] == factionTemplateA->Faction)
             return 1;
     }
 
     // Reputation System Checks
     if(unitA->IsPlayer() && !unitB->IsPlayer())
     {
-        if(unitB->m_factionDBC == NULL)
-            return 0;
-        if(unitB->m_factionDBC->RepListId >= 0)
-            if(TO_PLAYER(unitA)->IsHostileBasedOnReputation( unitB->m_factionDBC ))
+        if(factionB->RepListId >= 0)
+            if(TO_PLAYER(unitA)->IsHostileBasedOnReputation(factionB))
                 return 1;
 
-        if(unitB->m_factionDBC->RepListId == -1 && unitB->m_faction->HostileMask == 0 && unitB->m_faction->FriendlyMask == 0)
+        if(factionB->RepListId == -1 && factionTemplateB->HostileMask == 0 && factionTemplateB->FriendlyMask == 0)
             return 1;
     }
     else if(unitB->IsPlayer() && !unitA->IsPlayer())
     {
-        if(unitA->m_factionDBC->RepListId >= 0)
-            if(TO_PLAYER(unitB)->IsHostileBasedOnReputation( unitA->m_factionDBC ))
+        if(factionA->RepListId >= 0)
+            if(TO_PLAYER(unitB)->IsHostileBasedOnReputation(factionA))
                 return 1;
 
-        if(unitA->m_factionDBC->RepListId == -1 && unitA->m_faction->HostileMask == 0 && unitA->m_faction->FriendlyMask == 0)
+        if(factionA->RepListId == -1 && factionTemplateA->HostileMask == 0 && factionTemplateA->FriendlyMask == 0)
             return 1;
     }
 
@@ -207,9 +205,9 @@ int FactionSystem::intisAttackable(Object* objA, Object* objB, bool CheckStealth
             allowedCombat = false;
         else if(objA->IsSummon() || objB->IsSummon())
             allowedCombat = false;
-        else if(objA->m_faction == NULL || objB->m_faction == NULL || objA->m_faction == objB->m_faction)
+        else if(objA->m_factionTemplate == NULL || objB->m_factionTemplate == NULL || objA->m_factionTemplate == objB->m_factionTemplate)
             allowedCombat = false;
-        else if(objA->m_faction->ID == 35 || objB->m_faction->ID == 35)
+        else if(objA->m_factionTemplate->ID == 35 || objB->m_factionTemplate->ID == 35)
             allowedCombat = false;
         if(!allowedCombat)
             return 0;
@@ -397,11 +395,11 @@ bool FactionSystem::CanEitherUnitAttack(Object* objA, Object* objB, bool CheckSt
         // We know they aren't dueling
         if(objA->HasAreaFlag(OBJECT_AREA_FLAG_INSANCTUARY) || objB->HasAreaFlag(OBJECT_AREA_FLAG_INSANCTUARY))
         {
-            if(objA->m_faction && objB->m_faction && objA->m_faction != objB->m_faction)
+            if(objA->m_factionTemplate && objB->m_factionTemplate && objA->m_factionTemplate != objB->m_factionTemplate)
             {
-                if(objA->m_faction->FactionMask == FACTION_MASK_MONSTER && objB->m_faction->FactionMask != FACTION_MASK_MONSTER)
+                if(objA->m_factionTemplate->FactionMask == FACTION_MASK_MONSTER && objB->m_factionTemplate->FactionMask != FACTION_MASK_MONSTER)
                     return true;
-                if(objB->m_faction->FactionMask == FACTION_MASK_MONSTER && objA->m_faction->FactionMask != FACTION_MASK_MONSTER)
+                if(objB->m_factionTemplate->FactionMask == FACTION_MASK_MONSTER && objA->m_factionTemplate->FactionMask != FACTION_MASK_MONSTER)
                     return true;
             }
             return false;
@@ -528,7 +526,7 @@ bool FactionSystem::isCombatSupport(Object* objA, Object* objB)// B combat suppo
         return false;
 
     // We do need all factiondata for this
-    if( objB->m_factionDBC == NULL || objA->m_factionDBC == NULL || objB->m_faction == NULL || objA->m_faction == NULL )
+    if( objB->m_faction == NULL || objA->m_faction == NULL || objB->m_faction == NULL || objA->m_faction == NULL )
         return false;
 
     if(!objA->PhasedCanInteract(objB))
@@ -538,20 +536,20 @@ bool FactionSystem::isCombatSupport(Object* objA, Object* objB)// B combat suppo
         return false;
 
     bool combatSupport = false;
-    uint32 fSupport = objB->m_faction->FriendlyMask;
-    uint32 myFaction = objA->m_faction->FactionMask;
+    uint32 fSupport = objB->m_factionTemplate->FriendlyMask;
+    uint32 myFaction = objA->m_factionTemplate->FactionMask;
     if(fSupport & myFaction)
         combatSupport = true;
 
     // check friend/enemy list
     for(uint32 i = 0; i < 4; i++)
     {
-        if(objB->m_faction->FriendlyFactions[i] && objB->m_faction->FriendlyFactions[i] == objA->m_faction->Faction)
+        if(objB->m_factionTemplate->FriendlyFactions[i] && objB->m_factionTemplate->FriendlyFactions[i] == objA->m_factionTemplate->Faction)
         {
             combatSupport = true;
             break;
         }
-        if(objB->m_faction->EnemyFactions[i] && objB->m_faction->EnemyFactions[i] == objA->m_faction->Faction)
+        if(objB->m_factionTemplate->EnemyFactions[i] && objB->m_factionTemplate->EnemyFactions[i] == objA->m_factionTemplate->Faction)
         {
             combatSupport = false;
             break;
@@ -562,19 +560,19 @@ bool FactionSystem::isCombatSupport(Object* objA, Object* objB)// B combat suppo
 
 bool FactionSystem::isAlliance(Object* objA)// A is alliance?
 {
-    if(!objA || objA->m_factionDBC == NULL || objA->m_faction == NULL)
+    if(!objA || objA->m_faction == NULL || objA->m_faction == NULL)
         return true;
 
     //Get stormwind faction frm dbc (11/72)
-    FactionTemplateDBC * m_sw_faction = dbcFactionTemplate.LookupEntry(11);
-    FactionDBC * m_sw_factionDBC = dbcFaction.LookupEntry(72);
+    FactionTemplateEntry * m_sw_factionTemplate = dbcFactionTemplate.LookupEntry(11);
+    FactionEntry * m_sw_faction = dbcFaction.LookupEntry(72);
 
-    if(m_sw_faction == objA->m_faction || m_sw_factionDBC == objA->m_factionDBC)
+    if(m_sw_factionTemplate == objA->m_factionTemplate || m_sw_faction == objA->m_faction)
         return true;
 
     //Is StormWind hostile to ObjectA?
-    uint32 faction = m_sw_faction->Faction;
-    uint32 hostilemask = objA->m_faction->HostileMask;
+    uint32 faction = m_sw_factionTemplate->Faction;
+    uint32 hostilemask = objA->m_factionTemplate->HostileMask;
 
     if(faction & hostilemask)
         return false;
@@ -582,13 +580,13 @@ bool FactionSystem::isAlliance(Object* objA)// A is alliance?
     // check friend/enemy list
     for(uint32 i = 0; i < 4; i++)
     {
-        if(objA->m_faction->EnemyFactions[i] == faction)
+        if(objA->m_factionTemplate->EnemyFactions[i] == faction)
             return false;
     }
 
     //Is ObjectA hostile to StormWind?
-    faction = objA->m_faction->Faction;
-    hostilemask = m_sw_faction->HostileMask;
+    faction = objA->m_factionTemplate->Faction;
+    hostilemask = m_sw_factionTemplate->HostileMask;
 
     if(faction & hostilemask)
         return false;
@@ -596,7 +594,7 @@ bool FactionSystem::isAlliance(Object* objA)// A is alliance?
     // check friend/enemy list
     for(uint32 i = 0; i < 4; i++)
     {
-        if(objA->m_faction->EnemyFactions[i] == faction)
+        if(objA->m_factionTemplate->EnemyFactions[i] == faction)
             return false;
     }
 

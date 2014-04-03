@@ -285,7 +285,7 @@ void AIInterface::_UpdateCombat(uint32 p_time)
                                 m_Unit->Strike( m_nextTarget, MELEE, NULL, 0, 0, 0, false, false, true );
                                 //now if the target is facing his back to us then we could just cast dazed on him :P
                                 //as far as i know dazed is casted by most of the creatures but feel free to remove this code if you think otherwise
-                                if(m_nextTarget != NULL && !(m_Unit->m_factionDBC->RepListId == -1 && m_Unit->m_faction->FriendlyMask==0 && m_Unit->m_faction->HostileMask==0) /* neutral creature */
+                                if(m_nextTarget != NULL && !(m_Unit->m_faction->RepListId == -1 && m_Unit->m_factionTemplate->FriendlyMask==0 && m_Unit->m_factionTemplate->HostileMask==0) /* neutral creature */
                                         && m_nextTarget->IsPlayer() && !m_Unit->IsPet() && health_before_strike>m_nextTarget->GetUInt32Value(UNIT_FIELD_HEALTH)
                                         && Rand(m_Unit->CalculateDazeCastChance(m_nextTarget)))
                                 {
@@ -545,7 +545,7 @@ Unit* AIInterface::FindTarget()
         if( !m_Unit->IsInLineOfSight(pUnit) )
             continue;
         // If it's a critter, set the critter target.
-        if(pUnit->m_faction->Faction == 28)
+        if(pUnit->m_factionTemplate->Faction == 28)
         {
             if(critterTarget && m_Unit->GetDistanceSq(critterTarget) < m_Unit->GetDistanceSq(pUnit))
                 continue;

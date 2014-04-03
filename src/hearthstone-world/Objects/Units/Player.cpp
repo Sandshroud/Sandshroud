@@ -3479,7 +3479,7 @@ void Player::LoadFromDBProc(QueryResultVector & results)
 
     // Load Reputatation CSV Data
     start =(char*) get_next_field.GetString();
-    FactionDBC * factdbc ;
+    FactionEntry * faction;
     FactionReputation * rep;
     uint32 id;
     int32 basestanding;
@@ -3515,8 +3515,8 @@ void Player::LoadFromDBProc(QueryResultVector & results)
         start = end +1;
 
         // listid stuff
-        factdbc = dbcFaction.LookupEntry(id);
-        if(!factdbc) continue;
+        faction = dbcFaction.LookupEntry(id);
+        if(!faction) continue;
         ReputationMap::iterator rtr = m_reputation.find(id);
         if(rtr != m_reputation.end())
             delete rtr->second;
@@ -3529,8 +3529,8 @@ void Player::LoadFromDBProc(QueryResultVector & results)
         m_reputation[id]=rep;
 
         // do listid stuff
-        if(factdbc->RepListId >= 0)
-            reputationByListId[factdbc->RepListId] = rep;
+        if(faction->RepListId >= 0)
+            reputationByListId[faction->RepListId] = rep;
     }
 
     if(!m_reputation.size())
@@ -6290,7 +6290,7 @@ void Player::AddInRangeObject(Object* pObj)
             m_CurrentTaxiPath->SendMoveForTime( TO_PLAYER(this), TO_PLAYER( pObj ), m_taxi_ride_time - ntime);*/
     }
 
-    if( pObj->IsCreature() && pObj->m_faction && pObj->m_faction->FactionFlags & 0x1000 )
+    if( pObj->IsCreature() && pObj->m_faction && pObj->m_factionTemplate->FactionFlags & 0x1000 )
         m_hasInRangeGuards++;
 
     Unit::AddInRangeObject(pObj);
@@ -6321,7 +6321,7 @@ void Player::AddInRangeObject(Object* pObj)
 
 void Player::OnRemoveInRangeObject(Object* pObj)
 {
-    if( pObj->IsCreature() && pObj->m_faction && pObj->m_faction->FactionFlags & 0x1000 )
+    if( pObj->IsCreature() && pObj->m_faction && pObj->m_factionTemplate->FactionFlags & 0x1000 )
         m_hasInRangeGuards--;
 
     if(m_tempSummon == pObj)

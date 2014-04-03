@@ -51,10 +51,10 @@ public:
     HEARTHSTONE_INLINE bool isSameFaction(Object* objA, Object* objB)
     {
         // shouldn't be necessary but still
-        if( objA->m_faction == NULL || objB->m_faction == NULL )
+        if( objA->m_factionTemplate == NULL || objB->m_factionTemplate == NULL )
             return false;
 
-        return (objB->m_faction->Faction == objA->m_faction->Faction);
+        return (objB->m_factionTemplate->Faction == objA->m_factionTemplate->Faction);
     }
 
 };

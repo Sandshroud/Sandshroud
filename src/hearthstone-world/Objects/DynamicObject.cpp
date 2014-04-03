@@ -58,8 +58,8 @@ void DynamicObject::Create(Object* caster, Spell* pSpell, float x, float y, floa
     m_uint32Values[DYNAMICOBJECT_CASTTIME] = getMSTime();
 
     m_aliveDuration = duration;
+    m_factionTemplate = caster->m_factionTemplate;
     m_faction = caster->m_faction;
-    m_factionDBC = caster->m_factionDBC;
     SetPhaseMask(caster->GetPhaseMask());
 
     if(pSpell->g_caster)

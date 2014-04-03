@@ -388,9 +388,9 @@ bool GameObject::Load(GOSpawn *spawn)
     if(spawn->faction)
     {
         SetUInt32Value(GAMEOBJECT_FACTION,spawn->faction);
-        m_faction = dbcFactionTemplate.LookupEntry(spawn->faction);
-        if(m_faction)
-            m_factionDBC = dbcFaction.LookupEntry(m_faction->Faction);
+        m_factionTemplate = dbcFactionTemplate.LookupEntry(spawn->faction);
+        if(m_factionTemplate)
+            m_faction = dbcFaction.LookupEntry(m_factionTemplate->Faction);
     }
     SetFloatValue(OBJECT_FIELD_SCALE_X, spawn->scale);
 

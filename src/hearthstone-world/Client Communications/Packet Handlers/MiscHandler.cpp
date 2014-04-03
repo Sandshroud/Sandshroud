@@ -2144,7 +2144,7 @@ void WorldSession::SendGossipForObject(Object* pObject)
                 _player->m_AuraInterface.RemoveAllAurasOfType( SPELL_AURA_MOD_STEALTH );
 
             // reputation
-            _player->Reputation_OnTalk(TalkingWith->m_factionDBC);
+            _player->Reputation_OnTalk(TalkingWith->m_faction);
 
             sLog.Debug( "WORLD"," Received CMSG_GOSSIP_HELLO from %u", TalkingWith->GetLowGUID());
 

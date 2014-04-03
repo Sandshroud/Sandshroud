@@ -601,7 +601,7 @@ void Vehicle::RemovePassenger(Unit* pPassenger)
         pPassenger->SetUInt64Value( UNIT_FIELD_CHARM, 0 );
         SetUInt64Value(UNIT_FIELD_CHARMEDBY, 0);
 
-        if(!m_faction || m_faction->ID == 35 || m_faction->ID == 2105)
+        if(!m_faction || m_factionTemplate->ID == 35 || m_factionTemplate->ID == 2105)
             SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, GetCharmTempVal());
         RemoveAura(62064);
     }
@@ -760,7 +760,7 @@ void Vehicle::_AddToSlot(Unit* pPassenger, uint8 slot)
                 SetUInt64Value(UNIT_FIELD_CHARMEDBY, pPlayer->GetGUID());
                 SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED_CREATURE);
 
-                if(!m_faction || m_faction->ID == 35 || m_faction->ID == 2105)
+                if(!m_faction || m_factionTemplate->ID == 35 || m_factionTemplate->ID == 2105)
                 {
                     SetCharmTempVal(pPlayer->GetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE));
                     SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, pPlayer->GetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE));

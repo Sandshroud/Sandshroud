@@ -419,15 +419,15 @@ bool ChatHandler::HandleNpcInfoCommand(const char *args, WorldSession *m_session
     uint32 FactionID = 0, FactionTemplate = 0;
     if(crt->m_faction)
     {
-        FactionID = crt->m_faction->Faction;
-        FactionTemplate = crt->m_faction->ID;
+        FactionID = crt->m_factionTemplate->Faction;
+        FactionTemplate = crt->m_factionTemplate->ID;
     }
 
     snprintf(msg,512,"GUID: %u\nFaction: %u|%u\nNPCFlags: %u\nDisplayID: %u\n Scale %f", guid, FactionTemplate, FactionID, crt->GetUInt32Value(UNIT_NPC_FLAGS), crt->GetUInt32Value(UNIT_FIELD_DISPLAYID), crt->proto->Scale);
     SystemMessage(m_session, msg);
     SystemMessage(m_session, "EmoteState: %u", crt->GetUInt32Value(UNIT_NPC_EMOTESTATE));
     if(crt->m_faction)
-        GreenSystemMessage(m_session, "Combat Support: 0x%.3X", crt->m_faction->FriendlyMask);
+        GreenSystemMessage(m_session, "Combat Support: 0x%.3X", crt->m_factionTemplate->FriendlyMask);
     GreenSystemMessage(m_session, "Base Health: %u", crt->GetUInt32Value(UNIT_FIELD_BASE_HEALTH));
     GreenSystemMessage(m_session, "Base Armor: %u", crt->GetUInt32Value(UNIT_FIELD_RESISTANCES));
     GreenSystemMessage(m_session, "Base Mana: %u", crt->GetUInt32Value(UNIT_FIELD_MAXPOWER1));
@@ -3060,12 +3060,12 @@ bool ChatHandler::HandleFactionSetStanding(const char *args, WorldSession *m_ses
     if(sscanf(args, "%u %u", &faction, &standing) != 2)
         return false;
 
-    FactionDBC* RealFaction = dbcFaction.LookupEntry(faction);
+    FactionEntry* RealFaction = dbcFaction.LookupEntry(faction);
     if(RealFaction == NULL || RealFaction->RepListId < 0)
     {
         stringstream ss;
         ss << "Incorrect faction, searching...";
-        FactionTemplateDBC* FactionTemplate = dbcFactionTemplate.LookupEntry(faction);
+        FactionTemplateEntry* FactionTemplate = dbcFactionTemplate.LookupEntry(faction);
         if(FactionTemplate == NULL)
         {
             ss << " Faction template not found.";
@@ -3098,12 +3098,12 @@ bool ChatHandler::HandleFactionModStanding(const char *args, WorldSession *m_ses
     if(sscanf(args, "%u %i", &faction, &standing) != 2)
         return false;
 
-    FactionDBC* RealFaction = dbcFaction.LookupEntry(faction);
+    FactionEntry* RealFaction = dbcFaction.LookupEntry(faction);
     if(RealFaction == NULL || RealFaction->RepListId < 0)
     {
         stringstream ss;
         ss << "Incorrect faction, searching...";
-        FactionTemplateDBC* FactionTemplate = dbcFactionTemplate.LookupEntry(faction);
+        FactionTemplateEntry* FactionTemplate = dbcFactionTemplate.LookupEntry(faction);
         if(FactionTemplate == NULL)
         {
             ss << " Faction template not found.";

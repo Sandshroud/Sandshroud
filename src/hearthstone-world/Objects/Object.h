@@ -520,11 +520,11 @@ public:
 
     //object faction
     void _setFaction();
-    uint32 _getFaction() { return m_faction ? m_faction->Faction : 0; }
+    uint32 _getFaction() { return m_factionTemplate ? m_factionTemplate->Faction : 0; }
     uint32 GetFaction() { return _getFaction(); }
 
-    FactionTemplateDBC *m_faction;
-    FactionDBC *m_factionDBC;
+    FactionTemplateEntry *m_factionTemplate;
+    FactionEntry *m_faction;
 
     uint32 VendorMask;
 

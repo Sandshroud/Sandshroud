@@ -2138,8 +2138,8 @@ int8 ItemInterface::CanAffordItem(ItemPrototype * item,uint32 amount, Creature* 
     }
     if(item->RequiredFaction)
     {
-        FactionDBC *factdbc = dbcFaction.LookupEntry(item->RequiredFaction);
-        if(!factdbc || factdbc->RepListId < 0)
+        FactionEntry *faction = dbcFaction.LookupEntry(item->RequiredFaction);
+        if(!faction || faction->RepListId < 0)
             return (int8)NULL;
 
         if( Player::GetReputationRankFromStanding( m_pOwner->GetStanding( item->RequiredFaction )) < (int32)item->RequiredFactionStanding )
