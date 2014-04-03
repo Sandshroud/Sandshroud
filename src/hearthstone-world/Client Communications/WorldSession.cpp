@@ -148,6 +148,7 @@ int WorldSession::Update(uint32 InstanceID)
                             packet->opcodename = sOpcodeMgr.GetOpcodeName(packet->GetOpcode()); // Needed for ByteBuffer
                             try
                             {
+                                printf("Handling packet %s(0x%.4X)\n", packet->opcodename, packet->GetOpcode());
                                 (this->*Handler->handler)(*packet);
                             }
                             catch (ByteBufferException &)

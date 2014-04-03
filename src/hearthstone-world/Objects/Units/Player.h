@@ -1469,7 +1469,7 @@ public:
 
     // Rest
     void HandleRestedCalculations(bool rest_on);
-    uint32 SubtractRestXP(uint32 amount);
+    uint32 SubtractRestXP(uint32 &amount);
     void AddCalculatedRestXP(uint32 seconds);
     void ApplyPlayerRestState(bool apply);
     void SetLastAreaTrigger(AreaTrigger*trigger) { LastAreaTrigger = trigger; };

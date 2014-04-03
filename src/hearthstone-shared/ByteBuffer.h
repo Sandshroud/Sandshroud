@@ -363,6 +363,9 @@ public:
         if (ressize > size()) _storage.reserve(ressize);
     }
 
+    // append bytes of value 0
+    void zerofill(size_t len) { for(size_t i = 0; i < len; i++) append<uint8>(0); }
+
     // appending to the end of buffer
     void append(const std::string& str) { append((uint8 *)str.c_str(),str.size() + 1); }
     void append(const char *src, size_t cnt) { return append((const uint8 *)src, cnt); }

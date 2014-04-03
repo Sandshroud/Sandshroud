@@ -1613,18 +1613,12 @@ void Player::EventDeath()
 ///  It assumes you will send out an UpdateObject packet at a later time.
 void Player::GiveXP(uint32 xp, const uint64 &guid, bool allowbonus)
 {
-    if ( xp < 1 )
+    if ( xp < 1 || m_XPoff)
         return;
-
     if(getLevel() >= GetUInt32Value(PLAYER_FIELD_MAX_LEVEL))
         return;
 
-    if(m_XPoff)
-        return;
-
-    uint32 restxp = xp;
-
-    //add reststate bonus
+    uint32 restxp = 0; //add reststate bonus
     if(m_restState == RESTSTATE_RESTED && allowbonus)
     {
         restxp = SubtractRestXP(xp);
@@ -1632,7 +1626,7 @@ void Player::GiveXP(uint32 xp, const uint64 &guid, bool allowbonus)
     }
 
     UpdateRestState();
-    SendLogXPGain(guid,xp,restxp,guid == 0 ? true : false);
+    SendLogXPGain(guid, xp, restxp, guid == 0 ? true : false);
 
     int32 newxp = m_uint32Values[PLAYER_XP] + xp;
     int32 nextlevelxp = lvlinfo->XPToNextLevel;
@@ -6000,20 +5994,14 @@ void Player::HandleRestedCalculations(bool rest_on)
     else ApplyPlayerRestState(false);
 }
 
-uint32 Player::SubtractRestXP(uint32 amount)
+uint32 Player::SubtractRestXP(uint32 &amount)
 {
     if(GetUInt32Value(UNIT_FIELD_LEVEL) >= GetUInt32Value(PLAYER_FIELD_MAX_LEVEL))      // Save CPU, don't waste time on this if you've reached max_level
         return (amount = 0);
 
-    int32 restAmount = m_restAmount - (amount << 1);                                    // remember , we are dealing with xp without restbonus, so multiply by 2
-
-    if( restAmount < 0)
-        m_restAmount = 0;
-    else
-        m_restAmount = restAmount;
-
-    sLog.Debug("REST","Subtracted %d rest XP to a total of %d", amount, m_restAmount);
-    UpdateRestState();                                                                  // Update clients interface with new values.
+    uint32 restedBonus = (m_restAmount > amount ? amount : m_restAmount);
+    m_restAmount -= restedBonus; // Subtract the rested bonus
+    UpdateRestState(); // Update clients interface with new values.
     return amount;
 }
 
@@ -6513,14 +6501,11 @@ bool Player::HasQuestForItem(uint32 itemid)
             }
 
             // No item_quest association found, check the quest requirements
-            if( qst->objectives == NULL )
-                continue;
-
-            if( !qst->objectives->count_required_item )
+            if( !qst->count_required_item )
                 continue;
 
             for( uint8 j = 0; j < 6; ++j )
-                if( qst->objectives->required_item[j] == itemid && ( GetItemInterface()->GetItemCount( itemid ) < qst->objectives->required_itemcount[j] ) )
+                if( qst->required_item[j] == itemid && ( GetItemInterface()->GetItemCount( itemid ) < qst->required_itemcount[j] ) )
                     return true;
         }
     }
@@ -6649,18 +6634,15 @@ void Player::SendLoot(uint64 guid, uint32 mapid, uint8 loot_type)
                 continue;
 
             //check if its a questline.
-            if(pQuest->requirements)
+            uint32 RequiredQuest = 0;
+            for(uint32 i = 0; i < pQuest->count_requiredquests; i++)
             {
-                uint32 RequiredQuest = 0;
-                for(uint32 i = 0; i < pQuest->requirements->count_requiredquests; i++)
-                {
-                    if(!HasRequiredQuests)
-                        continue;
+                if(!HasRequiredQuests)
+                    continue;
 
-                    if((RequiredQuest = pQuest->requirements->required_quests[i]))
-                        if(HasFinishedQuest(RequiredQuest) || !GetQuestLogForEntry(RequiredQuest))
-                            HasRequiredQuests = false;
-                }
+                if((RequiredQuest = pQuest->required_quests[i]))
+                    if(HasFinishedQuest(RequiredQuest) || !GetQuestLogForEntry(RequiredQuest))
+                        HasRequiredQuests = false;
             }
 
             if(!HasRequiredQuests)
@@ -7039,27 +7021,25 @@ void Player::RemoveQuestsFromLine(uint32 skill_line)
         if (m_questlog[i])
         {
             Quest* qst = m_questlog[i]->GetQuest();
-            if (qst && qst->requirements)
+            if(qst == NULL)
+                continue;
+
+            if(qst->required_tradeskill == skill_line)
             {
-                if(qst->requirements->required_tradeskill == skill_line)
-                {
-                    m_questlog[i]->Finish();
+                m_questlog[i]->Finish();
 
-                    uint32 srcItem = qst->rewards ? qst->rewards->srcitem : 0;
-                    if(qst->objectives)
-                        for( uint32 y = 0; y < 6; y++) //always remove collected items (need to be recollectable again in case of repeatable).
-                            if( qst->objectives->required_item[y] && qst->objectives->required_item[y] != srcItem )
-                                GetItemInterface()->RemoveItemAmt(qst->objectives->required_item[y], qst->objectives->required_itemcount[y]);
+                uint32 srcItem = qst->srcitem;
+                for( uint32 y = 0; y < 6; y++) //always remove collected items (need to be recollectable again in case of repeatable).
+                    if( qst->required_item[y] && qst->required_item[y] != srcItem )
+                        GetItemInterface()->RemoveItemAmt(qst->required_item[y], qst->required_itemcount[y]);
 
-                    // Remove all items given by the questgiver at the beginning
-                    if(qst->rewards)
-                        for(uint32 j = 0; j < 4; j++)
-                            if(qst->rewards->receive_items[j] && qst->rewards->receive_items[j] != srcItem )
-                                GetItemInterface()->RemoveItemAmt(qst->rewards->receive_items[j], qst->rewards->receive_itemcount[i] );
+                // Remove all items given by the questgiver at the beginning
+                for(uint32 j = 0; j < 4; j++)
+                    if(qst->receive_items[j] && qst->receive_items[j] != srcItem )
+                        GetItemInterface()->RemoveItemAmt(qst->receive_items[j], qst->receive_itemcount[i] );
 
-                    delete m_questlog[i];
-                    m_questlog[i] = NULL;
-                }
+                delete m_questlog[i];
+                m_questlog[i] = NULL;
             }
         }
     }
@@ -7069,9 +7049,8 @@ void Player::RemoveQuestsFromLine(uint32 skill_line)
     {
         itr2 = itr++;
         Quest * qst = sQuestMgr.GetQuestPointer((*itr2));
-        if (qst && qst->requirements)
-            if(qst->requirements->required_tradeskill == skill_line)
-                m_finishedQuests.erase(itr2);
+        if(qst->required_tradeskill == skill_line)
+            m_finishedQuests.erase(itr2);
     }
 
     UpdateNearbyGameObjects();
@@ -7674,10 +7653,10 @@ void Player::UpdateNearbyQuestGivers()
         {
             if(TO_GAMEOBJECT(*itr)->isQuestGiver())
             {
-                uint8 status = sQuestMgr.CalcStatus((*itr), this);
+                uint32 status = sQuestMgr.CalcStatus((*itr), this);
                 if(status != QMGR_QUEST_NOT_AVAILABLE)
                 {
-                    WorldPacket data(SMSG_QUESTGIVER_STATUS, 9);
+                    WorldPacket data(SMSG_QUESTGIVER_STATUS, 12);
                     data << (*itr)->GetGUID() << status;
                     SendPacket( &data );
                 }
@@ -7687,10 +7666,10 @@ void Player::UpdateNearbyQuestGivers()
         {
             if(TO_CREATURE(*itr)->isQuestGiver())
             {
-                uint8 status = sQuestMgr.CalcStatus((*itr), this);
+                uint32 status = sQuestMgr.CalcStatus((*itr), this);
                 if(status != QMGR_QUEST_NOT_AVAILABLE)
                 {
-                    WorldPacket data(SMSG_QUESTGIVER_STATUS, 9);
+                    WorldPacket data(SMSG_QUESTGIVER_STATUS, 12);
                     data << (*itr)->GetGUID() << status;
                     SendPacket( &data );
                 }
@@ -12947,38 +12926,35 @@ void Player::StartQuest(uint32 Id)
     qle->UpdatePlayerFields();
 
     // If the quest should give any items on begin, give them the items.
-    if(qst->rewards)
+    for(uint32 i = 0; i < 4; i++)
     {
-        for(uint32 i = 0; i < 4; i++)
+        if(qst->receive_items[i])
         {
-            if(qst->rewards->receive_items[i])
-            {
-                Item* item = objmgr.CreateItem( qst->rewards->receive_items[i], this);
-                if(item)
-                {
-                    item->SetUInt32Value(ITEM_FIELD_STACK_COUNT, qst->rewards->receive_itemcount[i]);
-                    if(!GetItemInterface()->AddItemToFreeSlot(item))
-                    {
-                        item->DeleteMe();
-                        item = NULLITEM;
-                    }
-                    else
-                        GetSession()->SendItemPushResult(item, false, true, false, true, GetItemInterface()->LastSearchItemBagSlot(), GetItemInterface()->LastSearchItemSlot(),1);
-                }
-            }
-        }
-
-        if(qst->rewards->srcitem && qst->rewards->srcitem != qst->rewards->receive_items[0])
-        {
-            Item* item = objmgr.CreateItem( qst->rewards->srcitem, this );
+            Item* item = objmgr.CreateItem( qst->receive_items[i], this);
             if(item)
             {
-                item->SetUInt32Value(ITEM_FIELD_STACK_COUNT, qst->rewards->srcitemcount ? qst->rewards->srcitemcount : 1);
+                item->SetUInt32Value(ITEM_FIELD_STACK_COUNT, qst->receive_itemcount[i]);
                 if(!GetItemInterface()->AddItemToFreeSlot(item))
                 {
                     item->DeleteMe();
                     item = NULLITEM;
                 }
+                else
+                    GetSession()->SendItemPushResult(item, false, true, false, true, GetItemInterface()->LastSearchItemBagSlot(), GetItemInterface()->LastSearchItemSlot(),1);
+            }
+        }
+    }
+
+    if(qst->srcitem && qst->srcitem != qst->receive_items[0])
+    {
+        Item* item = objmgr.CreateItem( qst->srcitem, this );
+        if(item)
+        {
+            item->SetUInt32Value(ITEM_FIELD_STACK_COUNT, qst->srcitemcount ? qst->srcitemcount : 1);
+            if(!GetItemInterface()->AddItemToFreeSlot(item))
+            {
+                item->DeleteMe();
+                item = NULLITEM;
             }
         }
     }

@@ -15,119 +15,116 @@ WorldPacket* WorldSession::BuildQuestQueryResponse(Quest *qst)
     uint32 i = 0, total = 0;
 
     WorldPacket* data = new WorldPacket(SMSG_QUEST_QUERY_RESPONSE, 248);
-    *data << uint32(qst->id);                                                               // Quest ID
-    *data << uint32(2);                                                                     // Unknown, always seems to be 2
-    *data << int32(qst->qst_max_level);                                                     // Quest level
-    *data << uint32(qst->qst_min_level);                                                    // minlevel !!!
+    *data << uint32(qst->id);                           // Quest ID
+    *data << uint32(2);                                 // Quest Method
+    *data << int32(qst->qst_max_level);                 // Quest level
+    *data << uint32(qst->qst_min_level);                // minlevel !!!
 
     if(qst->qst_sort > 0)
-        *data << int32(-(int32)qst->qst_sort);                                              // Negative if pointing to a sort.
+        *data << int32(-(int32)qst->qst_sort);          // Negative if pointing to a sort.
     else
-        *data << uint32(qst->qst_zone_id);                                                  // Positive if pointing to a zone.
+        *data << uint32(qst->qst_zone_id);              // Positive if pointing to a zone.
 
-    *data << uint32(qst->qst_type);                                                         // Info ID / Type
-    *data << uint32(qst->qst_suggested_players);                                            // suggested players
-    *data << uint32(qst->requirements ? qst->requirements->required_rep_faction : 0);       // Faction ID
-    *data << uint32(qst->requirements ? qst->requirements->required_rep_value : 0);         // Faction Amount
-    *data << uint32(0);                                                                     // 3.3.3 // Opposite Faction ID
-    *data << uint32(0);                                                                     // 3.3.3 // Opposite Faction Amount
-    *data << uint32(qst->qst_next_quest_id);                                                // Next Quest ID
-    *data << uint32(0);                                                                     // 3.3.0
+    *data << uint32(qst->qst_type);                     // Info ID / Type
+    *data << uint32(qst->qst_suggested_players);        // suggested players
+    *data << uint32(qst->required_rep_faction);         // Faction ID
+    *data << uint32(qst->required_rep_value);           // Faction Amount
+    *data << uint32(0);                                 // 3.3.3 // Opposite Faction ID
+    *data << uint32(0);                                 // 3.3.3 // Opposite Faction Amount
+    *data << uint32(qst->qst_next_quest_id);            // Next Quest ID
+    *data << uint32(0);                                 // 3.3.0
 
-    *data << uint32(sQuestMgr.GenerateRewardMoney(_player, qst));                           // Copper reward
-    *data << uint32(qst->objectives ? qst->objectives->required_money : 0);                 // Required Money
-    *data << uint32(qst->rewards ? qst->rewards->reward_spell : 0);                         // Spell added to spellbook upon completion
-    *data << uint32(qst->rewards ? qst->rewards->reward_cast_on_player : 0);                // Spell casted on player upon completion
-    *data << uint32(qst->rewards ? qst->rewards->reward_honor : 0);                         // bonus honor
-    *data << float(0);                                                                      // Reward Honor Multiplier
-    *data << uint32(qst->rewards ? qst->rewards->srcitem : 0);                              // Item given at the start of a quest (srcitem)
-    *data << uint32(qst->qst_flags);                                                        // Quest Flags
-    *data << uint32(qst->rewards ? qst->rewards->reward_title : 0);                         // Reward Title Id - Player is givn this title upon completion
-    *data << uint32(qst->objectives ? qst->objectives->required_player_kills : 0);          // Required Kill Player
-    *data << uint32(qst->rewards ? qst->rewards->reward_talents : 0);                       // Reward Talents
-    *data << uint32(qst->rewards ? qst->rewards->reward_arenapoints : 0);                   // Arena Points
-    *data << uint32(0);                                                                     // unk
-
-    if(qst->rewards == NULL)
-    {
-        total = (4*2)+(6*2)+(5*3);
-        for(i = 0; i < total; i++)
-            *data << uint32(0);
-        total = 0;
-    }
+    if(qst->required_money)
+        *data << int32(-qst->required_money) << uint32(0);
     else
     {
-        // (loop 4 times)
-        for(i = 0; i < 4; i++)
-        {
-            *data << uint32(qst->rewards->reward_item[i]);                                  // Forced Reward Item [i]
-            *data << uint32(qst->rewards->reward_itemcount[i]);                             // Forced Reward Item Count [i]
-        }
-
-        // (loop 6 times)
-        for(uint32 i = 0; i < 6; i++)
-        {
-            *data << uint32(qst->rewards->reward_choiceitem[i]);                            // Choice Reward Item [i]
-            *data << uint32(qst->rewards->reward_choiceitemcount[i]);                       // Choice Reward Item Count [i]
-        }
-
-        // Faction Reward Stuff.
-        for(i = 0; i < 5; i++)
-            *data << uint32(qst->rewards->reward_repfaction[i]);
-
-        for(i = 0; i < 5; i++)
-            *data << int32(qst->rewards->reward_repvalue[i]);
-
-        for(i = 0; i < 5; i++)
-            *data << int32(qst->rewards->reward_replimit[i]);
-        // end
+        *data << uint32(qst->reward_money*sWorld.getRate(RATE_QUESTMONEY));
+        *data << uint32(qst->reward_maxlvlmoney*sWorld.getRate(RATE_QUESTMONEY));
     }
+    *data << uint32(qst->reward_spell);                 // Spell added to spellbook upon completion
+    *data << uint32(qst->reward_cast_on_player);        // Spell casted on player upon completion
+    *data << uint32(0);
+    *data << uint32(0);
+    *data << uint32(qst->srcitem);                      // Item given at the start of a quest (srcitem)
+    *data << uint32(qst->qst_flags);                    // Quest Flags
+    *data << uint32(0);                                 // Quest target mark type
+    *data << uint32(qst->reward_title);                 // Reward Title Id - Player is givn this title upon completion
+    *data << uint32(qst->required_player_kills);        // Required Kill Player
+    *data << uint32(qst->reward_talents);
+    *data << uint32(0); // Arena currency?
+    *data << uint32(0); // Skill Line Id
+    *data << uint32(0); // Skill Line Points
+    *data << uint32(0); // Reward rep mask
+    *data << uint32(0); // Giver portrait
+    *data << uint32(0); // Turn in portrait
 
-    if(qst->objectives == NULL)
-        *data << uint32(0) << float(0.0f) << float(0.0f) << uint32(0);
-    else
+    // (loop 4 times)
+    for(i = 0; i < 4; i++)
     {
-        *data << uint32(qst->objectives->required_point_mapid);                             // Unknown
-        *data << float(qst->objectives->required_point_x);                                  // Unknown
-        *data << float(qst->objectives->required_point_y);                                  // Unknown
-        *data << uint32(qst->objectives->required_point_radius);                            // Unknown
+        *data << uint32(qst->reward_item[i]);           // Forced Reward Item [i]
+        *data << uint32(qst->reward_itemcount[i]);      // Forced Reward Item Count [i]
     }
 
-    *data << qst->qst_title;                                                                // Title / name of quest
-    *data << qst->qst_objectivetext;                                                        // Objectives / description
-    *data << qst->qst_details;                                                              // Details
-    *data << qst->qst_endtext;                                                              // Subdescription
-
-    *data << uint8(0);                                                                      // Displayed after finishing quest.
-
-    if(qst->objectives == NULL)
+    // (loop 6 times)
+    for(uint32 i = 0; i < 6; i++)
     {
-        for(i = 0; i < 28; i++)
-            *data << uint32(0);
-        total = 0;
+        *data << uint32(qst->reward_choiceitem[i]);     // Choice Reward Item [i]
+        *data << uint32(qst->reward_choiceitemcount[i]);// Choice Reward Item Count [i]
     }
-    else
+
+    // Faction Reward Stuff.
+    for(i = 0; i < 5; i++)
+        *data << uint32(qst->reward_repfaction[i]);
+
+    for(i = 0; i < 5; i++)
+        *data << int32(qst->reward_repvalue[i]);
+
+    for(i = 0; i < 5; i++)
+        *data << int32(qst->reward_replimit[i]);
+    // end
+
+    *data << uint32(qst->required_point_mapid);     // Unknown
+    *data << float(qst->required_point_x);          // Unknown
+    *data << float(qst->required_point_y);          // Unknown
+    *data << uint32(qst->required_point_radius);    // Unknown
+
+    *data << qst->qst_title;            // Title / name of quest
+    *data << qst->qst_objectivetext;    // Objectives / description
+    *data << qst->qst_details;          // Details
+    *data << qst->qst_completiontext;
+    *data << qst->qst_endtext;          // Subdescription
+
+    // (loop 4 times)
+    for(i = 0; i < 4; i++)
     {
-        // (loop 4 times)
-        for(uint32 i = 0; i < 4; i++)
-        {
-            *data << uint32(qst->objectives->required_mob[i]);                              // Kill mob entry ID [i]
-            *data << uint64(qst->objectives->required_mobcount[i]);                         // Kill mob count [i]
-            *data << int32(0);                                                              // 3.0.2
-        }
-
-        for(uint32 i = 0; i < 6; i++)
-        {
-            *data << uint32(qst->objectives->required_item[i]);                             // Collect item [i]
-            *data << uint32(qst->objectives->required_itemcount[i]);                        // Collect item count [i]
-        }
+        *data << uint32(qst->required_mob[i]);      // Kill mob entry ID [i]
+        *data << uint32(qst->required_mobcount[i]); // Kill mob count [i]
+        *data << int32(0) << int32(0);              // 3.0.2
     }
 
-    *data << qst->qst_objectivetexts[0];                                                    // Objective 1 - Used as text if mob not set
-    *data << qst->qst_objectivetexts[1];                                                    // Objective 2 - Used as text if mob not set
-    *data << qst->qst_objectivetexts[2];                                                    // Objective 3 - Used as text if mob not set
-    *data << qst->qst_objectivetexts[3];                                                    // Objective 4 - Used as text if mob not set
+    for(i = 0; i < 6; i++)
+    {
+        *data << uint32(qst->required_item[i]);     // Collect item [i]
+        *data << uint32(qst->required_itemcount[i]);// Collect item count [i]
+    }
 
+    *data << qst->required_spell;
+
+    for(i = 0; i < 4; i++)
+        *data << qst->qst_objectivetexts[i];    // Objective 1 - Used as text if mob not set
+
+    // Currency start
+    for(i = 0; i < 4; i++)
+        *data << uint32(0) << uint32(0);
+    for(i = 0; i < 4; i++)
+        *data << uint32(0) << uint32(0);
+    // Currency end
+
+    // Giver/Turnin strings
+    *data << uint8(0) << uint8(0) << uint8(0) << uint8(0);
+
+    // Accept/Turnin sounds
+    *data << uint32(0) << uint32(0);
     return data;
 }
 
@@ -162,26 +159,22 @@ void QuestLogEntry::Init(Quest* quest, Player* plr, uint32 slot)
     m_time_left = 0;
 
     iscastquest = false;
-    if(quest->objectives)
+    for (uint32 i = 0; i < 4; i++)
     {
-        for (uint32 i = 0; i < 4; i++)
+        if (quest->required_spell[i] != 0)
         {
-            if (quest->objectives->required_spell[i] != 0)
-            {
-                iscastquest = true;
-                if (!plr->HasQuestSpell(GetRequiredSpell(i)))
-                    plr->quest_spells.insert(GetRequiredSpell(i));
-            }
-            else if (quest->objectives->required_mob[i] != 0)
-            {
-                if (!plr->HasQuestMob(quest->objectives->required_mob[i]))
-                    plr->quest_mobs.insert(quest->objectives->required_mob[i]);
-            }
+            iscastquest = true;
+            if (!plr->HasQuestSpell(GetRequiredSpell(i)))
+                plr->quest_spells.insert(GetRequiredSpell(i));
         }
-
-        m_time_left = m_quest->objectives->required_timelimit;
+        else if (quest->required_mob[i] != 0)
+        {
+            if (!plr->HasQuestMob(quest->required_mob[i]))
+                plr->quest_mobs.insert(quest->required_mob[i]);
+        }
     }
 
+    m_time_left = m_quest->required_timelimit;
 
     // update slot
     plr->SetQuestLogSlot(this, slot);
@@ -250,22 +243,17 @@ bool QuestLogEntry::LoadFromDB(Field *fields)
     for(int i = 0; i < 4; i++)
     {
         m_areatriggers[i] = fields[f++].GetUInt32();
-        if(m_quest->objectives && m_quest->objectives->required_areatriggers[i])
-            CALL_QUESTSCRIPT_EVENT(m_quest->id, OnCrossAreaTrigger)(m_quest->objectives->required_areatriggers[i], m_plr, this);
+        if(m_quest->required_areatriggers[i])
+            CALL_QUESTSCRIPT_EVENT(m_quest->id, OnCrossAreaTrigger)(m_quest->required_areatriggers[i], m_plr, this);
     }
 
-    if(GetQuest()->objectives == NULL)
-        f += 4;
-    else
+    for(int i = 0; i < 4; i++)
     {
-        for(int i = 0; i < 4; i++)
-        {
-            m_mobcount[i] = fields[f++].GetUInt32();
-            if(GetQuest()->objectives->required_mobtype[i] == QUEST_MOB_TYPE_CREATURE)
-                CALL_QUESTSCRIPT_EVENT(m_quest->id, OnCreatureKill)(GetQuest()->objectives->required_mob[i], m_plr, this);
-            else
-                CALL_QUESTSCRIPT_EVENT(m_quest->id, OnGameObjectActivate)(GetQuest()->objectives->required_mob[i], m_plr, this);
-        }
+        m_mobcount[i] = fields[f++].GetUInt32();
+        if(GetQuest()->required_mobtype[i] == QUEST_MOB_TYPE_CREATURE)
+            CALL_QUESTSCRIPT_EVENT(m_quest->id, OnCreatureKill)(GetQuest()->required_mob[i], m_plr, this);
+        else
+            CALL_QUESTSCRIPT_EVENT(m_quest->id, OnGameObjectActivate)(GetQuest()->required_mob[i], m_plr, this);
     }
 
     m_player_slain = fields[f].GetUInt32();
@@ -279,52 +267,48 @@ bool QuestLogEntry::CanBeFinished()
         return false;
 
     uint32 i = 0;
-    if(m_quest->objectives)
+    for(i = 0; i < 4; i++)
     {
-        for(i = 0; i < 4; i++)
+        bool required = false;
+        if(iscastquest)
         {
-            bool required = false;
-            if(iscastquest)
-            {
-                if(m_quest->objectives->required_spell[i] || m_quest->objectives->required_mob[i])
-                    required = true;
-            }
-            else
-            {
-                if(m_quest->objectives->required_mob[i])
-                    required = true;
-            }
-
-            if(required)
-                if(m_quest->objectives->required_mobcount[i] > m_mobcount[i])
-                    return false;
+            if(m_quest->required_spell[i] || m_quest->required_mob[i])
+                required = true;
+        }
+        else
+        {
+            if(m_quest->required_mob[i])
+                required = true;
         }
 
-        for(i = 0; i < 6; i++)
-            if(m_quest->objectives->required_item[i])
-                if(m_plr->GetItemInterface()->GetItemCount(m_quest->objectives->required_item[i]) < m_quest->objectives->required_itemcount[i])
-                    return false;
-
-        //Check for Gold & AreaTrigger Requirement s
-        for(i = 0; i < 4; i++)
-        {
-            if(m_quest->objectives->required_money && (m_plr->GetUInt32Value(PLAYER_FIELD_COINAGE) < m_quest->objectives->required_money))
+        if(required)
+            if(m_quest->required_mobcount[i] > m_mobcount[i])
                 return false;
-
-            if(m_quest->objectives->required_areatriggers[i])
-            {
-                if(m_areatriggers[i] == 0)
-                    return false;
-            }
-        }
-
-        if(m_quest->objectives->required_player_kills != m_player_slain)
-            return false;
-
-        if(m_quest->objectives->required_timelimit && !m_time_left)
-            return false;
     }
 
+    for(i = 0; i < 6; i++)
+        if(m_quest->required_item[i])
+            if(m_plr->GetItemInterface()->GetItemCount(m_quest->required_item[i]) < m_quest->required_itemcount[i])
+                return false;
+
+    //Check for Gold & AreaTrigger Requirement s
+    for(i = 0; i < 4; i++)
+    {
+        if(m_quest->required_money && (m_plr->GetUInt32Value(PLAYER_FIELD_COINAGE) < m_quest->required_money))
+            return false;
+
+        if(m_quest->required_areatriggers[i])
+        {
+            if(m_areatriggers[i] == 0)
+                return false;
+        }
+    }
+
+    if(m_quest->required_player_kills != m_player_slain)
+        return false;
+
+    if(m_quest->required_timelimit && !m_time_left)
+        return false;
     return true;
 }
 
@@ -388,38 +372,35 @@ void QuestLogEntry::UpdatePlayerFields()
     uint64 field1 = 0;
 
     // explored areas
-    if(m_quest->objectives)
+    if(m_quest->count_requiredareatriggers)
     {
-        if(m_quest->objectives->count_requiredareatriggers)
+        uint32 count = 0;
+        for(i = 0; i < 4; i++)
         {
-            uint32 count = 0;
-            for(i = 0; i < 4; i++)
+            if(m_quest->required_areatriggers[i])
             {
-                if(m_quest->objectives->required_areatriggers[i])
+                if(m_areatriggers[i] == 1)
                 {
-                    if(m_areatriggers[i] == 1)
-                    {
-                        count++;
-                    }
+                    count++;
                 }
-            }
-
-            if(count == m_quest->objectives->count_requiredareatriggers)
-            {
-                field1 |= 0x01000000;
             }
         }
 
-        // mob hunting
-        if(m_quest->objectives->count_required_mob)
+        if(count == m_quest->count_requiredareatriggers)
         {
-            // optimized this - burlex
-            uint8 * p = (uint8*)&field1;
-            for(i = 0; i < 4; i++)
-            {
-                if( m_quest->objectives->required_mob[i] && m_mobcount[i] > 0 )
-                    p[2*i] |= (uint8)m_mobcount[i];
-            }
+            field1 |= 0x01000000;
+        }
+    }
+
+    // mob hunting
+    if(m_quest->count_required_mob)
+    {
+        // optimized this - burlex
+        uint8 * p = (uint8*)&field1;
+        for(i = 0; i < 4; i++)
+        {
+            if( m_quest->required_mob[i] && m_mobcount[i] > 0 )
+                p[2*i] |= (uint8)m_mobcount[i];
         }
     }
 
@@ -447,18 +428,14 @@ void QuestLogEntry::SendQuestComplete()
 
 void QuestLogEntry::SendUpdateAddKill(uint32 i)
 {
-    if(m_quest->objectives)
-        sQuestMgr.SendQuestUpdateAddKill(m_plr, m_quest->id, m_quest->objectives->required_mob[i], m_mobcount[i], m_quest->objectives->required_mobcount[i], 0);
+    sQuestMgr.SendQuestUpdateAddKill(m_plr, m_quest->id, m_quest->required_mob[i], m_mobcount[i], m_quest->required_mobcount[i], 0);
 }
 
 uint32 QuestLogEntry::GetRequiredSpell(uint32 i)
 {
-    if(m_quest->objectives == NULL)
-        return 0;
-
-    if(!m_plr->HasSpell(m_quest->objectives->required_spell[i]))
+    if(!m_plr->HasSpell(m_quest->required_spell[i]))
     {
-        SpellEntry* reqspell = dbcSpell.LookupEntry(m_quest->objectives->required_spell[i]);
+        SpellEntry* reqspell = dbcSpell.LookupEntry(m_quest->required_spell[i]);
          // Spell has a power type, so we check if player has spells with the same namehash, and replace it with that.
         if(reqspell && (reqspell->powerType != m_plr->GetPowerType()))
         {
@@ -468,5 +445,5 @@ uint32 QuestLogEntry::GetRequiredSpell(uint32 i)
         }
     }
 
-    return m_quest->objectives->required_spell[i];
+    return m_quest->required_spell[i];
 }

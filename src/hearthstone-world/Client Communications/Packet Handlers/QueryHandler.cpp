@@ -407,7 +407,7 @@ void WorldSession::HandleInrangeQuestgiverQuery(WorldPacket & recv_data)
         if( pCreature->isQuestGiver() )
         {
             data << pCreature->GetGUID();
-            data << sQuestMgr.CalcStatus( pCreature, _player );
+            data << sQuestMgr.CalcStatus(pCreature, GetPlayer());
             ++count;
         }
     }
