@@ -60,8 +60,8 @@ Object::Object() : m_position(0,0,0,0), m_spawnLocation(0,0,0,0)
     m_mapMgr = NULLMAPMGR;
     m_mapCell = 0;
 
+    m_factionTemplate = NULL;
     m_faction = NULL;
-    m_factionDBC = NULL;
 
     m_instanceId = 0;
     Active = false;
@@ -1745,20 +1745,19 @@ bool Object::isInRange(Object* target, float range)
 void Object::_setFaction()
 {
     // Clear our old faction info
+    m_factionTemplate = NULL;
     m_faction = NULL;
-    m_factionDBC = NULL;
 
-    FactionTemplateDBC* factT = NULL;
+    FactionTemplateEntry* factionTemplate = NULL;
 
     if(GetTypeId() == TYPEID_UNIT || IsPlayer())
-        factT = dbcFactionTemplate.LookupEntry(GetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE));
+        factionTemplate = dbcFactionTemplate.LookupEntry(GetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE));
     else if(GetTypeId() == TYPEID_GAMEOBJECT)
-        factT = dbcFactionTemplate.LookupEntry(GetUInt32Value(GAMEOBJECT_FACTION));
-
-    if(factT)
+        factionTemplate = dbcFactionTemplate.LookupEntry(GetUInt32Value(GAMEOBJECT_FACTION));
+    if(factionTemplate)
     {
-        m_faction = factT;
-        m_factionDBC = dbcFaction.LookupEntry(factT->Faction);
+        m_factionTemplate = factionTemplate;
+        m_faction = dbcFaction.LookupEntry(factionTemplate->Faction);
     }
     //Lets update our faction sets since we have changed faction.
     UpdateOppFactionSet();

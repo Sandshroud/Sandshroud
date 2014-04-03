@@ -1118,12 +1118,12 @@ public:
     void                SetAtWar(uint32 Faction, bool Set);
     bool                IsAtWar(uint32 Faction);
     Standing            GetStandingRank(uint32 Faction);
-    bool                IsHostileBasedOnReputation(FactionDBC * dbc);
+    bool                IsHostileBasedOnReputation(FactionEntry *faction);
     void                UpdateInrangeSetsBasedOnReputation();
     void                Reputation_OnKilledUnit(Unit* pUnit, bool InnerLoop);
-    void                Reputation_OnTalk(FactionDBC * dbc);
-    bool                AddNewFaction( FactionDBC * dbc, int32 standing, bool base );
-    void                OnModStanding( FactionDBC * dbc, FactionReputation * rep );
+    void                Reputation_OnTalk(FactionEntry *faction);
+    bool                AddNewFaction( FactionEntry *faction, int32 standing, bool base );
+    void                OnModStanding( FactionEntry *faction, FactionReputation * rep );
     static Standing     GetReputationRankFromStanding(int32 Standing_);
 
     bool titanGrip;

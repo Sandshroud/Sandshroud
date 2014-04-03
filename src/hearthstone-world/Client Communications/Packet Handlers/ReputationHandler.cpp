@@ -123,7 +123,7 @@ uint32 Player::GetInitialFactionId()
 
 void Player::_InitialReputation()
 {
-    FactionDBC * f;
+    FactionEntry * f;
     for ( uint32 i = 0; i < dbcFaction.GetNumRows(); i++ )
     {
         f = dbcFaction.LookupRow( i );
@@ -148,16 +148,16 @@ int32 Player::GetBaseStanding(uint32 Faction)
 void Player::SetStanding(uint32 Faction, int32 Value)
 {
     ReputationMap::iterator itr = m_reputation.find(Faction);
-    FactionDBC * dbc = dbcFaction.LookupEntry(Faction);
-    if(dbc == 0) return;
+    FactionEntry *faction = dbcFaction.LookupEntry(Faction);
+    if(faction == NULL) return;
 
     if(itr == m_reputation.end())
     {
-        if( !AddNewFaction( dbc, Value, false ) )
+        if( !AddNewFaction( faction, Value, false ) )
             return;
         itr = m_reputation.find( Faction );
         UpdateInrangeSetsBasedOnReputation();
-        OnModStanding( dbc, itr->second );
+        OnModStanding( faction, itr->second );
     }
     else
     {
@@ -170,7 +170,7 @@ void Player::SetStanding(uint32 Faction, int32 Value)
         else
             itr->second->standing = Value;
         
-        OnModStanding( dbc, itr->second );
+        OnModStanding( faction, itr->second );
     }
 }
 
@@ -179,17 +179,17 @@ Standing Player::GetStandingRank(uint32 Faction)
     return Standing(GetReputationRankFromStanding(GetStanding(Faction)));
 }
 
-bool Player::IsHostileBasedOnReputation(FactionDBC * dbc)
+bool Player::IsHostileBasedOnReputation(FactionEntry *faction)
 {
-    if( dbc->RepListId < 0 || dbc->RepListId >= 128 )
+    if( faction->RepListId < 0 || faction->RepListId >= 128 )
         return false;
 
-    FactionReputation * rep = reputationByListId[dbc->RepListId];
+    FactionReputation * rep = reputationByListId[faction->RepListId];
     if ( rep == NULL )
         return false;
 
     // forced reactions take precedence
-    map<uint32, uint32>::iterator itr = m_forcedReactions.find( dbc->ID );
+    map<uint32, uint32>::iterator itr = m_forcedReactions.find( faction->ID );
     if( itr != m_forcedReactions.end() )
         return ( itr->second <= STANDING_HOSTILE );
 
@@ -199,17 +199,17 @@ bool Player::IsHostileBasedOnReputation(FactionDBC * dbc)
 void Player::ModStanding(uint32 Faction, int32 Value)
 {
     ReputationMap::iterator itr = m_reputation.find(Faction);
-    FactionDBC* dbc = dbcFaction.LookupEntry(Faction);
-    if (dbc == NULL || dbc->RepListId < 0)
+    FactionEntry* faction = dbcFaction.LookupEntry(Faction);
+    if (faction == NULL || faction->RepListId < 0)
         return;
 
     if(itr == m_reputation.end())
     {
-        if (AddNewFaction(dbc, 0, true)) 
+        if (AddNewFaction(faction, 0, true)) 
             return;
         itr = m_reputation.find( Faction );
         UpdateInrangeSetsBasedOnReputation();
-        OnModStanding( dbc, itr->second );
+        OnModStanding( faction, itr->second );
     }
     else
     {
@@ -219,7 +219,7 @@ void Player::ModStanding(uint32 Faction, int32 Value)
         itr->second->standing = newValue < -42000 ? -42000 : newValue > 42999 ? 42999 : newValue;
         if (RankChanged(oldValue, modValue)) 
             UpdateInrangeSetsBasedOnReputation();
-        OnModStanding(dbc, itr->second);
+        OnModStanding(faction, itr->second);
     }
 }
 
@@ -287,10 +287,10 @@ void Player::UpdateInrangeSetsBasedOnReputation()
             continue;
 
         pUnit = TO_UNIT( *itr );
-        if(pUnit->m_factionDBC == NULL || pUnit->m_factionDBC->RepListId < 0)
+        if(pUnit->m_faction == NULL || pUnit->m_faction->RepListId < 0)
             continue;
 
-        rep_value = IsHostileBasedOnReputation( pUnit->m_factionDBC );
+        rep_value = IsHostileBasedOnReputation( pUnit->m_faction );
         enemy_current = IsInRangeOppFactSet( pUnit );
 
         if( rep_value && !enemy_current ) // We are now enemies.
@@ -303,7 +303,7 @@ void Player::UpdateInrangeSetsBasedOnReputation()
 void Player::Reputation_OnKilledUnit(Unit* pUnit, bool InnerLoop)
 {
     // add rep for on kill
-    if ( pUnit->GetTypeId() != TYPEID_UNIT || pUnit->IsPet() || !pUnit->m_factionDBC )
+    if ( pUnit->GetTypeId() != TYPEID_UNIT || pUnit->IsPet() || !pUnit->m_faction )
         return;
 
     Group * m_Group = GetGroup();
@@ -327,7 +327,7 @@ void Player::Reputation_OnKilledUnit(Unit* pUnit, bool InnerLoop)
     }
 
     uint32 team = GetTeam();
-    ReputationModifier * modifier = objmgr.GetReputationModifier( pUnit->GetEntry(), pUnit->m_factionDBC->ID );
+    ReputationModifier * modifier = objmgr.GetReputationModifier( pUnit->GetEntry(), pUnit->m_faction->ID );
     if( modifier != 0 )
     {
         // Apply this data.
@@ -353,21 +353,21 @@ void Player::Reputation_OnKilledUnit(Unit* pUnit, bool InnerLoop)
         if ( IS_INSTANCE( GetMapId() ) && objmgr.HandleInstanceReputationModifiers( this, pUnit ) )
             return;
 
-        if ( pUnit->m_factionDBC->RepListId < 0 )
+        if ( pUnit->m_faction->RepListId < 0 )
             return;
 
         int32 change = int32( -5.0f * sWorld.getRate( RATE_KILLREPUTATION ) );
-        ModStanding( pUnit->m_factionDBC->ID, change );
+        ModStanding( pUnit->m_faction->ID, change );
     }
 }
 
-void Player::Reputation_OnTalk(FactionDBC * dbc)
+void Player::Reputation_OnTalk(FactionEntry *faction)
 {
     // set faction visible if not visible
-    if(!dbc || dbc->RepListId < 0)
+    if(!faction || faction->RepListId < 0)
         return;
 
-    FactionReputation * rep = reputationByListId[dbc->RepListId];
+    FactionReputation * rep = reputationByListId[faction->RepListId];
     if(!rep)
         return;
 
@@ -375,41 +375,41 @@ void Player::Reputation_OnTalk(FactionDBC * dbc)
     {
         SetFlagVisible(rep->flag);
         if(IsInWorld())
-            m_session->OutPacket(SMSG_SET_FACTION_VISIBLE, 4, &dbc->RepListId);
+            m_session->OutPacket(SMSG_SET_FACTION_VISIBLE, 4, &faction->RepListId);
     }
 }
 
-bool Player::AddNewFaction( FactionDBC * dbc, int32 standing, bool base )
+bool Player::AddNewFaction( FactionEntry *faction, int32 standing, bool base )
 {
-    if ( dbc == NULL || dbc->RepListId < 0 )
+    if ( faction == NULL || faction->RepListId < 0 )
         return false;
 
     uint32 RaceMask = getRaceMask();
     uint32 ClassMask = getClassMask();
     for ( uint32 i = 0; i < 4; i++ )
     {
-        if( ( dbc->RaceMask[i] & RaceMask || ( dbc->RaceMask[i] == 0 && dbc->ClassMask[i] != 0 ) ) &&
-            ( dbc->ClassMask[i] & ClassMask || dbc->ClassMask[i] == 0 ) )
+        if( ( faction->RaceMask[i] & RaceMask || ( faction->RaceMask[i] == 0 && faction->ClassMask[i] != 0 ) ) &&
+            ( faction->ClassMask[i] & ClassMask || faction->ClassMask[i] == 0 ) )
         {
             FactionReputation * rep = new FactionReputation;
-            rep->flag = uint8(dbc->repFlags[i]);
-            rep->baseStanding = dbc->baseRepValue[i];
-            rep->standing = ( base ) ? dbc->baseRepValue[i] : standing;
-            m_reputation[dbc->ID] = rep;
-            reputationByListId[dbc->RepListId] = rep;
+            rep->flag = uint8(faction->repFlags[i]);
+            rep->baseStanding = faction->baseRepValue[i];
+            rep->standing = ( base ) ? faction->baseRepValue[i] : standing;
+            m_reputation[faction->ID] = rep;
+            reputationByListId[faction->RepListId] = rep;
             return true;
         }
     }
     return false;
 }
 
-void Player::OnModStanding( FactionDBC * dbc, FactionReputation * rep )
+void Player::OnModStanding( FactionEntry *faction, FactionReputation * rep )
 {
     if(!Visible(rep->flag))
     {
         SetFlagVisible(rep->flag);
         if(IsInWorld())
-            m_session->OutPacket(SMSG_SET_FACTION_VISIBLE, 4, &dbc->RepListId);
+            m_session->OutPacket(SMSG_SET_FACTION_VISIBLE, 4, &faction->RepListId);
     }
 
     if(GetReputationRankFromStanding(rep->standing) <= STANDING_HOSTILE && !AtWar(rep->flag))
@@ -420,7 +420,7 @@ void Player::OnModStanding( FactionDBC * dbc, FactionReputation * rep )
         WorldPacket data( SMSG_SET_FACTION_STANDING, 17 );
         data << uint32( 0 ) ;
         data << uint8( 1 ) ; //count 
-        data << uint32( rep->flag ) << dbc->RepListId << rep->CalcStanding();
+        data << uint32( rep->flag ) << faction->RepListId << rep->CalcStanding();
         m_session->SendPacket( &data );
     }
 }
