@@ -473,7 +473,7 @@ uint32 Item::GetBuyPriceForItem( ItemPrototype* proto, uint32 count, Player* plr
 
     if( plr != NULL && vendor != NULL )
     {
-        Standing plrstanding = plr->GetStandingRank( vendor->m_faction->Faction );
+        Standing plrstanding = plr->GetStandingRank( vendor->m_factionTemplate->Faction );
         cost = float2int32( ceilf( float( proto->BuyPrice ) * pricemod[plrstanding] ) );
     }
 

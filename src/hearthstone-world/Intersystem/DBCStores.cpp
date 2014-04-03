@@ -77,11 +77,11 @@ const char* EmoteEntryFormat = "uxuuuuxuxuxxxxxxxxx";
 DECLARE_CLASS_INTERNAL_DBC_MACRO(EnchantEntry, dbcEnchant);
 const char* EnchantEntryFormat = "uxuuuuuuuuuuuusxuuuxxxx";
 
-DECLARE_CLASS_INTERNAL_DBC_MACRO(FactionDBC, dbcFaction);
-const char* factiondbcFormat = "uiuuuuuuuuiiiiuuuuuxxxxsxx";
+DECLARE_CLASS_INTERNAL_DBC_MACRO(FactionEntry, dbcFaction);
+const char* factionFormat = "uiuuuuuuuuiiiiuuuuuxxxxsxx";
 
-DECLARE_CLASS_INTERNAL_DBC_MACRO(FactionTemplateDBC, dbcFactionTemplate);
-const char* factiontemplatedbcFormat = "uuuuuuuuuuuuuu";
+DECLARE_CLASS_INTERNAL_DBC_MACRO(FactionTemplateEntry, dbcFactionTemplate);
+const char* factiontemplateFormat = "uuuuuuuuuuuuuu";
 
 DECLARE_CLASS_INTERNAL_DBC_MACRO(GemPropertyEntry, dbcGemProperty);
 const char* gempropertyFormat = "uuxxux";
@@ -291,8 +291,8 @@ bool LoadDBCs(const char* datapath)
     LOAD_DB(format("%s/DurabilityCosts.dbc", datapath).c_str(), durabilitycostsFormat, dbcDurabilityCosts);
     LOAD_DB(format("%s/DurabilityQuality.dbc", datapath).c_str(), durabilityqualityFormat, dbcDurabilityQuality);
     LOAD_DB(format("%s/EmotesText.dbc", datapath).c_str(), EmoteEntryFormat, dbcEmoteEntry);
-    LOAD_DB(format("%s/Faction.dbc", datapath).c_str(), factiondbcFormat, dbcFaction);
-    LOAD_DB(format("%s/FactionTemplate.dbc", datapath).c_str(), factiontemplatedbcFormat, dbcFactionTemplate);
+    LOAD_DB(format("%s/Faction.dbc", datapath).c_str(), factionFormat, dbcFaction);
+    LOAD_DB(format("%s/FactionTemplate.dbc", datapath).c_str(), factiontemplateFormat, dbcFactionTemplate);
     LOAD_DB(format("%s/GemProperties.dbc", datapath).c_str(), gempropertyFormat, dbcGemProperty);
     LOAD_DB(format("%s/Item.db2", datapath).c_str(), ItemFormat, db2Item);
     LOAD_DB(format("%s/Item-sparse.db2", datapath).c_str(), ItemSparseformat, db2ItemSparse);

@@ -458,10 +458,12 @@ void Creature::AddToWorld()
     }
 
     // force set faction
-    if(m_faction == NULL || m_factionDBC == NULL)
+    if(m_factionTemplate == NULL || m_faction == NULL)
+    {
         _setFaction();
-    if(m_faction == NULL || m_factionDBC == NULL)
-        return;
+        if(m_factionTemplate == NULL || m_faction == NULL)
+            return;
+    }
 
     Object::AddToWorld();
 }
@@ -476,10 +478,12 @@ void Creature::AddToWorld(MapMgr* pMapMgr)
     }
 
     // force set faction
-    if(m_faction == NULL || m_factionDBC == NULL)
+    if(m_factionTemplate == NULL || m_faction == NULL)
+    {
         _setFaction();
-    if(m_faction == NULL || m_factionDBC == NULL)
-        return;
+        if(m_factionTemplate == NULL || m_faction == NULL)
+            return;
+    }
 
     Object::AddToWorld(pMapMgr);
 }
@@ -489,11 +493,11 @@ bool Creature::CanAddToWorld()
     if(creature_info == NULL || proto == NULL)
         return false;
 
-    if(m_faction == NULL || m_factionDBC == NULL)
+    // force set faction
+    if(m_factionTemplate == NULL || m_faction == NULL)
     {
         _setFaction();
-
-        if(m_faction == NULL || m_factionDBC == NULL)
+        if(m_factionTemplate == NULL || m_faction == NULL)
             return false;
     }
 
@@ -959,13 +963,12 @@ bool Creature::Load(CreatureSpawn *spawn, uint32 mode, MapInfo *info)
     m_aiInterface->SetWaypointMap(objmgr.GetWayPointMap(spawn->id));
 
     //use proto faction if spawn faction is unspecified
-    m_faction = dbcFactionTemplate.LookupEntry(spawn->factionid ? spawn->factionid : proto->Faction);
-
-    if(m_faction)
+    m_factionTemplate = dbcFactionTemplate.LookupEntry(spawn->factionid ? spawn->factionid : proto->Faction);
+    if(m_factionTemplate)
     {
         // not a neutral creature
-        m_factionDBC = dbcFaction.LookupEntry(m_faction->Faction);
-        if(!((!m_factionDBC || m_factionDBC->RepListId == -1) && m_faction->HostileMask == 0 && m_faction->FriendlyMask == 0))
+        m_faction = dbcFaction.LookupEntry(m_factionTemplate->Faction);
+        if(!((!m_faction || m_faction->RepListId == -1) && m_factionTemplate->HostileMask == 0 && m_factionTemplate->FriendlyMask == 0))
             GetAIInterface()->m_canCallForHelp = true;
     }
     else
@@ -1315,13 +1318,12 @@ bool Creature::Load(CreatureProto * proto_, uint32 mode, float x, float y, float
     // set position
     SetPosition( x, y, z, o);
     m_spawnLocation.ChangeCoords(x, y, z, o);
-    m_faction = dbcFactionTemplate.LookupEntry(proto->Faction);
-
-    if(m_faction)
+    m_factionTemplate = dbcFactionTemplate.LookupEntry(proto->Faction);
+    if(m_factionTemplate)
     {
-        m_factionDBC = dbcFaction.LookupEntry(m_faction->Faction);
+        m_faction = dbcFaction.LookupEntry(m_factionTemplate->Faction);
         // not a neutral creature
-        if(!(m_factionDBC->RepListId == -1 && m_faction->HostileMask == 0 && m_faction->FriendlyMask == 0))
+        if(!(m_faction->RepListId == -1 && m_factionTemplate->HostileMask == 0 && m_factionTemplate->FriendlyMask == 0))
         {
             GetAIInterface()->m_canCallForHelp = true;
         }

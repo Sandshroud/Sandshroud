@@ -250,7 +250,7 @@ struct EnchantEntry
     uint32 GemEntry;
 };
 
-struct FactionDBC
+struct FactionEntry
 {
     uint32 ID;
     int32  RepListId;
@@ -262,7 +262,7 @@ struct FactionDBC
     char*  Name;
 };
 
-struct FactionTemplateDBC
+struct FactionTemplateEntry
 {
     uint32 ID;
     uint32 Faction;
@@ -1371,8 +1371,8 @@ DBC_STORAGE_EXTERN_DBC_MACRO(DurabilityCostsEntry, dbcDurabilityCosts);
 DBC_STORAGE_EXTERN_DBC_MACRO(DurabilityQualityEntry, dbcDurabilityQuality);
 DBC_STORAGE_EXTERN_DBC_MACRO(EmoteEntry, dbcEmoteEntry);
 DBC_STORAGE_EXTERN_DBC_MACRO(EnchantEntry, dbcEnchant);
-DBC_STORAGE_EXTERN_DBC_MACRO(FactionDBC, dbcFaction);
-DBC_STORAGE_EXTERN_DBC_MACRO(FactionTemplateDBC, dbcFactionTemplate);
+DBC_STORAGE_EXTERN_DBC_MACRO(FactionEntry, dbcFaction);
+DBC_STORAGE_EXTERN_DBC_MACRO(FactionTemplateEntry, dbcFactionTemplate);
 DBC_STORAGE_EXTERN_DBC_MACRO(GemPropertyEntry, dbcGemProperty);
 DBC_STORAGE_EXTERN_DB2_MACRO(ItemDataEntry, db2Item);
 DBC_STORAGE_EXTERN_DB2_MACRO(ItemSparseEntry, db2ItemSparse);
