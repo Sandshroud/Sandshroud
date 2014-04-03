@@ -59,7 +59,6 @@ uint32 World::GetMaxLevel(Player* plr)
         level = 70;
     else // Classic World of Warcraft
         level = 60;
-
     return level;
 }
 

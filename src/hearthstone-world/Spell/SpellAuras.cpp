@@ -3100,10 +3100,10 @@ void Aura::SpellAuraDummy(bool apply)
 
         SpellEntry *triggerspell = dbcSpell.LookupEntry( TamingSpellid );
         Quest* tamequest = sQuestMgr.GetQuestPointer( triggerspell->EffectMiscValue[1] );
-        if(triggerspell == NULL || tamequest == NULL || tamequest->objectives == NULL)
+        if(triggerspell == NULL || tamequest == NULL)
             return;
 
-        if ( p_caster->GetQuestLogForEntry(tamequest->id ) && m_target->GetEntry() == tamequest->objectives->required_mob[0] )
+        if ( p_caster->GetQuestLogForEntry(tamequest->id ) && m_target->GetEntry() == tamequest->required_mob[0] )
         {
             if( Rand( 75.0f ) )// 75% chance on success
             {

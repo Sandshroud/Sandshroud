@@ -1120,10 +1120,10 @@ int LuaUnit_MarkQuestObjectiveAsComplete(lua_State * L, Unit * ptr)
     int objective = luaL_checkint(L,2);
     Player * pl = TO_PLAYER(ptr);
     QuestLogEntry * qle = pl->GetQuestLogForEntry(questid);
-    if(qle == NULL || qle->GetQuest()->objectives == NULL)
+    if(qle == NULL || qle->GetQuest() == NULL)
         return 0;
 
-    qle->SetMobCount(objective, qle->GetQuest()->objectives->required_mobcount[objective]);
+    qle->SetMobCount(objective, qle->GetQuest()->required_mobcount[objective]);
     qle->SendUpdateAddKill(objective);
     if(qle->CanBeFinished())
         qle->SendQuestComplete();
@@ -4790,32 +4790,29 @@ int LuaUnit_StartQuest(lua_State * L, Unit * ptr)
                 qle->Init(qst, plr, (uint32)open_slot);
                 qle->UpdatePlayerFields();
 
-                if(qst->rewards)
+                // If the quest should give any items on begin, give them the items.
+                for(uint32 i = 0; i < 4; i++)
                 {
-                    // If the quest should give any items on begin, give them the items.
-                    for(uint32 i = 0; i < 4; i++)
+                    if(qst->receive_items[i])
                     {
-                        if(qst->rewards->receive_items[i])
-                        {
-                            Item *item = objmgr.CreateItem( qst->rewards->receive_items[i], plr);
-                            if(item == NULL)
-                                return false;
+                        Item *item = objmgr.CreateItem( qst->receive_items[i], plr);
+                        if(item == NULL)
+                            return false;
 
-                            item->SetUInt32Value(ITEM_FIELD_STACK_COUNT, uint32(qst->rewards->receive_itemcount[i]));
-                            if(!plr->GetItemInterface()->AddItemToFreeSlot(item))
-                                item->DeleteMe();
-                        }
+                        item->SetUInt32Value(ITEM_FIELD_STACK_COUNT, uint32(qst->receive_itemcount[i]));
+                        if(!plr->GetItemInterface()->AddItemToFreeSlot(item))
+                            item->DeleteMe();
                     }
+                }
 
-                    if(qst->rewards->srcitem && qst->rewards->srcitem != qst->rewards->receive_items[0])
+                if(qst->srcitem && qst->srcitem != qst->receive_items[0])
+                {
+                    Item * item = objmgr.CreateItem( qst->srcitem, plr);
+                    if(item)
                     {
-                        Item * item = objmgr.CreateItem( qst->rewards->srcitem, plr);
-                        if(item)
-                        {
-                            item->SetUInt32Value( ITEM_FIELD_STACK_COUNT, (qst->rewards->srcitemcount ? qst->rewards->srcitemcount : 1));
-                            if(!plr->GetItemInterface()->AddItemToFreeSlot(item))
-                                item->DeleteMe();
-                        }
+                        item->SetUInt32Value( ITEM_FIELD_STACK_COUNT, (qst->srcitemcount ? qst->srcitemcount : 1));
+                        if(!plr->GetItemInterface()->AddItemToFreeSlot(item))
+                            item->DeleteMe();
                     }
                 }
 

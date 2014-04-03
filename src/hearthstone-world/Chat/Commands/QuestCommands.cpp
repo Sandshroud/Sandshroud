@@ -53,18 +53,16 @@ string RemoveQuestFromPlayer(Player* plr, Quest *qst)
             CALL_QUESTSCRIPT_EVENT(qst->id, OnQuestCancel)(plr);
             qLogEntry->Finish();
 
-            uint32 srcItem = qst->rewards ? qst->rewards->srcitem : 0;
+            uint32 srcItem = qst->srcitem;
             // always remove collected items (need to be recollectable again in case of repeatable).
-            if(qst->objectives)
-                for( uint32 y = 0; y < 6; y++)
-                    if( qst->objectives->required_item[y] && qst->objectives->required_item[y] != srcItem )
-                        plr->GetItemInterface()->RemoveItemAmt(qst->objectives->required_item[y], qst->objectives->required_itemcount[y]);
+            for( uint32 y = 0; y < 6; y++)
+                if( qst->required_item[y] && qst->required_item[y] != srcItem )
+                    plr->GetItemInterface()->RemoveItemAmt(qst->required_item[y], qst->required_itemcount[y]);
 
             // Remove all items given by the questgiver at the beginning
-            if(qst->rewards)
-                for(uint32 i = 0; i < 4; i++)
-                    if(qst->rewards->receive_items[i] && qst->rewards->receive_items[i] != srcItem)
-                        plr->GetItemInterface()->RemoveItemAmt(qst->rewards->receive_items[i], qst->rewards->receive_itemcount[i] );
+            for(uint32 i = 0; i < 4; i++)
+                if(qst->receive_items[i] && qst->receive_items[i] != srcItem)
+                    plr->GetItemInterface()->RemoveItemAmt(qst->receive_items[i], qst->receive_itemcount[i] );
             plr->UpdateNearbyQuestGivers();
             plr->UpdateNearbyGameObjects();
         }
@@ -225,37 +223,34 @@ bool ChatHandler::HandleQuestStartCommand(const char * args, WorldSession * m_se
                     CALL_QUESTSCRIPT_EVENT(quest_id, OnQuestStart)(plr, qle);
 
                     // If the quest should give any items on begin, give them the items.
-                    if(qst->rewards)
+                    for(uint32 i = 0; i < 4; i++)
                     {
-                        for(uint32 i = 0; i < 4; i++)
+                        if(qst->receive_items[i])
                         {
-                            if(qst->rewards->receive_items[i])
+                            Item* item = objmgr.CreateItem( qst->receive_items[i], plr);
+                            if(!plr->GetItemInterface()->AddItemToFreeSlot(item))
                             {
-                                Item* item = objmgr.CreateItem( qst->rewards->receive_items[i], plr);
-                                if(!plr->GetItemInterface()->AddItemToFreeSlot(item))
+                                if(item != NULL)
                                 {
-                                    if(item != NULL)
-                                    {
-                                        item->DeleteMe();
-                                        item = NULLITEM;
-                                    }
+                                    item->DeleteMe();
+                                    item = NULLITEM;
                                 }
                             }
                         }
+                    }
 
-                        if(qst->rewards->srcitem && qst->rewards->srcitem != qst->rewards->receive_items[0])
+                    if(qst->srcitem && qst->srcitem != qst->receive_items[0])
+                    {
+                        Item* item = objmgr.CreateItem( qst->srcitem, plr);
+                        if(item)
                         {
-                            Item* item = objmgr.CreateItem( qst->rewards->srcitem, plr);
-                            if(item)
+                            item->SetUInt32Value(ITEM_FIELD_STACK_COUNT, qst->srcitemcount ? qst->srcitemcount : 1);
+                            if(!plr->GetItemInterface()->AddItemToFreeSlot(item))
                             {
-                                item->SetUInt32Value(ITEM_FIELD_STACK_COUNT, qst->rewards->srcitemcount ? qst->rewards->srcitemcount : 1);
-                                if(!plr->GetItemInterface()->AddItemToFreeSlot(item))
+                                if(item != NULL)
                                 {
-                                    if(item != NULL)
-                                    {
-                                        item->DeleteMe();
-                                        item = NULLITEM;
-                                    }
+                                    item->DeleteMe();
+                                    item = NULLITEM;
                                 }
                             }
                         }

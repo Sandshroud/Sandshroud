@@ -4475,10 +4475,7 @@ void Spell::SpellEffectTitanGrip(uint32 i)
 bool Spell::SpellEffectUpdateQuest(uint32 questid)
 {
     QuestLogEntry *en = p_caster->GetQuestLogForEntry( questid );
-    if(en->GetQuest()->objectives == NULL)
-        return false;
-
-    if( en != NULL && en->GetMobCount( 0 ) < en->GetQuest()->objectives->required_mobcount[0])
+    if( en != NULL && en->GetMobCount( 0 ) < en->GetQuest()->required_mobcount[0])
     {
         en->SetMobCount( 0, en->GetMobCount( 0 ) + 1 );//(collumn,count)
         en->SendUpdateAddKill( 0 );//(collumn)

@@ -55,26 +55,19 @@ void WorldSession::HandleLFDPlrLockOpcode( WorldPacket& recv_data )
             data << uint32(sQuestMgr.GenerateQuestXP(_player, QuestReward)*sWorld.getRate(RATE_QUESTXP));
             data << uint32(reward->reward[done].MoneyReward);
             data << uint32(reward->reward[done].XPReward);
-            if(QuestReward->rewards == NULL)
+            data << uint8(QuestReward->count_reward_item);
+            if (QuestReward->count_reward_item)
             {
-                data << uint8(0);
-            }
-            else
-            {
-                data << uint8(QuestReward->rewards->count_reward_item);
-                if (QuestReward->rewards->count_reward_item)
+                ItemPrototype* proto = NULL;
+                for (uint8 i = 0; i < 4; i++)
                 {
-                    ItemPrototype* proto = NULL;
-                    for (uint8 i = 0; i < 4; i++)
-                    {
-                        if (!QuestReward->rewards->reward_item[i])
-                            continue;
+                    if (!QuestReward->reward_item[i])
+                        continue;
 
-                        proto = ItemPrototypeStorage.LookupEntry(QuestReward->rewards->reward_item[i]);
-                        data << uint32(QuestReward->rewards->reward_item[i]);
-                        data << uint32(proto ? proto->DisplayInfoID : 0);
-                        data << uint32(QuestReward->rewards->reward_itemcount[i]);
-                    }
+                    proto = ItemPrototypeStorage.LookupEntry(QuestReward->reward_item[i]);
+                    data << uint32(QuestReward->reward_item[i]);
+                    data << uint32(proto ? proto->DisplayInfoID : 0);
+                    data << uint32(QuestReward->reward_itemcount[i]);
                 }
             }
         }

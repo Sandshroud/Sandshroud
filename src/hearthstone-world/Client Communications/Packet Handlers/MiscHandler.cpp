@@ -96,10 +96,9 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recv_data )
             uint32 countNeeded = 0;
             for(QuestAssociationList::iterator itr = tempList->begin(); itr != tempList->end(); itr++)
             {
-                if((*itr)->qst->objectives)
-                    for(uint8 p = 0; p < 6; p++)
-                        if((*itr)->qst->objectives->required_item[p] == itemid)
-                            countNeeded += (*itr)->qst->objectives->required_itemcount[p];
+                for(uint8 p = 0; p < 6; p++)
+                    if((*itr)->qst->required_item[p] == itemid)
+                        countNeeded += (*itr)->qst->required_itemcount[p];
             }
 
             if(countNeeded)
