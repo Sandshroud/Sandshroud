@@ -67,7 +67,6 @@ static const uint32 opcodeToChatType[16] =
 
 void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
 {
-    CHECK_PACKET_SIZE(recv_data, 4);
     CHECK_INWORLD_RETURN();
 
     uint32 type = opcodeToChatType[recv_data.GetOpcode()-CMSG_MESSAGECHAT_SAY];
@@ -117,9 +116,8 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recv_data )
         }break;
     }
 
-    if(!_player->bGMTagOn)
-        if(!ValidateText2(message))
-            return;
+    if(!_player->bGMTagOn && !ValidateText2(message))
+        return;
 
     if(!sHookInterface.OnChat(_player, type, lang, message, miscName))
         return;
