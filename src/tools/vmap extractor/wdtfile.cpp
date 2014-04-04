@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -30,7 +30,9 @@ char * wdtGetPlainName(char * FileName)
     return FileName;
 }
 
-WDTFile::WDTFile(char* file_name, char* file_name1) : WDT(file_name), gWmoInstansName(NULL), gnWMO(0), wdtFlags(0)
+extern HANDLE WorldMpq;
+
+WDTFile::WDTFile(char* file_name, char* file_name1):WDT(WorldMpq, file_name)
 {
     filename.append(file_name1,strlen(file_name1));
 }
@@ -65,33 +67,10 @@ bool WDTFile::init(char* /*map_id*/, unsigned int mapID)
 
         size_t nextpos = WDT.getPos() + size;
 
-        if(!strcmp(fourcc, "MPHD"))
+        if (!strcmp(fourcc,"MAIN"))
         {
-            WDT.read(&wdtFlags, 4);
-            //WDT.read(&wdtMainOffset, 4); Not used
         }
-        else if (!strcmp(fourcc,"MAIN"))
-        {
-            // MAIN is used to define what ADT is available on what tiles, areaflag & 0x01 means adt exists, but the other field is unknown
-            // No flag other than 0x01 exists in wotlk
-            /*uint64 mainData[4096], lastValue = 0xFFFFFFFFFFFFFFFF;
-            WDT.read(&mainData, size);
-            for(uint32 x = 0; x < 64; x++)
-            {
-                for(uint32 y = 0; y < 64; y++)
-                {
-                    uint32 areaFlag = uint32(mainData[x*64+y]), m_unk = uint32(mainData[x*64+y] >> 32);
-                    if(areaFlag == 0 && m_unk == 0)
-                        continue;
-                    printf("[%u|%u|AF:%u|UNK:%u]\r", x, y, areaFlag, m_unk);
-                    if(lastValue != 0xFFFFFFFFFFFFFFFF && lastValue != mainData[x*64+y])
-                        printf("\n");
-                    lastValue = mainData[x*64+y];
-                }
-            }
-            printf("Done parsing MAIN flags\r\n");*/
-        }
-        else if (!strcmp(fourcc,"MWMO"))
+        if (!strcmp(fourcc,"MWMO"))
         {
             // global map objects
             if (size)
@@ -104,7 +83,7 @@ bool WDTFile::init(char* /*map_id*/, unsigned int mapID)
                 while (p < buf + size)
                 {
                     char* s=wdtGetPlainName(p);
-                    fixnamen(s,strlen(s));
+                    FixNameCase(s,strlen(s));
                     p=p+strlen(p)+1;
                     gWmoInstansName[q++] = s;
                 }
@@ -148,6 +127,6 @@ ADTFile* WDTFile::GetMap(int x, int z)
 
     char name[512];
 
-    sprintf(name,"World\\Maps\\%s\\%s_%d_%d.adt", filename.c_str(), filename.c_str(), x, z);
+    sprintf(name,"World\\Maps\\%s\\%s_%d_%d_obj0.adt", filename.c_str(), filename.c_str(), x, z);
     return new ADTFile(name);
 }
