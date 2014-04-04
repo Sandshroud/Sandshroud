@@ -7,45 +7,6 @@
 /************************************************************************/
 /* Talent Anti-Cheat                                                    */
 /************************************************************************/
-
-/*
-    mage - arcane - 81
-    mage - fire - 41
-    mage - frost - 61
-
-    rogue - assassination - 182
-    rogue - combat - 181
-    rogue - subelty - 183
-
-    warlock - afflication - 302
-    warlock - demonology - 303
-    warlock - destruction - 301
-
-    warrior - arms - 161
-    warrior - fury - 163
-    warrior - protection - 164
-
-    shaman - elemental - 261
-    shaman - enchantment - 263
-    shaman - restoration - 262
-
-    paladin - holy - 382
-    paladin - protection - 383
-    paladin - retribution - 381
-
-    priest - dicipline - 201
-    priest - holy - 202
-    priest - shadow - 203
-
-    hunter - beast - 361
-    hunter - marksmanship - 363
-    hunter - survival - 362
-
-    druid - balance - 283
-    druid - feral combat - 281
-    druid - restoration - 282
-*/
-
 void WorldSession::HandleLearnTalentOpcode( WorldPacket & recv_data )
 {
     CHECK_INWORLD_RETURN();

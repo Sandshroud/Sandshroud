@@ -21,7 +21,7 @@ Player::Player( uint32 guid )
     m_objectTypeId = TYPEID_PLAYER;
     m_valuesCount = PLAYER_END;
     m_uint32Values = _fields;
-    memset(m_uint32Values, 0,(PLAYER_END)*sizeof(uint32));
+    memset(m_uint32Values, 0, (PLAYER_END*sizeof(uint32)));
     m_updateMask.SetCount(PLAYER_END);
     SetUInt32Value( OBJECT_FIELD_TYPE,TYPEMASK_PLAYER|TYPEMASK_UNIT|TYPEMASK_OBJECT);
     SetUInt64Value( OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid, 0, HIGHGUID_TYPE_PLAYER));
