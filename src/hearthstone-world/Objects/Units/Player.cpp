@@ -6582,6 +6582,7 @@ void Player::SendLoot(uint64 guid, uint32 mapid, uint8 loot_type)
     data << uint8(loot_type);//loot_type;
     data << uint32(lootObj->m_loot.gold);
     data << uint8(0);//loot size reserve
+    data << uint8(0);//unk
 
     uint32 count = 0;
     uint8 slottype = 0;
@@ -6774,8 +6775,7 @@ void Player::SendLoot(uint64 guid, uint32 mapid, uint8 loot_type)
         }
         count++;
     }
-    data.wpos (13);
-    data << (uint8)count;
+    data.put<uint8>(13, count);
 
     GetSession ()->SendPacket(&data);
     SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_LOOTING);

@@ -1788,7 +1788,7 @@ void QuestMgr::SendQuestFailed(FAILED_REASON failed, Quest * qst, Player* plyr)
 
     WorldPacket data(SMSG_QUESTGIVER_QUEST_FAILED, 8);
     data << uint32(qst->id);
-    data << failed;
+    data << uint32(failed);
     plyr->GetSession()->SendPacket(&data);
     sLog.outDebug("WORLD:Sent SMSG_QUESTGIVER_QUEST_FAILED");
 }
