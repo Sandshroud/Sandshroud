@@ -414,7 +414,6 @@ protected:
     void HandleCreatureQueryOpcode(WorldPacket& recvPacket);
     void HandleGameObjectQueryOpcode(WorldPacket& recvPacket);
     void HandlePageTextQueryOpcode(WorldPacket & recvPacket);
-    void HandleItemNameQueryOpcode(WorldPacket & recvPacket);
     void HandleItemHotfixQueryOpcode(WorldPacket & recvPacket);
 
     /// Opcodes implemented in MovementHandler.cpp
@@ -499,7 +498,6 @@ protected:
     void HandleSwapInvItemOpcode(WorldPacket& recvPacket);
     void HandleSwapItemOpcode(WorldPacket& recvPacket);
     void HandleDestroyItemOpcode(WorldPacket& recvPacket);
-    void HandleDestroyItemsOpcode(WorldPacket& recvPacket);
     void HandleAutoEquipItemOpcode(WorldPacket& recvPacket);
     void HandleSellItemOpcode(WorldPacket& recvPacket);
     void HandleBuyItemOpcode(WorldPacket& recvPacket);
@@ -540,7 +538,6 @@ protected:
     void HandleQuestgiverStatusQueryOpcode(WorldPacket& recvPacket);
     void HandleQuestgiverHelloOpcode(WorldPacket& recvPacket);
     void HandleQuestgiverAcceptQuestOpcode(WorldPacket& recvPacket);
-    void HandleQuestgiverCancelOpcode(WorldPacket& recvPacket);
     void HandleQuestgiverChooseRewardOpcode(WorldPacket& recvPacket);
     void HandleQuestgiverRequestRewardOpcode(WorldPacket& recvPacket);
     void HandleQuestGiverQueryQuestOpcode( WorldPacket& recvPacket );
@@ -718,10 +715,6 @@ protected:
     void HandleArenaTeamQueryOpcode(WorldPacket & recv_data);
     void HandleArenaTeamRosterOpcode(WorldPacket & recv_data);
     void HandleInspectArenaStatsOpcode(WorldPacket & recv_data);
-
-    void HandleTeleportCheatOpcode(WorldPacket & recv_data);
-    void HandleTeleportToUnitOpcode(WorldPacket & recv_data);
-    void HandleWorldportOpcode(WorldPacket & recv_data);
     void HandleWrapItemOpcode(WorldPacket& recv_data);
 
     // VOICECHAT

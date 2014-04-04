@@ -129,7 +129,6 @@ void QuestMgr::LoadQuests()
 
         Quest *newQuest = new Quest();
         memset(newQuest, 0, sizeof(Quest));
-
         newQuest->id = QuestId;
         newQuest->qst_title = strdup(fields[f++].GetString());
         newQuest->qst_details = strdup(fields[f++].GetString());
@@ -262,8 +261,8 @@ void QuestMgr::LoadQuests()
             for(uint8 i = 0; i < 4; i++)
                 quest->required_mobcount[i] = fields[f++].GetUInt16();
 
-            for(uint8 i = 0; i < 4; i++)
-                quest->required_spell[i] = fields[f++].GetUInt32();
+            quest->required_spell = fields[f++].GetUInt32();
+            f++; f++; f++;
             for(uint8 i = 0; i < 4; i++)
             {
                 quest->required_areatriggers[i] = fields[f++].GetUInt32();
@@ -681,9 +680,9 @@ void QuestMgr::BuildQuestDetails(WorldPacket *data, Quest* qst, Object* qst_give
         *data << uint32(0); // CurrencyID
     for(i = 0; i < 4; i++)
         *data << uint32(0); // CurrencyCount
+    *data << uint32(0);
+    *data << uint32(0);
 
-    *data << uint32(0);
-    *data << uint32(0);
     *data << uint32(4);                         // Quantity of emotes, always four
     *data << uint32(1);                         // Emote id 1
     *data << uint32(0);                         // Emote delay/player emote
@@ -1109,7 +1108,7 @@ void QuestMgr::OnPlayerCast(Player* plr, uint32 spellid, uint64& victimguid)
                 if(qle->GetQuest()->required_mob[j])
                 {
                     if(qle->GetQuest()->required_mob[j] == entry &&
-                        qle->GetRequiredSpell(j) == spellid &&
+                        qle->GetRequiredSpell() == spellid &&
                         qle->m_mobcount[j] < qle->GetQuest()->required_mobcount[j] &&
                         !qle->IsUnitAffected(victim))
                     {
@@ -1122,7 +1121,7 @@ void QuestMgr::OnPlayerCast(Player* plr, uint32 spellid, uint64& victimguid)
                         break;
                     }
                 }
-                else if( qle->GetRequiredSpell(j) == spellid )// Some quests don't require a target.
+                else if( qle->GetRequiredSpell() == spellid )// Some quests don't require a target.
                 {
                     qle->SendUpdateAddKill(j);
                     qle->UpdatePlayerFields();
@@ -1295,14 +1294,11 @@ void QuestMgr::OnQuestFinished(Player* plr, Quest* qst, Object* qst_giver, uint3
         BuildQuestComplete(plr, qst);
         CALL_QUESTSCRIPT_EVENT(qst->id, OnQuestComplete)(plr, qle);
 
+        if (plr->HasQuestSpell(qle->GetRequiredSpell()))
+            plr->RemoveQuestSpell(qle->GetRequiredSpell());
         for (uint32 x=0;x<4;x++)
         {
-            if (qst->required_spell[x]!=0)
-            {
-                if (plr->HasQuestSpell(qle->GetRequiredSpell(x)))
-                    plr->RemoveQuestSpell(qle->GetRequiredSpell(x));
-            }
-            else if (qst->required_mob[x]!=0)
+            if (qst->required_mob[x]!=0)
             {
                 if (plr->HasQuestMob(qst->required_mob[x]))
                     plr->RemoveQuestMob(qst->required_mob[x]);
@@ -1320,15 +1316,15 @@ void QuestMgr::OnQuestFinished(Player* plr, Quest* qst, Object* qst_giver, uint3
             }
             else
             {
-                //Remove aquired spells
-                if( qst->required_spell[x] && plr->HasQuestSpell(qle->GetRequiredSpell(x)) )
-                    plr->RemoveQuestSpell(qle->GetRequiredSpell(x));
-
                 //Remove Killed npc's
                 if( qst->required_mob[x] && plr->HasQuestMob(qst->required_mob[x]) )
                     plr->RemoveQuestMob(qst->required_mob[x]);
             }
         }
+
+        //Remove aquired spells
+        if( qst->required_spell && plr->HasQuestSpell(qle->GetRequiredSpell()) )
+            plr->RemoveQuestSpell(qle->GetRequiredSpell());
 
         for( uint32 y = 0; y < 6; y++)
         {
@@ -1761,95 +1757,28 @@ uint32 QuestMgr::GenerateRewardMoney( Player* pl, Quest * qst )
 
 uint32 QuestMgr::GenerateQuestXP(Player* plr, Quest *qst)
 {
-    if(qst->reward_xp)
+    if(plr->getLevel() == plr->GetUInt32Value(PLAYER_FIELD_MAX_LEVEL))
+        return 0;
+
+    int32 quest_level = (qst->qst_max_level == -1 ? plr->getLevel() : qst->qst_max_level);
+    int32 diffFactor = 2 * (quest_level - plr->getLevel()) + 20;
+    if (diffFactor < 1)
+        diffFactor = 1;
+    else if (diffFactor > 10)
+        diffFactor = 10;
+    uint32 xp = qst->reward_xp;
+    if(xp == NULL)
     {
-        int32 leveldiff = plr->getLevel() - qst->qst_max_level;
-        if( leveldiff < 5 )
-            return qst->reward_xp;
-        else if(leveldiff < 10)
-            return (uint32)(qst->reward_xp * 1-(0.2*(leveldiff-5)));
-        else
+        QuestXPEntry *xpentry = dbcQuestXP.LookupEntry(quest_level);
+        if(xpentry == NULL)
             return 0;
+        xp = diffFactor * xpentry->xpIndex[qst->reward_xp_index] / 10;
     }
-    else
-    {
-        // new quest reward xp calculation mechanism based on DBC values + index taken from DB
-        uint32 realXP = 0;
-        uint32 xpMultiplier = 0;
-        int32 baseLevel = 0;
-        int32 playerLevel = plr->getLevel();
-        int32 QuestLevel = qst->qst_min_level;
-
-        if(QuestLevel != -1)
-            baseLevel = QuestLevel;
-
-        if(((baseLevel - playerLevel) + 10) * 2 > 10)
-        {
-            baseLevel = playerLevel;
-
-            if(QuestLevel != -1)
-                baseLevel = QuestLevel;
-
-            if(((baseLevel - playerLevel) + 10) * 2 <= 10)
-            {
-                if(QuestLevel == -1)
-                    baseLevel = playerLevel;
-
-                xpMultiplier = 2 * (baseLevel - playerLevel) + 20;
-            }
-            else
-            {
-                xpMultiplier = 10;
-            }
-        }
-        else
-        {
-            baseLevel = playerLevel;
-
-            if(QuestLevel != -1)
-                baseLevel = QuestLevel;
-
-            if(((baseLevel - playerLevel) + 10) * 2 >= 1)
-            {
-                baseLevel = playerLevel;
-
-                if(QuestLevel != -1)
-                    baseLevel = QuestLevel;
-
-                if(((baseLevel - playerLevel) + 10) * 2 <= 10)
-                {
-                    if(QuestLevel == -1)
-                        baseLevel = playerLevel;
-
-                    xpMultiplier = 2 * (baseLevel - playerLevel) + 20;
-                }
-                else
-                {
-                    xpMultiplier = 10;
-                }
-            }
-            else
-            {
-                xpMultiplier = 1;
-            }
-        }
-
-        if(QuestXP* pXPData = NULL)//dbcQuestXP.LookupEntry(baseLevel))
-        {
-            float rawXP = xpMultiplier * pXPData->xpIndex[ qst->reward_xp_index ] / 10;
-
-            realXP = (uint32)floor(rawXP);
-        }
-        return realXP;
-    }
-}
-
-void QuestMgr::SendQuestInvalid(INVALID_REASON reason, Player* plyr)
-{
-    if(!plyr)
-        return;
-    plyr->GetSession()->OutPacket(SMSG_QUESTGIVER_QUEST_INVALID, 4, &reason);
-    sLog.outDebug("WORLD:Sent SMSG_QUESTGIVER_QUEST_INVALID");
+    if (xp <= 100) xp = 5 * ((xp + 2) / 5);
+    else if (xp <= 500) xp = 10 * ((xp + 5) / 10);
+    else if (xp <= 1000) xp = 25 * ((xp + 12) / 25);
+    else xp = 50 * ((xp + 25) / 50);
+    return xp;
 }
 
 void QuestMgr::SendQuestFailed(FAILED_REASON failed, Quest * qst, Player* plyr)
