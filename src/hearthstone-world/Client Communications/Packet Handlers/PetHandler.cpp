@@ -468,9 +468,7 @@ void WorldSession::HandleTotemDestroyed(WorldPacket & recv_data)
 
     uint8 slot;
     recv_data >> slot;
-    slot++;
-
-    _player->SummonExpireSlot(slot);
+    _player->SummonExpireSlot(slot+1);
 }
 
 void WorldSession::HandlePetLearnTalent( WorldPacket & recvPacket )
