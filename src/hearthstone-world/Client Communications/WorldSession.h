@@ -15,6 +15,7 @@ class WorldSocket;
 class WorldSession;
 class MapMgr;
 class Creature;
+class MovementInfo;
 struct TrainerSpell;
 
 //#define SESSION_CAP 5

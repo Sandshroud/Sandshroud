@@ -125,12 +125,7 @@ void Vehicle::InstallAccessories()
                     GetPositionZ()+m_vehicleSeats[i]->m_attachmentOffsetZ);
 
                 pass->Init();
-                pass->GetMovementInfo()->SetTransportLock(true);
-                pass->movement_info.movementFlags |= MOVEFLAG_TAXI;
-                pass->GetMovementInfo()->SetTransportData(GetGUID(),
-                    m_vehicleSeats[i]->m_attachmentOffsetX,
-                    m_vehicleSeats[i]->m_attachmentOffsetY,
-                    m_vehicleSeats[i]->m_attachmentOffsetZ, 0.0f, i);
+                pass->m_TransporterGUID = GetGUID();
                 pass->InitSeats(proto->vehicle_entry);
                 if(pass->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK))
                     pass->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK); // Accessory
@@ -151,12 +146,7 @@ void Vehicle::InstallAccessories()
                     GetPositionZ()+m_vehicleSeats[i]->m_attachmentOffsetZ);
 
                 pass->Init();
-                pass->GetMovementInfo()->SetTransportLock(true);
-                pass->movement_info.movementFlags |= MOVEFLAG_TAXI;
-                pass->GetMovementInfo()->SetTransportData(GetGUID(),
-                    m_vehicleSeats[i]->m_attachmentOffsetX,
-                    m_vehicleSeats[i]->m_attachmentOffsetY,
-                    m_vehicleSeats[i]->m_attachmentOffsetZ, 0.0f, i);
+                pass->m_TransporterGUID = GetGUID();
                 AddPassenger(pass, i, true);
                 pass->PushToWorld(map);
             }
@@ -511,19 +501,24 @@ void Vehicle::RemovePassenger(Unit* pPassenger)
     WorldPacket data(SMSG_MONSTER_MOVE, 85);
     data << pPassenger->GetNewGUID();           // PlayerGUID
     data << uint8(0x40);                        // Unk - blizz uses 0x40
-    data.appendvector(pPassenger->GetPosition());// Player Position xyz
+    data << pPassenger->GetPosition();          // Player Position xyz
     data << getMSTime();                        // Timestamp
     data << uint8(0x4);                         // Flags
     data << pPassenger->GetOrientation();       // Orientation
     data << uint32(MOVEFLAG_AIR_SUSPENSION);    // MovementFlags
     data << uint32(0);                          // MovementTime
     data << uint32(1);                          // Pointcount
-    data.appendvector(GetPosition());           // Vehicle Position xyz
+    data << GetPosition();                      // Vehicle Position xyz
     SendMessageToSet(&data, false);
 
-    pPassenger->GetMovementInfo()->SetTransportLock(false);
-    pPassenger->movement_info.movementFlags &= ~MOVEFLAG_TAXI;
-    pPassenger->GetMovementInfo()->ClearTransportData();
+    pPassenger->movement_info.flags &= ~MOVEFLAG_TAXI;
+    pPassenger->movement_info.transX = 0;
+    pPassenger->movement_info.transY = 0;
+    pPassenger->movement_info.transZ = 0;
+    pPassenger->movement_info.transO = 0;
+    pPassenger->movement_info.transTime = 0;
+    pPassenger->movement_info.transSeat = 0;
+    pPassenger->movement_info.transGuid = WoWGuid(uint64(NULL));
 
     if(pPassenger->IsPlayer())
     {
@@ -560,7 +555,7 @@ void Vehicle::RemovePassenger(Unit* pPassenger)
 
         data.Initialize(SMSG_PET_DISMISS_SOUND);
         data << uint32(m_vehicleSeats[slot]->m_exitUISoundID);
-        data.appendvector(plr->GetPosition());
+        data << plr->GetPosition();
         plr->GetSession()->SendPacket(&data);
 
         data.Initialize(SMSG_PET_SPELLS);
@@ -608,6 +603,7 @@ void Vehicle::RemovePassenger(Unit* pPassenger)
 
     SendHeartBeatMsg(false);
     m_passengers[slot] = NULL;
+    pPassenger->m_TransporterGUID = NULL; // We need to null this out
     if(pPassenger->IsPlayer())
         --m_ppassengerCount;
 
@@ -671,10 +667,15 @@ void Vehicle::_AddToSlot(Unit* pPassenger, uint8 slot)
     v.z = m_vehicleSeats[slot]->m_attachmentOffsetZ; /* pPassenger->m_TransporterZ = */
     v.o = 0; /* pPassenger->m_TransporterO = */
     //pPassenger->m_transportPosition =& v; // This is handled elsewhere, do not initialize here.
-    pPassenger->GetMovementInfo()->SetTransportLock(true);
-    pPassenger->movement_info.movementFlags |= MOVEFLAG_TAXI;
-    pPassenger->GetMovementInfo()->SetTransportData(GetGUID(), v.x, v.y, v.z, GetOrientation(), slot);
+    pPassenger->movement_info.flags |= MOVEFLAG_TAXI;
+    pPassenger->movement_info.transX = v.x;
+    pPassenger->movement_info.transY = v.y;
+    pPassenger->movement_info.transZ = v.z;
+    pPassenger->movement_info.transO = GetOrientation();
+    pPassenger->movement_info.transSeat = slot;
+    pPassenger->movement_info.transGuid = WoWGuid(GetGUID());
     pPassenger->SetSeatID(slot);
+    pPassenger->m_TransporterGUID = GetGUID();
 
     if( m_CastSpellOnMount )
         pPassenger->CastSpell( pPassenger, m_CastSpellOnMount, true );
@@ -756,7 +757,7 @@ void Vehicle::_AddToSlot(Unit* pPassenger, uint8 slot)
 
                 pPlayer->m_CurrentCharm = TO_UNIT(this);
                 pPlayer->SetUInt64Value(UNIT_FIELD_CHARM, GetGUID());
-
+    
                 SetUInt64Value(UNIT_FIELD_CHARMEDBY, pPlayer->GetGUID());
                 SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED_CREATURE);
 
@@ -797,7 +798,7 @@ void Vehicle::_AddToSlot(Unit* pPassenger, uint8 slot)
 
         data.Initialize(SMSG_PET_DISMISS_SOUND);
         data << uint32(m_vehicleSeats[slot]->m_enterUISoundID);
-        data.appendvector(pPlayer->GetPosition());
+        data << pPlayer->GetPosition();
         pPlayer->GetSession()->SendPacket(&data);
         ++m_ppassengerCount;
     }
@@ -1008,6 +1009,8 @@ void Vehicle::ChangeSeats(Unit* unit, uint8 seatid)
 
     if(unit->GetVehicle() != NULL)
         unit->GetVehicle()->RemovePassenger(unit);
+
+    unit->m_TransporterGUID = GetGUID();
     AddPassenger(unit, seatid);
 }
 
@@ -1043,6 +1046,17 @@ void WorldSession::HandleVehicleMountEnter( WorldPacket & recv_data )
     CHECK_INWORLD_RETURN();
     uint64 guid;
     recv_data >> guid;
+    if(GET_TYPE_FROM_GUID(guid) == HIGHGUID_TYPE_PLAYER)
+    {
+        Player *plr = objmgr.GetPlayer((uint32)guid);
+        if(plr == NULL)
+            return;
+
+        if(!plr->CanEnterVehicle(_player))
+            return;
+
+        plr->AddPassenger(_player,-1);
+    }
 }
 
 void Vehicle::ChangePowerType()

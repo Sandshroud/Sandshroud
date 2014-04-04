@@ -298,7 +298,7 @@ void WorldSession::LogoutPlayer(bool Save)
         {
             _player->m_CurrentTransporter->RemovePlayer( _player );
             _player->m_CurrentTransporter = NULLTRANSPORT;
-            _player->GetMovementInfo()->ClearTransportData();
+            _player->m_TransporterGUID = 0;
         }
 
         // cancel current spell

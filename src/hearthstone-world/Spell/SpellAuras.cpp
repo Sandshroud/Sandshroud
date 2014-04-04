@@ -6305,6 +6305,31 @@ void Aura::SpellAuraMounted(bool apply)
         pPlayer->RemoveAura(id);
     }
 
+    CreatureProto* cp = CreatureProtoStorage.LookupEntry(mod->m_miscValue);
+    if(cp != NULL && cp->vehicle_entry > 0)
+    {
+        if(apply)
+        {
+            CreatureInfo* ci = CreatureNameStorage.LookupEntry(mod->m_miscValue);
+            if(ci == NULL || ci->Male_DisplayID == 0)
+            {   // 2 sec negative aura, so they know.
+                SetNegative();
+                SetDuration(2000);
+                return;
+            }
+
+            pPlayer->m_mountSpell = GetSpellId();
+            pPlayer->SetVehicleEntry(cp->vehicle_entry);
+            pPlayer->InitAsVehicle();
+        }
+        else
+        {
+            pPlayer->m_mountSpell = 0;
+            pPlayer->SetVehicleEntry(0);
+            pPlayer->DeInitAsVehicle();
+        }
+    }
+
     bool warlockpet = false;
     if(pPlayer->GetSummon() && pPlayer->GetSummon()->IsWarlockPet() == true)
         warlockpet = true;

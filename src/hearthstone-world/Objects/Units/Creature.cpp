@@ -178,7 +178,7 @@ void Creature::OnRemoveCorpse()
         }
 
         setDeathState(DEAD);
-        SetPosition(m_spawnLocation);
+        SetPosition(m_spawnLocation, true);
     }
 }
 
@@ -954,7 +954,7 @@ bool Creature::Load(CreatureSpawn *spawn, uint32 mode, MapInfo *info)
     SetFloatValue(UNIT_FIELD_COMBATREACH, proto->CombatReach);
 
     // set position
-    SetPosition( spawn->x, spawn->y, spawn->z, spawn->o);
+    SetPosition( spawn->x, spawn->y, spawn->z, spawn->o, true);
     m_spawnLocation.ChangeCoords(spawn->x, spawn->y, spawn->z, spawn->o);
     m_aiInterface->SetWaypointMap(objmgr.GetWayPointMap(spawn->id));
 
@@ -1313,7 +1313,7 @@ bool Creature::Load(CreatureProto * proto_, uint32 mode, float x, float y, float
     original_emotestate = 0;
 
     // set position
-    SetPosition( x, y, z, o);
+    SetPosition( x, y, z, o, true);
     m_spawnLocation.ChangeCoords(x, y, z, o);
     m_faction = dbcFactionTemplate.LookupEntry(proto->Faction);
 
@@ -1620,7 +1620,7 @@ void Creature::Despawn(uint32 delay, uint32 respawntime)
         sEventMgr.RemoveEvents(this);
         sEventMgr.AddEvent(m_mapMgr, &MapMgr::EventRespawnCreature, TO_CREATURE(this), pCell, EVENT_CREATURE_RESPAWN, respawntime, 1, 0);
         Unit::RemoveFromWorld(false);
-        SetPosition( m_spawnLocation);
+        SetPosition( m_spawnLocation, true);
         m_respawnCell = pCell;
     }
     else

@@ -39,7 +39,7 @@ void OutputCrashLogLine(const char * format, ...)
         va_end(ap);
 }
 
-#if PLATFORM == PLATFORM_WIN && defined(NDEBUG)
+#if PLATFORM == PLATFORM_WIN
 
 Mutex m_crashLock;
 

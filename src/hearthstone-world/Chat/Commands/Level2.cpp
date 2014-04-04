@@ -904,30 +904,23 @@ bool ChatHandler::HandleGOActivate(const char* args, WorldSession *m_session)
 bool ChatHandler::HandleGOScale(const char* args, WorldSession* m_session)
 {
     GameObject* go = m_session->GetPlayer()->m_GM_SelectedGO;
-    if( go == NULL )
+    if( !go )
     {
         RedSystemMessage(m_session, "No selected GameObject...");
         return true;
     }
-    MapMgr* mgr = go->GetMapMgr();
-    if(mgr == NULL)
-    {
-        RedSystemMessage(m_session, "Incorrectly selected Gameobject...");
-        return true;
-    }
 
     float scale = (float)atof(args);
-    if(scale <= 0.f)
-        scale = 1.f; // Scale defaults to 1 on GO's, so its basically a reset.
-    if(scale > 255.f)
-        scale = 255.f;
-    BlueSystemMessage(m_session, "Set scale to %.3f", scale);
+    if(scale <= 0.0f)
+        scale = 1; // Scale defaults to 1 on GO's, so its basically a reset.
+    if(scale > 255.0f)
+        scale = 255.0f;
 
-    go->Object::RemoveFromWorld(false);
     go->SetFloatValue(OBJECT_FIELD_SCALE_X, scale);
+    BlueSystemMessage(m_session, "Set scale to %.3f", scale);
+    go->RemoveFromWorld(false);
     go->SaveToDB();
-    go->AddToWorld();
-    sEventMgr.AddEvent(mgr, &MapMgr::EventPushObjectToSelf, (Object*)go, EVENT_MAPMGR_PUSH_TO_SELF, 3000, 1, EVENT_FLAG_NONE);
+    go->PushToWorld(m_session->GetPlayer()->GetMapMgr());
     sWorld.LogGM(m_session, "Scaled gameobject spawn id %u to %f", go->m_spawn ? go->m_spawn->id : 0, scale);
     return true;
 }

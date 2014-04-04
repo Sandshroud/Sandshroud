@@ -1290,6 +1290,10 @@ void Spell::cast(bool check)
     // Set the base ms time to now
     MSTimeToAddToTravel = getMSTime();
 
+    if(u_caster != NULL )
+        if(u_caster->CallOnCastSpell != NULL)
+            u_caster->CallOnCastSpell->UnitOnCastSpell(u_caster, m_spellInfo);
+
     if(objmgr.IsSpellDisabled(GetSpellProto()->Id))//if it's disabled it will not be casted, even if it's triggered.
         cancastresult = uint8(m_triggeredSpell ? SPELL_FAILED_DONT_REPORT : SPELL_FAILED_SPELL_UNAVAILABLE);
     else if(check)

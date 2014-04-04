@@ -1880,7 +1880,7 @@ bool ChatHandler::HandleCreatureSpawnCommand(const char *args, WorldSession *m_s
         save = (uint32)m_session->CanUseCommand('z');
     }
 
-    if(plr->GetVehicle())
+    if(m_session->GetPlayer()->GetVehicle())
     {
         SystemMessage(m_session, "You may not spawn on a vehicle.");
         return true;
@@ -1896,22 +1896,23 @@ bool ChatHandler::HandleCreatureSpawnCommand(const char *args, WorldSession *m_s
     }
 
     //Are we on a transporter?
-    if(plr->GetTransportGuid() != 0 )
+    if(m_session->GetPlayer()->m_TransporterGUID != 0 )
     {
-        uint64 transGuid = plr->GetTransportGuid();
-        Transporter* t = objmgr.GetTransporter(GUID_LOPART(transGuid));
-        if(t == NULL)
-            BlueSystemMessage(m_session, "Incorrect transportguid %u. Spawn has been denied", GUID_LOPART(transGuid));
+        Transporter* t = objmgr.GetTransporter(GUID_LOPART(plr->m_TransporterGUID));
+        if(t)
+        {
+            WorldDatabase.Execute("INSERT INTO transport_creatures VALUES(%u, %u, '%f', '%f', '%f', '%f')", GUID_LOPART(plr->m_TransporterGUID), entry, plr->m_transportPosition->x, plr->m_transportPosition->y, plr->m_transportPosition->z, plr->GetOrientation());
+            t->AddNPC(entry, plr->m_transportPosition->x, plr->m_transportPosition->y, plr->m_transportPosition->z, plr->GetOrientation());
+            BlueSystemMessage(m_session, "Spawned crew-member %u on transport %u. You might need to relog.", entry, GUID_LOPART(plr->m_TransporterGUID));
+            sWorld.LogGM(m_session, "spawned crew-member %u on transport %u.", entry, GUID_LOPART(plr->m_TransporterGUID));
+            return true;
+        }
         else
         {
-            float tx, ty, tz, to;
-            plr->GetMovementInfo()->GetTransportPosition(tx, ty, tz, to);
-            WorldDatabase.Execute("INSERT INTO transport_creatures VALUES(%u, %u, '%f', '%f', '%f', '%f')", GUID_LOPART(transGuid), entry, tx, ty, tz, to);
-            t->AddNPC(entry, tx, ty, tz, to);
-            BlueSystemMessage(m_session, "Spawned crew-member %u on transport %u. You might need to relog.", entry, GUID_LOPART(transGuid));
-            sWorld.LogGM(m_session, "spawned crew-member %u on transport %u.", entry, GUID_LOPART(transGuid));
+            BlueSystemMessage(m_session, "Incorrect transportguid %u. Spawn has been denied and transport guid has been reset.", plr->m_TransporterGUID);
+            plr->m_TransporterGUID = uint64(NULL);
+            return true;
         }
-        return true;
     }
 
     bool spVehicle = proto->vehicle_entry > 0 ? true : false;

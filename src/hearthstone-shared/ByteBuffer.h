@@ -5,8 +5,8 @@
 #pragma once
 
 #include "Common.h"
-#include "WoWGuid.h"
 #include "LocationVector.h"
+#include "WoWGuid.h"
 #include "hearthstone_log.h"
 #include "int24.h"
 
@@ -249,6 +249,24 @@ public:
         return *this;
     }
 
+    //! Only does X,Y,Z!
+    ByteBuffer & operator << (const LocationVector & vec)
+    {
+        append<float>(vec.x);
+        append<float>(vec.y);
+        append<float>(vec.z);
+        return *this;
+    }
+
+    //! Only does X,Y,Z!
+    ByteBuffer & operator >> (LocationVector & vec)
+    {
+        vec.x = read<float>();
+        vec.y = read<float>();
+        vec.z = read<float>();
+        return * this;
+    }
+
     ByteBuffer &operator>>(WoWGuid &value)
     {
         uint8 field, mask = read<uint8>();
@@ -297,12 +315,6 @@ public:
     template<> inline void read_skip<char*>() { std::string temp; *this >> temp; }
     template<> inline void read_skip<char const*>() { read_skip<char*>(); }
     template<> inline void read_skip<std::string>() { read_skip<char*>(); }
-    template<> inline void read_skip<WoWGuid>()
-    {
-        uint8 mask = read<uint8>();
-        for(int i = 0; i < BitCount8(mask); i++)
-            read_skip<uint8>();
-    }
 
     void read_skip(size_t skip)
     {
@@ -335,15 +347,6 @@ public:
             throw ByteBufferException(false, _rpos, len, size());
         memcpy(dest, &_storage[_rpos], len);
         _rpos += len;
-    }
-
-    void readvector(LocationVector &v, bool orientation = false)
-    {
-        v.x = read<float>();
-        v.y = read<float>();
-        v.z = read<float>();
-        if(orientation)
-            v.o = read<float>();
     }
 
     const uint8 *contents() const { return &_storage[0]; };
@@ -386,14 +389,6 @@ public:
     }
 
     void append(const ByteBuffer& buffer) { if(buffer.size() > 0) append(buffer.contents(),buffer.size()); }
-    void appendvector(const LocationVector &v, bool orientation = false)
-    {
-        append<float>(v.x);
-        append<float>(v.y);
-        append<float>(v.z);
-        if(orientation)
-            append<float>(v.o);
-    }
 
     void put(size_t pos, const uint8 *src, size_t cnt)
     {
