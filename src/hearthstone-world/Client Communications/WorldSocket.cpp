@@ -547,7 +547,7 @@ void WorldSocket::OnRecvData()
             _crypt.DecryptRecv((uint8*)&Header, sizeof (ClientPktHeader));
             mRemaining = ntohs(Header.size) - 4;
             mUnaltered = Header.cmd;
-            mOpcode = sOpcodeMgr.ConvertOpcodeForInput(Header.cmd);
+            mOpcode = sOpcodeMgr.ConvertOpcodeForInput(mUnaltered);
         }
 
         if(mRemaining > 0)

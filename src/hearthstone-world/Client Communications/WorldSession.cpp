@@ -540,7 +540,7 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_CREATURE_QUERY].handler                        = &WorldSession::HandleCreatureQueryOpcode;
     WorldPacketHandlers[CMSG_GAMEOBJECT_QUERY].handler                      = &WorldSession::HandleGameObjectQueryOpcode;
     WorldPacketHandlers[CMSG_PAGE_TEXT_QUERY].handler                       = &WorldSession::HandlePageTextQueryOpcode;
-    WorldPacketHandlers[CMSG_ITEM_NAME_QUERY].handler                       = &WorldSession::HandleItemNameQueryOpcode;
+    WorldPacketHandlers[CMSG_QUEST_QUERY].handler                           = &WorldSession::HandleQuestQueryOpcode;
 
     WorldPacketHandlers[CMSG_REQUEST_HOTFIX].handler                        = &WorldSession::HandleItemHotfixQueryOpcode;
     WorldPacketHandlers[CMSG_REQUEST_HOTFIX].status                         = STATUS_WHENEVER;
@@ -584,7 +584,6 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_MOVE_WATER_WALK_ACK].handler                   = &WorldSession::HandleMoveHoverWaterFlyAckOpcode;
     WorldPacketHandlers[CMSG_MOVE_SET_CAN_FLY_ACK].handler                  = &WorldSession::HandleMoveHoverWaterFlyAckOpcode;
     WorldPacketHandlers[CMSG_MOVE_KNOCK_BACK_ACK].handler                   = &WorldSession::HandleMoveKnockbackAckOpcode;
-    WorldPacketHandlers[CMSG_FORCE_WALK_SPEED_CHANGE_ACK].handler           = &WorldSession::HandleForceSpeedChangeOpcodes;
     WorldPacketHandlers[CMSG_FORCE_SWIM_BACK_SPEED_CHANGE_ACK].handler      = &WorldSession::HandleForceSpeedChangeOpcodes;
     WorldPacketHandlers[CMSG_FORCE_TURN_RATE_CHANGE_ACK].handler            = &WorldSession::HandleForceSpeedChangeOpcodes;
     WorldPacketHandlers[CMSG_FORCE_RUN_SPEED_CHANGE_ACK].handler            = &WorldSession::HandleForceSpeedChangeOpcodes;
@@ -727,7 +726,6 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_SWAP_INV_ITEM].handler                         = &WorldSession::HandleSwapInvItemOpcode;
     WorldPacketHandlers[CMSG_SWAP_ITEM].handler                             = &WorldSession::HandleSwapItemOpcode;
     WorldPacketHandlers[CMSG_DESTROYITEM].handler                           = &WorldSession::HandleDestroyItemOpcode;
-    WorldPacketHandlers[CMSG_DESTROY_ITEMS].handler                         = &WorldSession::HandleDestroyItemsOpcode;
     WorldPacketHandlers[CMSG_AUTOEQUIP_ITEM].handler                        = &WorldSession::HandleAutoEquipItemOpcode;
     WorldPacketHandlers[CMSG_SELL_ITEM].handler                             = &WorldSession::HandleSellItemOpcode;
     WorldPacketHandlers[CMSG_BUY_ITEM].handler                              = &WorldSession::HandleBuyItemOpcode;
@@ -779,10 +777,8 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_QUESTGIVER_STATUS_QUERY].handler               = &WorldSession::HandleQuestgiverStatusQueryOpcode;
     WorldPacketHandlers[CMSG_QUESTGIVER_HELLO].handler                      = &WorldSession::HandleQuestgiverHelloOpcode;
     WorldPacketHandlers[CMSG_QUESTGIVER_ACCEPT_QUEST].handler               = &WorldSession::HandleQuestgiverAcceptQuestOpcode;
-    WorldPacketHandlers[CMSG_QUESTGIVER_CANCEL].handler                     = &WorldSession::HandleQuestgiverCancelOpcode;
     WorldPacketHandlers[CMSG_QUESTGIVER_CHOOSE_REWARD].handler              = &WorldSession::HandleQuestgiverChooseRewardOpcode;
     WorldPacketHandlers[CMSG_QUESTGIVER_REQUEST_REWARD].handler             = &WorldSession::HandleQuestgiverRequestRewardOpcode;
-    WorldPacketHandlers[CMSG_QUEST_QUERY].handler                           = &WorldSession::HandleQuestQueryOpcode;
     WorldPacketHandlers[CMSG_QUESTGIVER_QUERY_QUEST].handler                = &WorldSession::HandleQuestGiverQueryQuestOpcode;
     WorldPacketHandlers[CMSG_QUESTGIVER_COMPLETE_QUEST].handler             = &WorldSession::HandleQuestgiverCompleteQuestOpcode;
     WorldPacketHandlers[CMSG_QUESTLOG_REMOVE_QUEST].handler                 = &WorldSession::HandleQuestlogRemoveQuestOpcode;
@@ -937,11 +933,6 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_ARENA_TEAM_DISBAND].handler                    = &WorldSession::HandleArenaTeamDisbandOpcode;
     WorldPacketHandlers[CMSG_ARENA_TEAM_LEADER].handler                     = &WorldSession::HandleArenaTeamPromoteOpcode;
     WorldPacketHandlers[MSG_INSPECT_ARENA_TEAMS].handler                    = &WorldSession::HandleInspectArenaStatsOpcode;
-
-    // cheat/gm commands?
-    WorldPacketHandlers[MSG_MOVE_TELEPORT_CHEAT].handler                    = &WorldSession::HandleTeleportCheatOpcode;
-    WorldPacketHandlers[CMSG_TELEPORT_TO_UNIT].handler                      = &WorldSession::HandleTeleportToUnitOpcode;
-    WorldPacketHandlers[CMSG_WORLD_TELEPORT].handler                        = &WorldSession::HandleWorldportOpcode;
 
     // voicechat
     WorldPacketHandlers[CMSG_VOICE_SESSION_ENABLE].handler                  = &WorldSession::HandleEnableMicrophoneOpcode;

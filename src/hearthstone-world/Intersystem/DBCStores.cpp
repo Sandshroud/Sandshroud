@@ -144,6 +144,9 @@ const char* glypepropertiesFormat="uuuu";
 DECLARE_CLASS_INTERNAL_DBC_MACRO(NumTalentsAtLevelEntry, dbcNumTalents);
 const char* numtalentsFormat="uf";
 
+DECLARE_CLASS_INTERNAL_DBC_MACRO(QuestXPEntry, dbcQuestXP);
+const char* questxpFormat="niiiiiiiiii";
+
 DECLARE_CLASS_INTERNAL_DBC_MACRO(SkillLineEntry, dbcSkillLine);
 const char* SkillLineEntryFormat = "uuusxxxx";
 

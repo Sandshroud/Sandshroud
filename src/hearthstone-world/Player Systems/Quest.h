@@ -52,23 +52,6 @@ enum FAILED_REASON
     FAILED_REASON_DUPE_ITEM_FOUND   = 17,
 };
 
-enum INVALID_REASON
-{
-    INVALID_REASON_DONT_HAVE_REQ            = 0,
-    INVALID_REASON_DONT_HAVE_LEVEL          = 1,
-    INVALID_REASON_DONT_HAVE_RACE           = 6,
-    INVALID_REASON_COMPLETED_QUEST          = 7,
-    INVALID_REASON_HAVE_TIMED_QUEST         = 12,
-    INVALID_REASON_HAVE_QUEST               = 13,
-//  INVALID_REASON_DONT_HAVE_REQ_ITEMS    = 0x13,
-//  INVALID_REASON_DONT_HAVE_REQ_MONEY    = 0x15,
-    INVALID_REASON_DONT_HAVE_EXP_ACCOUNT    = 16,
-    INVALID_REASON_DONT_HAVE_REQ_ITEMS      = 21, //changed for 2.1.3
-    INVALID_REASON_DONT_HAVE_REQ_MONEY      = 23,
-    INVALID_REASON_UNKNOW26                 = 26, //"you have completed 10 daily quests today"
-    INVALID_REASON_UNKNOW27                 = 27,//"You cannot completed quests once you have reached tired time"
-};
-
 enum QUEST_SHARE
 {
     QUEST_SHARE_MSG_SHARING_QUEST           = 0,
@@ -147,11 +130,9 @@ struct Quest
     uint32 required_mob[4];
     uint8 required_mobtype[4];
     uint16 required_mobcount[4];
-
-    uint32 required_spell[4];
-
     uint32 required_areatriggers[4];
 
+    uint32 required_spell;
     uint32 required_player_kills;
 
     uint32 required_timelimit;
@@ -239,7 +220,7 @@ public:
     HEARTHSTONE_INLINE uint32 GetMobCount(uint32 i) { return m_mobcount[i]; }
     HEARTHSTONE_INLINE uint32 GetCrossedAreaTrigger(uint32 i) { return m_areatriggers[i]; }
     HEARTHSTONE_INLINE uint32 GetTimeLeft() { return m_time_left; }
-    uint32 GetRequiredSpell(uint32 i);
+    uint32 GetRequiredSpell();
 
     HEARTHSTONE_INLINE uint32 GetBaseField(uint32 slot)
     {

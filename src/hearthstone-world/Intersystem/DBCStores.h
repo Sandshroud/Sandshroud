@@ -520,11 +520,10 @@ struct NumTalentsAtLevelEntry
     float talentPoints; // I think this is a float?
 };
 
-struct QuestXP
+struct QuestXPEntry
 {
-    uint32 questLevel;  // 0
-    uint32 xpIndex[8];  // 1-9
-    //unk               // 10
+    uint32 questLevel;
+    uint32 xpIndex[10];
 };
 
 struct ScalingStatDistributionEntry
@@ -1408,6 +1407,7 @@ DBC_STORAGE_EXTERN_DBC_MACRO(LFGDungeonsEntry, dbcLFGDungeons);
 DBC_STORAGE_EXTERN_DBC_MACRO(MapEntry, dbcMap);
 DBC_STORAGE_EXTERN_DBC_MACRO(GlyphProperties, dbcGlyphProperties);
 DBC_STORAGE_EXTERN_DBC_MACRO(NumTalentsAtLevelEntry, dbcNumTalents);
+DBC_STORAGE_EXTERN_DBC_MACRO(QuestXPEntry, dbcQuestXP);
 DBC_STORAGE_EXTERN_DBC_MACRO(SkillLineEntry, dbcSkillLine);
 DBC_STORAGE_EXTERN_DBC_MACRO(SkillLineSpell, dbcSkillLineSpell);
 DBC_STORAGE_EXTERN_DBC_MACRO(SpellAuraOptionsEntry, dbcSpellAuraOptions);

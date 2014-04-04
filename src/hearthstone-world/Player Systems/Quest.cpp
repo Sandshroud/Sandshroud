@@ -22,8 +22,7 @@ WorldPacket* WorldSession::BuildQuestQueryResponse(Quest *qst)
 
     if(qst->qst_sort > 0)
         *data << int32(-(int32)qst->qst_sort);          // Negative if pointing to a sort.
-    else
-        *data << uint32(qst->qst_zone_id);              // Positive if pointing to a zone.
+    else *data << uint32(qst->qst_zone_id);              // Positive if pointing to a zone.
 
     *data << uint32(qst->qst_type);                     // Info ID / Type
     *data << uint32(qst->qst_suggested_players);        // suggested players
@@ -32,7 +31,7 @@ WorldPacket* WorldSession::BuildQuestQueryResponse(Quest *qst)
     *data << uint32(0);                                 // 3.3.3 // Opposite Faction ID
     *data << uint32(0);                                 // 3.3.3 // Opposite Faction Amount
     *data << uint32(qst->qst_next_quest_id);            // Next Quest ID
-    *data << uint32(0);                                 // 3.3.0
+    *data << uint32(qst->reward_xp_index);              // 3.3.0
 
     if(qst->required_money)
         *data << int32(-qst->required_money) << uint32(0);
@@ -91,8 +90,8 @@ WorldPacket* WorldSession::BuildQuestQueryResponse(Quest *qst)
     *data << qst->qst_title;            // Title / name of quest
     *data << qst->qst_objectivetext;    // Objectives / description
     *data << qst->qst_details;          // Details
-    *data << qst->qst_completiontext;
     *data << qst->qst_endtext;          // Subdescription
+    *data << qst->qst_completiontext;
 
     // (loop 4 times)
     for(i = 0; i < 4; i++)
@@ -159,15 +158,17 @@ void QuestLogEntry::Init(Quest* quest, Player* plr, uint32 slot)
     m_time_left = 0;
 
     iscastquest = false;
+    uint32 requiredSpell = GetRequiredSpell();
+    if(requiredSpell)
+    {
+        iscastquest = true;
+        if (!plr->HasQuestSpell(requiredSpell))
+            plr->quest_spells.insert(requiredSpell);
+    }
+
     for (uint32 i = 0; i < 4; i++)
     {
-        if (quest->required_spell[i] != 0)
-        {
-            iscastquest = true;
-            if (!plr->HasQuestSpell(GetRequiredSpell(i)))
-                plr->quest_spells.insert(GetRequiredSpell(i));
-        }
-        else if (quest->required_mob[i] != 0)
+        if (quest->required_mob[i] != 0)
         {
             if (!plr->HasQuestMob(quest->required_mob[i]))
                 plr->quest_mobs.insert(quest->required_mob[i]);
@@ -272,7 +273,7 @@ bool QuestLogEntry::CanBeFinished()
         bool required = false;
         if(iscastquest)
         {
-            if(m_quest->required_spell[i] || m_quest->required_mob[i])
+            if(m_quest->required_spell || m_quest->required_mob[i])
                 required = true;
         }
         else
@@ -431,19 +432,22 @@ void QuestLogEntry::SendUpdateAddKill(uint32 i)
     sQuestMgr.SendQuestUpdateAddKill(m_plr, m_quest->id, m_quest->required_mob[i], m_mobcount[i], m_quest->required_mobcount[i], 0);
 }
 
-uint32 QuestLogEntry::GetRequiredSpell(uint32 i)
+uint32 QuestLogEntry::GetRequiredSpell()
 {
-    if(!m_plr->HasSpell(m_quest->required_spell[i]))
+    if(m_quest->required_spell)
     {
-        SpellEntry* reqspell = dbcSpell.LookupEntry(m_quest->required_spell[i]);
-         // Spell has a power type, so we check if player has spells with the same namehash, and replace it with that.
-        if(reqspell && (reqspell->powerType != m_plr->GetPowerType()))
+        if(!m_plr->HasSpell(m_quest->required_spell))
         {
-            uint32 newspell = m_plr->FindSpellWithNamehash(reqspell->NameHash);
-            if(newspell != 0)
-                return newspell;
+            SpellEntry* reqspell = dbcSpell.LookupEntry(m_quest->required_spell);
+             // Spell has a power type, so we check if player has spells with the same namehash, and replace it with that.
+            if(reqspell && (reqspell->powerType != m_plr->GetPowerType()))
+            {
+                uint32 newspell = m_plr->FindSpellWithNamehash(reqspell->NameHash);
+                if(newspell != 0) return newspell;
+            }
         }
-    }
 
-    return m_quest->required_spell[i];
+        return m_quest->required_spell;
+    }
+    return 0;
 }
