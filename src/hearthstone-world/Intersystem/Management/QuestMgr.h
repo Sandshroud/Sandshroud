@@ -86,7 +86,6 @@ public:
     uint32 GenerateRewardMoney(Player* pl, Quest *qst);
     uint32 GenerateMaxLvlRewardMoney(Player* pl, Quest *qst);
 
-    void SendQuestInvalid( INVALID_REASON reason, Player* plyr);
     void SendQuestFailed(FAILED_REASON failed, Quest *qst, Player* plyr);
     void SendQuestUpdateFailed(Quest *pQuest, Player* plyr);
     void SendQuestUpdateFailedTimer(Quest *pQuest, Player* plyr);

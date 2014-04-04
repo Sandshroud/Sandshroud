@@ -12,7 +12,8 @@ void WorldSession::HandleNameQueryOpcode( WorldPacket & recv_data )
     CHECK_PACKET_SIZE(recv_data, 8);
     uint64 guid;
     recv_data >> guid;
-
+    if(GUID_HIPART(guid) != HIGHGUID_TYPE_PLAYER)
+        return;
     PlayerInfo *pn = objmgr.GetPlayerInfo( (uint32)guid );
     if(pn == NULL)
         return;
@@ -211,28 +212,30 @@ void WorldSession::HandlePageTextQueryOpcode( WorldPacket & recv_data )
     }
 }
 
-//////////////////////////////////////////////////////////////
-/// This function handles CMSG_ITEM_NAME_QUERY:
-//////////////////////////////////////////////////////////////
-void WorldSession::HandleItemNameQueryOpcode(WorldPacket & recvPacket)
+void WorldSession::HandleQuestQueryOpcode( WorldPacket & recv_data )
 {
-    CHECK_PACKET_SIZE(recvPacket, 4);
-    uint32 itemid;
-    recvPacket >> itemid;
+    CHECK_INWORLD_RETURN();
+    sLog.Debug( "WORLD"," Received CMSG_QUEST_QUERY" );
 
-    WorldPacket reply(SMSG_ITEM_NAME_QUERY_RESPONSE, 10);
-    reply << itemid;
-    ItemPrototype *proto=ItemPrototypeStorage.LookupEntry(itemid);
-    if(!proto)
-        reply << "Unknown Item";
-    else
+    uint32 quest_id;
+    recv_data >> quest_id;
+
+    Quest *qst = sQuestMgr.GetQuestPointer(quest_id);
+    if (!qst)
     {
-        reply << proto->Name1;
-        reply << uint32(proto->InventoryType);
+        sLog.outDebug("WORLD: Invalid quest ID.");
+        return;
     }
-    SendPacket(&reply);
+
+    WorldPacket *pkt = BuildQuestQueryResponse(qst);
+    SendPacket(pkt);
+    delete pkt;
+    sLog.Debug( "WORLD"," Sent SMSG_QUEST_QUERY_RESPONSE." );
 }
 
+//////////////////////////////////////////////////////////////
+/// This function handles CMSG_REQUEST_HOTFIX:
+//////////////////////////////////////////////////////////////
 void WorldSession::HandleItemHotfixQueryOpcode(WorldPacket & recvPacket)
 {
     uint32 count, type;

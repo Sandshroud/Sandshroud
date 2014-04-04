@@ -201,8 +201,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recv_data )
         Creature* quest_giver = _player->GetMapMgr()->GetCreature(GUID_LOPART(guid));
         if(quest_giver)
             qst_giver = TO_OBJECT(quest_giver);
-        else
-            return;
+        else return;
         bValid = quest_giver->isQuestGiver();
         hasquest = quest_giver->HasQuest(quest_id, 1);
         if(bValid)
@@ -213,8 +212,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recv_data )
         GameObject* quest_giver = _player->GetMapMgr()->GetGameObject(GUID_LOPART(guid));
         if(quest_giver)
             qst_giver = TO_OBJECT(quest_giver);
-        else
-            return;
+        else return;
         //bValid = quest_giver->isQuestGiver();
         //if(bValid)
         bValid = true;
@@ -225,8 +223,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recv_data )
         Item* quest_giver = GetPlayer()->GetItemInterface()->GetItemByGUID(guid);
         if(quest_giver)
             qst_giver = TO_OBJECT(quest_giver);
-        else
-            return;
+        else return;
         bValid = true;
         bSkipLevelCheck = true;
         qst = sQuestMgr.GetQuestPointer(quest_id);
@@ -238,8 +235,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recv_data )
         Player* quest_giver = _player->GetMapMgr()->GetPlayer((uint32)guid);
         if(quest_giver)
             qst_giver = TO_OBJECT(quest_giver);
-        else
-            return;
+        else return;
         bValid = true;
         qst = sQuestMgr.GetQuestPointer(quest_id);
     }
@@ -347,15 +343,6 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recv_data )
     sHookInterface.OnQuestAccept(_player, qst, qst_giver);
 }
 
-void WorldSession::HandleQuestgiverCancelOpcode(WorldPacket& recvPacket)
-{
-    WorldPacket data(SMSG_GOSSIP_COMPLETE, 0);
-    SendPacket(&data);
-    //OutPacket(SMSG_GOSSIP_COMPLETE, 0, NULL);
-
-    sLog.outDebug("WORLD: Sent SMSG_GOSSIP_COMPLETE");
-}
-
 void WorldSession::HandleQuestlogRemoveQuestOpcode(WorldPacket& recvPacket)
 {
     CHECK_INWORLD_RETURN();
@@ -416,30 +403,6 @@ void WorldSession::HandleQuestlogRemoveQuestOpcode(WorldPacket& recvPacket)
     _player->SaveToDB(false);
 }
 
-void WorldSession::HandleQuestQueryOpcode( WorldPacket & recv_data )
-{
-    CHECK_INWORLD_RETURN();
-    sLog.Debug( "WORLD"," Received CMSG_QUEST_QUERY" );
-
-    uint32 quest_id;
-
-    recv_data >> quest_id;
-
-    Quest *qst = sQuestMgr.GetQuestPointer(quest_id);
-
-    if (!qst)
-    {
-        sLog.outDebug("WORLD: Invalid quest ID.");
-        return;
-    }
-
-    WorldPacket *pkt = BuildQuestQueryResponse(qst);
-    SendPacket(pkt);
-    delete pkt;
-
-    sLog.Debug( "WORLD"," Sent SMSG_QUEST_QUERY_RESPONSE." );
-}
-
 void WorldSession::HandleQuestgiverRequestRewardOpcode( WorldPacket & recv_data )
 {
     CHECK_INWORLD_RETURN();
@@ -486,8 +449,8 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode( WorldPacket & recv_data 
         GameObject* quest_giver = _player->GetMapMgr()->GetGameObject(GUID_LOPART(guid));
         if(quest_giver)
             qst_giver = TO_OBJECT(quest_giver);
-        else
-            return; // oops..
+        else return; // oops..
+
         bValid = quest_giver->isQuestGiver();
         if(bValid)
         {

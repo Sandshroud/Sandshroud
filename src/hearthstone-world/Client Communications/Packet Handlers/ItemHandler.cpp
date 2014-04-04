@@ -468,11 +468,6 @@ void WorldSession::HandleDestroyItemOpcode( WorldPacket & recv_data )
     }
 }
 
-void WorldSession::HandleDestroyItemsOpcode( WorldPacket & recv_data )
-{
-    HandleDestroyItemOpcode(recv_data);
-}
-
 void WorldSession::HandleAutoEquipItemOpcode( WorldPacket & recv_data )
 {
     CHECK_INWORLD_RETURN();
@@ -832,30 +827,23 @@ void WorldSession::HandleBuyItemOpcode( WorldPacket & recv_data ) // right-click
     if(!GetPlayer())
         return;
 
-    WorldPacket data(45);
-    uint64 srcguid=0;
-    uint32 itemid=0;
-    int32 slot=0;
-    uint32 amount=0;
-    Item* add = NULLITEM;
+    uint64 vendorGuid;
+    uint32 itemid, slot, count;
     uint8 error = 0;
-    SlotResult slotresult;
-    AddItemResult result;
 
-    recv_data >> srcguid >> itemid;
-    recv_data >> slot >> amount;
+    recv_data >> vendorGuid;
+    recv_data.read_skip<uint8>();
+    recv_data >> itemid >> slot >> count;
+    if(count < 1) count = 1;
+    recv_data.read_skip<uint64>();
+    recv_data.read_skip<uint8>();
 
-
-    Creature* unit = _player->GetMapMgr()->GetCreature(GUID_LOPART(srcguid));
+    Creature* unit = _player->GetMapMgr()->GetCreature(GUID_LOPART(vendorGuid));
     if (unit == NULL || !unit->HasItems())
         return;
 
-    if(amount < 1)
-        amount = 1;
-
     CreatureItem item;
     unit->GetSellItemByItemId(itemid, item);
-
     if(item.itemid == 0)
     {
         // vendor does not sell this item.. bitch about cheaters?
@@ -863,7 +851,7 @@ void WorldSession::HandleBuyItemOpcode( WorldPacket & recv_data ) // right-click
         return;
     }
 
-    if (item.max_amount>0 && item.available_amount<amount)
+    if (item.max_amount > 0 && item.available_amount < count)
     {
         _player->GetItemInterface()->BuildInventoryChangeError(NULLITEM, NULLITEM, INV_ERR_ITEM_IS_CURRENTLY_SOLD_OUT);
         return;
@@ -876,30 +864,28 @@ void WorldSession::HandleBuyItemOpcode( WorldPacket & recv_data ) // right-click
         return;
     }
 
-    if( it->MaxCount > 0 && amount > (uint32)it->MaxCount )
+    if( it->MaxCount > 0 && count > it->MaxCount )
     {
         _player->GetItemInterface()->BuildInventoryChangeError(NULLITEM, NULLITEM, INV_ERR_ITEM_CANT_STACK);
         return;
     }
 
-    if((error = _player->GetItemInterface()->CanReceiveItem(it, amount*item.amount, item.extended_cost)))
+    if((error = _player->GetItemInterface()->CanReceiveItem(it, count*item.amount, item.extended_cost)))
     {
         _player->GetItemInterface()->BuildInventoryChangeError(NULLITEM, NULLITEM, error);
         return;
     }
 
-   if((error = _player->GetItemInterface()->CanAffordItem(it, amount, unit, item.extended_cost)))
-   {
-      SendBuyFailed(srcguid, itemid, error);
-      return;
-   }
-
-    // Find free slot and break if inv full
-    add = _player->GetItemInterface()->FindItemLessMax(itemid,amount*item.amount, false);
-    if (!add)
+    if((error = _player->GetItemInterface()->CanAffordItem(it, count, unit, item.extended_cost)))
     {
-        slotresult = _player->GetItemInterface()->FindFreeInventorySlot(it);
+        SendBuyFailed(vendorGuid, itemid, error);
+        return;
     }
+
+    SlotResult slotresult;
+    // Find free slot and break if inv full
+    Item *add = _player->GetItemInterface()->FindItemLessMax(itemid, count*item.amount, false);
+    if (!add) slotresult = _player->GetItemInterface()->FindFreeInventorySlot(it);
     if ((!slotresult.Result) && (!add))
     {
         //Our User doesn't have a free Slot in there bag
@@ -917,7 +903,7 @@ void WorldSession::HandleBuyItemOpcode( WorldPacket & recv_data ) // right-click
         }
 
         itm->m_isDirty = true;
-        int32 amt = amount*item.amount;
+        int32 amt = count*item.amount;
         if(itm->GetProto()->MaxCount > 0)
             if(amt > itm->GetProto()->MaxCount)
                 amt = itm->GetProto()->MaxCount;
@@ -925,14 +911,14 @@ void WorldSession::HandleBuyItemOpcode( WorldPacket & recv_data ) // right-click
 
         if(slotresult.ContainerSlot == ITEM_NO_SLOT_AVAILABLE)
         {
-            result = _player->GetItemInterface()->SafeAddItem(itm, INVENTORY_SLOT_NOT_SET, slotresult.Slot);
+            AddItemResult result = _player->GetItemInterface()->SafeAddItem(itm, INVENTORY_SLOT_NOT_SET, slotresult.Slot);
             if(!result)
             {
                 itm->DeleteMe();
                 itm = NULL;
             }
             else
-                SendItemPushResult(itm, false, true, false, true,(uint8)INVENTORY_SLOT_NOT_SET, slotresult.Result, amount*item.amount);
+                SendItemPushResult(itm, false, true, false, true,(uint8)INVENTORY_SLOT_NOT_SET, slotresult.Result, count*item.amount);
         }
         else
         {
@@ -950,27 +936,27 @@ void WorldSession::HandleBuyItemOpcode( WorldPacket & recv_data ) // right-click
     }
     else
     {
-        add->ModUnsigned32Value(ITEM_FIELD_STACK_COUNT, amount*item.amount);
+        add->ModUnsigned32Value(ITEM_FIELD_STACK_COUNT, count*item.amount);
         add->m_isDirty = true;
-        SendItemPushResult(add, false, true, false, false, _player->GetItemInterface()->GetBagSlotByGuid(add->GetGUID()), 1, amount*item.amount);
+        SendItemPushResult(add, false, true, false, false, _player->GetItemInterface()->GetBagSlotByGuid(add->GetGUID()), 1, count*item.amount);
     }
 
-     data.Initialize( SMSG_BUY_ITEM );
-     data << uint64(srcguid);
-     data << getMSTime();
-     data << uint32(itemid) << uint32(amount*item.amount);
-     SendPacket( &data );
+    WorldPacket data(SMSG_BUY_ITEM, 45);
+    data << uint64(vendorGuid);
+    data << getMSTime();
+    data << uint32(itemid) << uint32(count*item.amount);
+    SendPacket( &data );
 
-     _player->GetItemInterface()->BuyItem(it,amount,unit, item.extended_cost);
-     if(int32(item.max_amount) > 0)
-     {
-         unit->ModAvItemAmount(item.itemid,item.amount*amount);
+    _player->GetItemInterface()->BuyItem(it,count,unit, item.extended_cost);
+    if(int32(item.max_amount) > 0)
+    {
+        unit->ModAvItemAmount(item.itemid,item.amount*count);
 
-         // there is probably a proper opcode for this. - burlex
-         SendInventoryList(unit);
-     }
+        // there is probably a proper opcode for this. - burlex
+        SendInventoryList(unit);
+    }
 
-     _player->SaveToDB(false);
+    _player->SaveToDB(false);
 }
 
 void WorldSession::HandleListInventoryOpcode( WorldPacket & recv_data )
