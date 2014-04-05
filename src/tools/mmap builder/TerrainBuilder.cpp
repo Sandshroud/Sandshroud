@@ -39,7 +39,7 @@ namespace MMAP
 
     char const* MAP_VERSION_MAGIC = "v1.3";
 
-    TerrainBuilder::TerrainBuilder(bool skipLiquid) : m_skipLiquid (skipLiquid){ }
+    TerrainBuilder::TerrainBuilder(bool skipLiquid) : m_skipLiquid (skipLiquid), vmapManager(NULL){ }
     TerrainBuilder::~TerrainBuilder() { }
 
     /**************************************************************************/
@@ -110,13 +110,22 @@ namespace MMAP
         fseek(mapFile, 0, SEEK_SET);
         G3D::g3d_uint32 offsets[64][64];
         if(fread(offsets, 1, 16384, mapFile) != 16384)
+        {
+            fclose(mapFile);
             return false;
+        }
         if(offsets[tileX][tileY] == 0)
+        {
+            fclose(mapFile);
             return false;
+        }
 
         // Go to our offset, skip the area info.
         if(fseek(mapFile, offsets[tileX][tileY], SEEK_SET))
+        {
+            fclose(mapFile);
             return false;
+        }
 
         G3D::Array<int> ltriangles;
         G3D::Array<int> ttriangles;
@@ -524,15 +533,32 @@ namespace MMAP
     }
 
     /**************************************************************************/
-    bool TerrainBuilder::loadVMap(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, MeshData &meshData)
+    bool TerrainBuilder::InitializeVMap(G3D::g3d_uint32 mapID)
     {
-        VMapManager* vmapManager = new VMapManager("vmaps");
+        vmapManager = new VMapManager("vmaps");
         if(!vmapManager->loadMap(mapID))
             return false;
+        return true;
+    }
 
-        bool result = vmapManager->loadMap(mapID, tileX, tileY);
-        bool retval = false;
+    /**************************************************************************/
+    void TerrainBuilder::UnloadVMap(G3D::g3d_uint32 mapID)
+    {
+        if(vmapManager)
+        {
+            vmapManager->unloadMap(mapID);
+            delete vmapManager;
+            vmapManager = NULL;
+        }
+    }
 
+    /**************************************************************************/
+    bool TerrainBuilder::loadVMap(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, MeshData &meshData)
+    {
+        if(vmapManager == NULL)
+            return false;
+
+        bool result = vmapManager->loadMap(mapID, tileX, tileY), retval = false;
         do
         {
             if (result == false)
@@ -540,7 +566,6 @@ namespace MMAP
 
             InstanceTreeMap instanceTrees;
             vmapManager->getInstanceMapTree(instanceTrees);
-
             if (!instanceTrees[mapID])
                 break;
 
@@ -682,9 +707,6 @@ namespace MMAP
         while (false);
 
         vmapManager->unloadMap(mapID, tileX, tileY);
-        vmapManager->unloadMap(mapID);
-        delete vmapManager;
-
         return retval;
     }
 

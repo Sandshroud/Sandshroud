@@ -26,6 +26,8 @@
 #include "Vector3.h"
 #include "Matrix3.h"
 
+class VMAP::VMapManager;
+
 namespace MMAP
 {
     enum Spot
@@ -81,9 +83,11 @@ namespace MMAP
             TerrainBuilder(bool skipLiquid);
             ~TerrainBuilder();
 
+            bool InitializeVMap(G3D::g3d_uint32 mapID);
             void loadMap(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, MeshData &meshData);
             bool loadVMap(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, MeshData &meshData);
             void loadOffMeshConnections(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, MeshData &meshData, const char* offMeshFilePath);
+            void UnloadVMap(G3D::g3d_uint32 mapID);
 
             bool usesLiquids() { return !m_skipLiquid; }
 
@@ -103,6 +107,9 @@ namespace MMAP
 
             /// Controls whether liquids are loaded
             bool m_skipLiquid;
+
+            /// VMap Manager for loading main tile
+            VMAP::VMapManager* vmapManager;
 
             /// Load the map terrain from file
             bool loadHeightMap(G3D::g3d_uint32 mapID, G3D::g3d_uint32 tileX, G3D::g3d_uint32 tileY, G3D::Array<float> &vertices, G3D::Array<int> &triangles, Spot portion);

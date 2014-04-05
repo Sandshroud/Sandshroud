@@ -199,7 +199,7 @@ namespace MMAP
 
         // make sure we process maps which don't have tiles
         // initialize the static tree, which loads WDT models
-        if (!m_terrainBuilder->loadVMap(mapID, 64, 64, meshData))
+        if(!m_terrainBuilder->loadVMap(mapID, 64, 64, meshData))
             return;
 
         // get the coord bounds of the model data
@@ -322,7 +322,9 @@ namespace MMAP
             return;
         }
 
+        m_terrainBuilder->InitializeVMap(mapID);
         buildTile(mapID, tileX, tileY, navMesh);
+        m_terrainBuilder->UnloadVMap(mapID);
         dtFreeNavMesh(navMesh);
     }
 
@@ -330,6 +332,7 @@ namespace MMAP
     void MapBuilder::buildMap(G3D::g3d_uint32 mapID)
     {
         printf("Building map %03u:\n", mapID);
+        m_terrainBuilder->InitializeVMap(mapID);
 
         std::set<G3D::g3d_uint32>* tiles = getTileList(mapID);
 
@@ -351,30 +354,29 @@ namespace MMAP
             // build navMesh
             dtNavMesh* navMesh = NULL;
             buildNavMesh(mapID, navMesh);
-            if (!navMesh)
-            {
+            if(navMesh == NULL)
                 printf("Failed creating navmesh!              \n");
-                return;
-            }
-
-            // now start building mmtiles for each tile
-            printf("We have %u tiles.                          \n", (unsigned int)tiles->size());
-            for (std::set<G3D::g3d_uint32>::iterator it = tiles->begin(); it != tiles->end(); ++it)
+            else
             {
-                G3D::g3d_uint32 tileX, tileY;
+                // now start building mmtiles for each tile
+                printf("We have %u tiles.                          \n", (unsigned int)tiles->size());
+                for (std::set<G3D::g3d_uint32>::iterator it = tiles->begin(); it != tiles->end(); ++it)
+                {
+                    G3D::g3d_uint32 tileX, tileY;
 
-                // unpack tile coords
-                StaticMapTree::unpackTileID((*it), tileX, tileY);
+                    // unpack tile coords
+                    StaticMapTree::unpackTileID((*it), tileX, tileY);
+                    if (shouldSkipTile(mapID, tileX, tileY))
+                        continue;
 
-                if (shouldSkipTile(mapID, tileX, tileY))
-                    continue;
+                    buildTile(mapID, tileX, tileY, navMesh);
+                }
 
-                buildTile(mapID, tileX, tileY, navMesh);
+                dtFreeNavMesh(navMesh);
             }
-
-            dtFreeNavMesh(navMesh);
         }
 
+        m_terrainBuilder->UnloadVMap(mapID);
         printf("Complete!                               \n\n");
     }
 
