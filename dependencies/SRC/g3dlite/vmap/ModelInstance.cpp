@@ -39,7 +39,7 @@ namespace VMAP
     {
         if (!iModel)
         {
-            bLog.outDebug("<object not loaded>");
+            OUT_DEBUG("<object not loaded>");
             return;
         }
 
@@ -71,7 +71,7 @@ namespace VMAP
     {
         if (!iModel)
         {
-            bLog.outDebug("<object not loaded>");
+            OUT_DEBUG("<object not loaded>");
             return false;
         }
 

@@ -345,7 +345,7 @@ namespace VMAP
                 error.append("WMOLiquid");
         if(error.length())
         {
-            bLog.outDebug("GroupModel::readFile error while reading %s", error.c_str());
+            OUT_DEBUG("GroupModel::readFile error while reading %s", error.c_str());
             return false;
         }
         return true;
@@ -457,7 +457,7 @@ namespace VMAP
                         hit = prims + entry;
                     }
                     const GroupModel &gm = prims[entry];
-                    bLog.outDebug("%10u %8X %7.3f, %7.3f, %7.3f | %7.3f, %7.3f, %7.3f | z=%f, p_z=%f", gm.GetWmoID(), gm.GetMogpFlags(),
+                    OUT_DEBUG("%10u %8X %7.3f, %7.3f, %7.3f | %7.3f, %7.3f, %7.3f | z=%f, p_z=%f", gm.GetWmoID(), gm.GetMogpFlags(),
                         gm.GetBound().low().x, gm.GetBound().low().y, gm.GetBound().low().z,
                         gm.GetBound().high().x, gm.GetBound().high().y, gm.GetBound().high().z, group_Z, point.z);
                 }
@@ -577,7 +577,7 @@ namespace VMAP
         fclose(rf);
         if(error.length())
         {
-            bLog.outDebug("WorldModel::readFile error while reading %s", error.c_str());
+            OUT_DEBUG("WorldModel::readFile error while reading %s", error.c_str());
             return false;
         }
         return true;

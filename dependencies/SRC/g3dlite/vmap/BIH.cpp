@@ -271,21 +271,21 @@ void BIH::BuildStats::updateLeaf(int depth, int n)
 
 void BIH::BuildStats::printStats()
 {
-    bLog.outDebug("Tree stats:");
-    bLog.outDebug("  * Nodes:          %d", numNodes);
-    bLog.outDebug("  * Leaves:         %d", numLeaves);
-    bLog.outDebug("  * Objects: min    %d", minObjects);
-    bLog.outDebug("             avg    %.2f", (float) sumObjects / numLeaves);
-    bLog.outDebug("           avg(n>0) %.2f", (float) sumObjects / (numLeaves - numLeavesN[0]));
-    bLog.outDebug("             max    %d", maxObjects);
-    bLog.outDebug("  * Depth:   min    %d", minDepth);
-    bLog.outDebug("             avg    %.2f", (float) sumDepth / numLeaves);
-    bLog.outDebug("             max    %d", maxDepth);
-    bLog.outDebug("  * Leaves w/: N=0  %3d%%", 100 * numLeavesN[0] / numLeaves);
-    bLog.outDebug("               N=1  %3d%%", 100 * numLeavesN[1] / numLeaves);
-    bLog.outDebug("               N=2  %3d%%", 100 * numLeavesN[2] / numLeaves);
-    bLog.outDebug("               N=3  %3d%%", 100 * numLeavesN[3] / numLeaves);
-    bLog.outDebug("               N=4  %3d%%", 100 * numLeavesN[4] / numLeaves);
-    bLog.outDebug("               N>4  %3d%%", 100 * numLeavesN[5] / numLeaves);
-    bLog.outDebug("  * BVH2 nodes:     %d (%3d%%)", numBVH2, 100 * numBVH2 / (numNodes + numLeaves - 2 * numBVH2));
+    OUT_DEBUG("Tree stats:");
+    OUT_DEBUG("  * Nodes:          %d", numNodes);
+    OUT_DEBUG("  * Leaves:         %d", numLeaves);
+    OUT_DEBUG("  * Objects: min    %d", minObjects);
+    OUT_DEBUG("             avg    %.2f", (float) sumObjects / numLeaves);
+    OUT_DEBUG("           avg(n>0) %.2f", (float) sumObjects / (numLeaves - numLeavesN[0]));
+    OUT_DEBUG("             max    %d", maxObjects);
+    OUT_DEBUG("  * Depth:   min    %d", minDepth);
+    OUT_DEBUG("             avg    %.2f", (float) sumDepth / numLeaves);
+    OUT_DEBUG("             max    %d", maxDepth);
+    OUT_DEBUG("  * Leaves w/: N=0  %3d%%", 100 * numLeavesN[0] / numLeaves);
+    OUT_DEBUG("               N=1  %3d%%", 100 * numLeavesN[1] / numLeaves);
+    OUT_DEBUG("               N=2  %3d%%", 100 * numLeavesN[2] / numLeaves);
+    OUT_DEBUG("               N=3  %3d%%", 100 * numLeavesN[3] / numLeaves);
+    OUT_DEBUG("               N=4  %3d%%", 100 * numLeavesN[4] / numLeaves);
+    OUT_DEBUG("               N>4  %3d%%", 100 * numLeavesN[5] / numLeaves);
+    OUT_DEBUG("  * BVH2 nodes:     %d (%3d%%)", numBVH2, 100 * numBVH2 / (numNodes + numLeaves - 2 * numBVH2));
 }

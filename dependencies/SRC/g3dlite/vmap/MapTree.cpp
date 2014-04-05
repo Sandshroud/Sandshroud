@@ -35,7 +35,7 @@ namespace VMAP
             AreaInfoCallback(ModelInstance* val): prims(val) {}
             void operator()(const Vector3& point, G3D::g3d_uint32 entry)
             {
-                bLog.outDebug("MapTree::AreaInfoCallback: trying to intersect '%s'", prims[entry].name.c_str());
+                OUT_DEBUG("MapTree::AreaInfoCallback: trying to intersect '%s'", prims[entry].name.c_str());
                 prims[entry].intersectPoint(point, aInfo);
             }
 
@@ -49,7 +49,7 @@ namespace VMAP
             LocationInfoCallback(ModelInstance* val, LocationInfo &info): prims(val), locInfo(info), result(false) {}
             void operator()(const Vector3& point, G3D::g3d_uint32 entry)
             {
-                bLog.outDebug("MapTree::LocationInfoCallback: trying to intersect '%s'", prims[entry].name.c_str());
+                OUT_DEBUG("MapTree::LocationInfoCallback: trying to intersect '%s'", prims[entry].name.c_str());
                 if (prims[entry].GetLocationInfo(point, locInfo))
                     result = true;
             }
@@ -252,7 +252,7 @@ namespace VMAP
 
     bool StaticMapTree::InitMap(const std::string &fname, VMapManager* vm)
     {
-        bLog.outDebug("StaticMapTree::InitMap() : initializing StaticMapTree '%s'", fname.c_str());
+        OUT_DEBUG("StaticMapTree::InitMap() : initializing StaticMapTree '%s'", fname.c_str());
         bool success = true;
         std::string fullname = iBasePath + fname;
         FILE* rf = fopen(fullname.c_str(), "rb");
@@ -283,14 +283,14 @@ namespace VMAP
         {
             // global model spawns
             // only non-tiled maps have them, and if so exactly one (so far at least...)
-            bLog.outDebug("StaticMapTree::InitMap() : map isTiled: %u", static_cast<G3D::g3d_uint32>(iIsTiled));
+            OUT_DEBUG("StaticMapTree::InitMap() : map isTiled: %u", static_cast<G3D::g3d_uint32>(iIsTiled));
             if(!iIsTiled)
             {
                 ModelSpawn spawn;
                 if (success = ModelSpawn::readFromFile(rf, spawn))
                 {
                     WorldModel* model = vm->acquireModelInstance(spawn.name);
-                    bLog.outDebug("StaticMapTree::InitMap() : loading %s", spawn.name.c_str());
+                    OUT_DEBUG("StaticMapTree::InitMap() : loading %s", spawn.name.c_str());
                     if (model)
                     {
                         // assume that global model always is the first and only tree value (could be improved...)
@@ -337,7 +337,7 @@ namespace VMAP
         }
         if (!iTreeValues)
         {
-            bLog.outDebug("StaticMapTree::LoadMapTile() : tree has not been initialized [%u, %u]", tileX, tileY);
+            OUT_DEBUG("StaticMapTree::LoadMapTile() : tree has not been initialized [%u, %u]", tileX, tileY);
             return false;
         }
         bool result = true;
@@ -358,13 +358,13 @@ namespace VMAP
                 ModelSpawn spawn;
                 result = ModelSpawn::readFromFile(tf, spawn);
                 if(result == false)
-                    bLog.outDebug("StaticMapTree::LoadMapTile() : could not acquire WorldModel file [%u, %u]", tileX, tileY);
+                    OUT_DEBUG("StaticMapTree::LoadMapTile() : could not acquire WorldModel file [%u, %u]", tileX, tileY);
                 else
                 {
                     // acquire model instance
                     WorldModel* model = vm->acquireModelInstance(spawn.name);
                     if (!model)
-                        bLog.outDebug("StaticMapTree::LoadMapTile() : could not acquire WorldModel pointer [%u, %u]", tileX, tileY);
+                        OUT_DEBUG("StaticMapTree::LoadMapTile() : could not acquire WorldModel pointer [%u, %u]", tileX, tileY);
 
                     // update tree
                     G3D::g3d_uint32 referencedVal;
@@ -375,7 +375,7 @@ namespace VMAP
                         {
                             if (referencedVal > iNTreeValues)
                             {
-                                bLog.outDebug("StaticMapTree::LoadMapTile() : invalid tree element (%u/%u)", referencedVal, iNTreeValues);
+                                OUT_DEBUG("StaticMapTree::LoadMapTile() : invalid tree element (%u/%u)", referencedVal, iNTreeValues);
                                 continue;
                             }
 
@@ -386,9 +386,9 @@ namespace VMAP
                         {
                             ++iLoadedSpawns[referencedVal];
                             if (iTreeValues[referencedVal].ID != spawn.ID)
-                                bLog.outDebug("StaticMapTree::LoadMapTile() : trying to load wrong spawn in node");
+                                OUT_DEBUG("StaticMapTree::LoadMapTile() : trying to load wrong spawn in node");
                             else if (iTreeValues[referencedVal].name != spawn.name)
-                                bLog.outDebug("StaticMapTree::LoadMapTile() : name collision on GUID=%u", spawn.ID);
+                                OUT_DEBUG("StaticMapTree::LoadMapTile() : name collision on GUID=%u", spawn.ID);
                         }
                     }
                     else
@@ -411,7 +411,7 @@ namespace VMAP
         loadedTileMap::iterator tile = iLoadedTiles.find(tileID);
         if (tile == iLoadedTiles.end())
         {
-            bLog.outDebug("StaticMapTree::UnloadMapTile() : trying to unload non-loaded tile - Map:%u X:%u Y:%u", iMapID, tileX, tileY);
+            OUT_DEBUG("StaticMapTree::UnloadMapTile() : trying to unload non-loaded tile - Map:%u X:%u Y:%u", iMapID, tileX, tileY);
             return;
         }
         if (tile->second) // file associated with tile
@@ -445,7 +445,7 @@ namespace VMAP
                         else
                         {
                             if (!iLoadedSpawns.count(referencedNode))
-                                bLog.outDebug("StaticMapTree::UnloadMapTile() : trying to unload non-referenced model '%s' (ID:%u)", spawn.name.c_str(), spawn.ID);
+                                OUT_DEBUG("StaticMapTree::UnloadMapTile() : trying to unload non-referenced model '%s' (ID:%u)", spawn.name.c_str(), spawn.ID);
                             else if (--iLoadedSpawns[referencedNode] == 0)
                             {
                                 iTreeValues[referencedNode].setUnloaded();

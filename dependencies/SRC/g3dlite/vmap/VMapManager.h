@@ -15,6 +15,12 @@
 #define VMAP_INVALID_HEIGHT        -100000.0f            // for check
 #define VMAP_MAX_HEIGHT             100000.0f            // for other checks
 
+#ifdef DEBUG
+#define OUT_DEBUG bLog.outDebug
+#else
+#define OUT_DEBUG
+#endif
+
 enum VMAP_gWMOFlags
 {
     // WMO exists at this location
