@@ -318,7 +318,6 @@ void Spell::SpellEffectInstantKill(uint32 i)
             return;
 
         }break;
-    case SPELL_HASH_DIVINE_INTERVENTION:
     case SPELL_HASH_DEMONIC_SACRIFICE:
         {
         }break;
@@ -2679,8 +2678,7 @@ void Spell::SpellEffectWeapondamage( uint32 i ) // Weapon damage +
     if( unitTarget == NULL || u_caster == NULL )
         return;
 
-    //Hackfix for Mangle
-    if( GetSpellProto()->NameHash == SPELL_HASH_MANGLE__CAT_ && u_caster->IsPlayer() )
+    if( GetSpellProto()->NameHash == SPELL_HASH_MANGLE && u_caster->IsPlayer() && TO_PLAYER(u_caster)->GetShapeShift() == FORM_CAT )
         TO_PLAYER( u_caster )->AddComboPoints( unitTarget->GetGUID(), 1 );
 
     // Hacky fix for druid spells where it would "double attack".

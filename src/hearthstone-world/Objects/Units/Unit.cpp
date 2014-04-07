@@ -1902,16 +1902,6 @@ int32 Unit::Strike( Unit* pVictim, uint32 weapon_damage_type, SpellEntry* abilit
                     sEventMgr.ModifyEventTimeLeft( pVictim, EVENT_DODGE_BLOCK_FLAG_EXPIRE, 5000 );
             }
 
-            if( pVictim->HasDummyAura(SPELL_HASH_BLESSING_OF_SANCTUARY) || pVictim->HasDummyAura(SPELL_HASH_GREATER_BLESSING_OF_SANCTUARY) )
-            {
-                switch( pVictim->GetPowerType() )
-                {
-                    case POWER_TYPE_MANA: CastSpell(pVictim, 57319, true); break;
-                    case POWER_TYPE_RAGE: CastSpell(pVictim, 57320, true); break;
-                    case POWER_TYPE_RUNIC: CastSpell(pVictim, 57321, true); break;
-                }
-            }
-
             pVictim->SetFlag( UNIT_FIELD_AURASTATE,AURASTATE_FLAG_PARRY );  //SB@L: Enables spells requiring parry
             if(!sEventMgr.HasEvent( pVictim, EVENT_PARRY_FLAG_EXPIRE ) )
                 sEventMgr.AddEvent( pVictim, &Unit::EventAurastateExpire, (uint32)AURASTATE_FLAG_PARRY,EVENT_PARRY_FLAG_EXPIRE, 5000, 1, 0 );
@@ -2708,16 +2698,12 @@ int32 Unit::GetSpellBonusDamage(Unit* pVictim, SpellEntry *spellInfo,int32 base_
         // Improved Tree of Life
         if( plrCaster->IsInFeralForm() )
         {
-            if( plrCaster->GetShapeShift() == FORM_TREE && plrCaster->HasDummyAura(SPELL_HASH_IMPROVED_TREE_OF_LIFE) )
-                bonus_damage += float2int32( (plrCaster->GetDummyAura(SPELL_HASH_IMPROVED_TREE_OF_LIFE)->RankNumber * 0.05f) * plrCaster->GetHealingDoneMod() );
-            else if( pVictim->IsPlayer() && TO_PLAYER( pVictim )->GetShapeShift() == FORM_CAT )
+            if( pVictim->IsPlayer() && TO_PLAYER( pVictim )->GetShapeShift() == FORM_CAT )
             {
                 if( pVictim->HasDummyAura(SPELL_HASH_NURTURING_INSTINCT) && healing )
                     bonus_damage *= 1.2f;
             }
         }
-        else if( spellInfo->NameHash == SPELL_HASH_LESSER_HEALING_WAVE && pVictim->m_AuraInterface.FindPositiveAuraByNameHash(SPELL_HASH_EARTH_SHIELD) && caster->HasDummyAura(SPELL_HASH_GLYPH_OF_LESSER_HEALING_WAVE) )
-            bonus_damage = float2int32( bonus_damage * 1.2f );
         else if(spellInfo->Id == 31804 )
         {
             Aura* aur = pVictim->m_AuraInterface.FindAura(31803);

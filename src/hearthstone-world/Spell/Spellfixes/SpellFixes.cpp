@@ -124,7 +124,6 @@ void ApplyNormalFixes()
                 ccchanged = true;
             }break;
 
-        case SPELL_HASH_GIFT_OF_THE_WILD:
         case SPELL_HASH_MARK_OF_THE_WILD:
             {
                 type |= SPELL_TYPE_MARK_GIFT;
@@ -177,7 +176,6 @@ void ApplyNormalFixes()
                 ccchanged = true;
             }break;
 
-        case SPELL_HASH_PRAYER_OF_SPIRIT:
         case SPELL_HASH_DIVINE_SPIRIT:
             {
                 type |= SPELL_TYPE_SPIRIT;
@@ -208,7 +206,6 @@ void ApplyNormalFixes()
                 }
             }break;
         case SPELL_HASH_ARCANE_INTELLECT:
-        case SPELL_HASH_DALARAN_INTELLECT:
         case SPELL_HASH_ARCANE_BRILLIANCE:
         case SPELL_HASH_DALARAN_BRILLIANCE:
             {
@@ -359,8 +356,6 @@ void ApplyNormalFixes()
 
         //case SPELL_HASH_JUDGEMENT_OF_VENGEANCE:
         case SPELL_HASH_JUDGEMENT_OF_LIGHT:
-        case SPELL_HASH_JUDGEMENT_OF_WISDOM:
-        case SPELL_HASH_JUDGEMENT_OF_JUSTICE:
             sp->buffIndexType = SPELL_TYPE_INDEX_JUDGEMENT;
             break;
 
@@ -740,7 +735,7 @@ void ApplyNormalFixes()
         delete resultfcst;
     }
 
-//  GenerateNameHashesFile();
+    //GenerateNameHashesFile();
 
     sp = dbcSpell.LookupEntry( 26659 );
     SpellEntry* sp2 = sp;
@@ -1050,18 +1045,6 @@ void GenerateNameHashesFile()
     const uint32 fieldSize = 81;
     const char* prefix = "SPELL_HASH_";
     uint32 prefixLen = uint32(strlen(prefix));
-    std::string dbcLoc = string(sWorld.DBCPath.c_str());
-    dbcLoc += "/Spell.dbc";
-
-    DBCFile dbc;
-    if( !dbc.open( dbcLoc.c_str() ) )
-    {
-        sLog.Error("World", "Cannot find file %s", dbcLoc.c_str() );
-        return;
-    }
-
-    uint32 cnt = (uint32)dbc.getRecordCount();
-    uint32 namehash = 0;
     FILE * f = fopen("SpellNameHashes.h", "w");
     char spaces[fieldSize], namearray[fieldSize];
     strcpy(namearray, prefix);
@@ -1070,14 +1053,17 @@ void GenerateNameHashesFile()
         spaces[i] = ' ';
 
     std::set<uint32> namehashes;
+    std::map<std::string, uint8> namearrays;
 
     spaces[fieldSize-1] = 0;
     uint32 nameTextLen = 0, nameLen = 0;
-    for(uint32 x = 0; x < cnt; x++)
+    for (uint32 i = 0; i < dbcSpell.GetNumRows(); ++i)
     {
-        const char* nametext = dbc.getRecord(x).getString(136);
-        nameTextLen = (unsigned int)strlen(nametext);
-        strncpy(name, nametext, fieldSize-prefixLen-2); // Cut it to fit in field size
+        SpellEntry *sp = dbcSpell.LookupRow(i);
+        if(sp == NULL)
+            continue;
+
+        strncpy(name, sp->Name, fieldSize-prefixLen-4); // Cut it to fit in field size
         name[fieldSize-prefixLen-2] = 0; // in case nametext is too long and strncpy didn't copy the null
         nameLen = (unsigned int)strlen(name);
         for(uint32 i = 0;i<nameLen;++i)
@@ -1089,19 +1075,25 @@ void GenerateNameHashesFile()
                 name[i] = '_';
         }
 
-        namehash = crc32((const unsigned char*)nametext, nameTextLen);
-
-        if(namehashes.find(namehash) != namehashes.end())
+        if(namehashes.find(sp->NameHash) != namehashes.end())
             continue; // Skip namehashes we've already done.
+        namehashes.insert(sp->NameHash);
+        std::string name_array(namearray);
+        if(namearrays.find(name_array) != namearrays.end())
+        {
+            uint8 count = namearrays[name_array]+1;
+            name_array.append(format("_%u", count).c_str());
+            namearrays[name_array] = count;
+        }
+        else namearrays.insert(std::make_pair(name_array, 1));
 
-        int32 numSpaces = fieldSize-prefixLen-nameLen-1;
+        int32 numSpaces = fieldSize-name_array.length()-1;
         if(numSpaces < 0)
             fprintf(f, "WTF");
 
         spaces[numSpaces] = 0;
-        fprintf(f, "#define %s%s0x%08X\n", namearray, spaces, namehash);
+        fprintf(f, "#define %s%s0x%08X\n", name_array.c_str(), spaces, sp->NameHash);
         spaces[numSpaces] = ' ';
-        namehashes.insert(namehash);
     }
     fclose(f);
 }
@@ -1373,14 +1365,11 @@ void PoolSpellData()
         spellInfo->EffectImplicitTargetB[effectEntry->EffectIndex] = effectEntry->EffectImplicitTargetB;
     }
 
-    for (uint32 i = 1; i < dbcSpell.GetNumRows(); ++i)
+    for (uint32 i = 0; i < dbcSpell.GetNumRows(); ++i)
     {
         SpellEntry* spellInfo = dbcSpell.LookupRow(i);
         if(spellInfo == NULL)
             continue;
-
-        // Set up our NameHashes here since we're putting in the other data
-        spellInfo->NameHash = crc32((const unsigned char*)spellInfo->Name, (unsigned int)strlen(spellInfo->Name));
 
         //SpellAuraOptionsEntry
         SpellAuraOptionsEntry* AuraOptions = dbcSpellAuraOptions.LookupEntry(spellInfo->SpellAuraOptionsId);

@@ -5052,7 +5052,6 @@ uint32 GetDiminishingGroup(uint32 NameHash)
         grp = 10;
         pve = true;
         break;
-    case SPELL_HASH_STARFIRE_STUN:
     case SPELL_HASH_STONECLAW_STUN:
     case SPELL_HASH_STUN:
     case SPELL_HASH_BLACKOUT:

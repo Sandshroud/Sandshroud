@@ -283,43 +283,15 @@ void AuraInterface::UpdateDeadlyPoisons(uint32 eatcount)
 
 void AuraInterface::UpdateAuraStateAuras(uint32 oldflag)
 {
-    if( oldflag == AURASTATE_FLAG_STUNNED && m_Unit->IsPlayer() && m_Unit->HasDummyAura(SPELL_HASH_PRIMAL_TENACITY) && TO_PLAYER(m_Unit)->GetShapeShift() == FORM_CAT )
+    for(uint8 i = 0; i < TOTAL_AURAS; i++)
     {
-        for(uint8 i = 0; i < TOTAL_AURAS; i++)
+        if(m_auras.find(i) != m_auras.end())
         {
-            if(m_auras.find(i) != m_auras.end())
-            {
-                if( m_auras.at(i)->GetSpellProto()->NameHash == SPELL_HASH_PRIMAL_TENACITY )
-                {
-                    Aura* aura = new Aura(m_auras.at(i)->GetSpellProto(), -1, TO_OBJECT(this), TO_UNIT(this));
-                    RemoveAuraBySlot(i);
-                    aura->AddMod(232, -31, 5, 0);
-                    aura->AddMod(SPELL_AURA_DUMMY, 0, 0, 2);
-                    aura->AddMod(SPELL_AURA_ADD_PCT_MODIFIER, -51, 14, 2);
-                    AddAura(aura);
-                    continue;
-                }
+            if( !m_auras.at(i)->m_applied) // try to apply
+                m_auras.at(i)->ApplyModifiers(true);
 
-                if( m_auras.at(i)->m_applied) // try to apply
-                    m_auras.at(i)->ApplyModifiers(true);
-
-                if( m_auras.at(i)->m_applied) // try to remove, if we lack the aurastate
-                    m_auras.at(i)->RemoveIfNecessary();
-            }
-        }
-    }
-    else
-    {
-        for(uint8 i = 0; i < TOTAL_AURAS; i++)
-        {
-            if(m_auras.find(i) != m_auras.end())
-            {
-                if( !m_auras.at(i)->m_applied) // try to apply
-                    m_auras.at(i)->ApplyModifiers(true);
-
-                if( m_auras.at(i)->m_applied) // try to remove, if we lack the aurastate
-                    m_auras.at(i)->RemoveIfNecessary();
-            }
+            if( m_auras.at(i)->m_applied) // try to remove, if we lack the aurastate
+                m_auras.at(i)->RemoveIfNecessary();
         }
     }
 }
@@ -933,9 +905,94 @@ bool AuraInterface::HasAurasOfBuffType(uint32 buff_type, const uint64 &guid, uin
     return false;
 }
 
+bool AuraInterface::OverrideSimilarAuras(Unit *caster, Aura *aur)
+{
+    uint32 maxStack = aur->GetSpellProto()->maxstack;
+    if( m_Unit->IsPlayer() && TO_PLAYER(m_Unit)->stack_cheat )
+        maxStack = 255;
+
+    std::set<uint8> m_aurasToRemove;
+    SpellEntry *info = aur->GetSpellProto();
+    for( uint8 x = 0; x < MAX_AURAS; x++ )
+    {
+        if(m_auras.find(x) == m_auras.end())
+            continue;
+        Aura* curAura = m_auras.at(x);
+        if(curAura == NULL || curAura->m_deleted)
+            continue;
+
+        //if this is a proc spell then it should not remove it's mother : test with combustion later
+        if( curAura->GetSpellProto()->Id != aur->GetSpellId() && aur->pSpellId != curAura->GetSpellProto()->Id)
+        {
+            if(info->buffType && curAura->GetSpellProto()->buffType && (info->buffType & curAura->GetSpellProto()->buffType) != 0)
+            {
+                bool needsRemoval = false;
+                if( curAura->GetSpellProto()->buffType & SPELL_TYPE_BLESSING )
+                {
+                    // Shouldn't happen, aura should be rejected at cast
+                    if(curAura->GetSpellProto()->NameHash == info->NameHash && info->RankNumber < curAura->GetSpellProto()->RankNumber)
+                        return false;
+                }
+                else if( curAura->GetSpellProto()->buffType & SPELL_TYPE_AURA )
+                {
+                    if( curAura->GetUnitCaster() != aur->GetUnitCaster() && curAura->GetSpellProto()->NameHash != info->NameHash )
+                        continue;
+                }
+                m_aurasToRemove.insert(x);
+            }
+            else if( info->poison_type && curAura->GetSpellProto()->poison_type == info->poison_type )
+            {
+                if( curAura->GetSpellProto()->RankNumber < info->RankNumber || maxStack == 0)
+                {
+                    RemoveAuraBySlot(x);
+                    continue;
+                }
+                else if( curAura->GetSpellProto()->RankNumber > info->RankNumber )
+                {
+                    RemoveAuraBySlot(x);
+                    break;
+                }
+            }
+            else if( curAura->GetSpellProto()->NameHash == info->NameHash )
+            {
+                if( curAura->GetUnitCaster() == aur->GetUnitCaster() )
+                    m_aurasToRemove.insert(x);
+                else if( curAura->GetSpellProto()->Unique )
+                {
+                    if( curAura->GetSpellProto()->RankNumber <= info->RankNumber )
+                    {
+                        m_aurasToRemove.insert(x);
+                        continue;
+                    }
+                    return false;
+                }
+            }
+        }
+        else if(aur->GetSpellId() == curAura->GetSpellId() && info->always_apply)
+            m_aurasToRemove.insert(x);
+        else if( aur->IsPositive() && curAura->GetSpellId() == aur->GetSpellId() && curAura->GetCasterGUID() == aur->GetCasterGUID())
+        {
+            if(info->Unique)
+                continue;
+
+            // target already has this aura. Update duration, time left, procCharges
+            curAura->SetDuration(aur->GetDuration());
+            curAura->SetTimeLeft(aur->GetDuration());
+            curAura->procCharges = curAura->GetMaxProcCharges(caster);
+            curAura->UpdateModifiers();
+            curAura->ModStackSize(1);   // increment stack size
+            return false;
+        }
+    }
+
+    for(std::set<uint8>::iterator itr = m_aurasToRemove.begin(); itr != m_aurasToRemove.end(); itr++)
+        RemoveAuraBySlot(*itr);
+    m_aurasToRemove.clear();
+    return true;
+}
+
 void AuraInterface::AddAura(Aura* aur)
 {
-    uint8 x, delslot = 0;
     Unit* pCaster = NULLUNIT;
     if(aur->GetUnitTarget() != NULL)
         pCaster = aur->GetUnitCaster();
@@ -945,150 +1002,11 @@ void AuraInterface::AddAura(Aura* aur)
         pCaster = m_Unit->GetMapMgr()->GetUnit( aur->GetCasterGUID());
     if(pCaster == NULL)
         return;
-
-    if( !aur->IsPassive() )
+    if(!aur->IsPassive() && !OverrideSimilarAuras(pCaster, aur))
     {
-        uint32 maxStack = aur->GetSpellProto()->maxstack;
-        if( m_Unit->IsPlayer() && TO_PLAYER(m_Unit)->stack_cheat )
-            maxStack = 255;
-
-        SpellEntry * info = aur->GetSpellProto();
-
-        bool deleteAur = false;
-        Aura* curAura = NULLAURA;
-        //check if we already have this aura by this caster -> update duration
-        // Nasty check for Blood Fury debuff (spell system based on namehashes is bs anyways)
-        if( !info->always_apply )
-        {
-            for( x = 0; x < MAX_AURAS; x++ )
-            {
-                if(m_auras.find(x) == m_auras.end())
-                    continue;
-
-                curAura = m_auras.at(x);
-                if( curAura != NULL && !curAura->m_deleted )
-                {
-                    if( curAura->GetSpellProto()->Id != aur->GetSpellId() &&
-                      ( aur->pSpellId != curAura->GetSpellProto()->Id )) //if this is a proc spell then it should not remove it's mother : test with combustion later
-                    {
-                        if( info->buffType > 0 && m_auras.at(x)->GetSpellProto()->buffType > 0 && (info->buffType & m_auras.at(x)->GetSpellProto()->buffType) )
-                        {
-                            if( m_auras.at(x)->GetSpellProto()->buffType & SPELL_TYPE_BLESSING )
-                            {
-                                // stupid blessings
-                                // if you have better idea correct
-                                bool ispair = false;
-                                switch( info->NameHash )
-                                {
-                                case SPELL_HASH_BLESSING_OF_MIGHT:
-                                case SPELL_HASH_GREATER_BLESSING_OF_MIGHT:
-                                    {
-                                        if( m_auras.at(x)->GetSpellProto()->NameHash == SPELL_HASH_BLESSING_OF_MIGHT ||
-                                            m_auras.at(x)->GetSpellProto()->NameHash == SPELL_HASH_GREATER_BLESSING_OF_MIGHT )
-                                            ispair = true;
-                                    }break;
-                                case SPELL_HASH_BLESSING_OF_WISDOM:
-                                case SPELL_HASH_GREATER_BLESSING_OF_WISDOM:
-                                    {
-                                        if( m_auras.at(x)->GetSpellProto()->NameHash == SPELL_HASH_BLESSING_OF_WISDOM ||
-                                            m_auras.at(x)->GetSpellProto()->NameHash == SPELL_HASH_GREATER_BLESSING_OF_WISDOM )
-                                            ispair = true;
-                                    }break;
-                                case SPELL_HASH_BLESSING_OF_KINGS:
-                                case SPELL_HASH_GREATER_BLESSING_OF_KINGS:
-                                    {
-                                        if( m_auras.at(x)->GetSpellProto()->NameHash == SPELL_HASH_BLESSING_OF_KINGS ||
-                                            m_auras.at(x)->GetSpellProto()->NameHash == SPELL_HASH_GREATER_BLESSING_OF_KINGS )
-                                            ispair = true;
-                                    }break;
-                                case SPELL_HASH_BLESSING_OF_SANCTUARY:
-                                case SPELL_HASH_GREATER_BLESSING_OF_SANCTUARY:
-                                    {
-                                        if( m_auras.at(x)->GetSpellProto()->NameHash == SPELL_HASH_BLESSING_OF_SANCTUARY ||
-                                            m_auras.at(x)->GetSpellProto()->NameHash == SPELL_HASH_GREATER_BLESSING_OF_SANCTUARY )
-                                            ispair = true;
-                                    }break;
-                                }
-
-                                if( m_auras.at(x)->GetUnitCaster() == aur->GetUnitCaster() || ispair )
-                                {
-                                    RemoveAuraBySlot(x);
-                                    continue;
-                                }
-                            }
-                            else if( m_auras.at(x)->GetSpellProto()->buffType & SPELL_TYPE_AURA )
-                            {
-                                if( m_auras.at(x)->GetUnitCaster() == aur->GetUnitCaster() || m_auras.at(x)->GetSpellProto()->NameHash == info->NameHash )
-                                {
-                                    RemoveAuraBySlot(x);
-                                    continue;
-                                }
-                            }
-                            else
-                            {
-                                RemoveAuraBySlot(x);
-                                continue;
-                            }
-                        }
-                        else if( info->poison_type > 0 && m_auras.at(x)->GetSpellProto()->poison_type == info->poison_type )
-                        {
-                            if( m_auras.at(x)->GetSpellProto()->RankNumber < info->RankNumber || maxStack == 0)
-                            {
-                                RemoveAuraBySlot(x);
-                                continue;
-                            }
-                            else if( m_auras.at(x)->GetSpellProto()->RankNumber > info->RankNumber )
-                            {
-                                RemoveAuraBySlot(x);
-                                break;
-                            }
-                        }
-                        else if( m_auras.at(x)->GetSpellProto()->NameHash == info->NameHash )
-                        {
-                            if( m_auras.at(x)->GetUnitCaster() == aur->GetUnitCaster() )
-                            {
-                                RemoveAuraBySlot(x);
-                                continue;
-                            }
-                            else if( m_auras.at(x)->GetSpellProto()->Unique )
-                            {
-                                if( m_auras.at(x)->GetSpellProto()->RankNumber < info->RankNumber )
-                                {
-                                    RemoveAuraBySlot(x);
-                                    continue;
-                                }
-                                else
-                                {
-                                    delslot = x;
-                                    deleteAur = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    else if( curAura->GetSpellId() == aur->GetSpellId() )
-                    {
-                        if( !aur->IsPositive() && curAura->GetCasterGUID() != aur->GetCasterGUID() && maxStack == 0 && !info->Unique )
-                            continue;
-
-                        // target already has this aura. Update duration, time left, procCharges
-                        curAura->SetDuration(aur->GetDuration());
-                        curAura->SetTimeLeft(aur->GetDuration());
-                        curAura->procCharges = curAura->GetMaxProcCharges(pCaster);
-                        curAura->UpdateModifiers();
-                        curAura->ModStackSize(1);   // increment stack size
-                        return;
-                    }
-                }
-            }
-        }
-
-        if(deleteAur)
-        {
-            sEventMgr.RemoveEvents(aur);
-            RemoveAuraBySlot(delslot);
-            return;
-        }
+        sEventMgr.RemoveEvents(aur);
+        RemoveAura(aur);
+        return;
     }
 
     ////////////////////////////////////////////////////////
@@ -1112,6 +1030,7 @@ void AuraInterface::AddAura(Aura* aur)
 
     aur->SetAuraLevel(aur->GetUnitCaster() != NULL ? aur->GetUnitCaster()->getLevel() : MAXIMUM_ATTAINABLE_LEVEL);
 
+    uint8 x;
     if(!aur->IsPassive())
     {
         aur->AddAuraVisual();

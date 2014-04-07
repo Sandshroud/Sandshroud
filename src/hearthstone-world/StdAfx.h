@@ -88,6 +88,7 @@ using namespace std;
 #include "../hearthstone-shared/NameTables.h"
 
 #include "Const.h"
+#include "Defines.h"
 
 #include "../hearthstone-shared/Storage.h"
 #include "../hearthstone-shared/PerfCounters.h"

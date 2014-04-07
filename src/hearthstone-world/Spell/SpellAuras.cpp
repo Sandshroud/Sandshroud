@@ -4569,15 +4569,6 @@ void Aura::SpellAuraModShapeshift(bool apply)
             freeMovements = true;
             spellId = 1178;
             spellId2 = 21178;
-            int32 amt = 0;
-
-            if( m_target->HasDummyAura(SPELL_HASH_SURVIVAL_OF_THE_FITTEST) )
-                amt = m_target->GetDummyAura(SPELL_HASH_SURVIVAL_OF_THE_FITTEST)->EffectBasePoints[2];
-
-            if( amt )
-                p->BaseResistanceModPctPos[0] += apply ? amt : -amt;
-
-
             if(apply)
             {
                 m_target->SetByte(UNIT_FIELD_BYTES_0,3,POWER_TYPE_RAGE);
@@ -4594,15 +4585,6 @@ void Aura::SpellAuraModShapeshift(bool apply)
             freeMovements = true;
             spellId = 9635;
             spellId2 = 21178;
-            int32 amt = 0;
-
-            if( m_target->HasDummyAura(SPELL_HASH_SURVIVAL_OF_THE_FITTEST) )
-                amt = m_target->GetDummyAura(SPELL_HASH_SURVIVAL_OF_THE_FITTEST)->EffectBasePoints[2];
-
-            if( amt )
-                p->BaseResistanceModPctPos[0] += apply ? amt : -amt;
-
-
             if(apply)
             {
                 m_target->SetByte(UNIT_FIELD_BYTES_0,3,POWER_TYPE_RAGE);
