@@ -11996,38 +11996,25 @@ void Player::FullHPMP()
 
 void Player::SetKnownTitle( int32 title, bool set )
 {
-    if( !( HasKnownTitle( title ) ^ set ) ||
-        title < 1 || title >= TITLE_END)
+    CharTitlesEntry *entry = dbcCharTitles.LookupEntry(title);
+    if(entry == NULL || HasKnownTitleByIndex(entry->index))
         return;
 
-    if((uint32)title == GetUInt32Value(PLAYER_CHOSEN_TITLE)) // if it's the chosen title, remove it
+    if(set == false && entry->index == GetUInt32Value(PLAYER_CHOSEN_TITLE))
         SetUInt32Value(PLAYER_CHOSEN_TITLE, 0);
 
-    uint32 field = PLAYER__FIELD_KNOWN_TITLES;
-    uint32 title2 = title;
-    if(title > 127)
-    {
-        field = PLAYER__FIELD_KNOWN_TITLES2;
-        title2 = title - 128;
-    }
-    else if(title > 63)
-    {
-        field = PLAYER__FIELD_KNOWN_TITLES1;
-        title2 = title - 64;
-    }
-    uint64 current = GetUInt64Value( field );
-    if( set )
-        SetUInt64Value( field, current | uint64(1) << title2 );
-    else
-        SetUInt64Value( field, current & ~uint64(1) << title2 );
+    uint32 field = PLAYER__FIELD_KNOWN_TITLES+(entry->index / 32);
+    uint32 flag = uint32(1 << (entry->index % 32));
 
-    // PVP Ranks, Legacy Stuff :P
-//  if( title < PVPTITLE_GLADIATOR && title > PVPTITLE_NONE )
-//      SetPVPRank( GetTeam() ? title - 14 : title );
+    if( set ) SetFlag(field, flag);
+    else RemoveFlag(field, flag);
 
     WorldPacket data( SMSG_TITLE_EARNED, 8 );
-    data << uint32( title ) << uint32( set ? 1 : 0 );
+    data << uint32( entry->index ) << uint32( set ? 1 : 0 );
     m_session->SendPacket( &data );
+
+    if(set && GetUInt32Value(PLAYER_CHOSEN_TITLE) == 0)
+        SetUInt32Value(PLAYER_CHOSEN_TITLE, entry->index);
 }
 
 bool Player::HasBattlegroundQueueSlot()

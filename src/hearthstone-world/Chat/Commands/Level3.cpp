@@ -1096,81 +1096,79 @@ bool ChatHandler::HandleModifyLevelCommand(const char* args, WorldSession* m_ses
 bool ChatHandler::HandleAddTitleCommand(const char* args, WorldSession* m_session)
 {
     Player* plr = getSelectedChar(m_session);
-    if(!plr)
+    if(plr == NULL || args == NULL)
         return true;
 
-    uint32 title = args ? atoi(args) : 0;
-    if(title == 0 || title > TITLE_END)
+    CharTitlesEntry *entry = dbcCharTitles.LookupEntry(atoi(args));
+    if(entry == NULL)
     {
-        RedSystemMessage(m_session, "A title number (numeric) is required to be specified after this command.");
+        RedSystemMessage(m_session, "An existing title entry is required to be specified after this command.");
         return true;
     }
-    BlueSystemMessage(m_session, "Adding title number %u to %s.", title, plr->GetName());
-    GreenSystemMessageToPlr(plr, "%s added title number %u to you.", m_session->GetPlayer()->GetName(), title);
 
-    sWorld.LogGM(m_session, "added title number %u to %s", title, plr->GetName());
-    plr->SetKnownTitle(title, true);
+    BlueSystemMessage(m_session, "Adding title number %u to %s.", entry->entry, plr->GetName());
+    plr->SetKnownTitle(entry->entry, true);
+    GreenSystemMessageToPlr(plr, "%s added title number %u to you.", m_session->GetPlayer()->GetName(), entry->entry);
+    sWorld.LogGM(m_session, "added title number %u to %s", entry->entry, plr->GetName());
     return true;
 }
 bool ChatHandler::HandleRemoveTitleCommand(const char* args, WorldSession* m_session)
 {
     Player* plr = getSelectedChar(m_session);
-    if(!plr)
+    if(plr == NULL || args == NULL)
         return true;
 
-    uint32 title = args ? atoi(args) : 0;
-    if(title == 0 || title > TITLE_END)
+    CharTitlesEntry *entry = dbcCharTitles.LookupEntry(atoi(args));
+    if(entry == NULL)
     {
         RedSystemMessage(m_session, "A title number (numeric) is required to be specified after this command.");
         return true;
     }
-    BlueSystemMessage(m_session, "Removing title number %u from %s.", title, plr->GetName());
-    GreenSystemMessageToPlr(plr, "%s removed title number %u from you.", m_session->GetPlayer()->GetName(), title);
 
-    sWorld.LogGM(m_session, "removed title number %u from %s", title, plr->GetName());
-    plr->SetKnownTitle(title, false);
+    BlueSystemMessage(m_session, "Removing title number %u from %s.", entry->entry, plr->GetName());
+    plr->SetKnownTitle(entry->entry, false);
+    GreenSystemMessageToPlr(plr, "%s removed title number %u from you.", m_session->GetPlayer()->GetName(), entry->entry);
+    sWorld.LogGM(m_session, "removed title number %u from %s", entry->entry, plr->GetName());
     return true;
 }
 
 bool ChatHandler::HandleGetKnownTitlesCommand(const char* args, WorldSession* m_session)
 {
     Player* plr = getSelectedChar(m_session, true);
-    if(!plr)
+    if(plr == NULL)
         return true;
-    std::stringstream ss;
-    for(uint32 i=1;i<=TITLE_END;++i)
-    {
-        if(plr->HasKnownTitle(i))
-        {
-            ss << i << " ";
-        }
-    }
-    BlueSystemMessage(m_session, ss.str().c_str());
+
+    GreenSystemMessage(m_session, "Starting title listing...");
+    for(ConstructDBCStorageIterator(CharTitlesEntry) itr = dbcCharTitles.begin(); itr != dbcCharTitles.end(); ++itr)
+        if(plr->HasKnownTitleByIndex((*itr)->index))
+            BlueSystemMessage(m_session, (*itr)->name1, plr->GetName());
+    GreenSystemMessage(m_session, "Finished title listing.");
     return true;
 }
 
 bool ChatHandler::HandleSetChosenTitleCommand(const char* args, WorldSession* m_session)
 {
     Player* plr = getSelectedChar(m_session, true);
-    if(!plr)
+    if(plr == NULL || args == NULL)
         return true;
 
-    uint32 title = args ? atoi(args) : 0;
-    if(title == 0 || title > TITLE_END)
+    CharTitlesEntry *charTitles = dbcCharTitles.LookupEntry(atoi(args));
+    if(charTitles == NULL)
     {
-        RedSystemMessage(m_session, "A title number (numeric) is required to be specified after this command.");
+        RedSystemMessage(m_session, "A title valid entry is required to be specified after this command.");
         return true;
     }
-    BlueSystemMessage(m_session, "Setting title number %u for %s.", title, plr->GetName());
-    GreenSystemMessageToPlr(plr, "%s set title number %u for you.", m_session->GetPlayer()->GetName(), title);
 
-    sWorld.LogGM(m_session, "set title number %u for %s", title, plr->GetName());
-    if(!plr->HasKnownTitle(title))
+    sWorld.LogGM(m_session, "set title number %u for %s", charTitles->entry, plr->GetName());
+    if(!plr->HasKnownTitleByIndex(charTitles->index))
     {
         RedSystemMessage(m_session, "Selected player doesn't know this title.");
         return true;
     }
-    plr->SetUInt32Value(PLAYER_CHOSEN_TITLE,title);
+
+    BlueSystemMessage(m_session, "Setting title number %u for %s.", charTitles->entry, plr->GetName());
+    plr->SetUInt32Value(PLAYER_CHOSEN_TITLE, charTitles->index);
+    GreenSystemMessageToPlr(plr, "%s set title number %u for you.", m_session->GetPlayer()->GetName(), charTitles->entry);
     return true;
 }
 
@@ -2480,42 +2478,19 @@ bool ChatHandler::HandleLookupTitleCommand(const char *args, WorldSession *m_ses
     if(!*args)
         return false;
 
-    // Create a fatty array for title names.
-    std::string TitleNames[TITLE_END] =
-    {
-        "",
-        "Private", "Corporal", "Sergeant", "Master Sergeant", "Sergeant Major", "Knight", "Knight-Lieutenant", "Knight-Captain", "Knight-Champion", "Lieutenant Commander", "Commander", "Marshal", "Field Marshal", "Grand Marshal", "Scout", "Grunt",
-        "Sergeant", "Senior Sergeant", "First Sergeant", "Stone Guard", "Blood Guard", "Legionnaire", "Centurion", "Champion", "Lieutenant General", "General", "Warlord", "High Warlord", "Gladiator", "Duelist", "Rival", "Challenger", "Scarab Lord",
-        "Conqueror", "Justicar", "Champion of the Naaru", "Merciless Gladiator", "of the Shattered Sun", "Hand of A'dal", "Vengeful Gladiator", "Battlemaster", "the Seeker", "Elder", "Flame Warden", "Flame Keeper", "the Exalted", " the Explorer",
-        "the Diplomat", "Brutal Gladiator", "Arena Master", "Salty", "Chef", "the Supreme", "of the Ten Storms", "of the Emerald Dream", "Deadly Gladiator", "Prophet", "the Malefic", "Stalker", "of the Ebon Blade", "Archmage", "Warbringer",
-        "Assassin", "Grand Master Alchemist", "Grand Master Blacksmith", "Iron Chef", "Grand Master Enchanter", "Grand Master Engineer", "Doctor", "Grand Master Angler", "Grand Master Herbalist", "Grand Master Scribe", "Grand Master Jewelcrafter",
-        "Grand Master Leatherworker", "Grand Master Miner", "Grand Master Skinner", "Grand Master Tailor", "of Quel'Thalas", "of Argus", "of Khaz Modan", "of Gnomergan", "the Lion Hearted", "Champion of Elune", "Hero of Orgrimmar", "Plainsrunner",
-        "of the Darkspear", "the Forsaken", "the Magic Seeker", "Twilight Vanquisher", "Conqueror of Naxxramas", "Hero of Northrend", "the Hallowed", "Loremaster", "of the Alliance", "of the Horde", "the Flawless Victor", "Champion of the Frozen Wastes",
-        "Ambassador", "the Argent Champion", "Guardian of Cenarius", "Brewmaster", "Merrymaker", "the Love Fool", "Matron", "Patron", "Obsidian Slayer", "of the Nightfall", "the Immortal", "the Undying", "Jenkins", "Bloodsail Admiral", "the Insane",
-        "of the Exodar", "of Darnassus", "of Ironforge", "of Stormwind", "of Orgrimmar", "of Sen'jin", "of Silvermoon", "of Thunder Bluff", "of the Undercity", "the Noble", "Crusader", "Death's Demise", "the Celestial Defender", "Conqueror of Ulduar",
-        "Champion of Ulduar", "Vanquisher", "Starcaller", "the Astral Walker", "Herald of the Titans", "Furious Gladiator", "the Pilgrim", "Relentless Gladiator", "Grand Crusader", "the Argent Defender", "the Patient", "the Light of Dawn",
-        "Bane of the Fallen King", "the Kingslayer", "of the Ashen Verdict", "Wrathful Gladiator"
-    };
-
     string x = string(args);
-    HEARTHSTONE_TOLOWER(x);
-
     if(x.length() < 3)
     {
         RedSystemMessage(m_session, "Your search string must be at least 3 characters long.");
         return true;
     }
+    HEARTHSTONE_TOLOWER(x);
 
     GreenSystemMessage(m_session, "Initializing title finder.");
-    for(uint16 i = 1; i < TITLE_END; i++)
-    {
-        std::string lowercase_name = HEARTHSTONE_TOLOWER_RETURN(TitleNames[i]);
-        if(FindXinYString(x, lowercase_name))
-        {
-            BlueSystemMessage(m_session, "Title %03u: %s", i, TitleNames[i].c_str());
-        }
-    }
-
+    for(ConstructDBCStorageIterator(CharTitlesEntry) itr = dbcCharTitles.begin(); itr != dbcCharTitles.end(); ++itr)
+        if(FindXinYString(x, HEARTHSTONE_TOLOWER_RETURN((*itr)->name1)))
+            BlueSystemMessage(m_session, "Title %03u: %s", (*itr)->entry, format((*itr)->name1, m_session->GetPlayer()->GetName()).c_str());
+    GreenSystemMessage(m_session, "End title find.");
     return true;
 }
 

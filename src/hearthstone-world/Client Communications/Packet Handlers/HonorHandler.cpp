@@ -11,16 +11,8 @@ void WorldSession::HandleSetVisibleRankOpcode(WorldPacket& recv_data)
     recv_data >> ChosenRank;
     if( ChosenRank == 0xFFFFFFFF )
         _player->SetUInt32Value( PLAYER_CHOSEN_TITLE, 0 );
-    else if( _player->HasKnownTitle( static_cast< RankTitles >( ChosenRank ) ) )
-    {
+    else if( _player->HasKnownTitleByIndex(ChosenRank) )
         _player->SetUInt32Value( PLAYER_CHOSEN_TITLE, ChosenRank );
-/*      if(ChosenRank <= PVPTITLE_HIGH_WARLORD)
-        {
-            if(ChosenRank > PVPTITLE_GRAND_MARSHAL)
-                ChosenRank -= PVPTITLE_GRAND_MARSHAL;
-            _player->SetPVPRank(ChosenRank);
-        }*/
-    }
 }
 
 void HonorHandler::AddHonorPointsToPlayer(Player* pPlayer, uint32 uAmount)

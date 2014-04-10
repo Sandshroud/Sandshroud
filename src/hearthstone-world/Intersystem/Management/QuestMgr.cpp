@@ -1273,7 +1273,7 @@ void QuestMgr::OnQuestAccepted(Player* plr, Quest* qst, Object* qst_giver)
 
 void QuestMgr::GiveQuestTitleReward(Player* plr, Quest* qst)
 {
-    if(!qst->reward_title || qst->reward_title > TITLE_END)
+    if(!qst->reward_title)
         return;
 
     plr->SetKnownTitle(qst->reward_title, true);

@@ -159,6 +159,16 @@ struct CreatureSpellDataEntry
     uint32 PH;
 };
 
+struct CharTitlesEntry
+{
+    uint32 entry;
+    //uint32 unk;
+    char *name1;
+    //char *name2;
+    uint32 index;
+    //uint32 unk0;
+};
+
 struct DBCTaxiNode
 {
     uint32 id;
@@ -1363,6 +1373,7 @@ DBC_STORAGE_EXTERN_DBC_MACRO(CreatureBoundData, dbcCreatureBoundData);
 DBC_STORAGE_EXTERN_DBC_MACRO(CreatureDisplayInfo, dbcCreatureDisplayInfo);
 DBC_STORAGE_EXTERN_DBC_MACRO(CreatureFamilyEntry, dbcCreatureFamily);
 DBC_STORAGE_EXTERN_DBC_MACRO(CreatureSpellDataEntry, dbcCreatureSpellData);
+DBC_STORAGE_EXTERN_DBC_MACRO(CharTitlesEntry, dbcCharTitles);
 DBC_STORAGE_EXTERN_DBC_MACRO(DBCTaxiNode, dbcTaxiNode);
 DBC_STORAGE_EXTERN_DBC_MACRO(DBCTaxiPath, dbcTaxiPath);
 DBC_STORAGE_EXTERN_DBC_MACRO(DBCTaxiPathNode, dbcTaxiPathNode);

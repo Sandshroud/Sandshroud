@@ -56,6 +56,9 @@ const char* creaturefamilyFormat = "ufufuuuuuxsx";
 DECLARE_CLASS_INTERNAL_DBC_MACRO(CreatureSpellDataEntry, dbcCreatureSpellData);
 const char* creaturespelldataFormat = "uuuuuuuuu";
 
+DECLARE_CLASS_INTERNAL_DBC_MACRO(CharTitlesEntry, dbcCharTitles);
+const char* chartitlesFormat = "uxsxux";
+
 DECLARE_CLASS_INTERNAL_DBC_MACRO(DBCTaxiNode, dbcTaxiNode);
 const char* dbctaxinodeFormat = "uufffxuu";
 
@@ -291,6 +294,7 @@ bool LoadDBCs(const char* datapath)
     LOAD_DB(format("%s/CreatureDisplayInfo.dbc", datapath).c_str(), creaturedisplayFormat, dbcCreatureDisplayInfo);
     LOAD_DB(format("%s/CreatureFamily.dbc", datapath).c_str(), creaturefamilyFormat, dbcCreatureFamily);
     LOAD_DB(format("%s/CreatureSpellData.dbc", datapath).c_str(), creaturespelldataFormat, dbcCreatureSpellData);
+    LOAD_DB(format("%s/CharTitles.dbc", datapath).c_str(), chartitlesFormat, dbcCharTitles);
     LOAD_DB(format("%s/DurabilityCosts.dbc", datapath).c_str(), durabilitycostsFormat, dbcDurabilityCosts);
     LOAD_DB(format("%s/DurabilityQuality.dbc", datapath).c_str(), durabilityqualityFormat, dbcDurabilityQuality);
     LOAD_DB(format("%s/EmotesText.dbc", datapath).c_str(), EmoteEntryFormat, dbcEmoteEntry);
