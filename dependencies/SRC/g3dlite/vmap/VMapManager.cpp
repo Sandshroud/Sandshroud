@@ -58,7 +58,6 @@ namespace VMAP
             StaticMapTree* newTree = new StaticMapTree(mapId, vmapDir);
             if (!newTree->InitMap(getMapFileName(mapId), this))
             {
-                bLog.outError("StaticMapTree::InitMap() : Map tree initialization failed");
                 delete newTree;
                 return false;
             }
