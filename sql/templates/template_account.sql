@@ -7,7 +7,7 @@ CREATE TABLE `accounts` (
   `password` varchar(255) NOT NULL DEFAULT '',
   `SessionKey` varchar(255) NOT NULL DEFAULT '',
   `gm` varchar(10) NOT NULL DEFAULT '',
-  `flags` int(11) NOT NULL DEFAULT '24',
+  `flags` int(11) NOT NULL DEFAULT '32',
   `banned` tinyint(1) NOT NULL DEFAULT '0',
   `lastlogin` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `lastip` varchar(15) NOT NULL DEFAULT '',

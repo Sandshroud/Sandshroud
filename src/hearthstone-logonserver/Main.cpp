@@ -356,8 +356,8 @@ void LogonServer::Run(int argc, char ** argv)
     uint32 sport = mainIni->ReadInteger("Listen", "ServerPort", 8093);
     std::string host = mainIni->ReadString("Listen", "Host", "0.0.0.0");
     std::string shost = mainIni->ReadString("Listen", "ISHost", host.c_str());
-    min_build = mainIni->ReadInteger("Client", "MinBuild", 12340);
-    max_build = mainIni->ReadInteger("Client", "MaxBuild", 12340);
+    min_build = mainIni->ReadInteger("Client", "MinBuild", 13623);
+    max_build = mainIni->ReadInteger("Client", "MaxBuild", 13623);
     std::string logon_pass = mainIni->ReadString("LogonServer", "RemotePassword", "r3m0t3b4d");
     Sha1Hash hash;
     hash.UpdateData(logon_pass);
