@@ -97,11 +97,14 @@ void LogonConsole::ProcessCmd(char *cmd)
     SCmd cmds[] =
     {
 
-        {"?", &LogonConsole::TranslateHelp}, {"help", &LogonConsole::TranslateHelp},
-        { "reload", &LogonConsole::ReloadAccts},
-        { "rehash", &LogonConsole::TranslateRehash},
-        { "list",  &LogonConsole::ListRealms},
-        {"shutdown", &LogonConsole::TranslateQuit}, {"quit", &LogonConsole::TranslateQuit}, {"exit", &LogonConsole::TranslateQuit}, 
+        {"?",        &LogonConsole::TranslateHelp},
+        {"help",     &LogonConsole::TranslateHelp},
+        {"reload",   &LogonConsole::ReloadAccts},
+        {"rehash",   &LogonConsole::TranslateRehash},
+        {"list",     &LogonConsole::ListRealms},
+        {"shutdown", &LogonConsole::TranslateQuit}, 
+        {"quit",     &LogonConsole::TranslateQuit}, 
+        {"exit",     &LogonConsole::TranslateQuit}, 
     };
 
     char cmd2[80];

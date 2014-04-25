@@ -1042,7 +1042,7 @@ enum SpellTargetType
 /***************Ranged spellid*******************/
 /* Note: These spell id's are checked for 3.0.x */
 /************************************************/
-#define SPELL_ATTACK    6603
+#define SPELL_ATTACK            6603
 #define SPELL_RANGED_GENERAL    3018
 #define SPELL_RANGED_THROW      2764
 #define SPELL_RANGED_WAND       5019

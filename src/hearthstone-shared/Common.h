@@ -84,14 +84,14 @@ enum MsTimeVariables
 #endif
 
 // current platform and compiler
-#define PLATFORM_WIN 0
+#define PLATFORM_WIN   0
 #define PLATFORM_UNIX  1
 #define PLATFORM_APPLE 2
 
 #define UNIX_FLAVOUR_LINUX 1
-#define UNIX_FLAVOUR_BSD 2
+#define UNIX_FLAVOUR_BSD   2
 #define UNIX_FLAVOUR_OTHER 3
-#define UNIX_FLAVOUR_OSX 4
+#define UNIX_FLAVOUR_OSX   4
 
 #if defined( __WIN32__ ) || defined( WIN32 ) || defined( _WIN32 ) || defined(_WIN64)
 #  define PLATFORM PLATFORM_WIN
