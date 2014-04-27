@@ -232,10 +232,10 @@ bool BIH::writeToFile(FILE *wf) const
     check += (g3d_uint32)fwrite(&bounds.low(), sizeof(float), 3, wf);
     check += (g3d_uint32)fwrite(&bounds.high(), sizeof(float), 3, wf);
     check += (g3d_uint32)fwrite(&treeSize, sizeof(g3d_uint32), 1, wf);
-    check += (g3d_uint32)fwrite(&tree[0], sizeof(g3d_uint32), treeSize, wf);
+    if(treeSize) check += (g3d_uint32)fwrite(&tree[0], sizeof(g3d_uint32), treeSize, wf);
     count = (g3d_uint32)objects.size();
     check += (g3d_uint32)fwrite(&count, sizeof(g3d_uint32), 1, wf);
-    check += (g3d_uint32)fwrite(&objects[0], sizeof(g3d_uint32), count, wf);
+    if(count) check += (g3d_uint32)fwrite(&objects[0], sizeof(g3d_uint32), count, wf);
     return check == (3 + 3 + 2 + treeSize + count);
 }
 
@@ -249,10 +249,13 @@ bool BIH::readFromFile(FILE *rf)
     bounds = G3D::AABox(lo, hi);
     check += (g3d_uint32)fread(&treeSize, sizeof(g3d_uint32), 1, rf);
     tree.resize(treeSize);
-    check += (g3d_uint32)fread(&tree[0], sizeof(g3d_uint32), treeSize, rf);
+    if(treeSize) check += (g3d_uint32)fread(&tree[0], sizeof(g3d_uint32), treeSize, rf);
     check += (g3d_uint32)fread(&count, sizeof(g3d_uint32), 1, rf);
-    objects.resize(count); // = new g3d_uint32[nObjects];
-    check += (g3d_uint32)fread(&objects[0], sizeof(g3d_uint32), count, rf);
+    if(count)
+    {
+        objects.resize(count); // = new g3d_uint32[nObjects];
+        check += (g3d_uint32)fread(&objects[0], sizeof(g3d_uint32), count, rf);
+    }
     return check == (3 + 3 + 2 + treeSize + count);
 }
 

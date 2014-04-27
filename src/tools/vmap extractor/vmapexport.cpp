@@ -62,8 +62,10 @@ HANDLE LocaleMpq = NULL;
 
 uint32 CONF_TargetBuild = 13623;              // 4.0.6.13623
 
+#define MPQ_COUNT 5
+
 // List MPQ for extract maps from
-char const* CONF_mpq_list[]=
+char const* CONF_mpq_list[MPQ_COUNT]=
 {
     "world.MPQ",
     "art.MPQ",
@@ -161,8 +163,7 @@ void LoadCommonMPQFiles(uint32 build)
         return;
     }
 
-    int count = sizeof(CONF_mpq_list) / sizeof(char*);
-    for (int i = 1; i < count; ++i)
+    for (int i = 1; i < MPQ_COUNT; ++i)
     {
         _stprintf(filename, _T("%s%s"), input_path, CONF_mpq_list[i]);
         if (!SFileOpenPatchArchive(WorldMpq, filename, "", 0))
@@ -354,6 +355,12 @@ void ParsMapFiles()
     {
         sprintf(id,"%03u",map_ids[i].id);
         sprintf(fn,"World\\Maps\\%s\\%s.wdt", map_ids[i].name, map_ids[i].name);
+        if(!SFileHasFile(WorldMpq, fn))
+        {
+            printf("Skipping Map %u(nonexistent WDT) - %s\n", map_ids[i].id, map_ids[i].name);
+            continue;
+        }
+
         WDTFile WDT(fn,map_ids[i].name);
         if(WDT.init(id, map_ids[i].id))
         {
@@ -527,20 +534,18 @@ int main(int argc, char ** argv)
             printf("FATAL ERROR: Map.dbc not found in data file.\n");
             return 1;
         }
-        map_count=dbc->getRecordCount ();
-        map_ids=new map_id[map_count];
-        for (unsigned int x=0;x<map_count;++x)
+        map_count = dbc->getRecordCount();
+        map_ids = new map_id[map_count];
+        for (unsigned int x = 0; x < map_count; ++x)
         {
-            map_ids[x].id=dbc->getRecord (x).getUInt(0);
-            strcpy(map_ids[x].name,dbc->getRecord(x).getString(1));
-            printf("Map - %s\n",map_ids[x].name);
+            map_ids[x].id = dbc->getRecord(x).getUInt(0);
+            strcpy(map_ids[x].name, dbc->getRecord(x).getString(1));
+            printf("Map - %s\n", map_ids[x].name);
         }
-
 
         delete dbc;
         ParsMapFiles();
         delete [] map_ids;
-        //nError = ERROR_SUCCESS;
         // Extract models, listed in GameObjectDisplayInfo.dbc
         ExtractGameobjectModels();
     }
@@ -551,11 +556,9 @@ int main(int argc, char ** argv)
     printf("\n");
     if (!success)
     {
-        printf("ERROR: Extract %s. Work NOT complete.\n   Precise vector data=%d.\nPress any key.\n",versionString, preciseVectorData);
+        printf("ERROR: Extract %s. Work NOT complete.\n   Precise vector data=%d.\nPress any key.\n", versionString, preciseVectorData);
         getchar();
-    }
-
-    printf("Extract %s. Work complete. No errors.\n",versionString);
+    } else printf("Extract %s. Work complete. No errors.\n",versionString);
     delete [] LiqType;
     return 0;
 }

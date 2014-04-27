@@ -254,7 +254,7 @@ namespace VMAP
         chunkSize = sizeof(G3D::g3d_uint32)+ sizeof(Vector3)*count;
         if (result && fwrite(&chunkSize, sizeof(G3D::g3d_uint32), 1, wf) != 1) result = false;
         if (result && fwrite(&count, sizeof(G3D::g3d_uint32), 1, wf) != 1) result = false;
-        if (result && fwrite(&vertices[0], sizeof(Vector3), count, wf) != count) result = false;
+        if (count && result && fwrite(&vertices[0], sizeof(Vector3), count, wf) != count) result = false;
 
         // write triangle mesh
         if (result && fwrite("TRIM", 1, 4, wf) != 4) result = false;
@@ -262,7 +262,7 @@ namespace VMAP
         chunkSize = sizeof(G3D::g3d_uint32)+ sizeof(MeshTriangle)*count;
         if (result && fwrite(&chunkSize, sizeof(G3D::g3d_uint32), 1, wf) != 1) result = false;
         if (result && fwrite(&count, sizeof(G3D::g3d_uint32), 1, wf) != 1) result = false;
-        if (result && fwrite(&triangles[0], sizeof(MeshTriangle), count, wf) != count) result = false;
+        if (count && result && fwrite(&triangles[0], sizeof(MeshTriangle), count, wf) != count) result = false;
 
         // write mesh BIH
         if (result && fwrite("MBIH", 1, 4, wf) != 4) result = false;
@@ -279,7 +279,6 @@ namespace VMAP
         chunkSize = iLiquid->GetFileSize();
         if (result && fwrite(&chunkSize, sizeof(G3D::g3d_uint32), 1, wf) != 1) result = false;
         if (result) result = iLiquid->writeToFile(wf);
-
         return result;
     }
 
