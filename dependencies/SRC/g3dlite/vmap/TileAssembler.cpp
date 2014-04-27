@@ -111,7 +111,6 @@ namespace VMAP
             if (success && fwrite("GOBJ", 4, 1, mapfile) != 1) success = false;
             if(success && !bool(isTiled))
                 success = ModelSpawn::writeToFile(mapfile, map_iter->second->UniqueEntries[globalRange.first->second]);
-
             fclose(mapfile);
 
             // <====

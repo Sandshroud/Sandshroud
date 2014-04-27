@@ -89,32 +89,16 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
     if(ADT.isEof ())
         return false;
 
-    uint32 size;
-
-    string xMap;
-    string yMap;
-
-    Adtfilename.erase(Adtfilename.find(".adt"),4);
-    string TempMapNumber;
-    TempMapNumber = Adtfilename.substr(Adtfilename.length()-6,6);
-    xMap = TempMapNumber.substr(TempMapNumber.find("_")+1,(TempMapNumber.find_last_of("_")-1) - (TempMapNumber.find("_")));
-    yMap = TempMapNumber.substr(TempMapNumber.find_last_of("_")+1,(TempMapNumber.length()) - (TempMapNumber.find_last_of("_")));
-    Adtfilename.erase((Adtfilename.length()-xMap.length()-yMap.length()-2), (xMap.length()+yMap.length()+2));
-    //string AdtMapNumber = xMap + ' ' + yMap + ' ' + GetPlainName((char*)Adtfilename.c_str());
-    //printf("Processing map %s...\n", AdtMapNumber.c_str());
-    //printf("MapNumber = %s\n", TempMapNumber.c_str());
-    //printf("xMap = %s\n", xMap.c_str());
-    //printf("yMap = %s\n", yMap.c_str());
-
     std::string dirname = std::string(szWorkDirWmo) + "/dir_bin";
     FILE *dirfile;
-    dirfile = fopen(dirname.c_str(), "ab");
+    fopen_s(&dirfile, dirname.c_str(), "ab");
     if(!dirfile)
     {
         printf("Can't open dirfile!'%s'\n", dirname.c_str());
         return false;
     }
 
+    uint32 size;
     while (!ADT.isEof())
     {
         char fourcc[5];
@@ -139,7 +123,6 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
                 ADT.read(buf, size);
                 char* p = buf;
                 int t = 0;
-                ModelInstanceNames = new std::string[size];
                 while (p < buf + size)
                 {
                     std::string path(p);
@@ -148,10 +131,8 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
                     FixNameCase(s, strlen(s));
                     FixNameSpaces(s, strlen(s));
 
-                    ModelInstanceNames[t++] = s;
-
+                    ModelInstanceNameMap.insert(std::make_pair(t++, new string(s)));
                     ExtractSingleModel(path);
-
                     p += strlen(p) + 1;
                 }
                 delete[] buf;
@@ -165,15 +146,13 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
                 ADT.read(buf, size);
                 char* p = buf;
                 int q = 0;
-                WmoInstanceNames = new std::string[size];
                 while (p < buf + size)
                 {
                     char* s = GetPlainName(p);
                     FixNameCase(s, strlen(s));
                     FixNameSpaces(s, strlen(s));
 
-                    WmoInstanceNames[q++] = s;
-
+                    WMOInstanceNameMap.insert(std::make_pair(q++, new string(s)));
                     p += strlen(p) + 1;
                 }
                 delete[] buf;
@@ -189,10 +168,11 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
                 {
                     uint32 id;
                     ADT.read(&id, 4);
-                    ModelInstance inst(ADT, ModelInstanceNames[id].c_str(), map_num, tileX, tileY, dirfile);
+                    ModelInstance inst(ADT, ModelInstanceNameMap[id]->c_str(), map_num, tileX, tileY, dirfile);
                 }
-                delete[] ModelInstanceNames;
-                ModelInstanceNames = NULL;
+                for(std::map<uint32, std::string*>::iterator itr = ModelInstanceNameMap.begin(); itr != ModelInstanceNameMap.end(); itr++)
+                    delete itr->second;
+                ModelInstanceNameMap.clear();
             }
         }
         else if (!strcmp(fourcc,"MODF"))
@@ -204,11 +184,11 @@ bool ADTFile::init(uint32 map_num, uint32 tileX, uint32 tileY)
                 {
                     uint32 id;
                     ADT.read(&id, 4);
-                    WMOInstance inst(ADT, WmoInstanceNames[id].c_str(), map_num, tileX, tileY, dirfile);
+                    WMOInstance inst(ADT, WMOInstanceNameMap[id]->c_str(), map_num, tileX, tileY, dirfile);
                 }
-
-                delete[] WmoInstanceNames;
-                WmoInstanceNames = NULL;
+                for(std::map<uint32, std::string*>::iterator itr = WMOInstanceNameMap.begin(); itr != WMOInstanceNameMap.end(); itr++)
+                    delete itr->second;
+                WMOInstanceNameMap.clear();
             }
         }
 

@@ -53,10 +53,11 @@ bool ExtractSingleModel(std::string& fname)
 }
 
 extern HANDLE LocaleMpq;
+extern HANDLE WorldMpq;
 
 void ExtractGameobjectModels()
 {
-    printf("Extracting GameObject models...");
+    printf("Extracting GameObject models...\n");
     DBCFile dbc(LocaleMpq, "DBFilesClient\\GameObjectDisplayInfo.dbc");
     if(!dbc.open())
     {
@@ -80,14 +81,16 @@ void ExtractGameobjectModels()
     {
         path = it->getString(1);
 
+        if(!SFileHasFile(WorldMpq, path.c_str()))
+            continue;
         if (path.length() < 4)
             continue;
 
         FixNameCase((char*)path.c_str(), path.size());
-        char * name = GetPlainName((char*)path.c_str());
+        char *name = GetPlainName((char*)path.c_str());
         FixNameSpaces(name, strlen(name));
 
-        char * ch_ext = GetExtension(name);
+        char *ch_ext = GetExtension(name);
         if (!ch_ext)
             continue;
 

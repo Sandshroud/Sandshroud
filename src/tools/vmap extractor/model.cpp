@@ -46,26 +46,25 @@ bool Model::open()
     _unload();
 
     memcpy(&header, f.getBuffer(), sizeof(ModelHeader));
-    if (header.nBoundingTriangles > 0)
+    f.seek(0);
+
+    if(header.ofsBoundingVertices && header.nBoundingVertices)
     {
-        f.seek(0);
         f.seekRelative(header.ofsBoundingVertices);
         vertices = new Vec3D[header.nBoundingVertices];
         f.read(vertices,header.nBoundingVertices*12);
-        for (uint32 i=0; i<header.nBoundingVertices; i++)
+        for (uint32 i = 0; i<header.nBoundingVertices; i++)
             vertices[i] = fixCoordSystem(vertices[i]);
         f.seek(0);
+    }
+
+    if(header.ofsBoundingTriangles && header.nBoundingTriangles)
+    {
         f.seekRelative(header.ofsBoundingTriangles);
         indices = new uint16[header.nBoundingTriangles];
         f.read(indices,header.nBoundingTriangles*2);
-        f.close();
     }
-    else
-    {
-        //printf("not included %s\n", filename.c_str());
-        f.close();
-        return false;
-    }
+    f.close();
     return true;
 }
 
@@ -78,6 +77,7 @@ bool Model::ConvertToVMAPModel(const char * outfilename)
         printf("Can't create the output file '%s'\n",outfilename);
         return false;
     }
+
     fwrite(szRawVMAPMagic, 8, 1, output);
     uint32 nVertices = header.nBoundingVertices;
     fwrite(&nVertices, sizeof(int), 1, output);

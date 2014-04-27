@@ -49,8 +49,8 @@ bool WDTFile::init(char* /*map_id*/, unsigned int mapID)
     uint32 size;
 
     std::string dirname = std::string(szWorkDirWmo) + "/dir_bin";
-    FILE *dirfile;
-    dirfile = fopen(dirname.c_str(), "ab");
+    FILE *dirfile = NULL;
+    fopen_s(&dirfile, dirname.c_str(), "ab");
     if(!dirfile)
     {
         printf("Can't open dirfile!'%s'\n", dirname.c_str());
