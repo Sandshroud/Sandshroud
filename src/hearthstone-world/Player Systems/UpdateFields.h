@@ -4,7 +4,7 @@
 
 #pragma once
 
-// Auto generated for version 4, 0, 6, 13623
+// Auto generated for version 4.0.6a, 13623
 
 enum EObjectFields
 {

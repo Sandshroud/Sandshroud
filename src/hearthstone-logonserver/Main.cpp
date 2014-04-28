@@ -258,11 +258,11 @@ void LogonServer::Run(int argc, char ** argv)
 
     struct hearthstone_option longopts[] =
     {
-        { "checkconf",          hearthstone_no_argument,                &do_check_conf,         1       },
+        { "checkconf",          hearthstone_no_argument,            &do_check_conf,         1       },
         { "screenloglevel",     hearthstone_required_argument,      &screen_log_level,      1       },
         { "fileloglevel",       hearthstone_required_argument,      &file_log_level,        1       },
-        { "version",            hearthstone_no_argument,                &do_version,            1       },
-        { "conf",               hearthstone_required_argument,      NULL,                   'c'     },
+        { "version",            hearthstone_no_argument,            &do_version,            1       },
+        { "conf",               hearthstone_required_argument,      NULL,                  'c'      },
         { 0, 0, 0, 0 }
     };
 
