@@ -203,12 +203,17 @@ void LoadCommonMPQFiles(uint32 build)
 
 bool FileExists(const char* file)
 {
-    if (FILE* n = fopen(file, "rb"))
+    FILE* n = NULL;
+    switch(fopen_s(&n, file, "rb"))
     {
-        fclose(n);
-        return true;
+    case 0:break;
+    case ENOENT:return false;
+    default:
+        printf("Error opening file %s\n", file);
+        return false;
     }
-    return false;
+    fclose(n);
+    return true;
 }
 
 void strToLower(char* str)
@@ -253,9 +258,10 @@ bool ExtractWmo()
         do
         {
             std::string str = data.cFileName;
+            printf("Processing %100 s\r", str.c_str());
             success |= ExtractSingleWmo(str);
         }
-        while (SFileFindNextFile(find, &data));
+        while (success && SFileFindNextFile(find, &data));
     }
     SFileFindClose(find);
 
@@ -273,7 +279,6 @@ bool ExtractSingleWmo(std::string& fname)
     const char * plain_name = GetPlainName(fname.c_str());
     sprintf(szLocalFile, "%s/%s", szWorkDirWmo, plain_name);
     FixNameCase(szLocalFile,strlen(szLocalFile));
-
     if (FileExists(szLocalFile))
         return true;
 
