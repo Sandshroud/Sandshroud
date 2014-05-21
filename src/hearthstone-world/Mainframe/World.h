@@ -289,6 +289,9 @@ struct insert_playerglyph
     uint32 glyph4;
     uint32 glyph5;
     uint32 glyph6;
+    uint32 glyph7;
+    uint32 glyph8;
+    uint32 glyph9;
 };
 
 struct insert_playertalent

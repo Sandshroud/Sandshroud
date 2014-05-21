@@ -44,16 +44,16 @@ struct LevelInfo;
 
 enum Classes
 {
-    WARRIOR = 1,
-    PALADIN = 2,
-    HUNTER = 3,
-    ROGUE = 4,
-    PRIEST = 5,
+    WARRIOR     = 1,
+    PALADIN     = 2,
+    HUNTER      = 3,
+    ROGUE       = 4,
+    PRIEST      = 5,
     DEATHKNIGHT = 6,
-    SHAMAN = 7,
-    MAGE = 8,
-    WARLOCK = 9,
-    DRUID = 11,
+    SHAMAN      = 7,
+    MAGE        = 8,
+    WARLOCK     = 9,
+    DRUID       = 11,
 };
 
 enum ClassMasks
@@ -73,16 +73,18 @@ enum ClassMasks
 
 enum Races
 {
-    RACE_HUMAN = 1,
-    RACE_ORC = 2,
-    RACE_DWARF = 3,
+    RACE_HUMAN    = 1,
+    RACE_ORC      = 2,
+    RACE_DWARF    = 3,
     RACE_NIGHTELF = 4,
-    RACE_UNDEAD = 5,
-    RACE_TAUREN = 6,
-    RACE_GNOME = 7,
-    RACE_TROLL = 8,
+    RACE_UNDEAD   = 5,
+    RACE_TAUREN   = 6,
+    RACE_GNOME    = 7,
+    RACE_TROLL    = 8,
+    RACE_GOBLIN   = 9,
     RACE_BLOODELF = 10,
-    RACE_DRAENEI = 11
+    RACE_DRAENEI  = 11,
+    RACE_WORGEN   = 22
 };
 
 enum PlayerStatus
@@ -309,17 +311,17 @@ struct LoginAura
 
 static const uint32 TalentTreesPerClass[DRUID+1][3] =  {
     { 0, 0, 0 },        // NONE
-    { 161, 163, 164 },  // WARRIOR
-    { 382, 383, 381 },  // PALADIN
-    { 361, 363, 362 },  // HUNTER
+    { 746, 815, 845 },  // WARRIOR
+    { 831, 839, 855 },  // PALADIN
+    { 811, 807, 809 },  // HUNTER
     { 182, 181, 183 },  // ROGUE
-    { 201, 202, 203 },  // PRIEST
+    { 760, 813, 795 },  // PRIEST
     { 398, 399, 400 },  // DEATH KNIGHT
     { 261, 263, 262 },  // SHAMAN
-    { 81, 41, 61 },     // MAGE
-    { 302, 303, 301 },  // WARLOCK
+    { 799, 851, 823 },  // MAGE
+    { 871, 867, 865 },  // WARLOCK
     { 0, 0, 0 },        // NONE
-    { 283, 281, 282 },  // DRUID
+    { 752, 750, 748 },  // DRUID
 };
 
 struct AreaPhaseData
@@ -418,17 +420,17 @@ struct PlayerPet
 enum MeetingStoneQueueStatus
 {
     MEETINGSTONE_STATUS_NONE                                = 0,
-    MEETINGSTONE_STATUS_JOINED_MEETINGSTONE_QUEUE_FOR      = 1,
-    MEETINGSTONE_STATUS_PARTY_MEMBER_LEFT_LFG              = 2,
+    MEETINGSTONE_STATUS_JOINED_MEETINGSTONE_QUEUE_FOR       = 1,
+    MEETINGSTONE_STATUS_PARTY_MEMBER_LEFT_LFG               = 2,
     MEETINGSTONE_STATUS_PARTY_MEMBER_REMOVED_PARTY_REMOVED  = 3,
-    MEETINGSTONE_STATUS_LOOKING_FOR_NEW_PARTY_IN_QUEUE    = 4,
+    MEETINGSTONE_STATUS_LOOKING_FOR_NEW_PARTY_IN_QUEUE      = 4,
     MEETINGSTONE_STATUS_NONE_UNK                            = 5,
 };
 
 enum ItemPushResultTypes
 {
-    ITEM_PUSH_TYPE_LOOT          = 0x00000000,
-    ITEM_PUSH_TYPE_RECEIVE        = 0x00000001,
+    ITEM_PUSH_TYPE_LOOT            = 0x00000000,
+    ITEM_PUSH_TYPE_RECEIVE         = 0x00000001,
     ITEM_PUSH_TYPE_CREATE          = 0x00000002,
 };
 
@@ -500,7 +502,7 @@ enum TRADE_STATUS
 };
 enum TRADE_DATA
 {
-    TRADE_GIVE      = 0x00,
+    TRADE_GIVE       = 0x00,
     TRADE_RECEIVE    = 0x01,
 };
 enum DUEL_STATUS
