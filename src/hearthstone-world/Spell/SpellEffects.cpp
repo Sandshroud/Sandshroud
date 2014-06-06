@@ -2002,6 +2002,14 @@ void Spell::SpellEffectLanguage(uint32 i)
         else
             pPlayer->_RemoveSkillLine( SKILL_LANG_TROLL );
 
+        if(pPlayer->getRace() == RACE_GOBLIN)
+        {
+            if( !pPlayer->_HasSkillLine( SKILL_LANG_GOBLIN ) )
+                pPlayer->_AddSkillLine( SKILL_LANG_GOBLIN, 300, 300 );
+        }
+        else
+            pPlayer->_RemoveSkillLine( SKILL_LANG_GOBLIN );
+
         if(pPlayer->getRace() == RACE_BLOODELF)
         {
             if( !pPlayer->_HasSkillLine( SKILL_LANG_THALASSIAN ) )
@@ -2017,6 +2025,14 @@ void Spell::SpellEffectLanguage(uint32 i)
         }
         else
             pPlayer->_RemoveSkillLine( SKILL_LANG_DRAENEI );
+
+        if(pPlayer->getRace() == RACE_WORGEN)
+        {
+            if( !pPlayer->_HasSkillLine( SKILL_LANG_GILNEAN ) )
+                pPlayer->_AddSkillLine( SKILL_LANG_GILNEAN, 300, 300 );
+        }
+        else
+            pPlayer->_RemoveSkillLine( SKILL_LANG_GILNEAN );
     }
 }
 

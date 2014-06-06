@@ -422,7 +422,7 @@ void Lacrimi::FillOnlineTime(uint32 Time, char * Dest)
     sprintf(Dest, "%d hours, %d minutes, %d seconds", (int)hours, (int)mins, (int)seconds);
 }
 
-static const char * race_names[RACE_DRAENEI+1] = {
+static const char * race_names[RACE_WORGEN+1] = {
     NULL,
     "human",
     "orc",
@@ -432,9 +432,20 @@ static const char * race_names[RACE_DRAENEI+1] = {
     "tauren",
     "gnome",
     "troll",
-    NULL,
+    "goblin",
     "bloodelf",
     "draenei",
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    "worgen",
 };
 
 static const char * class_names[DRUID+1] = {
@@ -468,9 +479,9 @@ void Lacrimi::DumpStats()
     fprintf(f, "<serverpage>\n");
     fprintf(f, "  <status>\n");
 
-    uint32* races = new uint32[RACE_DRAENEI+1];
+    uint32* races = new uint32[RACE_WORGEN+1];
     uint32* classes = new uint32[DRUID+1];
-    memset(races, 0, sizeof(uint32)*(RACE_DRAENEI+1));
+    memset(races, 0, sizeof(uint32)*(RACE_WORGEN+1));
     memset(classes, 0, sizeof(uint32)*(DRUID+1));
     std::deque<Player*> gms;
     {
@@ -533,7 +544,7 @@ void Lacrimi::DumpStats()
     
     fprintf(f, "  <statsummary>\n");
     uint32 i;
-    for(i = 0; i <= RACE_DRAENEI; ++i)
+    for(i = 0; i <= RACE_WORGEN; ++i)
     {
         if( race_names[i] != NULL )
             fprintf(f, "    <%s>%u</%s>\n", race_names[i], races[i], race_names[i]);

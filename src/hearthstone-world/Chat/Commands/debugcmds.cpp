@@ -540,7 +540,7 @@ bool ChatHandler::HandleDebugGoRepair(const char* args, WorldSession *m_session)
 bool ChatHandler::HandleSetPlayerStartLocation(const char* args, WorldSession *m_session)
 {
     Player* p = m_session->GetPlayer();
-    uint32 team[2][5] = { { RACE_HUMAN, RACE_DWARF, RACE_NIGHTELF, RACE_GNOME, RACE_DRAENEI }, { RACE_ORC, RACE_UNDEAD, RACE_TAUREN, RACE_TROLL, RACE_BLOODELF} };
+    uint32 team[2][6] = { { RACE_HUMAN, RACE_DWARF, RACE_NIGHTELF, RACE_GNOME, RACE_DRAENEI, RACE_WORGEN }, { RACE_ORC, RACE_UNDEAD, RACE_TAUREN, RACE_TROLL, RACE_GOBLIN, RACE_BLOODELF} };
     stringstream ss;
     ss << "UPDATE playercreateinfo SET mapID = " << p->GetMapId() << ", zoneID = " << p->GetZoneId() << ", positionX = " << p->GetPositionX()
         << ", positionY = " << p->GetPositionY() << ", positionZ = " << p->GetPositionZ() << ", Orientation = " << p->GetOrientation() << " WHERE race IN(";
