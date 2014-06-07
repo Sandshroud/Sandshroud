@@ -19,7 +19,26 @@
 #ifndef VMAPEXPORT_H
 #define VMAPEXPORT_H
 
+#define _CRT_SECURE_NO_DEPRECATE
+#include <cstdio>
+#include <iostream>
+#include <vector>
+#include <list>
+#include <errno.h>
 #include <string>
+
+#ifdef WIN32
+    #include <Windows.h>
+    #include <sys/stat.h>
+    #include <direct.h>
+    #define mkdir _mkdir
+#else
+    #include <sys/stat.h>
+    #define ERROR_PATH_NOT_FOUND ERROR_FILE_NOT_FOUND
+#endif
+
+#undef min
+#undef max
 
 enum ModelFlags
 {
@@ -31,10 +50,11 @@ enum ModelFlags
 extern const char * szWorkDirWmo;
 extern const char * szRawVMAPMagic;                         // vmap magic string for extracted raw vmap data
 
+bool GetMPQHandle(const char* file, HANDLE &mpqhandle);
 bool FileExists(const char * file);
 void strToLower(char* str);
 
-bool ExtractSingleWmo(std::string& fname);
+bool ExtractSingleWmo(HANDLE mpqArchive, std::string& fname);
 bool ExtractSingleModel(std::string& fname);
 
 void ExtractGameobjectModels();

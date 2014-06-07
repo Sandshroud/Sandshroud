@@ -24,17 +24,14 @@
 #include <algorithm>
 #include <cstdio>
 
-extern HANDLE WorldMpq;
-
 Model::Model(std::string &filename) : filename(filename), vertices(0), indices(0)
 {
     memset(&header, 0, sizeof(header));
 }
 
-bool Model::open()
+bool Model::open(HANDLE mpqarchive)
 {
-    MPQFile f(WorldMpq, filename.c_str());
-
+    MPQFile f(mpqarchive, filename.c_str());
     if (f.isEof())
     {
         f.close();

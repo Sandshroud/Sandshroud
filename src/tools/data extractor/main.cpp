@@ -20,7 +20,7 @@
 #include "misc.h"
 
 HANDLE localeMPQ[PATCH_REV_COUNT+1];
-HANDLE DataMPQ;
+HANDLE DataMPQs[4];
 HANDLE ArtMPQ;
 map_id *map_ids;
 uint16 *LiqType;

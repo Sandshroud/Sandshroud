@@ -38,13 +38,6 @@ void ExtractMapsFromMpq(uint32 build)
     printf("Convert map files\n");
     for(uint32 z = 0; z < map_count; ++z)
     {
-        std::string mapName(map_ids[z].name);
-        if(mapName.find("Transport") != std::string::npos)
-        {
-            printf("Skipping transport map %u - %s\n", z+1, mapName.c_str());
-            continue;
-        }
-
         FILE *out_file;
         char output_filename[50];
         uint32 Offsets[64][64];
@@ -52,8 +45,16 @@ void ExtractMapsFromMpq(uint32 build)
         sprintf_s(output_filename, "maps\\Map_%03u.bin", map_ids[z].id);
 
         // Loadup map grid data
+        std::string mapName(map_ids[z].name);
         sprintf_s(mpq_map_name, "World\\Maps\\%s\\%s.wdt", mapName.c_str(), mapName.c_str());
-        WDT_file wdt(mpq_map_name, DataMPQ);
+        HANDLE mpq;
+        if(!GetMPQHandle(mpq_map_name, mpq))
+        {
+            printf("Skipping map %u - %s, no WDT\n", z+1, mapName.c_str());
+            continue;
+        }
+
+        WDT_file wdt(mpq_map_name, mpq);
         if (wdt.isEof())
         {
             not_found.push_back(map_ids[z].name);
@@ -90,7 +91,7 @@ void ExtractMapsFromMpq(uint32 build)
             {
                 // For some odd reason, this stuff is reversed.. who knows why..
                 sprintf_s(mpq_filename, "World\\Maps\\%s\\%s_%u_%u.adt", mapName.c_str(), mapName.c_str(), y, x);
-                StoreADTData(mpq_filename, x, y, build);
+                StoreADTData(mpq, mpq_filename, x, y, build);
             }
         }
 
@@ -166,9 +167,9 @@ float CONF_float_to_int16_limit = 2048.0f;      // Max accuracy = val/65536
 float CONF_flat_height_delta_limit = 0.005f;    // If max - min less this value - surface is flat
 float CONF_flat_liquid_delta_limit = 0.001f;    // If max - min less this value - liquid surface is flat
 
-bool StoreADTData(char *filename, int cell_x, int cell_y, uint32 build)
+bool StoreADTData(HANDLE mpqarchive, char *filename, int cell_x, int cell_y, uint32 build)
 {
-    ADT_file adt(filename, DataMPQ);
+    ADT_file adt(filename, mpqarchive);
     if (adt.isEof())
         return false;
 

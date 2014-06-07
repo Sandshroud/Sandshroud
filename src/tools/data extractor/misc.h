@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 #endif
 
+bool GetMPQHandle(const char* file, HANDLE &mpqhandle);
 bool FileExists( const char* FileName );
 void CreateDir( const std::string& Path );
 int ReadBuild(int locale);

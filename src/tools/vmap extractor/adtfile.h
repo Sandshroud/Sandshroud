@@ -116,7 +116,7 @@ private:
     //mcell Mcell;
     std::string Adtfilename;
 public:
-    ADTFile(char* filename);
+    ADTFile(HANDLE mpqarchive, char* filename);
     ~ADTFile();
     int nWMO, nMDX;
     std::map<uint32, std::string*> WMOInstanceNameMap, ModelInstanceNameMap;

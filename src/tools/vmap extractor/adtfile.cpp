@@ -77,9 +77,7 @@ char* GetExtension(char* FileName)
     return NULL;
 }
 
-extern HANDLE WorldMpq;
-
-ADTFile::ADTFile(char* filename) : ADT(WorldMpq, filename, false)
+ADTFile::ADTFile(HANDLE mpqarchive, char* filename) : ADT(mpqarchive, filename, false)
 {
     Adtfilename.append(filename);
 }

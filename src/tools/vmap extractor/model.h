@@ -43,7 +43,7 @@ public:
     Vec3D* vertices;
     uint16* indices;
 
-    bool open();
+    bool open(HANDLE mpqarchive);
     bool ConvertToVMAPModel(char const* outfilename);
 
     Model(std::string& filename);

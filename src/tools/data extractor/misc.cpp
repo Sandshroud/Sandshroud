@@ -8,6 +8,22 @@
 #include "misc.h"
 #include "MPQ.h"
 
+bool GetMPQHandle(const char* file, HANDLE &mpqhandle)
+{
+    HANDLE MPQ = NULL;
+    for(int8 p = 0; p < 4; p++)
+    {
+        MPQ = DataMPQs[p];
+        if(SFileHasFile(MPQ, file))
+            break;
+        MPQ = NULL;
+    }
+    if(MPQ == NULL)
+        return false;
+    mpqhandle = MPQ;
+    return true;
+}
+
 bool FileExists( const char* FileName )
 {
     FILE *fp;

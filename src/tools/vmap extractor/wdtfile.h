@@ -32,14 +32,14 @@ private:
     MPQFile WDT;
     string filename;
 public:
-    WDTFile(char* file_name, char* file_name1);
+    WDTFile(HANDLE mpqarchive, char* file_name, char* file_name1);
     ~WDTFile(void);
     bool init(char* map_id, unsigned int mapID);
 
     string* gWmoInstansName;
     int gnWMO;
 
-    ADTFile* GetMap(int x, int z);
+    ADTFile* GetMap(HANDLE mpqarchive, int x, int z);
 };
 
 #endif

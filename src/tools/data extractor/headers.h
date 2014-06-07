@@ -42,7 +42,7 @@ typedef struct
 } map_id;
 
 extern HANDLE localeMPQ[PATCH_REV_COUNT+1];
-extern HANDLE DataMPQ;
+extern HANDLE DataMPQs[4];
 extern HANDLE ArtMPQ;
 extern map_id *map_ids;
 extern uint16 *LiqType;

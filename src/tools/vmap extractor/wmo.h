@@ -54,7 +54,7 @@ public:
 
     WMORoot(std::string& filename);
 
-    bool open();
+    bool open(HANDLE mpqarchive);
     bool ConvertToVMAPRootWmo(FILE* output);
 };
 
@@ -109,7 +109,7 @@ public:
     WMOGroup(std::string const& filename);
     ~WMOGroup();
 
-    bool open();
+    bool open(HANDLE mpqarchive);
     int ConvertToVMAPGroupWmo(FILE* output, WMORoot* rootWMO, bool preciseVectorData);
 };
 
