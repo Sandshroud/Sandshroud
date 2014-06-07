@@ -343,33 +343,33 @@ void Player::Init()
     m_mountCheckTimer               = 0;
     m_taxiMapChangeNode             = 0;
     m_startMoveTime                 = 0;
-    m_heartbeatDisable          = 0;
-    m_safeFall                  = 0;
-    safefall                    = false;
-    z_axisposition              = 0.0f;
-    m_KickDelay                 = 0;
-    m_speedhackCheckTimer       = 0;
-    m_mallCheckTimer            = 0;
-    m_UpdateHookTimer           = 0;
-    m_speedChangeInProgress     = false;
-    m_passOnLoot                = false;
-    m_changingMaps              = true;
-    m_vampiricEmbrace           = 0;
-    m_magnetAura                = NULLAURA;
-    m_lastMoveTime              = 0;
-    m_lastMovementPacketTimestamp = 0;
-    m_cheatEngineChances        = 2;
-    m_mageInvisibility          = false;
-    mWeakenedSoul               = false;
-    mForbearance                = false;
-    mExhaustion                 = false;
-    mHypothermia                = false;
-    mSated                      = false;
-    mAvengingWrath              = true;
-    m_bgFlagIneligible          = 0;
-    m_moltenFuryDamageIncreasePct = 0;
-    m_insigniaTaken             = true;
-    m_BeastMaster               = false;
+    m_heartbeatDisable              = 0;
+    m_safeFall                      = 0;
+    safefall                        = false;
+    z_axisposition                  = 0.0f;
+    m_KickDelay                     = 0;
+    m_speedhackCheckTimer           = 0;
+    m_mallCheckTimer                = 0;
+    m_UpdateHookTimer               = 0;
+    m_speedChangeInProgress         = false;
+    m_passOnLoot                    = false;
+    m_changingMaps                  = true;
+    m_vampiricEmbrace               = 0;
+    m_magnetAura                    = NULLAURA;
+    m_lastMoveTime                  = 0;
+    m_lastMovementPacketTimestamp   = 0;
+    m_cheatEngineChances            = 2;
+    m_mageInvisibility              = false;
+    mWeakenedSoul                   = false;
+    mForbearance                    = false;
+    mExhaustion                     = false;
+    mHypothermia                    = false;
+    mSated                          = false;
+    mAvengingWrath                  = true;
+    m_bgFlagIneligible              = 0;
+    m_moltenFuryDamageIncreasePct   = 0;
+    m_insigniaTaken                 = true;
+    m_BeastMaster                   = false;
 
     m_wratings.clear();
     m_QuestGOInProgress.clear();
@@ -573,6 +573,12 @@ HEARTHSTONE_INLINE uint32 GetSpellForLanguageID(uint32 LanguageID)
     case LANG_DRAENEI:
         return 29932;
         break;
+    case LANG_GOBLIN:
+        return 69269;
+        break;
+    case LANG_GILNEAN:
+        return 69270;
+        break;
     }
 
     return 0;
@@ -636,6 +642,14 @@ HEARTHSTONE_INLINE uint32 GetSpellForLanguageSkill(uint32 SkillID)
 
     case SKILL_LANG_DRAENEI:
         return 29932;
+        break;
+
+    case SKILL_LANG_GOBLIN:
+        return 69269;
+        break;
+
+    case SKILL_LANG_GILNEAN:
+        return 69270;
         break;
     }
 
@@ -762,9 +776,9 @@ bool Player::Create(WorldPacket& data )
         SetUInt32Value(UNIT_FIELD_LEVEL, sWorld.StartLevel);
         if(class_ == DEATHKNIGHT)
         {
-            if(sWorld.StartLevel < 55)
+            if(sWorld.StartLevel <= 55)
                 SetUInt32Value(UNIT_FIELD_LEVEL, 55);
-            else SetUInt32Value(UNIT_FIELD_LEVEL, sWorld.StartLevel-55);
+            else SetUInt32Value(UNIT_FIELD_LEVEL, sWorld.StartLevel);
         }
     }
     else SetUInt32Value(UNIT_FIELD_LEVEL, uint32(class_ != DEATHKNIGHT ? 1 : 55));
@@ -2752,7 +2766,7 @@ void Player::_LoadGlyphs(QueryResult * result)
     // init with 0s just in case
     for(uint8 s = 0; s < MAX_SPEC_COUNT; s++)
     {
-        for(uint32 i=0; i < GLYPHS_COUNT; i++)
+        for(uint32 i = 0; i < GLYPHS_COUNT; i++)
         {
             m_specs[s].glyphs[i] = 0;
         }
@@ -2770,7 +2784,7 @@ void Player::_LoadGlyphs(QueryResult * result)
                     spec, fields[0].GetUInt32());
                 continue;
             }
-            for(uint32 i=0; i < 6; i++)
+            for(uint32 i = 0; i < 6; i++)
             {
                 m_specs[spec].glyphs[i] = fields[2 + i].GetUInt16();
             }
@@ -2783,7 +2797,7 @@ void Player::_SaveGlyphsToDB(QueryBuffer * buf)
     bool empty = true;
     for(uint8 s = 0; s < m_talentSpecsCount; s++)
     {
-        for(uint32 i=0; i < GLYPHS_COUNT; i++)
+        for(uint32 i = 0; i < GLYPHS_COUNT; i++)
         {
             if(m_specs[s].glyphs[i] != 0)
             {
@@ -2799,10 +2813,10 @@ void Player::_SaveGlyphsToDB(QueryBuffer * buf)
     for(uint8 s = 0; s < m_talentSpecsCount; s++)
     {
         std::stringstream ss;
-        ss << "REPLACE INTO playerglyphs (guid, spec, glyph1, glyph2, glyph3, glyph4, glyph5, glyph6) VALUES "
+        ss << "REPLACE INTO playerglyphs (guid, spec, glyph1, glyph2, glyph3, glyph4, glyph5, glyph6, glyph7, glyph8, glyph9) VALUES "
             << "(" << GetLowGUID() << ","
             << uint32(s) << ",";
-        for(uint32 i = 0; i < 6; i++)
+        for(uint32 i = 0; i < 9; i++)
         {
             if(i != 0) ss << ", ";
             ss << uint32(m_specs[s].glyphs[i]);
@@ -3895,7 +3909,7 @@ bool Player::CanFlyInCurrentZoneOrMap()
         return false; // can't fly in non-flying zones
 
     if(GetMapId() == 530)
-        return true; // We can fly in outlands all the time
+        return true; // We can fly in Outlands all the time
 
     if(GetMapId() == 571)
     {
@@ -10336,6 +10350,14 @@ void Player::SetNoseLevel()
                 m_noseLevel = 1.93f;
         }break;
 
+    case RACE_GOBLIN:
+        {
+            if (getGender())
+                m_noseLevel = 1.26f;
+            else
+                m_noseLevel = 1.34f;
+        }break;
+
     case RACE_BLOODELF:
         {
             if (getGender())
@@ -10350,6 +10372,14 @@ void Player::SetNoseLevel()
                 m_noseLevel = 2.09f;
             else
                 m_noseLevel = 2.36f;
+        }break;
+
+    case RACE_WORGEN:
+        {
+            if (getGender())
+                m_noseLevel = 2.48f;
+            else
+                m_noseLevel = 2.01f;
         }break;
     }
 }
@@ -10805,7 +10835,7 @@ void Player::_AddLanguages(bool All)
     SkillLineEntry * en;
     uint32 spell_id;
     static uint32 skills[] = { SKILL_LANG_COMMON, SKILL_LANG_ORCISH, SKILL_LANG_DWARVEN, SKILL_LANG_DARNASSIAN, SKILL_LANG_TAURAHE, SKILL_LANG_THALASSIAN,
-        SKILL_LANG_TROLL, SKILL_LANG_GUTTERSPEAK, SKILL_LANG_DRAENEI, 0 };
+        SKILL_LANG_TROLL, SKILL_LANG_GUTTERSPEAK, SKILL_LANG_DRAENEI, SKILL_LANG_GOBLIN, SKILL_LANG_GILNEAN, 0 };
 
     if(All)
     {

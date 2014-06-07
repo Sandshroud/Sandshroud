@@ -697,12 +697,15 @@ CREATE TABLE `playercooldowns` (
 CREATE TABLE `playerglyphs` (
   `guid` int(10) unsigned NOT NULL,
   `spec` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `glyph1` smallint(5) unsigned DEFAULT NULL,
-  `glyph2` smallint(5) unsigned DEFAULT NULL,
-  `glyph3` smallint(5) unsigned DEFAULT NULL,
-  `glyph4` smallint(5) unsigned DEFAULT NULL,
-  `glyph5` smallint(5) unsigned DEFAULT NULL,
-  `glyph6` smallint(5) unsigned DEFAULT NULL,
+  `glyph1` mediumint(8) unsigned DEFAULT NULL,
+  `glyph2` mediumint(8) unsigned DEFAULT NULL,
+  `glyph3` mediumint(8) unsigned DEFAULT NULL,
+  `glyph4` mediumint(8) unsigned DEFAULT NULL,
+  `glyph5` mediumint(8) unsigned DEFAULT NULL,
+  `glyph6` mediumint(8) unsigned DEFAULT NULL,
+  `glyph7` mediumint(8) unsigned DEFAULT NULL,
+  `glyph8` mediumint(8) unsigned DEFAULT NULL,
+  `glyph9` mediumint(8) unsigned DEFAULT NULL,
   PRIMARY KEY (`guid`,`spec`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 CHECKSUM=1 DELAY_KEY_WRITE=1 ROW_FORMAT=DYNAMIC;
 

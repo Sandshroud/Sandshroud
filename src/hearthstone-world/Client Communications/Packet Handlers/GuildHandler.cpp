@@ -483,12 +483,12 @@ void WorldSession::HandleCharterQuery(WorldPacket & recv_data)
     data << uint16(0);                                      // 9 2 bytes field
 
     uint32 maxlevel = sWorld.GetMaxLevel(_player);
-    if(maxlevel < 80)
-        maxlevel = 80;
+    if(maxlevel < 85)
+        maxlevel = 85;
     if( c->CharterType == CHARTER_TYPE_GUILD )
         data << uint32(1) << uint32(maxlevel);              // 10 minlevel
     else
-        data << uint32(80) << uint32(maxlevel);             // 10
+        data << uint32(85) << uint32(maxlevel);             // 10
 
     data << uint32(0);                                      // 12
     data << uint32(0);                                      // 13 count of next strings?

@@ -152,8 +152,10 @@ bool ChatHandler::HandleStartCommand(const char* args, WorldSession *m_session)
         case 6: argument = "tauren";    break;
         case 7: argument = "gnome";     break;
         case 8: argument = "troll";     break;
+        case 9: argument = "goblin";    break;
         case 10:argument = "bloodelf";  break;
         case 11:argument = "draenei";   break;
+        case 22:argument = "worgen";    break;
         default:
             {
                 RedSystemMessage(m_session, "Could not extract race from slected character.");
@@ -175,12 +177,14 @@ bool ChatHandler::HandleStartCommand(const char* args, WorldSession *m_session)
         else if(argument == "tauren")       raceid = 6;
         else if(argument == "gnome")        raceid = 7;
         else if(argument == "troll")        raceid = 8;
+        else if(argument == "goblin")       raceid = 9;
         else if(argument == "bloodelf")     raceid = 10;
         else if(argument == "draenei")      raceid = 11;
+        else if(argument == "worgen")       raceid = 22;
         else if(argument == "deathknight")  classid = 6;
         else
         {
-            RedSystemMessage(m_session, "Invalid start location! Valid locations are: human, dwarf, gnome, nightelf, draenei, orc, troll, tauren, undead, bloodelf");
+            RedSystemMessage(m_session, "Invalid start location! Valid locations are: human, dwarf, gnome, nightelf, draenei, worgen, orc, troll, tauren, undead, bloodelf, goblin");
             return true;
         }
     }

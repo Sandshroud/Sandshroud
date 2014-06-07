@@ -40,9 +40,14 @@ static const uint32 LanguageSkills[NUM_LANGUAGES] = {
     0,              // -                0x1E
     0,              // -                0x1F
     0,              // -                0x20
-    673,            // -                0x21
+    673,            // -GUTTERSPEAK     0x21
     0,              // -                0x22
-    759,            // -                0x23
+    759,            // -DRAENEI         0x23
+    0,              // -                0x24
+    0,              // -                0x25
+    0,              // -                0x26
+    791,            // -GILNEAN         0x27
+    792,            // -GOBLIN          0x28
 };
 
 static const uint32 opcodeToChatType[16] = 

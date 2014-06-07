@@ -87,7 +87,9 @@ enum Languages
     LANG_ZOMBIE                                 = 0x24,
     LANG_GNOMISHBINARY                          = 0x25,
     LANG_GOBLINBINARY                           = 0x26,
-    NUM_LANGUAGES                               = 0x27
+    LANG_GILNEAN                                = 0x27,
+    LANG_GOBLIN                                 = 0x28,
+    NUM_LANGUAGES                               = 0x29
 };
 
 /*#define MSG_COLOR_YELLOW      "|r"
