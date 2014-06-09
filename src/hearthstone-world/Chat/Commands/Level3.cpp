@@ -70,60 +70,108 @@ bool ChatHandler::HandleLearnCommand(const char* args, WorldSession *m_session)
             plr->addSpell(spellarray[c][i]);
         }
 
-        static uint32 paladinspellarray[RACE_DRAENEI + 1][2] = {
-            { 0 },      // RACE 0
-            { 13819, 0 },       // HUMAN
-            { 0 },      // ORC
-            { 13819, 0 },       // DWARF
-            { 0 },      // NIGHTELF
-            { 0 },      // UNDEAD
-            { 0 },      // TAUREN
-            { 0 },      // GNOME
-            { 0 },      // TROLL
-            { 34769, 0 },       // BLOODELF
-            { 13819, 0 },       // DRAENEI
+        static uint32 paladinspellarray[RACE_WORGEN + 1][3] = {
+            { 0 },       // RACE 0
+            { 13819, 23214, 0 },       // HUMAN
+            { 0 },       // ORC
+            { 13819, 23214, 0 },       // DWARF
+            { 0 },       // NIGHTELF
+            { 0 },       // UNDEAD
+            { 69820, 69826, 0 },      // TAUREN
+            { 0 },       // GNOME
+            { 0 },       // TROLL
+            { 0 },       // GOBLIN
+            { 34769, 34767, 0 },       // BLOODELF
+            { 73629, 73630, 0 },       // DRAENEI
+            { 0 },       // RACE NONE
+            { 0 },       // RACE NONE
+            { 0 },       // RACE NONE
+            { 0 },       // RACE NONE
+            { 0 },       // RACE NONE
+            { 0 },       // RACE NONE
+            { 0 },       // RACE NONE
+            { 0 },       // RACE NONE
+            { 0 },       // RACE NONE
+            { 0 },       // RACE NONE
+            { 0 },       // WORGEN
         };
 
-        static uint32 priestspellarray[RACE_DRAENEI+1][16] = {
-            { 0 },      // RACE 0
-            { 13896, 13908, 19236, 19238, 19240, 19241, 19242, 19243, 19271, 19273, 19274, 19275, 25437, 25441, 0 },        // HUMAN
-            { 0 },      // ORC
-            { 13908, 19236, 19238, 19240, 44041, 19241, 19242, 19243, 25437, 44043, 44044, 44045, 44046, 44047, 0 },        // DWARF
-            { 2651, 10797, 19296, 19299, 19302, 19303, 19304, 19305, 25446, 0 },        // NIGHTELF
-            { 2652, 2944, 19261, 19262, 19264, 19265, 19266, 19276, 19277, 19278, 19279, 19280, 25461, 25467, 0 },      // UNDEAD
-            { 0 },      // TAUREN
-            { 0 },      // GNOME
-            { 9035, 18137, 19281, 19282, 19283, 19284, 19285, 19308, 19309, 19310, 19311, 19312, 25470, 25477, 0 },     // TROLL
-            { 2652, 19261, 19262, 19264, 19265, 19266, 25461, 32676, 0 },       // BLOODELF
-            { 32548, 44041, 44043, 44044, 44045, 44046, 44047, 0 },     // DRAENEI
+        static uint32 priestspellarray[RACE_WORGEN + 1][1] = {
+            { 0 },       // RACE 0
+            { 0 },       // HUMAN
+            { 0 },       // ORC
+            { 0 },       // DWARF
+            { 0 },       // NIGHTELF
+            { 0 },       // UNDEAD
+            { 0 },       // TAUREN
+            { 0 },       // GNOME
+            { 0 },       // TROLL
+            { 0 },       // GOBLIN
+            { 0 },       // BLOODELF
+            { 0 },       // DRAENEI
+            { 0 },       // RACE 12
+            { 0 },       // RACE 13
+            { 0 },       // RACE 14
+            { 0 },       // RACE 15
+            { 0 },       // RACE 16
+            { 0 },       // RACE 17
+            { 0 },       // RACE 18
+            { 0 },       // RACE 19
+            { 0 },       // RACE 20
+            { 0 },       // RACE 21
+            { 0 },       // WORGEN
         };
 
-        static uint32 shamanspellarray[RACE_DRAENEI+1][2] = {
-            { 0 },      // RACE 0
-            { 0 },      // HUMAN
+        static uint32 shamanspellarray[RACE_WORGEN + 1][2] = {
+            { 0 },       // RACE 0
+            { 0 },       // HUMAN
             { 2825, 0 },        // ORC
-            { 0 },      // DWARF
-            { 0 },      // NIGHTELF
-            { 0 },      // UNDEAD
+            { 32182,0 },        // DWARF
+            { 0 },       // NIGHTELF
+            { 0 },       // UNDEAD
             { 2825, 0 },        // TAUREN
-            { 0 },      // GNOME
+            { 0 },       // GNOME
             { 2825, 0 },        // TROLL
-            { 0 },      // BLOODELF
+            { 2825, 0 },        // GOBLIN
+            { 0 },       // BLOODELF
             { 32182, 0 },       // DRAENEI
+            { 0 },       // RACE 12
+            { 0 },       // RACE 13
+            { 0 },       // RACE 14
+            { 0 },       // RACE 15
+            { 0 },       // RACE 16
+            { 0 },       // RACE 17
+            { 0 },       // RACE 18
+            { 0 },       // RACE 19
+            { 0 },       // RACE 20
+            { 0 },       // RACE 21
+            { 0 },       // WORGEN
         };
 
-        static uint32 magespellarray[RACE_DRAENEI+1][11] = {
-            { 0 },      // RACE 0
-            { 3561, 3562, 3565, 10059, 11416, 11419, 32266, 32271, 33690, 33691, 0 },       // HUMAN
-            { 3563, 3566, 3567, 11417, 11418, 11420, 32267, 32272, 35715, 35717, 0 },       // ORC
-            { 3561, 3562, 3565, 10059, 11416, 11419, 32266, 32271, 33690, 33691, 0 },       // DWARF
-            { 3561, 3562, 3565, 10059, 11416, 11419, 32266, 32271, 33690, 33691, 0 },       // NIGHTELF
-            { 3563, 3566, 3567, 11417, 11418, 11420, 32267, 32272, 35715, 35717, 0 },       // UNDEAD
-            { 3563, 3566, 3567, 11417, 11418, 11420, 32267, 32272, 35715, 35717, 0 },       // TAUREN
-            { 3561, 3562, 3565, 10059, 11416, 11419, 32266, 32271, 33690, 33691, 0 },       // GNOME
-            { 3563, 3566, 3567, 11417, 11418, 11420, 32267, 32272, 35715, 35717, 0 },       // TROLL
-            { 3563, 3566, 3567, 11417, 11418, 11420, 32267, 32272, 35715, 35717, 0 },       // BLOODELF
-            { 3561, 3562, 3565, 10059, 11416, 11419, 32266, 32271, 33690, 33691, 0 },       // DRAENEI
+        static uint32 magespellarray[RACE_WORGEN + 1][17] = {
+            { 0 },       // RACE 0
+            { 3561, 3562, 3565, 10059, 11416, 11419, 32266, 32271, 53142, 33690, 33691, 49360, 49359, 53140, 88342, 88345, 0 },       // HUMAN
+            { 3563, 3566, 3567, 11417, 11418, 11420, 32267, 32272, 53142, 35715, 35717, 49361, 49358, 53140, 88344, 88346, 0 },       // ORC
+            { 3561, 3562, 3565, 10059, 11416, 11419, 32266, 32271, 53142, 33690, 33691, 49360, 49359, 53140, 88342, 88345, 0 },       // DWARF
+            { 3561, 3562, 3565, 10059, 11416, 11419, 32266, 32271, 53142, 33690, 33691, 49360, 49359, 53140, 88342, 88345, 0 },       // NIGHTELF
+            { 3563, 3566, 3567, 11417, 11418, 11420, 32267, 32272, 53142, 35715, 35717, 49361, 49358, 53140, 88344, 88346, 0 },       // UNDEAD
+            { 0 },       // TAUREN
+            { 3561, 3562, 3565, 10059, 11416, 11419, 32266, 32271, 53142, 33690, 33691, 49360, 49359, 53140, 88342, 88345, 0 },       // GNOME
+            { 3563, 3566, 3567, 11417, 11418, 11420, 32267, 32272, 53142, 35715, 35717, 49361, 49358, 53140, 88344, 88346, 0 },       // TROLL
+            { 3563, 3566, 3567, 11417, 11418, 11420, 32267, 32272, 53142, 35715, 35717, 49361, 49358, 53140, 88344, 88346, 0 },       // GOBLIN
+            { 3563, 3566, 3567, 11417, 11418, 11420, 32267, 32272, 53142, 35715, 35717, 49361, 49358, 53140, 88344, 88346, 0 },       // BLOODELF
+            { 3561, 3562, 3565, 10059, 11416, 11419, 32266, 32271, 53142, 33690, 33691, 49360, 49359, 53140, 88342, 88345, 0 },       // DRAENEI
+            { 0 },       // RACE 12
+            { 0 },       // RACE 13
+            { 0 },       // RACE 14
+            { 0 },       // RACE 15
+            { 0 },       // RACE 16
+            { 0 },       // RACE 17
+            { 0 },       // RACE 18
+            { 0 },       // RACE 19
+            { 0 },       // RACE 20
+            { 0 },       // RACE 21
+            { 3561, 3562, 3565, 10059, 11416, 11419, 32266, 32271, 53142, 33690, 33691, 49360, 49359, 53140, 88342, 88345, 0 },       // WORGEN
         };
 
         uint32 r = plr->getRace();
@@ -1690,8 +1738,8 @@ bool ChatHandler::HandlePlayerInfo(const char* args, WorldSession * m_session)
 //  char* infos = new char[128];
     static const char* classes[12] =
     {"None","Warrior", "Paladin", "Hunter", "Rogue", "Priest", "Death Knight", "Shaman", "Mage", "Warlock", "None", "Druid"};
-    static const char* races[12] =
-    {"None","Human","Orc","Dwarf","Night Elf","Undead","Tauren","Gnome","Troll","None","Blood Elf","Draenei"};
+    static const char* races[23] =
+    {"None","Human","Orc","Dwarf","Night Elf","Undead","Tauren","Gnome","Troll","Goblin","Blood Elf","Draenei","None","None","None","None","None","None","None","None","None","None","Worgen"};
 
     char playedLevel[64];
     char playedTotal[64];
