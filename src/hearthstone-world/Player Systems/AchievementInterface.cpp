@@ -711,7 +711,7 @@ void AchievementInterface::HandleAchievementCriteriaLevelUp(uint32 level)
                     break;
                 }
             }
-            for(uint32 i = 0; i < 12; i++)
+            for(uint32 i = 0; i < 23; i++)
             {
                 if(strlen(raceNames[i]) > 0 && string(pAchievementEntry->name).find(raceNames[i]) != string::npos )
                 {

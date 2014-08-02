@@ -1031,8 +1031,8 @@ uint32 GetSpellClass(SpellEntry *sp)
     case SKILL_FERAL_COMBAT:
         return DRUID;
     case SKILL_DK_FROST:
-    case SKILL_UNHOLY:
-    case SKILL_BLOOD:
+    case SKILL_DK_UNHOLY:
+    case SKILL_DK_BLOOD:
         return DEATHKNIGHT;
     }
 
