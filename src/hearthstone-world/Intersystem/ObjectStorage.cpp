@@ -31,6 +31,7 @@ const char * gRandomItemCreationFormat                  = "uuuu";
 const char * gRandomCardCreationFormat                  = "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu";
 const char * gScrollCreationFormat                      = "uu";
 const char * gZoneGuardsFormat                          = "uuu";
+const char * gTotemDisplayIDsFormat                     = "uuuuuuu";
 
 /** SQLStorage symbols
  */
@@ -52,6 +53,7 @@ SERVER_DECL SQLStorage<ZoneGuardEntry, HashMapStorageContainer<ZoneGuardEntry> >
 SERVER_DECL SQLStorage<RandomItemCreation, HashMapStorageContainer<RandomItemCreation> >        RandomItemCreationStorage;
 SERVER_DECL SQLStorage<RandomCardCreation, HashMapStorageContainer<RandomCardCreation> >        RandomCardCreationStorage;
 SERVER_DECL SQLStorage<ScrollCreation, HashMapStorageContainer<ScrollCreation> >                ScrollCreationStorage;
+SERVER_DECL SQLStorage<TotemDisplayIdEntry, HashMapStorageContainer< TotemDisplayIdEntry > >    TotemDisplayIdStorage;
 
 SERVER_DECL set<string> ExtraMapCreatureTables;
 SERVER_DECL set<string> ExtraMapGameObjectTables;
@@ -557,6 +559,7 @@ void Storage_FillTaskList(TaskList & tl)
     make_task(RandomItemCreationStorage, RandomItemCreation, HashMapStorageContainer, "randomitemcreation", gRandomItemCreationFormat);
     make_task(RandomCardCreationStorage, RandomCardCreation, HashMapStorageContainer, "randomcardcreation", gRandomCardCreationFormat);
     make_task(ScrollCreationStorage, ScrollCreation, HashMapStorageContainer, "scrollcreation", gScrollCreationFormat);
+    make_task(TotemDisplayIdStorage, TotemDisplayIdEntry, HashMapStorageContainer, "totemdisplayids", gTotemDisplayIDsFormat);
 }
 
 void Storage_Cleanup()
@@ -590,6 +593,7 @@ void Storage_Cleanup()
     CreatureProtoStorage.Cleanup();
     CreatureProtoVehicleStorage.Cleanup();
     CreatureInfoExtraStorage.Cleanup();
+    TotemDisplayIdStorage.Cleanup();
 
     StorageContainerIterator<AreaTrigger> * ATitr = AreaTriggerStorage.MakeIterator();
     AreaTrigger * a;

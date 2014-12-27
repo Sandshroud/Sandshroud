@@ -139,27 +139,36 @@ void PossessedSummon::Load(CreatureProto* proto, Unit* owner, LocationVector & p
 
 void TotemSummon::Load(CreatureProto* proto, Unit* owner, LocationVector & position, uint32 spellid, int32 summonslot)
 {
-    uint32 displayID = m_summon->creature_info->Male_DisplayID;
-    if( owner->IsPlayer() && TO_PLAYER(owner)->GetTeam() == 0 )
+    TotemDisplayIdEntry* totemdisplay = TotemDisplayIdStorage.LookupEntry(m_summon->creature_info->Male_DisplayID);
+    uint32 displayID = 0;
+
+    if(totemdisplay != NULL)
     {
-        if ( m_summon->creature_info->Female_DisplayID != 0 )
-            displayID = m_summon->creature_info->Female_DisplayID;
-        else //this is the case when you are using a blizzlike db
+        switch(owner->getRace())
         {
-            if( m_summon->creature_info->Male_DisplayID == 4587 )
-                displayID = 19075;
-            else if( m_summon->creature_info->Male_DisplayID == 4588 )
-                displayID = 19073;
-            else if( m_summon->creature_info->Male_DisplayID == 4589 )
-                displayID = 19074;
-            else if( m_summon->creature_info->Male_DisplayID == 4590 )
-                displayID = 19071;
-            else if( m_summon->creature_info->Male_DisplayID == 4683 )
-                displayID = 19074;
-            else
-                displayID = m_summon->creature_info->Male_DisplayID;
+        case RACE_DRAENEI:
+            displayID = totemdisplay->DraeneiId;
+            break;
+        case RACE_DWARF:
+            displayID = totemdisplay->DwarfId;
+            break;
+        case RACE_GOBLIN:
+            displayID = totemdisplay->GoblinId;
+            break;
+        case RACE_ORC:
+            displayID = totemdisplay->OrcId;
+            break;
+        case RACE_TAUREN:
+            displayID = totemdisplay->TaurenId;
+            break;
+        case RACE_TROLL:
+            displayID = totemdisplay->TrollId;
+            break;
         }
     }
+
+    if(displayID == 0)
+        displayID = m_summon->creature_info->Male_DisplayID;
 
     // Set up the creature.
     m_summon->SetMaxPower(POWER_TYPE_FOCUS, owner->getLevel() * 30);
@@ -180,7 +189,7 @@ void TotemSummon::Load(CreatureProto* proto, Unit* owner, LocationVector & posit
 
     m_summon->InheritSMMods(owner);
 
-    for(uint8 school = 0; school < 7; school++)
+    for(uint8 school = 0; school < SCHOOL_SPELL; school++)
     {
         m_summon->DamageDoneMod[school] = owner->GetDamageDoneMod(school);
         m_summon->HealDoneBase = owner->GetHealingDoneMod();
