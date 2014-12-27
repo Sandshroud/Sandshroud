@@ -199,7 +199,7 @@
 #define SKILL_TYPE_CLASS                7
 #define SKILL_TYPE_ARMOR                8
 #define SKILL_TYPE_SECONDARY            9
-#define SKILL_TYPE_LANGUAGE             10
+#define SKILL_TYPE_LANGUAGE             13
 #define SKILL_TYPE_PROFESSION           11
 #define SKILL_TYPE_NA                   12
 
