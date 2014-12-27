@@ -56,10 +56,10 @@ bool LfgMgr::AttemptLfgJoin(Player* pl, uint32 LfgDungeonId)
 
 uint32 LfgMgr::GetPlayerLevelGroup(uint32 level)
 {
-    if(level > 80)
+    if(level == 85)
+        return LFG_LEVELGROUP_85;
+    else if(level >= 80)
         return LFG_LEVELGROUP_80_UP;
-    else if(level == 80)
-        return LFG_LEVELGROUP_80;
     else if(level >= 70)
         return LFG_LEVELGROUP_70_UP;
     else if(level >= 60)

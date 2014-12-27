@@ -28,8 +28,8 @@ enum LFGLevelGroups
     LFG_LEVELGROUP_50_UP        = 5,
     LFG_LEVELGROUP_60_UP        = 6,
     LFG_LEVELGROUP_70_UP        = 7,
-    LFG_LEVELGROUP_80           = 8,
-    LFG_LEVELGROUP_80_UP        = 9,
+    LFG_LEVELGROUP_80_UP        = 8,
+    LFG_LEVELGROUP_85           = 9,
     NUM_LEVELGROUP              = 10
 };
 
