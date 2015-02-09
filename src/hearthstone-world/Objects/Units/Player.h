@@ -34,7 +34,7 @@ struct LevelInfo;
 // gold cap
 #define PLAYER_MAX_GOLD 0x7FFFFFFF
 
-#define MAX_TAXI 114
+#define MAX_TAXI 12
 
 //====================================================================
 //  Inventory
