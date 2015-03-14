@@ -282,6 +282,16 @@ enum MsTimeVariables
 #include <hash_set>
 #endif
 
+#if COMPILER == COMPILER_MICROSOFT
+
+#if _MSC_VER < 1800 // isnan self defined in C++11
+#define isnan(x) _isnan(x)
+#endif
+
+#else
+#define isnan(x) std::isnan(x)
+#endif
+
 #ifdef _STLPORT_VERSION
 
 #define HM_NAMESPACE std
