@@ -1562,6 +1562,20 @@ CREATE TABLE `teleport_coords` (
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1 COMMENT='World System';
 
 -- ----------------------------
+-- Table structure for totemdisplayids
+-- ----------------------------
+CREATE TABLE `totemdisplayids` (
+  `displayid` int(10) unsigned NOT NULL DEFAULT '0',
+  `draeneiid` int(10) unsigned NOT NULL DEFAULT '0',
+  `dwarfid` int(10) unsigned NOT NULL DEFAULT '0',
+  `goblinid` int(10) unsigned NOT NULL DEFAULT '0',
+  `orcid` int(10) unsigned NOT NULL DEFAULT '0',
+  `taurenid` int(10) unsigned NOT NULL DEFAULT '0',
+  `trollid` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`displayid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 COMMENT='Totem';
+
+-- ----------------------------
 -- Table structure for totemspells
 -- ----------------------------
 CREATE TABLE `totemspells` (

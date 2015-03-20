@@ -22,6 +22,7 @@ extern SERVER_DECL SQLStorage<AchievementReward, HashMapStorageContainer<Achieve
 extern SERVER_DECL SQLStorage<RandomItemCreation, HashMapStorageContainer<RandomItemCreation> >     RandomItemCreationStorage;
 extern SERVER_DECL SQLStorage<RandomCardCreation, HashMapStorageContainer<RandomCardCreation> >     RandomCardCreationStorage;
 extern SERVER_DECL SQLStorage<ScrollCreation, HashMapStorageContainer<ScrollCreation> >             ScrollCreationStorage;
+extern SERVER_DECL SQLStorage<TotemDisplayIdEntry, HashMapStorageContainer< TotemDisplayIdEntry > > TotemDisplayIdStorage;
 
 void Storage_FillTaskList(TaskList & tl);
 void Storage_Cleanup();

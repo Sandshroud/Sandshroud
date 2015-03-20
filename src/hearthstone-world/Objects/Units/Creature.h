@@ -206,6 +206,17 @@ struct CreatureInfoExtra
     bool   no_xp;
 };
 
+struct TotemDisplayIdEntry
+{
+    uint32 DisplayId;       // male displayid in creature_names
+    uint32 DraeneiId;       // Totem displayid for Draenei
+    uint32 DwarfId;         // Totem displayid for Dwarf
+    uint32 GoblinId;        // Totem displayid for Goblin
+    uint32 OrcId;           // Totem displayid for Orc
+    uint32 TaurenId;        // Totem displayid for Tauren
+    uint32 TrollId;         // Totem displayid for Troll
+};
+
 #pragma pack(PRAGMA_POP)
 
 struct Formation{
