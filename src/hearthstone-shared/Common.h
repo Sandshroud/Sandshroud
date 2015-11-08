@@ -512,9 +512,9 @@ Scripting system exports/imports
 #define _GUID_LOPART_2(x) (uint32)(uint64(x)         & 0x00000000FFFFFFFF)
 #define _GUID_LOPART_3(x) (uint32)(uint64(x)         & 0x0000000000FFFFFF)
 
-inline bool IsGuidHaveEnPart(uint64 guid)
+inline bool IsGuidHaveEnPart(uint32 highguid)
 {
-    switch (GUID_HIPART(guid))
+    switch (highguid)
     {
     case 0xF110:
     case 0xF120:
@@ -528,8 +528,8 @@ inline bool IsGuidHaveEnPart(uint64 guid)
     }
 }
 
-#define GUID_ENPART(x) (IsGuidHaveEnPart(x) ? _GUID_ENPART_3(x) : _GUID_ENPART_2(x))
-#define GUID_LOPART(x) (IsGuidHaveEnPart(x) ? _GUID_LOPART_3(x) : _GUID_LOPART_2(x))
+#define GUID_ENPART(x) (IsGuidHaveEnPart(GUID_HIPART(x)) ? _GUID_ENPART_3(x) : _GUID_ENPART_2(x))
+#define GUID_LOPART(x) (IsGuidHaveEnPart(GUID_HIPART(x)) ? _GUID_LOPART_3(x) : _GUID_LOPART_2(x))
 
 #define MAKE_NEW_GUID(l, e, h)   uint64(uint64(l) | (uint64(IsGuidHaveEnPart(h) ? e : 0) << 24) | (uint64(h) << 48))
 
